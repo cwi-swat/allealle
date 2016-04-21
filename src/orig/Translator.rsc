@@ -15,23 +15,11 @@ data SATFormula
 	| ite(SATFormula caseCond, SATFormula thenCond, SATFormula elseCond)
 	;
 
-//data Index
-//	= unary(str a)
-//	| binary(str a, str b)
-//	;
-	
 alias Environment = tuple[Binding (str) lookup, bool (str, Binding) add];
 
-//alias Binding = rel[Index, SATFormula];
 alias Binding = rel[int, SATFormula];
 alias TranslationResult = tuple[SATFormula formula, map[str, Binding] environment];
 
-SATFormula simplify(or({})) = \false();
-SATFormula simplify(or({SATFormula singleElem})) = singleElem; 
-SATFormula simplify(and({})) = \true();
-SATFormula simplify(and({SATFormula singleElem})) = singleElem;
-default	SATFormula simplify(SATFormula orig) = orig;
-		
 TranslationResult translate(Problem p) {
 	map[str, Binding] envInternal = ();
 
@@ -42,7 +30,7 @@ TranslationResult translate(Problem p) {
 	
 	fillInitialEnvironment(p.uni, p.bounds, env);
 
-	SATFormula formula = (and({}) | consAnd(it, translateFormula(f, env)) | f <- p.formulas, tf := translateFormula(f, env));
+	SATFormula formula = (\true() | consAnd(it, translateFormula(f, env)) | f <- p.formulas, tf := translateFormula(f, env));
 	
 	formula = bottom-up visit(formula) {
 		case SATFormula f => simplify(f)
@@ -50,6 +38,12 @@ TranslationResult translate(Problem p) {
 	
 	return <formula, envInternal>;
 } 
+
+SATFormula simplify(or({})) = \false();
+SATFormula simplify(or({SATFormula singleElem})) = singleElem; 
+SATFormula simplify(and({})) = \true();
+SATFormula simplify(and({SATFormula singleElem})) = singleElem;
+default	SATFormula simplify(SATFormula orig) = orig;
 
 SATFormula consNot(\true()) = \false();
 SATFormula consNot(\false()) = \true();
@@ -71,10 +65,10 @@ SATFormula consOr(orig:or(_), \false()) = orig;
 default SATFormula consOr(or(set[SATFormula] orig), SATFormula new) = or(orig + new);
 
 SATFormula translateFormula(empty(Expr expr), Environment env)		 	
-	= not(translateFormula(atMostOne(expr), env));
+	= consNot(translateFormula(nonEmpty(expr), env));
 
 SATFormula translateFormula(atMostOne(Expr expr), Environment env) 	
-	= consOr(tranlateFormula(empty(expr), env), translateFormula(exactlyOne(expr), env));
+	= consOr(translateFormula(empty(expr), env), translateFormula(exactlyOne(expr), env));
 
 SATFormula translateFormula(exactlyOne(Expr expr), Environment env) 	
 	= (or({}) | consOr(it, consAnd(x, 
@@ -82,7 +76,7 @@ SATFormula translateFormula(exactlyOne(Expr expr), Environment env)
 	when Binding m := translateExpr(expr, env);
 
 SATFormula translateFormula(nonEmpty(Expr expr), Environment env) 			
-	= (or({}) | consOr(it, a) | Index x <- domain(vb), SATFormula a <- m[x])
+	= (or({}) | consOr(it, a) | int x <- domain(m), SATFormula a <- m[x])
 	when Binding m := translateExpr(expr, env);
 
 SATFormula translateFormula(subset(Expr lhsExpr, Expr rhsExpr), Environment env) = (and({}) | consAnd(it, c) | int idx <- domain(m), SATFormula c <- m[idx])
