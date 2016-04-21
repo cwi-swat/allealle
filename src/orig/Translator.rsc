@@ -30,7 +30,7 @@ TranslationResult translate(Problem p) {
 	
 	fillInitialEnvironment(p.uni, p.bounds, env);
 
-	SATFormula formula = (\true() | consAnd(it, translateFormula(f, env)) | f <- p.formulas, tf := translateFormula(f, env));
+	SATFormula formula = (and({}) | addToAnd(it, translateFormula(f, env)) | f <- p.formulas, tf := translateFormula(f, env));
 	
 	formula = bottom-up visit(formula) {
 		case SATFormula f => simplify(f)
@@ -50,19 +50,27 @@ SATFormula consNot(\false()) = \true();
 SATFormula consNot(not(not(SATFormula f))) = f;
 default SATFormula consNot(SATFormula f) = not(f);
 
+SATFormula consAnd(_, \false()) = \false();
 SATFormula consAnd(\false(), _) = \false();
-SATFormula consAnd(SATFormula lhs, SATFormula rhs) = consAnd(consAnd(and({}), rhs), lhs) when and(_) !:= lhs;
-SATFormula consAnd(and(_), \false()) = \false();
-SATFormula consAnd(and({\false()}), _) = \false();
-SATFormula consAnd(orig:and(_), \true()) = orig;
-default SATFormula consAnd(and(set[SATFormula] orig), SATFormula new) = and(orig + new);
+SATFormula consAnd(SATFormula lhs, \true()) = lhs;
+SATFormula consAnd(\true(), SATFormula rhs) = rhs;
+default SATFormula consAnd(SATFormula lhs, SATFormula rhs) = and({lhs,rhs});
 
-SATFormula consOr(\true(),_) = \true();
-SATFormula consOr(SATFormula lhs, SATFormula rhs) = consOr(consOr(or({}), rhs), lhs) when or(_) !:= lhs;
-SATFormula consOr(or(_), \true()) = \true();
-SATFormula consOr(or({\true()}), _) = \true();
-SATFormula consOr(orig:or(_), \false()) = orig;
-default SATFormula consOr(or(set[SATFormula] orig), SATFormula new) = or(orig + new);
+SATFormula addToAnd(\false(), _) = \false();
+SATFormula addToAnd(and(_), \false()) = \false();
+SATFormula addToAnd(orig:and(_), \true()) = orig;
+default SATFormula addToAnd(and(set[SATFormula] orig), SATFormula new) = and(orig + new);
+
+SATFormula consOr(_, \true()) = \true();
+SATFormula consOr(\true(), _) = \true();
+SATFormula consOr(SATFormula lhs, \false()) = lhs;
+SATFormula consOr(\false(), SATFormula rhs) = rhs;
+default SATFormula consOr(SATFormula lhs, SATFormula rhs) = or({lhs,rhs});
+
+SATFormula addToOr(\true(),_) = \true();
+SATFormula addToOr(or(_), \true()) = \true();
+SATFormula addToOr(orig:or(_), \false()) = orig;
+default SATFormula addToOr(or(set[SATFormula] orig), SATFormula new) = or(orig + new);
 
 SATFormula translateFormula(empty(Expr expr), Environment env)		 	
 	= consNot(translateFormula(nonEmpty(expr), env));
@@ -71,20 +79,23 @@ SATFormula translateFormula(atMostOne(Expr expr), Environment env)
 	= consOr(translateFormula(empty(expr), env), translateFormula(exactlyOne(expr), env));
 
 SATFormula translateFormula(exactlyOne(Expr expr), Environment env) 	
-	= (or({}) | consOr(it, consAnd(x, 
-				(and({}) | consAnd(it, consNot(y)) | int fy <- domain(m), SATFormula y <- m[fy], y != x))) | int fx <- domain(m), SATFormula x <- m[fx])   
+	= (or({}) | addToOr(it, consAnd(x, 
+				(and({}) | addToAnd(it, consNot(y)) | int fy <- domain(m), SATFormula y <- m[fy], y != x))) | int fx <- domain(m), SATFormula x <- m[fx])   
 	when Binding m := translateExpr(expr, env);
 
 SATFormula translateFormula(nonEmpty(Expr expr), Environment env) 			
-	= (or({}) | consOr(it, a) | int x <- domain(m), SATFormula a <- m[x])
+	= (or({}) | addToOr(it, a) | int x <- domain(m), SATFormula a <- m[x])
 	when Binding m := translateExpr(expr, env);
 
-SATFormula translateFormula(subset(Expr lhsExpr, Expr rhsExpr), Environment env) = (and({}) | consAnd(it, c) | int idx <- domain(m), SATFormula c <- m[idx])
+SATFormula translateFormula(subset(Expr lhsExpr, Expr rhsExpr), Environment env) 
+	= (and({}) | addToAnd(it, c) | int idx <- domain(m), SATFormula c <- m[idx])
 	when Binding lhsBin := translateExpr(lhsExpr, env),
 		 Binding rhsBin := translateExpr(rhsExpr, env),
 		 Binding m := {<idxA, consOr(consNot(a), b)> | int idxA <- domain(lhsBin), SATFormula a <- lhsBin[idxA], SATFormula b <- rhsBin[idxA]};
 
-	//| equal(Expr lhsExpr, Expr rhsExpr)
+SATFormula translateFormula(equal(Expr lhsExpr, Expr rhsExpr), Environment env)
+	= consAnd(translateFormula(subset(lhsExpr, rhsExpr), env), translateFormula(subset(rhsExpr, lhsExpr), env));
+	
 	//| negation(Formula form)
 	//| conjunction(Formula lhsForm, Formula rhsForm)
 	//| disjunction(Formula lhsForm, Formula rhsForm)
