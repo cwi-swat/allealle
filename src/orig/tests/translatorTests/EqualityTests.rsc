@@ -60,3 +60,30 @@ test bool testEquality_isEqual_withLowerBounds() {
 		});
 }
 
+test bool testEquality_neverEqual() {
+	str testProblem = 
+		" {a,b}
+		' RelA:1 [{\<a\>},{\<a\>}]
+		' RelB:1 [{\<b\>},{\<b\>}] 
+		' RelA = RelB
+		";
+
+	TranslationResult result = translate(testProblem);  
+	
+	return result.formula == \false();
+}
+
+test bool testEquality_alwaysEqual() {
+	str testProblem = 
+		" {a,b}
+		' RelA:1 [{\<a\>},{\<a\>}]
+		' RelB:1 [{\<a\>},{\<a\>}] 
+		' RelA = RelB
+		";
+
+	TranslationResult result = translate(testProblem);  
+	
+	return result.formula == \true();
+}
+
+

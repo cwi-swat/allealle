@@ -96,7 +96,9 @@ SATFormula translateFormula(subset(Expr lhsExpr, Expr rhsExpr), Environment env)
 SATFormula translateFormula(equal(Expr lhsExpr, Expr rhsExpr), Environment env)
 	= consAnd(translateFormula(subset(lhsExpr, rhsExpr), env), translateFormula(subset(rhsExpr, lhsExpr), env));
 	
-	//| negation(Formula form)
+SATFormula translateFormula(negation(Formula form), Environment env) 
+	= consNot(translateFormula(form, env));
+	
 	//| conjunction(Formula lhsForm, Formula rhsForm)
 	//| disjunction(Formula lhsForm, Formula rhsForm)
 	//| implication(Formula lhsForm, Formula rhsForm)
