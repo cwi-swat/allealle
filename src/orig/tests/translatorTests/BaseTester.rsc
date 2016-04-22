@@ -5,6 +5,8 @@ import orig::AST;
 import orig::Translator;
 import orig::smt::Translator;
 
+import logic::Propositional;
+
 import IO;
 
 void testTranslation(loc file) {

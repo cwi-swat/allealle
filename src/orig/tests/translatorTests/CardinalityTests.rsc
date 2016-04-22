@@ -61,7 +61,7 @@ test bool testCardinality_one_withLowerBounds() {
 
 	TranslationResult result = translate(testProblem);  
 
-	return result.formula == not(var("Rel_b"));
+	return result.formula == \not(var("Rel_b"));
 }
 
 test bool testCardinality_no_noLowerBounds() {
