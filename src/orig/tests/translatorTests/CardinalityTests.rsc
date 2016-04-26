@@ -38,7 +38,9 @@ test bool testCardinality_one_noLowerBounds() {
 		";
 
 	TranslationResult result = translate(testProblem);  
-
+	
+	iprintln(result.formula);
+	
 	return result.formula == 
 		or({
 			and({
@@ -135,3 +137,43 @@ test bool testCardinality_lone_withLowerBounds() {
 
 	return result.formula == not(var("Rel_b"));
 }
+
+test bool testCardinality_lone_binaryRelationOnlyOnePossibleRelation() {
+	str testProblem =
+		" {a,b}
+		' rel:2 [{},{\<a,b\>}]
+		' lone rel
+		";
+		
+	TranslationResult result = translate(testProblem);  
+	
+	return result.formula == \true();
+}
+
+test bool testCardinality_lone_binaryRelationTwoPossibleRelation() {
+	str testProblem =
+		" {a,b}
+		' rel:2 [{},{\<a,a\>,\<a,b\>}]
+		' lone rel
+		";
+		
+	TranslationResult result = translate(testProblem);  
+
+	return result.formula == 
+		or({
+			not(or({
+				var("rel_a_a"),
+				var("rel_a_b")
+			})),
+			and({
+				var("rel_a_a"),
+				not(var("rel_a_b"))
+			}),
+			and({
+				not(var("rel_a_a")),
+				var("rel_a_b")
+			})
+		});
+	
+}
+

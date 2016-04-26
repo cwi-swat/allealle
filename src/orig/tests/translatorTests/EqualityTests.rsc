@@ -69,7 +69,7 @@ test bool testEquality_neverEqual() {
 		";
 
 	TranslationResult result = translate(testProblem);  
-	
+		
 	return result.formula == \false();
 }
 
