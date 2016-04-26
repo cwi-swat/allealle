@@ -14,7 +14,7 @@ Formula \or({\true(), *Formula _})   			= \true();
 Formula \or(Formula a, Formula b) 				= \or({a,b});
 Formula \or({*Formula a, or(set[Formula] b)}) 	= \or(a + b);
 Formula \or({Formula g,\not(g),*Formula r}) 	= \or(r) when r != {};
-Formula \or({Formula g,\not(g),*Formula r}) 	= \true() when r == {};
+Formula \or({Formula g,\not(g),{}}) 			= \true();
 Formula \or({Formula g,and({\not(g), *Formula restOfAnd}),*Formula restOfOr}) 	= \or({g,\and(restOfAnd),*restOfOr});
 
 Formula \and({Formula x}) 						= x;

@@ -5,7 +5,7 @@ import orig::AST;
 import IO;
 import List;
 import Relation;
-import Set;
+import Map;
 
 import logic::Propositional;
 
@@ -79,12 +79,8 @@ Formula translateFormula(existential(list[VarDeclaration] decls, Formula form), 
 	     	
 default Formula translateFormula(Formula f, Environment env) { throw "Translation of formula \'<f>\' not yet implemented";}
 
-set[Atom] toRel(map[set[Atom] _, _] b) = ({} | it + r | r <- domain(b));
-rel[Atom,Atom] toRel(map[rel[Atom,Atom] r, _] b) = ({} | it + r | r <- domain(b));
-default value toRel(Binding b) { throw "Relations with an arity greater then 2 are not allowed";}
-
-int arity(Binding b) = 1 when rel[Atom] _ := toRel(b);
-int arity(Binding b) = 2 when rel[Atom,Atom] _ := toRel(b);
+int arity(Binding b) = 1 when /tuple[Atom] _ := domain(b);
+int arity(Binding b) = 2 when /tuple[Atom,Atom] _ := domain(b);
 default int arity(Binding b) { throw "Relations with an arity greater then 2 are not allowed";}
 
 bool sameArity(Binding lhs, Binding rhs) = arity(lhs) == arity(rhs); 
@@ -105,21 +101,24 @@ default Binding translateExpr(union(Expr lhsExpr, Expr rhsExpr), _) {throw "Cann
 	//| intersection(Expr lhs, Expr rhs)
 	//| difference(Expr lhs, Expr rhs)
 
-Binding translateExpr(\join(Expr lhsExpr, Expr rhsExpr), Environment env) = performJoin(arity(lhs), arity(rhs), lhs, rhs) 
+Binding translateExpr(\join(Expr lhsExpr, Expr rhsExpr), Environment env) = m 
 	when Binding lhs := translateExpr(lhsExpr, env),
-		 Binding rhs := translateExpr(rhsExpr, env);
-//		 Binding m := (x:\and(lhs[x],\or({rhs[y] | Index y <- rhs, [t, restY*] := y})) | Index x <- lhs, [*restX, Atom t] := x),
-//		 bprintln("Lhs: <lhs>\nRhs:<rhs>\nResult of join: <m>");
+		 Binding rhs := translateExpr(rhsExpr, env),
+		 Binding m := performJoin(arity(lhs), arity(rhs), lhs, rhs),
+		 bprintln("Lhs: <lhs>\nRhs:<rhs>\nResult of join: <m>");
 default Binding translateExpr(\join(Expr lhsExpr, Expr rhsExpr), _) {throw "Cannot join <lhsExpr> and <rhsExpr>";}
 	
 Binding performJoin(1, 1, Binding lhs, Binding rhs) { throw "Cannot join two relations of arity 1";}	
-Binding performJoin(1, 2, Binding lhs, Binding rhs) =	
-	(x:\and(lhs[{x}],\or({rhs[y] | Index y <- rhs, y:{<x, _>} := y})) | Atom x <- toRel(lhs));
 
-Binding performJoin(2, 1, Binding lhs, Binding rhs) = 
-	(x:\and(lhs[{<x,y>}],\or({rhs[y] | Index y <- rhs})) | Atom x <- toRel(lhs)<1>);
+Binding performJoin(1, 2, Binding lhs, Binding rhs)	
+	= (x:\and(lhs[<x>],\or({rhs[y] | /Index y:<x, _> := domain(rhs)})) | <Atom x> <- domain(lhs));
+
+Binding performJoin(2, 1, Binding lhs, Binding rhs) 
+	= (idx:\and(lhs[idx],\or({rhs[y] | Index y <- domain(rhs)})) | Atom x <- range(domain(lhs)), Index idx:<Atom _, x> <- domain(lhs));
 	
-Binding performJoin(2, 2, Binding lhs, Binding rhs) = false;
+Binding performJoin(2, 2, Binding lhs, Binding rhs) 
+	= (idx:\and(lhs[idx],\or({rhs[y] | /Index y:<x, other> := domain(rhs)})) | Atom x <- range(domain(lhs)), Index idx:<Atom other, x> <- domain(lhs));
+	
 default Binding performJoin(int arityLhs, int arityRhs, Binding lhs, Binding rhs) { throw "Unsupported join of relations with arity <arityLhs> and <arityRhs>";}
 	
 Binding translateExpr(product(Expr lhsExpr, Expr rhsExpr), Environment env) = m
@@ -138,10 +137,10 @@ Environment createInitialEnvironment(Universe uni, list[RelationalBound] relatio
 	(rb.relName: createRelationalMapping(rb, uni) | RelationalBound rb <- relationalBounds);
 	
 map[Index, Formula] createRelationalMapping(relationalBound(str relName, 1, list[Tuple] lb, list[Tuple] ub), Universe uni) =
-	({a}:unaryToFormula(a, lb, ub, relName) | Atom a <- uni.atoms);
+	(<a>:unaryToFormula(a, lb, ub, relName) | Atom a <- uni.atoms);
 
 map[Index, Formula] createRelationalMapping(relationalBound(str relName, 2, list[Tuple] lb, list[Tuple] ub), Universe uni) =
-	({<a,b>}:binaryToFormula(a, b, lb, ub, relName) | Atom a <- uni.atoms, Atom b <- uni.atoms);	
+	(<a,b>:binaryToFormula(a, b, lb, ub, relName) | Atom a <- uni.atoms, Atom b <- uni.atoms);	
 
 default map[Index, Formula] createRelationalMapping(RelationalBound b, Universe _) {throw "RelationalBounds with an arity of <b.arity> are not yet supported";}
 		

@@ -52,8 +52,7 @@ test bool testUniversalAndExistential_onePigeonAndHole_IfThereIsAPigeonThereIsAH
 		' Pigeon:1		[{\<p1\>},{\<p1\>}]
 		' Hole:1 		[{},{\<h1\>}]
 		' nest:2 		[{},{\<p1,h1\>}]
-		' forall p:Pigeon | one p.nest  
-		' forall h:Hole | lone nest.h
+		' forall p:Pigeon : one p.nest
 		";
 
 	TranslationResult result = translate(testProblem);
