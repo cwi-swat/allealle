@@ -46,25 +46,20 @@ test bool testUniversal_onePigeonAndHole_allIsOptional() {
 		});
 }
 
-test bool testUniversalAndExistential_onePigeonAndHole_IfThereIsAPigeonThereIsAHole() {
+test bool testUniversal_morePigeonsAndHoles_neverEnoughHoles() {
 	str testProblem = 
-		" {p1, h1}
-		' Pigeon:1		[{\<p1\>},{\<p1\>}]
-		' Hole:1 		[{},{\<h1\>}]
-		' nest:2 		[{},{\<p1,h1\>}]
-		' forall p:Pigeon : one p.nest
+		" {p1, p2, p3, h1, h2}
+		' Pigeon:1		[{\<p1\>,\<p2\>,\<p3\>},{\<p1\>,\<p2\>,\<p3\>}]
+		' Hole:1 		[{},{\<h1\>,\<h2\>}]
+		' nest:2 		[{},{\<p1,h1\>,\<p1,h2\>,\<p2,h1\>,\<p2,h2\>,\<p3,h1\>,\<p3,h2\>}]
+		' forall p:Pigeon | one p.nest
+		' forall n:nest | one n.Hole
 		";
 
 	TranslationResult result = translate(testProblem);
 	
 	iprintln(result.formula);
 	
-	return result.formula == 
-		or({
-			not(var("Pigeon_p1")),
-			and({
-				var("Hole_h1"),
-				var("nest_p1_h1")
-			})
-		});
+	return result.formula == \false();
 }
+

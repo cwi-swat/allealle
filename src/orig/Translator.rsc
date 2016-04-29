@@ -11,7 +11,7 @@ import logic::Propositional;
 
 alias Environment = map[str, Binding];
 
-// index is a relation of different arity
+// index is a tuple of different arity
 alias Index = value;
 //alias Index = list[Atom];
 alias Binding = map[Index, Formula]; 
@@ -20,7 +20,7 @@ alias TranslationResult = tuple[Formula formula, map[str, Binding] environment];
 
 TranslationResult translate(Problem p) {
 	Environment env = createInitialEnvironment(p.uni, p.bounds);
-	println(env);
+	//println(env);
 	Formula formula = (\true() | \and(it, translateFormula(f, env)) | f <- p.formulas);
 	
 	return <formula, env>;
@@ -96,16 +96,22 @@ Binding translateExpr(union(Expr lhsExpr, Expr rhsExpr), Environment env) = m
 		 Binding rhs := translateExpr(rhsExpr, env),
 		 sameArity(lhs, rhs),
 		 Binding m := (x:\or(lhs[x],rhs[x]) | Index x <- lhs);
-default Binding translateExpr(union(Expr lhsExpr, Expr rhsExpr), _) {throw "Cannot create a union between <lhsExpr> and <rhsExpr>";}
+default Binding translateExpr(union(Expr lhsExpr, Expr rhsExpr), _) {throw "Cannot create an union between <lhsExpr> and <rhsExpr>";}
 	
-	//| intersection(Expr lhs, Expr rhs)
+Binding translateExpr(intersection(Expr lhsExpr, Expr rhsExpr), Environment env) = m
+	when Binding lhs := translateExpr(lhsExpr, env),
+		 Binding rhs := translateExpr(rhsExpr, env),
+		 sameArity(lhs, rhs),
+		 Binding m := (x:\and(lhs[x],rhs[x]) | Index x <- lhs);
+default Binding translateExpr(intersection(Expr lhsExpr, Expr rhsExpr), _) {throw "Cannot create an intersection between <lhsExpr> and <rhsExpr>";}
+
+
 	//| difference(Expr lhs, Expr rhs)
 
 Binding translateExpr(\join(Expr lhsExpr, Expr rhsExpr), Environment env) = m 
 	when Binding lhs := translateExpr(lhsExpr, env),
 		 Binding rhs := translateExpr(rhsExpr, env),
-		 Binding m := performJoin(arity(lhs), arity(rhs), lhs, rhs),
-		 bprintln("Lhs: <lhs>\nRhs:<rhs>\nResult of join: <m>");
+		 Binding m := performJoin(arity(lhs), arity(rhs), lhs, rhs);
 default Binding translateExpr(\join(Expr lhsExpr, Expr rhsExpr), _) {throw "Cannot join <lhsExpr> and <rhsExpr>";}
 	
 Binding performJoin(1, 1, Binding lhs, Binding rhs) { throw "Cannot join two relations of arity 1";}	
@@ -125,9 +131,15 @@ Binding translateExpr(product(Expr lhsExpr, Expr rhsExpr), Environment env) = m
 	when Binding lhs := translateExpr(lhsExpr, env),
 		 Binding rhs := translateExpr(rhsExpr, env),
 		 sameArity(lhs,rhs),
-		 Binding m := (x:\and(lhs[x],rhs[x]) | Index x <- lhs);
+		 Binding m := performProduct(arity(lhs), arity(rhs), lhs, rhs);
 default Binding translateExpr(product(Expr lhsExpr, Expr rhsExpr), _) {throw "Cannot create a product between <lhsExpr> and <rhsExpr>";}
-		 
+
+Binding performProduct(1, 1, Binding lhs, Binding rhs)
+	= (<a,b>:\and(lhs[x],rhs[y]) | x:<Atom a> <- lhs, y:<Atom b> <- rhs);
+
+Binding performProduct(2, 2, Binding lhs, Binding rhs)
+	= (<aa,ab,ba,bb>:\and(lhs[x],rhs[y]) | <Atom aa, _> <- lhs, x:<aa, Atom ab> := lhs, <Atom ba, _> <- rhs, y:<ba, Atom bb> := rhs);
+
 	//| ifThenElse(Formula caseForm, Expr thenExpr, Expr elseExpr)
 	//| comprehension(list[VarDeclaration] decls, Formula form)
 
@@ -137,10 +149,10 @@ Environment createInitialEnvironment(Universe uni, list[RelationalBound] relatio
 	(rb.relName: createRelationalMapping(rb, uni) | RelationalBound rb <- relationalBounds);
 	
 map[Index, Formula] createRelationalMapping(relationalBound(str relName, 1, list[Tuple] lb, list[Tuple] ub), Universe uni) =
-	(<a>:unaryToFormula(a, lb, ub, relName) | Atom a <- uni.atoms);
+	(<a>:f | Atom a <- uni.atoms, Formula f := unaryToFormula(a, lb, ub, relName));
 
 map[Index, Formula] createRelationalMapping(relationalBound(str relName, 2, list[Tuple] lb, list[Tuple] ub), Universe uni) =
-	(<a,b>:binaryToFormula(a, b, lb, ub, relName) | Atom a <- uni.atoms, Atom b <- uni.atoms);	
+	(<a,b>:f | Atom a <- uni.atoms, Atom b <- uni.atoms, Formula f := binaryToFormula(a, b, lb, ub, relName));	
 
 default map[Index, Formula] createRelationalMapping(RelationalBound b, Universe _) {throw "RelationalBounds with an arity of <b.arity> are not yet supported";}
 		
