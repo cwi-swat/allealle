@@ -4,23 +4,28 @@ import logic::Propositional;
 
 import List;
 
-str compileToSMT(Formula formula) {
-	// gather all used variables
-	set[str] varNames = {name | /var(str name) := formula};
+alias SMTCompilerResult = tuple[str smtFormula, map[str label, Formula f] labels];
+
+SMTCompilerResult compileToSMT(set[Formula] clauses) {
+	int label = 0;
+	
+	map[str, Formula] labeledFormulas = ();
+	str addLabeledFormula(Formula orig) {
+		label += 1; 
+		labeledFormulas += ("l<label>":orig);
+		
+		return "l<label>";
+	} 
 	
 	// declare all variables
-	str smt = intercalate("\n", ["(declare-const <name> Bool)" | name <- varNames]);
-
-	smt += 	"(assert <compile(formula)>)";
-	
-	return smt;
+	str smt = ("" | "<it>\n(assert <compile(c, addLabeledFormula)>)" | Formula c <- clauses);
+	return <smt, labeledFormulas>;
 }
 
-str compile(\and(set[Formula] forms)) = "(and <intercalate(" ", [compile(f) | f <- forms])>)";
-str compile(\or(set[Formula] forms)) = "(or <intercalate(" ", [compile(f) | f <- forms])>)";
-str compile(\not(formula)) = "(not <compile(formula)>)";
-str compile(\var(name)) = name;
-str compile(\true()) = "true";
-str compile(\false()) = "false";
+str compile(a:\and(set[Formula] forms), str (Formula) labeler) = "(! (and <intercalate(" ", [compile(f, labeler) | f <- forms])>) :named <labeler(a)>)";
+str compile(a:\or(set[Formula] forms), str (Formula) labeler) = "(! (or <intercalate(" ", [compile(f, labeler) | f <- forms])>) :named <labeler(a)>)";
+str compile(a:\not(formula), str (Formula) labeler) = "(! (not <compile(formula, labeler)>) :named <labeler(a)>)";
+str compile(\var(name), str (Formula) _) = name;
 
-default str compile(Formula f) { throw "Compilation of <f> not supported"; }
+default str compile(Formula f, str (Formula) labeler) { throw "Compilation of <f> not supported"; }
+

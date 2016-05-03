@@ -4,7 +4,8 @@ import orig::AST;
 import orig::Imploder;
 import orig::Translator;
 import orig::SMTCompiler;
-import smt::solver::Z3;
+import logic::CNFConverter;
+import orig::SolverRunner; 
 
 import util::Benchmark;
 import util::ShellExec;
@@ -22,31 +23,32 @@ void executeTest(str title, str problem) {
 	 tuple[TranslationResult result, int time] t = benchmark(translate, p);
 	 print("done\n");
 	 
-	 print("Compiling SAT formula to SMT...");
-	 tuple[str smt, int time] s = benchmark(compileToSMT, t.result.formula);
-	 print("done\n");
+	 print("Converting to CNF...");
+	 tuple[Formula formula, int time] cnf = benchmark(convertToCNF, t.result.formula);
 	 
 	 print("Solving by Z3...");
-	 tuple[str outcome, int time] solving = runInSolver(s.smt);
+	 tuple[str outcome, int time] solving = runInSolver(s.result.smtFormula, {name | /var(str name) := cnf.formula});
 	 print("done\n");
 	 
 	 println("Done.");
 	 println("Outcome is \'<solving.outcome>\'");
 	 println("Translation to SAT formula took: <(t.time/1000000)> ms");
-	 println("Compilation to SMT formula took: <(s.time/1000000)> ms");
+	 println("Converting to Conjuctive Normal Form took: <(cnf.time/1000000)> ms");
 	 println("Solving time in Z3: <solving.time/1000000> ms");
 	 
-	 //println("Formula:");
-	 //iprintln(t.result.formula);
+	 println("SAT Formula:");
+	 iprintln(t.result.formula);
+	 
+	 println("CNF Formula:");
+	 iprintln(cnf.formula);	 
 }
 
-tuple[str, int] runInSolver(str smtProblem, set[str] varNames) {
-	PID z3Pid = startZ3(); 
+tuple[str, int] runInSolver(Formula cnfFormula, set[str] varNames) {
+	PID solverPid = startSolver(); 
 	try {
-		tuple[str answer, int time] result = benchmark(\run, z3Pid, smtProblem + "\n(check-sat)");
-		if (result.answer == "sat") {
-			str modelValues = \run(z3Pid, "(get-value)");
-		}
+		if (isSatisfiable(solverPid, cnfFormula, varNames)) {
+		} else {
+		
 	} 
 	catch ex: println(ex);
 	finally {

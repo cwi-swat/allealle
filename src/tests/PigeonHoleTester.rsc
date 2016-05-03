@@ -10,9 +10,9 @@ str generatePigeonProblem(int lbPigeons, int ubPigeons, int nrOfHoles) =
 	'Hole:1 [{},{<intercalate(",",["\<h<i>\>" | i <- [1..nrOfHoles+1]])>}]
 	'nest:2 [{},{<intercalate(",",["\<p<i>,h<j>\>" | i <- [1..ubPigeons+1], j <- [1..nrOfHoles+1]])>}]
 	'nest in Pigeon -\> Hole
-	'forall h:Hole | one nest.h
+	'forall h:Hole | lone nest.h
+	'forall p:Pigeon | one p.nest	
 	'";
-	//'forall p:Pigeon | one p.nest	
 	
 void testPigeonHoleWithNPigeonsAndHoles(int n) =
 	executeTest("Starting with pigeon hole problem with <n> pigeons and holes", generatePigeonProblem(0,n,n));		
@@ -26,5 +26,5 @@ void testPigeonHoleWith2PigeonsAndHoles() = testPigeonHoleWithNPigeonsAndHoles(2
 void testPigeonHoleWith5PigeonsAndHoles() = testPigeonHoleWithNPigeonsAndHoles(5);
 
 void testPigeonHoleWith5PigeonsAnd4Holes() = testPigeonHoleWithNPigeonsAndMHoles(5,4);
-void testPigeonHoleWithExactly2PigeonsAnd1Holes() = testPigeonHoleWithExactlyNPigeonsAndMHoles(2,1);
+void testPigeonHoleWithExactly2PigeonsAnd1Holes() = testPigeonHoleWithExactlyNPigeonsAndMHoles(1,1);
 
