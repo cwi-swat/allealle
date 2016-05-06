@@ -5,7 +5,7 @@ import orig::Imploder;
 import orig::Translator;
 import orig::SMTCompiler;
 import logic::CNFConverter;
-import orig::SolverRunner; 
+import orig::SolverRunner;
 
 import util::Benchmark;
 import util::ShellExec;
@@ -13,47 +13,53 @@ import IO;
 import List;
 
 void executeTest(str title, str problem) {
-	 println(title);
+	println(title);
 	 
-	 print("Parsing and imploding problem...");
-	 Problem p = implodeProblem(problem);
-	 print("done\n");
+	print("Parsing and imploding problem...");
+	Problem p = implodeProblem(problem);
+	print("done\n");
 	 
-	 print("Translating problem to SAT formula...");
-	 tuple[TranslationResult result, int time] t = benchmark(translate, p);
-	 print("done\n");
+	print("Translating problem to SAT formula...");
+	tuple[TranslationResult result, int time] t = benchmark(translate, p);
+	print("done\n");
 	 
-	 print("Converting to CNF...");
-	 tuple[Formula formula, int time] cnf = benchmark(convertToCNF, t.result.formula);
+	print("Converting to CNF...");
+	tuple[Formula formula, int time] cnf = <t.result.formula, t.time>; //benchmark(convertToCNF, t.result.formula);
 	 
-	 print("Solving by Z3...");
-	 tuple[str outcome, int time] solving = runInSolver(s.result.smtFormula, {name | /var(str name) := cnf.formula});
-	 print("done\n");
-	 
-	 println("Done.");
-	 println("Outcome is \'<solving.outcome>\'");
-	 println("Translation to SAT formula took: <(t.time/1000000)> ms");
-	 println("Converting to Conjuctive Normal Form took: <(cnf.time/1000000)> ms");
-	 println("Solving time in Z3: <solving.time/1000000> ms");
-	 
-	 println("SAT Formula:");
-	 iprintln(t.result.formula);
-	 
-	 println("CNF Formula:");
-	 iprintln(cnf.formula);	 
-}
-
-tuple[str, int] runInSolver(Formula cnfFormula, set[str] varNames) {
-	PID solverPid = startSolver(); 
+	print("Solving by Z3...");
+	
+	PID solverPid = startSolver();
 	try {
-		if (isSatisfiable(solverPid, cnfFormula, varNames)) {
-		} else {
+		set[str] vars = {name | /var(str name) := cnf.formula};
+		tuple[CheckSatResult result, int time] solving = benchmark(isSatisfiable, solverPid, vars, cnf.formula); 
+		print("done\n");
+			 
+		println("Done.");
+		println("Outcome is \'<solving.result.sat>\'");
+		println("Translation to SAT formula took: <(t.time/1000000)> ms");
+		println("Converting to Conjunctive Normal Form took: <(cnf.time/1000000)> ms");
+		println("Solving time in Z3: <solving.time/1000000> ms");
 		
-	} 
-	catch ex: println(ex);
+		if (solving.result.sat) {
+			model = firstModel(solverPid, vars);
+			println("First found model was:");
+			iprintln(model);
+		} else {
+			println("Unsatisfiable; formulas in unsat core:");
+			iprintln(getUnsatCore(solverPid, solving.result.labels));
+		}
+	}
+	catch ex: println("Error while running solver, reason \'<ex>\'");
 	finally {
-		stopZ3(z3Pid);
-	};
+		stopSolver(solverPid);
+	}	
+	
+	 
+	//println("SAT Formula:");
+	//iprintln(t.result.formula);
+	// 
+	//println("CNF Formula:");
+	//iprintln(cnf.formula);	 
 }
 
 tuple[&T, int] benchmark(&T () methodToBenchmark) {
@@ -71,5 +77,11 @@ tuple[&T, int] benchmark(&T (&R) methodToBenchmark, &R p) {
 tuple[&T, int] benchmark(&T (&R,&Q) methodToBenchmark, &R p1, &Q p2) {
 	int startTime = userTime();
 	&T result = methodToBenchmark(p1,p2);
+	return <result, userTime() - startTime>;
+}
+
+tuple[&T, int] benchmark(&T (&R,&Q,&S) methodToBenchmark, &R p1, &Q p2, &S p3) {
+	int startTime = userTime();
+	&T result = methodToBenchmark(p1,p2,p3);
 	return <result, userTime() - startTime>;
 }

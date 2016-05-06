@@ -39,8 +39,6 @@ test bool testCardinality_one_noLowerBounds() {
 
 	TranslationResult result = translate(testProblem);  
 	
-	iprintln(result.formula);
-	
 	return result.formula == 
 		or({
 			and({
@@ -65,6 +63,41 @@ test bool testCardinality_one_withLowerBounds() {
 
 	return result.formula == \not(var("Rel_b"));
 }
+
+test bool testCardinality_lone_moreAtoms_noLowerBounds() {
+	str testProblem = 
+		" {a,b,c}
+		' Rel:1 [{},{\<a\>,\<b\>,\<c\>}]
+		' lone Rel
+		";
+
+	TranslationResult result = translate(testProblem); 
+	
+	iprintln(result.formula); 
+
+	return result.formula == or({
+		or({
+			and({var("Rel_a"),
+				not(var("Rel_b")),
+				not(var("Rel_c"))
+			}),
+			and({var("Rel_b"),
+				not(var("Rel_a")),
+				not(var("Rel_c"))
+			}),
+			and({var("Rel_c"),
+				not(var("Rel_b")),
+				not(var("Rel_a"))
+			})
+		}),
+		not(or({
+			var("Rel_a"),
+			var("Rel_b"),
+			var("Rel_c")
+		}))
+	});
+}
+
 
 test bool testCardinality_no_noLowerBounds() {
 	str testProblem = 

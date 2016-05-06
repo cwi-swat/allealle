@@ -11,16 +11,27 @@ Formula convertToCNF(Formula orig) {
 	return toCNF(toNNF(orig));
 }
 
-Formula toNNF(orig:\var(_)) = orig;
-Formula toNNF(\not(\and(set[Formula] clauses))) = \or({\not(toNNF(c)) | c <- clauses}); 
-Formula toNNF(\not(\or(set[Formula] clauses))) = \and({\not(toNNF(c)) | c <- clauses});
-Formula toNNF(orig:\not(Formula _)) = orig;
-default Formula toNNF(\and(set[Formula] clauses)) = \and({toNNF(c) | c <- clauses});
-default Formula toNNF(\or(set[Formula] clauses)) = \or({toNNF(c) | c <- clauses});
+Formula toNNF(Formula orig) =
+	visit(orig) {
+		case \not(\and(set[Formula] clauses)) => \or({\not(toNNF(c)) | c <- clauses})
+		case \not(\or(set[Formula] clauses)) => \and({\not(toNNF(c)) | c <- clauses})
+	};
 
-Formula toCNF(orig:\var(_)) = orig;
-Formula toCNF(orig:\not(_)) = orig;
-Formula toCNF(\or({\and(set[Formula] andClauses), *Formula r})) = \and({toCNF(\or(c + r)) | c <- andClauses});
-default Formula toCNF(\or(set[Formula] clauses)) = \or({toCNF(c) | c <- clauses});
-default Formula toCNF(\and(set[Formula] clauses)) = \and({toCNF(c) | c <- clauses});
-default Formula toCNF(Formula f) = f;
+Formula toCNF(Formula orig) =
+	visit(orig) {
+		case \or({\and(set[Formula] andClauses), *Formula r}) => \and({toCNF(\or(c + r)) | c <- andClauses})
+	};
+
+//Formula toNNF(orig:\var(_)) = orig;
+//Formula toNNF(\not(\and(set[Formula] clauses))) = \or({\not(toNNF(c)) | c <- clauses}); 
+//Formula toNNF(\not(\or(set[Formula] clauses))) = \and({\not(toNNF(c)) | c <- clauses});
+//Formula toNNF(orig:\not(Formula _)) = orig;
+//default Formula toNNF(\and(set[Formula] clauses)) = \and({toNNF(c) | c <- clauses});
+//default Formula toNNF(\or(set[Formula] clauses)) = \or({toNNF(c) | c <- clauses});
+
+//Formula toCNF(orig:\var(_)) = orig;
+//Formula toCNF(orig:\not(_)) = orig;
+//Formula toCNF(\or({\and(set[Formula] andClauses), *Formula r})) = \and({toCNF(\or(c + r)) | c <- andClauses});
+//default Formula toCNF(\or(set[Formula] clauses)) = \or({toCNF(c) | c <- clauses});
+//default Formula toCNF(\and(set[Formula] clauses)) = \and({toCNF(c) | c <- clauses});
+//default Formula toCNF(Formula f) = f;

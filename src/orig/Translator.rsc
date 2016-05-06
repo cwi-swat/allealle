@@ -33,15 +33,18 @@ Formula translateFormula(atMostOne(Expr expr), Environment env)
 	= \or(translateFormula(empty(expr), env), translateFormula(exactlyOne(expr), env));
 
 Formula translateFormula(exactlyOne(Expr expr), Environment env) 	
-	= (\or({}) | \or(it, \and(m[x],	(\and({}) | \and(it, \not(m[y])) | Index y <- m, y != x))) | Index x <- m)   
-	when Binding m := translateExpr(expr, env);
+	= result    
+	when Binding m := translateExpr(expr, env),
+	Formula result := (\false() | \or(it, \and(m[x], (\true() | \and(it, \not(m[y])) | Index y <- m, y != x))) | Index x <- m),
+	bprintln("Result of \'one\': <result>");
+	
 
 Formula translateFormula(nonEmpty(Expr expr), Environment env) 			
-	= (\or({}) | \or(it,  m[x]) | Index x <- m)
+	= (\false() | \or(it,  m[x]) | Index x <- m)
 	when Binding m := translateExpr(expr, env);
 
 Formula translateFormula(subset(Expr lhsExpr, Expr rhsExpr), Environment env) 
-	= (\and({}) | \and(it, m[x]) | Index x <- m)
+	= (\true() | \and(it, m[x]) | Index x <- m)
 	when Binding lhs := translateExpr(lhsExpr, env),
 		 Binding rhs := translateExpr(rhsExpr, env),
 		 Binding m := (x:\or(\not(lhs[x]), rhs[x]) | Index x <- lhs);
@@ -110,20 +113,23 @@ default Binding translateExpr(intersection(Expr lhsExpr, Expr rhsExpr), _) {thro
 
 Binding translateExpr(\join(Expr lhsExpr, Expr rhsExpr), Environment env) = m 
 	when Binding lhs := translateExpr(lhsExpr, env),
+		 bprintln(lhs),
 		 Binding rhs := translateExpr(rhsExpr, env),
-		 Binding m := performJoin(arity(lhs), arity(rhs), lhs, rhs);
+		 bprintln(rhs),
+		 Binding m := performJoin(arity(lhs), arity(rhs), lhs, rhs),
+		 bprintln("join: <m>");
 default Binding translateExpr(\join(Expr lhsExpr, Expr rhsExpr), _) {throw "Cannot join <lhsExpr> and <rhsExpr>";}
 	
 Binding performJoin(1, 1, Binding lhs, Binding rhs) { throw "Cannot join two relations of arity 1";}	
 
 Binding performJoin(1, 2, Binding lhs, Binding rhs)	
-	= (x:\and(lhs[<x>],\or({rhs[y] | /Index y:<x, _> := domain(rhs)})) | <Atom x> <- domain(lhs));
+	= (row:\or({\and({lhs[<x>], rhs[y]}) | <Atom x> <- domain(lhs), /Index y:<x, row> := domain(rhs)}) | <Atom row> <- domain(lhs));
 
 Binding performJoin(2, 1, Binding lhs, Binding rhs) 
-	= (idx:\and(lhs[idx],\or({rhs[y] | Index y <- domain(rhs)})) | Atom x <- range(domain(lhs)), Index idx:<Atom _, x> <- domain(lhs));
+	= (row:\or({\and({lhs[idx], rhs[<y>]}) | /Index idx:<row, Atom x> := domain(lhs), <Atom y> <- domain(rhs)}) | /<Atom row, _> := domain(lhs));
 	
 Binding performJoin(2, 2, Binding lhs, Binding rhs) 
-	= (idx:\and(lhs[idx],\or({rhs[y] | /Index y:<x, other> := domain(rhs)})) | Atom x <- range(domain(lhs)), Index idx:<Atom other, x> <- domain(lhs));
+	= (idx:\or(lhs[idx],\and({rhs[y] | /Index y:<x, other> := domain(rhs)})) | Atom x <- range(domain(lhs)), Index idx:<Atom other, x> <- domain(lhs));
 	
 default Binding performJoin(int arityLhs, int arityRhs, Binding lhs, Binding rhs) { throw "Unsupported join of relations with arity <arityLhs> and <arityRhs>";}
 	
