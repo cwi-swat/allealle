@@ -33,11 +33,8 @@ Formula translateFormula(atMostOne(Expr expr), Environment env)
 	= \or(translateFormula(empty(expr), env), translateFormula(exactlyOne(expr), env));
 
 Formula translateFormula(exactlyOne(Expr expr), Environment env) 	
-	= result    
-	when Binding m := translateExpr(expr, env),
-	Formula result := (\false() | \or(it, \and(m[x], (\true() | \and(it, \not(m[y])) | Index y <- m, y != x))) | Index x <- m),
-	bprintln("Result of \'one\': <result>");
-	
+	= (\false() | \or(it, \and(m[x], (\true() | \and(it, \not(m[y])) | Index y <- m, y != x))) | Index x <- m)    
+	when Binding m := translateExpr(expr, env);
 
 Formula translateFormula(nonEmpty(Expr expr), Environment env) 			
 	= (\false() | \or(it,  m[x]) | Index x <- m)
@@ -113,11 +110,8 @@ default Binding translateExpr(intersection(Expr lhsExpr, Expr rhsExpr), _) {thro
 
 Binding translateExpr(\join(Expr lhsExpr, Expr rhsExpr), Environment env) = m 
 	when Binding lhs := translateExpr(lhsExpr, env),
-		 bprintln(lhs),
 		 Binding rhs := translateExpr(rhsExpr, env),
-		 bprintln(rhs),
-		 Binding m := performJoin(arity(lhs), arity(rhs), lhs, rhs),
-		 bprintln("join: <m>");
+		 Binding m := performJoin(arity(lhs), arity(rhs), lhs, rhs);
 default Binding translateExpr(\join(Expr lhsExpr, Expr rhsExpr), _) {throw "Cannot join <lhsExpr> and <rhsExpr>";}
 	
 Binding performJoin(1, 1, Binding lhs, Binding rhs) { throw "Cannot join two relations of arity 1";}	
@@ -126,7 +120,7 @@ Binding performJoin(1, 2, Binding lhs, Binding rhs)
 	= (row:\or({\and({lhs[<x>], rhs[y]}) | <Atom x> <- domain(lhs), /Index y:<x, row> := domain(rhs)}) | <Atom row> <- domain(lhs));
 
 Binding performJoin(2, 1, Binding lhs, Binding rhs) 
-	= (row:\or({\and({lhs[idx], rhs[<y>]}) | /Index idx:<row, Atom x> := domain(lhs), <Atom y> <- domain(rhs)}) | /<Atom row, _> := domain(lhs));
+	= (row:\or({\and({lhs[idx], rhs[<x>]}) | /Index idx:<row, Atom x> := domain(lhs)}) | /<Atom row, _> := domain(lhs));
 	
 Binding performJoin(2, 2, Binding lhs, Binding rhs) 
 	= (idx:\or(lhs[idx],\and({rhs[y] | /Index y:<x, other> := domain(rhs)})) | Atom x <- range(domain(lhs)), Index idx:<Atom other, x> <- domain(lhs));
