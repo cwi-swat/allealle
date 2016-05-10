@@ -60,12 +60,12 @@ Figure buildEdgeLabel(Atom from, Atom to, str relName) =
 	box(text(relName), id("<relName>_<from>_<to>"), lineWidth(0));
 
 Maybe[Figure] buildAtomNode(Atom a, rel[Atom, str] unaryRelations) {
-	str getLabel() = (a | "\<<r>\>\n<it>" | str r <- unaryRelations[a]); 
+	Figure getLabel() = vcat([text("\<<r>\>", center()) | str r <- unaryRelations[a]] + [text(a, [fontBold(true), center()])]); 
 	
 	if (unaryRelations[a] == {}) {
 		return nothing();
 	} else {
-		return just(ellipse(text(getLabel(), center()), fillColor("white"), size(50), id(a), lineWidth(1.5)));
+		return just(ellipse(getLabel(), fillColor("white"), size(50), id(a), lineWidth(1.5)));
 	}			
 }
 

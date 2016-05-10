@@ -11,19 +11,19 @@ syntax Tuple = \tuple: "\<" {Atom ","}+ atoms "\>";
   
 syntax Formula
 	= bracket "(" Formula form ")"
-	> implication:	Formula lhsForm "=\>" Formula rhsForm
-	| equality:		Formula lhsForm "\<=\>" Formula rhsForm
 	| universal:	"forall" {VarDeclaration ","}+ decls "|" Formula form
 	| existential:	"exists" {VarDeclaration ","}+ decls "|" Formula form 
+	> implication:	Formula lhsForm "=\>" Formula rhsForm
+	| equality:		Formula lhsForm "\<=\>" Formula rhsForm
 	> empty:		"no" Expr expr
 	| atMostOne:	"lone" Expr expr
 	| exactlyOne:	"one" Expr expr
 	| nonEmpty:		"some" Expr expr
 	| subset:		Expr lhsExpr "in" Expr rhsExpr
 	| equal:		Expr lhsExpr "=" Expr rhsExpr
-	| negation:		"not" Formula form
 	| conjunction:	Formula lhsForm "&&" Formula rhsForm
 	| disjunction:	Formula lhsForm "||" Formula rhsForm
+	> negation:		"not" Formula form
 	; 
 
 syntax Expr

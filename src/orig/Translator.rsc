@@ -1,26 +1,22 @@
 module orig::Translator
 
 import orig::AST;
+import orig::Binder;
 
 import IO;
 import List;
 import Relation;
 import Map;
+import Set;
 
 import logic::Propositional;
 
 alias Environment = map[str, Binding];
 
-// index is a tuple of different arity
-alias Index = value;
-//alias Index = list[Atom];
-alias Binding = map[Index, Formula]; 
- 
 alias TranslationResult = tuple[Formula formula, map[str, Binding] environment];
 
 TranslationResult translate(Problem p) {
 	Environment env = createInitialEnvironment(p.uni, p.bounds);
-	//println(env);
 	Formula formula = (\true() | \and(it, translateFormula(f, env)) | f <- p.formulas);
 	
 	return <formula, env>;
@@ -44,7 +40,7 @@ Formula translateFormula(subset(Expr lhsExpr, Expr rhsExpr), Environment env)
 	= (\true() | \and(it, m[x]) | Index x <- m)
 	when Binding lhs := translateExpr(lhsExpr, env),
 		 Binding rhs := translateExpr(rhsExpr, env),
-		 Binding m := (x:\or(\not(lhs[x]), rhs[x]) | Index x <- lhs);
+		 Binding m := \or(not(lhs), rhs); 
 		 
 Formula translateFormula(equal(Expr lhsExpr, Expr rhsExpr), Environment env)
 	= \and(translateFormula(subset(lhsExpr, rhsExpr), env), translateFormula(subset(rhsExpr, lhsExpr), env));
@@ -79,18 +75,19 @@ Formula translateFormula(existential(list[VarDeclaration] decls, Formula form), 
 	     	
 default Formula translateFormula(Formula f, Environment env) { throw "Translation of formula \'<f>\' not yet implemented";}
 
-int arity(Binding b) = 1 when /tuple[Atom] _ := domain(b);
-int arity(Binding b) = 2 when /tuple[Atom,Atom] _ := domain(b);
-default int arity(Binding b) { throw "Relations with an arity greater then 2 are not allowed";}
-
-bool sameArity(Binding lhs, Binding rhs) = arity(lhs) == arity(rhs); 
-
 Binding translateExpr(variable(str name), Environment env) = env[name];
 
-//Binding translateExpr(transpose(Expr expr)) = 
-	//| closure(Expr expr)
-	//| reflexClosure(Expr expr)
-	
+Binding translateExpr(transpose(Expr expr), Environment env) = transpose(arity(m), m)
+	when Binding m := translateExpr(expr, env); 
+
+Binding translateExpr(closure(Expr expr), Environment env) = result
+	when Binding m := translateExpr(expr, env),
+		 Binding result := square(m, 1),
+		 bprintln("Result of closure operation: <result>");
+
+Binding translateExpr(reflexClosure(Expr expr), Environment env) = or(m, identity(m))  
+	when Binding m := translateExpr(closure(expr), env);
+		
 Binding translateExpr(union(Expr lhsExpr, Expr rhsExpr), Environment env) = m  
 	when Binding lhs := translateExpr(lhsExpr, env),
 		 Binding rhs := translateExpr(rhsExpr, env),
@@ -108,39 +105,32 @@ default Binding translateExpr(intersection(Expr lhsExpr, Expr rhsExpr), _) {thro
 
 	//| difference(Expr lhs, Expr rhs)
 
+Binding not(Binding orig) = (idx:not(val) | Index idx <- domain(orig), Formula val := orig[idx]);
+
 Binding translateExpr(\join(Expr lhsExpr, Expr rhsExpr), Environment env) = m 
 	when Binding lhs := translateExpr(lhsExpr, env),
 		 Binding rhs := translateExpr(rhsExpr, env),
-		 Binding m := performJoin(arity(lhs), arity(rhs), lhs, rhs);
+		 Binding m := \join(arity(lhs), arity(rhs), lhs, rhs);
 default Binding translateExpr(\join(Expr lhsExpr, Expr rhsExpr), _) {throw "Cannot join <lhsExpr> and <rhsExpr>";}
-	
-Binding performJoin(1, 1, Binding lhs, Binding rhs) { throw "Cannot join two relations of arity 1";}	
-
-Binding performJoin(1, 2, Binding lhs, Binding rhs)	
-	= (row:\or({\and({lhs[<x>], rhs[y]}) | <Atom x> <- domain(lhs), /Index y:<x, row> := domain(rhs)}) | <Atom row> <- domain(lhs));
-
-Binding performJoin(2, 1, Binding lhs, Binding rhs) 
-	= (row:\or({\and({lhs[idx], rhs[<x>]}) | /Index idx:<row, Atom x> := domain(lhs)}) | /<Atom row, _> := domain(lhs));
-	
-Binding performJoin(2, 2, Binding lhs, Binding rhs) 
-	= (idx:\or(lhs[idx],\and({rhs[y] | /Index y:<x, other> := domain(rhs)})) | Atom x <- range(domain(lhs)), Index idx:<Atom other, x> <- domain(lhs));
-	
-default Binding performJoin(int arityLhs, int arityRhs, Binding lhs, Binding rhs) { throw "Unsupported join of relations with arity <arityLhs> and <arityRhs>";}
-	
+		
 Binding translateExpr(product(Expr lhsExpr, Expr rhsExpr), Environment env) = m
 	when Binding lhs := translateExpr(lhsExpr, env),
 		 Binding rhs := translateExpr(rhsExpr, env),
 		 sameArity(lhs,rhs),
-		 Binding m := performProduct(arity(lhs), arity(rhs), lhs, rhs);
+		 Binding m := product(arity(lhs), arity(rhs), lhs, rhs);
 default Binding translateExpr(product(Expr lhsExpr, Expr rhsExpr), _) {throw "Cannot create a product between <lhsExpr> and <rhsExpr>";}
 
-Binding performProduct(1, 1, Binding lhs, Binding rhs)
+Binding product(1, 1, Binding lhs, Binding rhs)
 	= (<a,b>:\and(lhs[x],rhs[y]) | x:<Atom a> <- lhs, y:<Atom b> <- rhs);
 
-Binding performProduct(2, 2, Binding lhs, Binding rhs)
+Binding product(2, 2, Binding lhs, Binding rhs)
 	= (<aa,ab,ba,bb>:\and(lhs[x],rhs[y]) | <Atom aa, _> <- lhs, x:<aa, Atom ab> := lhs, <Atom ba, _> <- rhs, y:<ba, Atom bb> := rhs);
 
-	//| ifThenElse(Formula caseForm, Expr thenExpr, Expr elseExpr)
+Binding translateExpr(ifThenElse(Formula caseForm, Expr thenExpr, Expr elseExpr), Environment env) = 
+	(idx:ite(translateFormula(caseForm, env),p[idx],q[idx]) | Index idx <- p)
+	when Binding p := translateExpr(thenExpr, env),
+		 Binding q := translateExpr(elseExpr, env);
+		 
 	//| comprehension(list[VarDeclaration] decls, Formula form)
 
 default Binding translateExpr(Expr e, Environment env) { throw "Translation of expression \'<e>\' not yet implemented";}

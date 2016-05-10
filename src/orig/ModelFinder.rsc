@@ -27,8 +27,8 @@ ModelFinderResult checkInitialSolution(Problem problem) {
 	print("done\n");
 	println("Translation to SAT formula took: <(t.time/1000000)> ms");
 	
-	println("SAT Formula:");
-	iprintln(t.result.formula); 
+	//println("SAT Formula:");
+	//iprintln(t.result.formula); 
 	 
 	//print("Converting to CNF...");
 	//tuple[Formula formula, int time] cnf = <t.result.formula, t.time>; //benchmark(convertToCNF, t.result.formula);

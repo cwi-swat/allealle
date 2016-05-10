@@ -1,7 +1,0 @@
-{r1a,r1b,r2a,r2b}
-Rel1:1 [{<r1a>}, {<r1a>,<r1b>}]
-Rel2:1 [{}, {<r2a>,<r2b>}]
-link:2 [{}, {<r1a,r2a>,<r1a,r2b>,<r1b,r2a>,<r1b,r2b>}]
-
-link in Rel1 -> Rel2
-forall r:Rel1 | one r.link

@@ -1,0 +1,8 @@
+{n1,n2}
+
+Node:1 [{<n1>,<n2>},{<n1>,<n2>}]
+edge:2 [{},{<n1,n1>,<n1,n2>,<n2,n1>,<n2,n2>}]
+
+edge in Node -> Node
+
+forall n:Node | not (n in n.^edge)
