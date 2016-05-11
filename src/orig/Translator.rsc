@@ -77,54 +77,34 @@ default Formula translateFormula(Formula f, Environment env) { throw "Translatio
 
 Binding translateExpr(variable(str name), Environment env) = env[name];
 
-Binding translateExpr(transpose(Expr expr), Environment env) = transpose(arity(m), m)
+Binding translateExpr(transpose(Expr expr), Environment env) = transpose(m)
 	when Binding m := translateExpr(expr, env); 
 
-Binding translateExpr(closure(Expr expr), Environment env) = result
-	when Binding m := translateExpr(expr, env),
-		 Binding result := square(m, 1),
-		 bprintln("Result of closure operation: <result>");
-
-Binding translateExpr(reflexClosure(Expr expr), Environment env) = or(m, identity(m))  
+Binding translateExpr(closure(Expr expr), Environment env) = square(m, 1)
+	when Binding m := translateExpr(expr, env);
+		 
+Binding translateExpr(reflexClosure(Expr expr), Environment env) = \or(m, identity(m))  
 	when Binding m := translateExpr(closure(expr), env);
 		
-Binding translateExpr(union(Expr lhsExpr, Expr rhsExpr), Environment env) = m  
+Binding translateExpr(union(Expr lhsExpr, Expr rhsExpr), Environment env) = \or(lhs,rhs)  
 	when Binding lhs := translateExpr(lhsExpr, env),
-		 Binding rhs := translateExpr(rhsExpr, env),
-		 sameArity(lhs, rhs),
-		 Binding m := (x:\or(lhs[x],rhs[x]) | Index x <- lhs);
-default Binding translateExpr(union(Expr lhsExpr, Expr rhsExpr), _) {throw "Cannot create an union between <lhsExpr> and <rhsExpr>";}
+		 Binding rhs := translateExpr(rhsExpr, env);
 	
-Binding translateExpr(intersection(Expr lhsExpr, Expr rhsExpr), Environment env) = m
+Binding translateExpr(intersection(Expr lhsExpr, Expr rhsExpr), Environment env) = \and(lhs, rhs)
 	when Binding lhs := translateExpr(lhsExpr, env),
-		 Binding rhs := translateExpr(rhsExpr, env),
-		 sameArity(lhs, rhs),
-		 Binding m := (x:\and(lhs[x],rhs[x]) | Index x <- lhs);
-default Binding translateExpr(intersection(Expr lhsExpr, Expr rhsExpr), _) {throw "Cannot create an intersection between <lhsExpr> and <rhsExpr>";}
+		 Binding rhs := translateExpr(rhsExpr, env);
 
-
-	//| difference(Expr lhs, Expr rhs)
-
-Binding not(Binding orig) = (idx:not(val) | Index idx <- domain(orig), Formula val := orig[idx]);
-
-Binding translateExpr(\join(Expr lhsExpr, Expr rhsExpr), Environment env) = m 
+Binding translateExpr(difference(Expr lhsExpr, Expr rhsExpr), Environment env) = \and(lhs, not(rhs))
 	when Binding lhs := translateExpr(lhsExpr, env),
-		 Binding rhs := translateExpr(rhsExpr, env),
-		 Binding m := \join(arity(lhs), arity(rhs), lhs, rhs);
-default Binding translateExpr(\join(Expr lhsExpr, Expr rhsExpr), _) {throw "Cannot join <lhsExpr> and <rhsExpr>";}
+		 Binding rhs := translateExpr(rhsExpr, env);
+
+Binding translateExpr(\join(Expr lhsExpr, Expr rhsExpr), Environment env) = \join(lhs, rhs) 
+	when Binding lhs := translateExpr(lhsExpr, env),
+		 Binding rhs := translateExpr(rhsExpr, env);
 		
-Binding translateExpr(product(Expr lhsExpr, Expr rhsExpr), Environment env) = m
+Binding translateExpr(product(Expr lhsExpr, Expr rhsExpr), Environment env) = product(lhs, rhs)
 	when Binding lhs := translateExpr(lhsExpr, env),
-		 Binding rhs := translateExpr(rhsExpr, env),
-		 sameArity(lhs,rhs),
-		 Binding m := product(arity(lhs), arity(rhs), lhs, rhs);
-default Binding translateExpr(product(Expr lhsExpr, Expr rhsExpr), _) {throw "Cannot create a product between <lhsExpr> and <rhsExpr>";}
-
-Binding product(1, 1, Binding lhs, Binding rhs)
-	= (<a,b>:\and(lhs[x],rhs[y]) | x:<Atom a> <- lhs, y:<Atom b> <- rhs);
-
-Binding product(2, 2, Binding lhs, Binding rhs)
-	= (<aa,ab,ba,bb>:\and(lhs[x],rhs[y]) | <Atom aa, _> <- lhs, x:<aa, Atom ab> := lhs, <Atom ba, _> <- rhs, y:<ba, Atom bb> := rhs);
+		 Binding rhs := translateExpr(rhsExpr, env);
 
 Binding translateExpr(ifThenElse(Formula caseForm, Expr thenExpr, Expr elseExpr), Environment env) = 
 	(idx:ite(translateFormula(caseForm, env),p[idx],q[idx]) | Index idx <- p)

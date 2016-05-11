@@ -73,8 +73,6 @@ test bool testCardinality_lone_moreAtoms_noLowerBounds() {
 
 	TranslationResult result = translate(testProblem); 
 	
-	iprintln(result.formula); 
-
 	return result.formula == or({
 		or({
 			and({var("Rel_a"),
@@ -180,7 +178,9 @@ test bool testCardinality_lone_binaryRelationOnlyOnePossibleRelation() {
 		
 	TranslationResult result = translate(testProblem);  
 	
-	return result.formula == \true();
+	iprintln(result.formula);
+	
+	return result.formula == \true(); //var("rel_a_b");
 }
 
 test bool testCardinality_lone_binaryRelationTwoPossibleRelation() {
