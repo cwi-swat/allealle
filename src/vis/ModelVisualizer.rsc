@@ -35,7 +35,7 @@ void renderModel(Universe universe, Environment model, Environment () nextModel,
 					showButtons(),
 					vshrink(0.10)
 				),
-				visualizeModel(universe, currentModel)
+				scrollable(visualizeModel(universe, currentModel))
 			]));
 
 	r();

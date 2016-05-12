@@ -10,8 +10,3 @@ Root in Node
 // All nodes are transitive connected to the Root node
 Node in Root.*edge
 
-// The graph is acyclic
-forall n:Node | not (n in n.^edge)
-
-// if a node exists, it is connected
-forall n:Node | ((some n.edge) || (some edge.n))
