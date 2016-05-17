@@ -59,20 +59,21 @@ Formula translateFormula(implication(Formula lhsForm, Formula rhsForm), Environm
 Formula translateFormula(equality(Formula lhsForm, Formula rhsForm), Environment env)
 	= \or(\and(translateFormula(lhsForm, env), translateFormula(rhsForm, env)), \and(\not(translateFormula(lhsForm, env)), \not(translateFormula(rhsForm, env))));
 
-Binding createSingletonBinding(Binding orig, Index x) =
-	(y:val | Index y <- orig, Formula val := ((y == x) ? \true() : \false()));
-	
 Formula translateFormula(universal(list[VarDeclaration] decls, Formula form), Environment env) 
-	= \and({\or({\not(m[x]), translateFormula(f, env + (hd.name:createSingletonBinding(m,x)))}) | Index x <- m, Formula f := (([] == t) ? form : universal(t, form))})
+	= \and({\or({\not(m[x]), translateFormula(f, env + (hd.name:getSingletonBinding(m,x)))}) | Index x <- m, Formula f := (([] == t) ? form : universal(t, form))})
 	when [VarDeclaration hd, *t] := decls,
 	     Binding m := translateExpr(hd.binding, env);
 	 
 Formula translateFormula(existential(list[VarDeclaration] decls, Formula form), Environment env)
-	= \or({\and({m[x], translateFormula(f, env + (hd.name:createSingletonBinding(m,x)))}) | Index x <- m, Formula f := (([] == t) ? form : existential(t, form))}) 
+	= \or({\and({m[x], translateFormula(f, env + (hd.name:getSingletonBinding(m,x)))}) | Index x <- m, Formula f := (([] == t) ? form : existential(t, form))}) 
 	when [VarDeclaration hd, *t] := decls,
 	     Binding m := translateExpr(hd.binding, env);
 	     	
 default Formula translateFormula(Formula f, Environment env) { throw "Translation of formula \'<f>\' not yet implemented";}
+
+Binding getSingletonBinding(Binding orig, Index x, Environment env) = createSingletonBinding(env["emptyUnary"], x) when arity(m) == 1; 
+Binding getSingletonBinding(Binding orig, Index x, Environment env) = createSingletonBinding(env["emptyBinary"], x) when arity(m) == 2;
+default Binding getSingletonBinding(Binding orig, Index x, Environment env) { throw "Can not create singleton binding for relation with arity <arity>"; }
 
 Binding translateExpr(variable(str name), Environment env) = env[name];
 
@@ -82,7 +83,7 @@ Binding translateExpr(transpose(Expr expr), Environment env) = transpose(m)
 Binding translateExpr(closure(Expr expr), Environment env) = square(m, 1)
 	when Binding m := translateExpr(expr, env);
 		 
-Binding translateExpr(reflexClosure(Expr expr), Environment env) = \or(m, identity(m))  
+Binding translateExpr(reflexClosure(Expr expr), Environment env) = \or(m, env["binId"])  
 	when Binding m := translateExpr(closure(expr), env);
 		
 Binding translateExpr(union(Expr lhsExpr, Expr rhsExpr), Environment env) = \or(lhs,rhs)  
@@ -117,13 +118,13 @@ Binding translateExpr(ifThenElse(Formula caseForm, Expr thenExpr, Expr elseExpr)
 default Binding translateExpr(Expr e, Environment env) { throw "Translation of expression \'<e>\' not yet implemented";}
 
 Environment createInitialEnvironment(Universe uni, list[RelationalBound] relationalBounds) 
-	= (rb.relName: createRelationalMapping(rb, uni) | RelationalBound rb <- relationalBounds);
+	= (rb.relName: createRelationalMapping(rb, uni) | RelationalBound rb <- relationalBounds) + binaryIdentity(uni) + emptyUnary(uni) + emptyBinary(uni);
 	
 map[Index, Formula] createRelationalMapping(relationalBound(str relName, 1, list[Tuple] lb, list[Tuple] ub), Universe uni) 
-	= (<a>:f | Atom a <- uni.atoms, Formula f := unaryToFormula(a, lb, ub, relName));
+	= (<a>:f | Atom a <- uni.atoms, Formula f := unaryToFormula(a, lb, ub, relName), f != \false());
 
 map[Index, Formula] createRelationalMapping(relationalBound(str relName, 2, list[Tuple] lb, list[Tuple] ub), Universe uni) 
-	= (<a,b>:f | Atom a <- uni.atoms, Atom b <- uni.atoms, Formula f := binaryToFormula(a, b, lb, ub, relName));	
+	= (<a,b>:f | Atom a <- uni.atoms, Atom b <- uni.atoms, Formula f := binaryToFormula(a, b, lb, ub, relName), f != \false());	
 
 default map[Index, Formula] createRelationalMapping(RelationalBound b, Universe _) {throw "RelationalBounds with an arity of <b.arity> are not yet supported";}
 		
@@ -138,3 +139,7 @@ default Formula binaryToFormula(Atom _, Atom _, list[Tuple] _, list[Tuple] _, st
 Formula tenaryToFormula(Atom a, Atom b, Atom c, list[Tuple] lowerBounds, list[Tuple] upperBounds, str _) = \true() when /\tuple([a,b,c]) := lowerBounds;
 Formula tenaryToFormula(Atom a, Atom b, Atom c, list[Tuple] lowerBounds, list[Tuple] upperBounds, str relBound) = var("<relBound>_<a>_<b>_<c>") when /\tuple([a,b,c]) !:= lowerBounds, /\tuple([a,b,c]) := upperBounds;
 default Formula tenaryToFormula(Atom _, Atom _, Atom _, list[Tuple] _, list[Tuple] _, str _) = \false();
+
+Binding binaryIdentity(Universe uni) = ("_binId":(<a,a>:\true() | Atom a <- uni.atoms));
+Binding emptyUnary(Universe uni) = ("_emptyUnary":(<a>:\true() | Atom a <- uni.atoms));
+Binding emptyBinary(Universe uni) = ("_emptyBinary":(<a,b>:\true() | Atom a <- uni.atoms, Atom b <- uni.atoms));
