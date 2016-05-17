@@ -22,8 +22,7 @@ TranslationResult translate(Problem p) {
 	return <formula, env>;
 } 
 
-Formula translateFormula(empty(Expr expr), Environment env)		 	
-	= \not(translateFormula(nonEmpty(expr), env));
+Formula translateFormula(empty(Expr expr), Environment env) = \not(translateFormula(nonEmpty(expr), env));
 
 Formula translateFormula(atMostOne(Expr expr), Environment env) 	
 	= \or(translateFormula(empty(expr), env), translateFormula(exactlyOne(expr), env));
@@ -106,23 +105,25 @@ Binding translateExpr(product(Expr lhsExpr, Expr rhsExpr), Environment env) = pr
 	when Binding lhs := translateExpr(lhsExpr, env),
 		 Binding rhs := translateExpr(rhsExpr, env);
 
-Binding translateExpr(ifThenElse(Formula caseForm, Expr thenExpr, Expr elseExpr), Environment env) = 
-	(idx:ite(translateFormula(caseForm, env),p[idx],q[idx]) | Index idx <- p)
+Binding translateExpr(ifThenElse(Formula caseForm, Expr thenExpr, Expr elseExpr), Environment env)
+	 = (idx:ite(translateFormula(caseForm, env),p[idx],q[idx]) | Index idx <- p)
 	when Binding p := translateExpr(thenExpr, env),
 		 Binding q := translateExpr(elseExpr, env);
 		 
-	//| comprehension(list[VarDeclaration] decls, Formula form)
-
+//Binding translateExpr(comprehension(list[VarDeclaration] decls, Formula form), Environment env) = m
+//	when [VarDeclaration hd, *t] := decls,
+		
+	
 default Binding translateExpr(Expr e, Environment env) { throw "Translation of expression \'<e>\' not yet implemented";}
 
-Environment createInitialEnvironment(Universe uni, list[RelationalBound] relationalBounds) =
-	(rb.relName: createRelationalMapping(rb, uni) | RelationalBound rb <- relationalBounds);
+Environment createInitialEnvironment(Universe uni, list[RelationalBound] relationalBounds) 
+	= (rb.relName: createRelationalMapping(rb, uni) | RelationalBound rb <- relationalBounds);
 	
-map[Index, Formula] createRelationalMapping(relationalBound(str relName, 1, list[Tuple] lb, list[Tuple] ub), Universe uni) =
-	(<a>:f | Atom a <- uni.atoms, Formula f := unaryToFormula(a, lb, ub, relName));
+map[Index, Formula] createRelationalMapping(relationalBound(str relName, 1, list[Tuple] lb, list[Tuple] ub), Universe uni) 
+	= (<a>:f | Atom a <- uni.atoms, Formula f := unaryToFormula(a, lb, ub, relName));
 
-map[Index, Formula] createRelationalMapping(relationalBound(str relName, 2, list[Tuple] lb, list[Tuple] ub), Universe uni) =
-	(<a,b>:f | Atom a <- uni.atoms, Atom b <- uni.atoms, Formula f := binaryToFormula(a, b, lb, ub, relName));	
+map[Index, Formula] createRelationalMapping(relationalBound(str relName, 2, list[Tuple] lb, list[Tuple] ub), Universe uni) 
+	= (<a,b>:f | Atom a <- uni.atoms, Atom b <- uni.atoms, Formula f := binaryToFormula(a, b, lb, ub, relName));	
 
 default map[Index, Formula] createRelationalMapping(RelationalBound b, Universe _) {throw "RelationalBounds with an arity of <b.arity> are not yet supported";}
 		

@@ -21,4 +21,5 @@ forall p:Person | not (p in (^parent).p)
 // Everybody is a decendant of Adam
 Person in Adam.(*parent)
 
+// Anchestor is the transposed transitive closure of the parent relation (if you are somebodies parent, grandparent, etc you are an anchestor
 anchestor = ~(^parent) 

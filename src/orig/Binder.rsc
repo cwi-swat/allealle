@@ -23,7 +23,7 @@ bool sameArity(Binding lhs, Binding rhs) = arity(lhs) == arity(rhs);
 
 Binding transpose(Binding m) = transpose(arity(m), m);
 Binding transpose(1, Binding m) = m;
-Binding transpose(2, Binding m) =(() | it + (<b,a>:m[idx]) | /Index idx:<Atom a, Atom b> := m);
+Binding transpose(2, Binding m) =(() | it + (<b,a>:m[idx]) | Index idx:<Atom a, Atom b> <- m);
 default Binding transpose(int arity, Binding _) { throw "Unable to transpose a relation of arity <arity>";}
 
 int size(Binding m) = size(domain(m)) when arity(m) == 1;
@@ -44,24 +44,24 @@ default Binding or(Binding _, Binding _) { throw "Unable to perform disjunction 
 Binding and(Binding lhs, Binding rhs) = (x:\and(lhs[x],rhs[x]) | Index x <- lhs) when sameArity(lhs, rhs);
 default Binding and(Binding _, Binding _) { throw "Unable to perform conjunction of bindings with different arity"; }
 
-Binding not(Binding orig) = (idx:not(val) | Index idx <- domain(orig), Formula val := orig[idx]);
+Binding not(Binding orig) = (idx:not(orig[idx]) | Index idx <- orig);
 
 Binding product(Binding lhs, Binding rhs) = product(arity(lhs), arity(rhs), lhs, rhs);
 Binding product(1, 1, Binding lhs, Binding rhs) = (<a,b>:\and(lhs[x],rhs[y]) | x:<Atom a> <- lhs, y:<Atom b> <- rhs);
 Binding product(2, 2, Binding lhs, Binding rhs)
-	= (<aa,ab,ba,bb>:\and(lhs[x],rhs[y]) | <Atom aa, _> <- lhs, x:<aa, Atom ab> := lhs, <Atom ba, _> <- rhs, y:<ba, Atom bb> := rhs);
+	= (<aa,ab,ba,bb>:\and(lhs[x],rhs[y]) | <Atom aa, _> <- lhs, Index x:<aa, Atom ab> <- lhs, <Atom ba, _> <- rhs, Index y:<ba, Atom bb> <- rhs);
 default Binding product(int arityLhs, int arityRhs, Binding _, Binding _) { throw "Cannot create product between two relations with arity <arityLhs> and <arityRhs>"; }
 
 Binding \join(Binding lhs, Binding rhs) = \join(arity(lhs), arity(rhs), lhs, rhs);	
 Binding \join(1, 1, Binding lhs, Binding rhs) { throw "Cannot join two relations of arity 1";}	
 Binding \join(1, 2, Binding lhs, Binding rhs)	
-	= (<row>:\or({\and({lhs[<x>], rhs[y]}) | <Atom x> <- domain(lhs), /Index y:<x, row> := domain(rhs)}) | <Atom row> <- domain(lhs));
+	= (<row>:\or({\and({lhs[<x>], rhs[y]}) | <Atom x> <- lhs, Index y:<Atom x, row> <- rhs}) | <Atom row> <- lhs);
 
 Binding \join(2, 1, Binding lhs, Binding rhs)  
-	= (<row>:\or({\and({lhs[y], rhs[<x>]}) | /Index y:<row, Atom x> := domain(lhs)}) | /<Atom row, _> := domain(lhs));
+	= (<row>:\or({\and({lhs[y], rhs[<x>]}) | Index y:<row, Atom x> <- lhs}) | <Atom row, _> <- lhs);
 			
 Binding \join(2, 2, Binding lhs, Binding rhs) 
-	= (idx:(\false() | \or({it, \and({lhs[<row,x>], rhs[<x,col>]})}) | /<row, Atom x> := domain(lhs)) | /Index idx:<Atom row, Atom col> := domain(lhs));
+	= (idx:(\false() | \or({it, \and({lhs[<row,x>], rhs[<x,col>]})}) | <row, Atom x> <- lhs) | Index idx:<Atom row, Atom col> <- lhs);
 		
 default Binding \join(int arityLhs, int arityRhs, Binding lhs, Binding rhs) { throw "Unsupported join of relations with arity <arityLhs> and <arityRhs>";}
 
