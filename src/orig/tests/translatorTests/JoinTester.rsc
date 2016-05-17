@@ -31,23 +31,3 @@ test bool testJoin_MustBeOneNest() {
 			var("Pigeon_p1")
 		});
 }
-
-test bool testJoin_MoreEggsInOneNest() {
-	str testProblem = 
-		" {n1, n2, e1, e2, e3}
-		' Eggs:1		[{},{\<e1\>,\<e2\>,\<e3\>}]
-		' nest:2		[{},{\<e1,n1\>,\<e1,n2\>,\<e2,n1\>,\<e2,n2\>,\<e3,n1\>,\<e3,n2\>}]
-		' forall e:Eggs | one e.nest
-		";
-
-	TranslationResult result = translate(testProblem);
-	
-	iprintln(result.formula);
-	
-	return result.formula == 
-		and({
-			var("nest_p1_h1"),
-			var("Pigeon_p1")
-		});
-}
-
