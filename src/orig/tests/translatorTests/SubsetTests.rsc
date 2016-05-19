@@ -55,6 +55,8 @@ test bool testSubset_emptySetIsAProperSubset() {
 
 	TranslationResult result = translate(testProblem);  
 
+	iprintln(result.formula);
+
 	return result.formula == not(var("RelA_a")); 
 }
 

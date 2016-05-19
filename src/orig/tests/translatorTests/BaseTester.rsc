@@ -3,7 +3,6 @@ module orig::tests::translatorTests::BaseTester
 import orig::Imploder;
 import orig::AST;
 import orig::Translator;
-import orig::smt::Translator;
 
 import logic::Propositional;
 
