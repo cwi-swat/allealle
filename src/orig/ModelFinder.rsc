@@ -8,6 +8,7 @@ import orig::Translator;
 import orig::SMTCompiler;
 import logic::CNFConverter;
 import orig::SolverRunner;
+import orig::Binder;
 
 import util::Benchmark;
 import IO;
@@ -53,7 +54,7 @@ private ModelFinderResult runInSolver(Problem originalProblem, Formula formula, 
 		stopSolver(solverPid);
 	}
 	
-	set[str] vars = {name | /var(str name) := formula};
+	set[str] vars = {name | str relName <- env, Index idx  <- env[relName], var(str name) := env[relName][idx]};
 	
 	print("Translating to SMT-LIB...");
 	tuple[str smt, int time] smtConvert = benchmark(compileToSMT, formula);
