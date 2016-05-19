@@ -26,9 +26,9 @@ Binding transpose(1, Binding m) = m;
 Binding transpose(2, Binding m) =(() | it + (<b,a>:m[idx]) | Index idx:<Atom a, Atom b> <- m);
 default Binding transpose(int arity, Binding _) { throw "Unable to transpose a relation of arity <arity>";}
 
-int size(Binding m) = size(m) when arity(m) == 1;
-int size(Binding m) = size(m) when arity(m) == 2;	
-default int size(Binding m) { throw "Unable to get the size of a relation with an arity greater then 2"; } 
+int si(Binding m) = size(m) when arity(m) == 1;
+int si(Binding m) = size(m) when arity(m) == 2;	
+default int si(Binding m) { throw "Unable to get the size of a relation with an arity greater then 2"; } 
 	
 Binding square(Binding m, int s) = m when size(m) <= s;
 Binding square(Binding m, int s) = or(n, \join(n, n)) when Binding n := square(m, s * 2); 
