@@ -13,17 +13,11 @@ import logic::Propositional;
 
 alias Environment = map[str, Binding];
 
-alias TranslationResult = tuple[Formula formula, map[str, Binding] environment];
+Environment createInitialEnvironment(Problem p) 
+	= (rb.relName: createRelationalMapping(rb) | RelationalBound rb <- p.bounds);
 
-TranslationResult translate(Problem p) {
-	Environment env = createInitialEnvironment(p.uni, p.bounds);
-	println("Done creating env");
-	Formula formula = (\true() | \and(it, translateFormula(f, env)) | f <- p.formulas);
-	
-	env = env - binaryIdentity(p.uni) - emptyUnary(p.uni) - emptyBinary(p.uni);
-	
-	return <formula, env>;
-} 
+Formula translate(Problem p, Environment env) 
+	= (\true() | \and(it, translateFormula(f, env + binaryIdentity(p.uni) + emptyUnary(p.uni) + emptyBinary(p.uni))) | f <- p.formulas);
 
 Binding getConstant(Binding orig, Environment env) = getConstant(orig, env, arity(orig));
 Binding getConstant(Binding orig, Environment env, 1) = env["_emptyUnary"];
@@ -122,32 +116,16 @@ Binding translateExpr(ifThenElse(Formula caseForm, Expr thenExpr, Expr elseExpr)
 		 
 //Binding translateExpr(comprehension(list[VarDeclaration] decls, Formula form), Environment env) = m
 //	when [VarDeclaration hd, *t] := decls,
-		
 	
 default Binding translateExpr(Expr e, Environment env) { throw "Translation of expression \'<e>\' not yet implemented";}
-
-Environment createInitialEnvironment(Universe uni, list[RelationalBound] relationalBounds) 
-	= (rb.relName: createRelationalMapping(rb, uni) | RelationalBound rb <- relationalBounds) + binaryIdentity(uni) + emptyUnary(uni) + emptyBinary(uni);
 	
-map[Index, Formula] createRelationalMapping(relationalBound(str relName, 1, list[Tuple] lb, list[Tuple] ub), Universe uni) 
-	= (<a>:f | Atom a <- uni.atoms, Formula f := unaryToFormula(a, lb, ub, relName), f != \false());
+map[Index, Formula] createRelationalMapping(relationalBound(str relName, 1, list[Tuple] lb, list[Tuple] ub)) 
+	= (<a>:\true() | \tuple([Atom a]) <- lb) + (<a>:var("<relName>_<a>") | \tuple([Atom a]) <- ub, \tuple([a]) notin lb); 
 
-map[Index, Formula] createRelationalMapping(relationalBound(str relName, 2, list[Tuple] lb, list[Tuple] ub), Universe uni) 
-	= (<a,b>:f | Atom a <- uni.atoms, Atom b <- uni.atoms, Formula f := binaryToFormula(a, b, lb, ub, relName), f != \false());	
+map[Index, Formula] createRelationalMapping(relationalBound(str relName, 2, list[Tuple] lb, list[Tuple] ub)) 
+	= (<a,b>:\true() | \tuple([Atom a, Atom b]) <- lb) + (<a,b>:var("<relName>_<a>_<b>") | \tuple([Atom a, Atom b]) <- ub, \tuple([a,b]) notin lb);	
 
-default map[Index, Formula] createRelationalMapping(RelationalBound b, Universe _) {throw "RelationalBounds with an arity of <b.arity> are not yet supported";}
-		
-Formula unaryToFormula(Atom a, list[Tuple] lowerBounds, list[Tuple] upperBounds, str _) = \true() when /\tuple([a]) := lowerBounds;
-Formula unaryToFormula(Atom a, list[Tuple] lowerBounds, list[Tuple] upperBounds, str relBound) = var("<relBound>_<a>") when /\tuple([a]) !:= lowerBounds, /\tuple([a]) := upperBounds;
-default Formula unaryToFormula(Atom _, list[Tuple] _, list[Tuple] _, str _) = \false(); 
-	
-Formula binaryToFormula(Atom a, Atom b, list[Tuple] lowerBounds, list[Tuple] upperBounds, str _) = \true() when /\tuple([a,b]) := lowerBounds;
-Formula binaryToFormula(Atom a, Atom b, list[Tuple] lowerBounds, list[Tuple] upperBounds, str relBound) = var("<relBound>_<a>_<b>") when /\tuple([a,b]) !:= lowerBounds, /\tuple([a,b]) := upperBounds;
-default Formula binaryToFormula(Atom _, Atom _, list[Tuple] _, list[Tuple] _, str _) = \false();
-
-Formula tenaryToFormula(Atom a, Atom b, Atom c, list[Tuple] lowerBounds, list[Tuple] upperBounds, str _) = \true() when /\tuple([a,b,c]) := lowerBounds;
-Formula tenaryToFormula(Atom a, Atom b, Atom c, list[Tuple] lowerBounds, list[Tuple] upperBounds, str relBound) = var("<relBound>_<a>_<b>_<c>") when /\tuple([a,b,c]) !:= lowerBounds, /\tuple([a,b,c]) := upperBounds;
-default Formula tenaryToFormula(Atom _, Atom _, Atom _, list[Tuple] _, list[Tuple] _, str _) = \false();
+default map[Index, Formula] createRelationalMapping(RelationalBound b) {throw "RelationalBounds with an arity of <b.arity> are not yet supported";}
 
 Environment binaryIdentity(Universe uni) = ("_binId":(<a,a>:\true() | Atom a <- uni.atoms));
 Environment emptyUnary(Universe uni) = ("_emptyUnary":(<a>:\true() | Atom a <- uni.atoms));

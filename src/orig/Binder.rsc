@@ -57,10 +57,10 @@ default Binding product(int arityLhs, int arityRhs, Binding _, Binding _) { thro
 Binding \join(Binding lhs, Binding rhs) = \join(arity(lhs), arity(rhs), lhs, rhs);	
 Binding \join(1, 1, Binding lhs, Binding rhs) { throw "Cannot join two relations of arity 1";}	
 Binding \join(1, 2, Binding lhs, Binding rhs) {
-	set[Atom] p = {a | <Atom a> <- lhs} + {a | <_, Atom a> <- rhs};
+	set[Atom] rows = {a | <Atom a> <- lhs} + {a | <_, Atom a> <- rhs};
 
 	Formula consVal(Atom row) = \or({\and({lhs[<x>], rhs[y]}) | <Atom x> <- lhs, Index y:<x, row> <- rhs, rhs[y] != \false()});
-	return (<row>:val | Atom row <- p, Formula val := consVal(row), val != \false());
+	return (<row>:val | Atom row <- rows, Formula val := consVal(row), val != \false());
 }
 
 Binding \join(2, 1, Binding lhs, Binding rhs) {  
