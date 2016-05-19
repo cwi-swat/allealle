@@ -22,15 +22,15 @@ data ModelFinderResult
 	;
 
 ModelFinderResult checkInitialSolution(Problem problem) {
-	print("Building initial relation maps...");
+	print("Building initial environment maps...");
 	tuple[Environment env, int time] ie = benchmark(createInitialEnvironment, problem);
-	print("done\n");
-	println("Building initial environment took: <(ie.time/1000000)>");
+	print("done, took: <(ie.time/1000000)> ms\n");
 	
 	print("Translating problem to SAT formula...");
 	tuple[Formula formula, int time] t = benchmark(translate, problem, ie.env);
-	print("done\n");
-	println("Translation to SAT formula took: <(t.time/1000000)> ms");
+	print("done, took: <(t.time/1000000)> ms\n");
+	
+	//iprintln(t.formula);
 	
 	//println("SAT Formula:");
 	//iprintln(t.result.formula); 
@@ -55,11 +55,14 @@ private ModelFinderResult runInSolver(Problem originalProblem, Formula formula, 
 	
 	set[str] vars = {name | /var(str name) := formula};
 	
+	print("Translating to SMT-LIB...");
+	tuple[str smt, int time] smtConvert = benchmark(compileToSMT, formula);
+	print("done, took: <smtConvert.time/1000000> ms\n");
+	
 	print("Solving by Z3...");
-	tuple[CheckSatResult result, int time] solving = benchmark(isSatisfiable, solverPid, vars, formula); 
-	print("done\n");
-	println("Outcome is \'<solving.result.sat>\'");
-	println("Solving time in Z3: <solving.time/1000000> ms");
+	tuple[bool result, int time] solving = benchmark(isSatisfiable, solverPid, vars, smtConvert.smt); 
+	print("done, took: <solving.time/1000000> ms\n");
+	println("Outcome is \'<solving.result>\'");
 
 	Model currentModel = ();
 	Environment next() {
@@ -71,11 +74,11 @@ private ModelFinderResult runInSolver(Problem originalProblem, Formula formula, 
 		}
 	}
 
-	if(solving.result.sat) {
+	if(solving.result) {
 		currentModel = firstModel(solverPid, vars);
 		return sat(merge(currentModel, env), originalProblem.uni, next, stop);
 	} else {
-		return unsat(getUnsatCore(solverPid, solving.result.labels));
+		return unsat({});
 	}
 }
 

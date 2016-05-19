@@ -22,10 +22,10 @@ Formula \or({*Formula a, or(set[Formula] b)}) 	= \or(a + b);
 @memo
 Formula \or({Formula g,\not(g),*Formula r}) 	= \true();
 
-//@memo
-//Formula \or({Formula g, \and({not(g), *Formula ra}), *Formula ro}) = \or({\and({not(g)} + ra)} + ro);
-//@memo
-//Formula \or({not(Formula g), \and({g, *Formula ra}), *Formula ro}) = \or({\and({g} + ra)} + ro);
+@memo
+Formula \or({Formula g, \and({not(g), *Formula ra}), *Formula ro}) = \or({\and({not(g)} + ra)} + ro);
+@memo
+Formula \or({not(Formula g), \and({g, *Formula ra}), *Formula ro}) = \or({\and({g} + ra)} + ro);
 
 Formula \and({})								= \true();
 Formula \and({Formula x}) 						= x;
@@ -41,10 +41,10 @@ Formula \and({*Formula a, and(set[Formula] b)}) = \and(a + b);
 @memo
 Formula \and({Formula g,\not(g),*Formula r}) 	= \false();
 
-//@memo
-//Formula \and({Formula g, \or({not(g), *Formula ro}), *Formula ra}) = \and({g,\or(ro)} + ra);  
-//@memo
-//Formula \and({not(Formula g), \or({g, *Formula ro}), *Formula ra}) = \and({not(g),\or(ro)} + ra);  
+@memo
+Formula \and({Formula g, \or({not(g), *Formula ro}), *Formula ra}) = \and({g,\or(ro)} + ra);  
+@memo
+Formula \and({not(Formula g), \or({g, *Formula ro}), *Formula ra}) = \and({not(g),\or(ro)} + ra);  
 
 Formula \not(not(Formula g)) 					= g;
 Formula \not(\true())        					= \false();
