@@ -73,10 +73,13 @@ Binding \join(2, 1, Binding lhs, Binding rhs) {
 }
 			
 Binding \join(2, 2, Binding lhs, Binding rhs) {
+	set[Atom] allAtoms = {a | <Atom a, _> <- lhs} + {a | <_, Atom a> <- rhs};
+
 	Formula consVal(Atom row, Atom col) = 
 		(\false() | \or({it, \and({lhs[<row,y>], rhs[<y,col>]})}) | <Atom y, col> <- rhs, <row, y> in lhs, lhs[<row, y>] != \false());	
 
-	return (<row,col>:val | <Atom row, _> <- lhs, <_, Atom col> <- rhs, Formula val := consVal(row, col), val != \false());
+	return (<row,col>:val | Atom row <- allAtoms, Atom col <- allAtoms, Formula val := consVal(row, col), val != \false());
+	//return (<row,col>:val | <Atom row, _> <- lhs, <_, Atom col> <- rhs, Formula val := consVal(row, col), val != \false());
 }
 	
 default Binding \join(int arityLhs, int arityRhs, Binding lhs, Binding rhs) { throw "Unsupported join of relations with arity <arityLhs> and <arityRhs>";}

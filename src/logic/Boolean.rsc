@@ -11,13 +11,12 @@ data Formula
 Formula \or({})									= \false();
 Formula \or({Formula x}) 						= x;
 
-@memo
 Formula \or(Formula a, Formula b) 				= \or({a,b});
+
 @memo
 Formula \or({\false(), *Formula r})   			= \or(r);
 @memo
 Formula \or({\true(), *Formula _})   			= \true();
-
 @memo
 Formula \or({*Formula a, or(set[Formula] b)}) 	= \or(a + b);
 @memo
@@ -29,13 +28,12 @@ Formula \or({Formula g,\not(g),*Formula r}) 	= \true();
 Formula \and({})								= \true();
 Formula \and({Formula x}) 						= x;
 
-@memo
 Formula \and(Formula a, Formula b) 				= \and({a,b});
+
 @memo
 Formula \and({\true(), *Formula r})				= \and(r);
 @memo
 Formula \and({\false(), *Formula _}) 			= \false();
-
 @memo
 Formula \and({*Formula a, and(set[Formula] b)}) = \and(a + b);
 @memo

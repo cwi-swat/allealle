@@ -12,6 +12,8 @@ import util::ShellExec;
 import IO;
 import List;
 
+void executeTest(loc file) = executeTest("File: <file>", readFile(file)); 
+
 void executeTest(str title, str problem) {
 	println(title);
 	 
@@ -27,9 +29,9 @@ void executeTest(str title, str problem) {
 	tuple[Formula f, int time] trans = benchmark(translate, p, ie.env);
 	print("done\n");
 	 
-	print("Converting to CNF...");
-	tuple[Formula formula, int time] cnf = benchmark(convertToCNF, trans.f);
-	print("done\n");
+	//print("Converting to CNF...");
+	//tuple[Formula formula, int time] cnf = benchmark(convertToCNF, trans.f);
+	//print("done\n");
 	
 	//print("Solving by Z3...");
 	//
