@@ -64,9 +64,12 @@ Binding \join(1, 2, Binding lhs, Binding rhs) {
 }
 
 Binding \join(2, 1, Binding lhs, Binding rhs) {  
+	set[Atom] rows = {a | <Atom a, _> <- lhs};
+	
 	Formula consVal(Atom row) = 
 		\or({\and({lhs[y], rhs[<x>]}) | Index y:<row, Atom x> <- lhs, lhs[y] != \false(), <x> in rhs, rhs[<x>] != \false()});
-	return (<row>:val | <Atom row, _> <- lhs, Formula val := consVal(row), val != \false());
+	//return (<row>:val | <Atom row, _> <- lhs, Formula val := consVal(row), val != \false());
+	return (<row>:val | Atom row <- rows, Formula val := consVal(row), val != \false());
 }
 			
 Binding \join(2, 2, Binding lhs, Binding rhs) {

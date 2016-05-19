@@ -9,11 +9,11 @@ data Formula
 	;
 
 Formula \or({})									= \false();
-Formula \or({Formula x}) 						= x;
-Formula \or({\false(), *Formula r})   			= \or(r);
-Formula \or({\true(), *Formula _})   			= \true();
+//Formula \or({Formula x}) 						= x;
+//Formula \or({\false(), *Formula r})   			= \or(r);
+//Formula \or({\true(), *Formula _})   			= \true();
 Formula \or(Formula a, Formula b) 				= \or({a,b});
-Formula \or({*Formula a, or(set[Formula] b)}) 	= \or(a + b);
+//Formula \or({*Formula a, or(set[Formula] b)}) 	= \or(a + b);
 //Formula \or({Formula g,\not(g),*Formula r}) 	= \true();
 
 //Formula \or({Formula g, \and({not(g), *Formula ra}), *Formula ro}) = \or({\and({not(g)} + ra)} + ro);
@@ -22,9 +22,9 @@ Formula \or({*Formula a, or(set[Formula] b)}) 	= \or(a + b);
 Formula \and({})								= \true();
 //Formula \and({Formula x}) 						= x;
 Formula \and(Formula a, Formula b) 				= \and({a,b});
-Formula \and({*Formula a, and(set[Formula] b)}) = \and(a + b);
-Formula \and({\true(), *Formula r})				= \and(r);
-Formula \and({\false(), *Formula _}) 			= \false();
+//Formula \and({*Formula a, and(set[Formula] b)}) = \and(a + b);
+//Formula \and({\true(), *Formula r})				= \and(r);
+//Formula \and({\false(), *Formula _}) 			= \false();
 //Formula \and({Formula g,\not(g),*Formula r}) 	= \false();
 
 //Formula \and({Formula g, \or({not(g), *Formula ro}), *Formula ra}) = \and({g,\or(ro)} + ra);  
