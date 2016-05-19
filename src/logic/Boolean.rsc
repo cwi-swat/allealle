@@ -9,23 +9,37 @@ data Formula
 	;
 
 Formula \or({})									= \false();
-//Formula \or({Formula x}) 						= x;
-//Formula \or({\false(), *Formula r})   			= \or(r);
-//Formula \or({\true(), *Formula _})   			= \true();
+Formula \or({Formula x}) 						= x;
+
+@memo
 Formula \or(Formula a, Formula b) 				= \or({a,b});
-//Formula \or({*Formula a, or(set[Formula] b)}) 	= \or(a + b);
-//Formula \or({Formula g,\not(g),*Formula r}) 	= \true();
+@memo
+Formula \or({\false(), *Formula r})   			= \or(r);
+@memo
+Formula \or({\true(), *Formula _})   			= \true();
+
+@memo
+Formula \or({*Formula a, or(set[Formula] b)}) 	= \or(a + b);
+@memo
+Formula \or({Formula g,\not(g),*Formula r}) 	= \true();
 
 //Formula \or({Formula g, \and({not(g), *Formula ra}), *Formula ro}) = \or({\and({not(g)} + ra)} + ro);
 //Formula \or({not(Formula g), \and({g, *Formula ra}), *Formula ro}) = \or({\and({g} + ra)} + ro);
 
 Formula \and({})								= \true();
-//Formula \and({Formula x}) 						= x;
+Formula \and({Formula x}) 						= x;
+
+@memo
 Formula \and(Formula a, Formula b) 				= \and({a,b});
-//Formula \and({*Formula a, and(set[Formula] b)}) = \and(a + b);
-//Formula \and({\true(), *Formula r})				= \and(r);
-//Formula \and({\false(), *Formula _}) 			= \false();
-//Formula \and({Formula g,\not(g),*Formula r}) 	= \false();
+@memo
+Formula \and({\true(), *Formula r})				= \and(r);
+@memo
+Formula \and({\false(), *Formula _}) 			= \false();
+
+@memo
+Formula \and({*Formula a, and(set[Formula] b)}) = \and(a + b);
+@memo
+Formula \and({Formula g,\not(g),*Formula r}) 	= \false();
 
 //Formula \and({Formula g, \or({not(g), *Formula ro}), *Formula ra}) = \and({g,\or(ro)} + ra);  
 //Formula \and({not(Formula g), \or({g, *Formula ro}), *Formula ra}) = \and({not(g),\or(ro)} + ra);  

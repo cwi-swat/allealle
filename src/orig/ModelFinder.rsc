@@ -22,8 +22,13 @@ data ModelFinderResult
 	;
 
 ModelFinderResult checkInitialSolution(Problem problem) {
+	print("Building initial relation maps...");
+	tuple[Environment env, int time] ie = benchmark(createInitialEnvironment, problem);
+	print("done\n");
+	println("Building initial environment took: <(ie.time/1000000)>");
+	
 	print("Translating problem to SAT formula...");
-	tuple[TranslationResult result, int time] t = benchmark(translate, problem);
+	tuple[Formula formula, int time] t = benchmark(translate, problem, ie.env);
 	print("done\n");
 	println("Translation to SAT formula took: <(t.time/1000000)> ms");
 	
@@ -33,23 +38,25 @@ ModelFinderResult checkInitialSolution(Problem problem) {
 	//print("Converting to CNF...");
 	//tuple[Formula formula, int time] cnf = <t.result.formula, t.time>; //benchmark(convertToCNF, t.result.formula);
 
-	if (t.result.formula == \false()) {
+	if (t.formula == \false()) {
 		return trivial(false);
+	} else if (t.formula == \true()) {
+		return trivial(true);
 	}
 
-	return runInSolver(problem, t.result);
+	return runInSolver(problem, t.formula, ie.env);
 }
 
-private ModelFinderResult runInSolver(Problem originalProblem, TranslationResult translation) {
+private ModelFinderResult runInSolver(Problem originalProblem, Formula formula, Environment env) {
 	PID solverPid = startSolver();
 	void stop() {
 		stopSolver(solverPid);
 	}
 	
-	set[str] vars = {name | /var(str name) := translation.formula};
+	set[str] vars = {name | /var(str name) := formula};
 	
 	print("Solving by Z3...");
-	tuple[CheckSatResult result, int time] solving = benchmark(isSatisfiable, solverPid, vars, translation.formula); 
+	tuple[CheckSatResult result, int time] solving = benchmark(isSatisfiable, solverPid, vars, formula); 
 	print("done\n");
 	println("Outcome is \'<solving.result.sat>\'");
 	println("Solving time in Z3: <solving.time/1000000> ms");
@@ -60,13 +67,13 @@ private ModelFinderResult runInSolver(Problem originalProblem, TranslationResult
 		if (currentModel == ()) {
 			return ();
 		} else {
-			return merge(currentModel, translation.environment);
+			return merge(currentModel, env);
 		}
 	}
 
 	if(solving.result.sat) {
 		currentModel = firstModel(solverPid, vars);
-		return sat(merge(currentModel, translation.environment), originalProblem.uni, next, stop);
+		return sat(merge(currentModel, env), originalProblem.uni, next, stop);
 	} else {
 		return unsat(getUnsatCore(solverPid, solving.result.labels));
 	}

@@ -27,9 +27,10 @@ void executeTest(str title, str problem) {
 	tuple[Formula f, int time] trans = benchmark(translate, p, ie.env);
 	print("done\n");
 	 
-	//print("Converting to CNF...");
-	//tuple[Formula formula, int time] cnf = <t.result.formula, t.time>; //benchmark(convertToCNF, t.result.formula);
-	// 
+	print("Converting to CNF...");
+	tuple[Formula formula, int time] cnf = benchmark(convertToCNF, trans.f);
+	print("done\n");
+	
 	//print("Solving by Z3...");
 	//
 	//PID solverPid = startSolver();

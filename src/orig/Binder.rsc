@@ -68,13 +68,14 @@ Binding \join(2, 1, Binding lhs, Binding rhs) {
 	
 	Formula consVal(Atom row) = 
 		\or({\and({lhs[y], rhs[<x>]}) | Index y:<row, Atom x> <- lhs, lhs[y] != \false(), <x> in rhs, rhs[<x>] != \false()});
-	//return (<row>:val | <Atom row, _> <- lhs, Formula val := consVal(row), val != \false());
+
 	return (<row>:val | Atom row <- rows, Formula val := consVal(row), val != \false());
 }
 			
 Binding \join(2, 2, Binding lhs, Binding rhs) {
 	Formula consVal(Atom row, Atom col) = 
 		(\false() | \or({it, \and({lhs[<row,y>], rhs[<y,col>]})}) | <Atom y, col> <- rhs, <row, y> in lhs, lhs[<row, y>] != \false());	
+
 	return (<row,col>:val | <Atom row, _> <- lhs, <_, Atom col> <- rhs, Formula val := consVal(row, col), val != \false());
 }
 	
