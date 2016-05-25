@@ -10,12 +10,12 @@ import IO;
 
 void testTranslation(loc file) {
 	Problem p = implodeProblem(file);
-	TranslationResult result = translate(p);  
+	Formula result = translate(p, createInitialEnvironment(p));  
 	
-	iprintln(result.formula);
-	println(result.environment);
-	
-	compileAndSave(result.formula, result.environment, |project://allealle/output/out.smt2|);
+	iprintln(result);
 }
 
-TranslationResult translate(str problem) = translate(implodeProblem(problem));
+Formula translate(str problem) { 
+	Problem p = implodeProblem(problem);
+	return translate(p, createInitialEnvironment(p));
+}

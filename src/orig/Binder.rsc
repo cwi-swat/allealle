@@ -13,8 +13,6 @@ import IO;
 alias Index = value;
 alias Binding = map[Index, Formula]; 
 
-Binding createSingletonBinding(Binding orig, Index x) = (y:\true() | Index y <- orig, y == x);
-
 int arity(Binding b) = 1 when /<Atom _> := domain(b);
 int arity(Binding b) = 2 when /<Atom _, Atom _> := domain(b);
 default int arity(Binding b) { throw "Relations with an arity greater then 2 are not allowed";}

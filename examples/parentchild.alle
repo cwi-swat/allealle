@@ -1,9 +1,16 @@
-{p1,p2,c1,c2}
-Person:1 [{}, {<p1>,<p2>,<c1>,<c2>}]
-parent:2 [{}, {<p1,c1>,<p1,c2>,<p2,c1>,<p2,c2>}]
-child:2 [{}, {<c1,p1>,<c2,p1>,<c1,p2>,<c2,p2>}]
+{p1,p2,p3}
+Person:1 [{}, {<p1>,<p2>,<p3>}]
+Adam:1 [{<p1>},{<p1>}]
+parent:2 [{}, {<p1,p2>,<p1,p3>,<p2,p1>,<p2,p3>,<p3,p1>,<p3,p2>}]
+child:2 [{}, {<p1,p2>,<p1,p3>,<p2,p1>,<p2,p3>,<p3,p1>,<p3,p2>}]
 
 parent in Person -> Person
-child in ~parent
+child in Person -> Person
+Adam in Person
 
-forall p:parent | exists c:child | c = ~p
+no parent.Adam
+Person in Adam.*parent
+
+forall p:Person | ((not (p = Adam)) => one parent.p)
+
+child = {p:Person, pp:Person | p in pp.parent}

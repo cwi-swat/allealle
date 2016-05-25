@@ -62,20 +62,19 @@ Formula translateFormula(equality(Formula lhsForm, Formula rhsForm), Environment
 	= \or(\and(translateFormula(lhsForm, env), translateFormula(rhsForm, env)), \and(\not(translateFormula(lhsForm, env)), \not(translateFormula(rhsForm, env))));
 
 Formula translateFormula(universal(list[VarDeclaration] decls, Formula form), Environment env) 
-	= \and({\or({\not(m[x]), translateFormula(f, env + (hd.name:getSingletonBinding(m,x,env)))}) | Index x <- m, Formula f := (([] == t) ? form : universal(t, form))})
+	= \and({\or({\not(m[x]), translateFormula(f, env + (hd.name:getSingletonBinding(x)))}) | Index x <- m, Formula f := (([] == t) ? form : universal(t, form))})
 	when [VarDeclaration hd, *t] := decls,
 	     Binding m := translateExpr(hd.binding, env);
 	 
 Formula translateFormula(existential(list[VarDeclaration] decls, Formula form), Environment env)
-	= \or({\and({m[x], translateFormula(f, env + (hd.name:getSingletonBinding(m,x, env)))}) | Index x <- m, Formula f := (([] == t) ? form : existential(t, form))}) 
+	= \or({\and({m[x], translateFormula(f, env + (hd.name:getSingletonBinding(x)))}) | Index x <- m, Formula f := (([] == t) ? form : existential(t, form))}) 
 	when [VarDeclaration hd, *t] := decls,
 	     Binding m := translateExpr(hd.binding, env);
 	     	
 default Formula translateFormula(Formula f, Environment env) { throw "Translation of formula \'<f>\' not yet implemented";}
 
-Binding getSingletonBinding(Binding orig, Index x, Environment env) = createSingletonBinding(env["_emptyUnary"], x) when arity(orig) == 1; 
-Binding getSingletonBinding(Binding orig, Index x, Environment env) = createSingletonBinding(env["_emptyBinary"], x) when arity(orig) == 2;
-default Binding getSingletonBinding(Binding orig, Index x, Environment env) { throw "Can not create singleton binding for relation with arity <arity>"; }
+@memo
+Binding getSingletonBinding(Index x) = (x:\true()); 
 
 Binding translateExpr(variable(str name), Environment env) = env[name];
 
@@ -114,8 +113,34 @@ Binding translateExpr(ifThenElse(Formula caseForm, Expr thenExpr, Expr elseExpr)
 	when Binding p := translateExpr(thenExpr, env),
 		 Binding q := translateExpr(elseExpr, env);
 		 
-//Binding translateExpr(comprehension(list[VarDeclaration] decls, Formula form), Environment env) = m
-//	when [VarDeclaration hd, *t] := decls,
+Binding translateExpr(comprehension(list[VarDeclaration] decls, Formula form), Environment env) {
+	Index flatten([<Atom a>]) = <a>;
+	Index flatten([<Atom a>, <Atom b>]) = <a,b>;
+	Index flatten([<Atom a>, <Atom b>, <Atom c>]) = <a,b,c>;
+	
+	Binding getVal(list[Index] currentIndex, Environment extendedEnv, int currentDecl, Formula declConstraints) {
+		if (currentDecl == size(decls)) {
+			iprintln(extendedEnv);
+			return (flatten(currentIndex):\and(declConstraints, translateFormula(form, env + extendedEnv)));
+		}
+		
+		VarDeclaration decl = decls[currentDecl];
+		Binding m = translateExpr(decl.binding, env + extendedEnv);
+				
+		Binding result = ();
+		for (Index idx <- m) {
+			result += getVal([*currentIndex, idx], extendedEnv + (decl.name:getSingletonBinding(idx)), currentDecl + 1, \and(declConstraints, m[idx]));
+		}		
+		
+		return result; 
+	}
+	
+	Binding result = getVal([], env, 0, \true());
+	println("Result of comprehension");
+	iprintln(result);
+	
+	return result;	
+}
 	
 default Binding translateExpr(Expr e, Environment env) { throw "Translation of expression \'<e>\' not yet implemented";}
 	
