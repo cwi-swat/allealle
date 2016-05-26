@@ -120,7 +120,6 @@ Binding translateExpr(comprehension(list[VarDeclaration] decls, Formula form), E
 	
 	Binding getVal(list[Index] currentIndex, Environment extendedEnv, int currentDecl, Formula declConstraints) {
 		if (currentDecl == size(decls)) {
-			iprintln(extendedEnv);
 			return (flatten(currentIndex):\and(declConstraints, translateFormula(form, env + extendedEnv)));
 		}
 		
@@ -136,8 +135,6 @@ Binding translateExpr(comprehension(list[VarDeclaration] decls, Formula form), E
 	}
 	
 	Binding result = getVal([], env, 0, \true());
-	println("Result of comprehension");
-	iprintln(result);
 	
 	return result;	
 }
