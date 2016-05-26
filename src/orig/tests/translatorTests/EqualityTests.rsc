@@ -70,6 +70,8 @@ test bool testEquality_neverEqual() {
 
 	TranslationResult result = translate(testProblem);  
 		
+	iprintln(result.formula);		
+		
 	return result.formula == \false();
 }
 

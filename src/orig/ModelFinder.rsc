@@ -8,6 +8,7 @@ import orig::Translator;
 import orig::SMTCompiler;
 import logic::CNFConverter;
 import orig::SolverRunner;
+import orig::Binder;
 
 import util::Benchmark;
 import IO;
@@ -22,10 +23,15 @@ data ModelFinderResult
 	;
 
 ModelFinderResult checkInitialSolution(Problem problem) {
+	print("Building initial environment maps...");
+	tuple[Environment env, int time] ie = benchmark(createInitialEnvironment, problem);
+	print("done, took: <(ie.time/1000000)> ms\n");
+	
 	print("Translating problem to SAT formula...");
-	tuple[TranslationResult result, int time] t = benchmark(translate, problem);
-	print("done\n");
-	println("Translation to SAT formula took: <(t.time/1000000)> ms");
+	tuple[Formula formula, int time] t = benchmark(translate, problem, ie.env);
+	print("done, took: <(t.time/1000000)> ms\n");
+	
+	//iprintln(t.formula);
 	
 	//println("SAT Formula:");
 	//iprintln(t.result.formula); 
@@ -33,26 +39,31 @@ ModelFinderResult checkInitialSolution(Problem problem) {
 	//print("Converting to CNF...");
 	//tuple[Formula formula, int time] cnf = <t.result.formula, t.time>; //benchmark(convertToCNF, t.result.formula);
 
-	if (t.result.formula == \false()) {
+	if (t.formula == \false()) {
 		return trivial(false);
+	} else if (t.formula == \true()) {
+		return trivial(true);
 	}
 
-	return runInSolver(problem, t.result);
+	return runInSolver(problem, t.formula, ie.env);
 }
 
-private ModelFinderResult runInSolver(Problem originalProblem, TranslationResult translation) {
+private ModelFinderResult runInSolver(Problem originalProblem, Formula formula, Environment env) {
 	PID solverPid = startSolver();
 	void stop() {
 		stopSolver(solverPid);
 	}
 	
-	set[str] vars = {name | /var(str name) := translation.formula};
+	set[str] vars = {name | str relName <- env, Index idx  <- env[relName], var(str name) := env[relName][idx]};
+	
+	print("Translating to SMT-LIB...");
+	tuple[str smt, int time] smtConvert = benchmark(compileToSMT, formula);
+	print("done, took: <smtConvert.time/1000000> ms\n");
 	
 	print("Solving by Z3...");
-	tuple[CheckSatResult result, int time] solving = benchmark(isSatisfiable, solverPid, vars, translation.formula); 
-	print("done\n");
-	println("Outcome is \'<solving.result.sat>\'");
-	println("Solving time in Z3: <solving.time/1000000> ms");
+	tuple[bool result, int time] solving = benchmark(isSatisfiable, solverPid, vars, smtConvert.smt); 
+	print("done, took: <solving.time/1000000> ms\n");
+	println("Outcome is \'<solving.result>\'");
 
 	Model currentModel = ();
 	Environment next() {
@@ -60,15 +71,15 @@ private ModelFinderResult runInSolver(Problem originalProblem, TranslationResult
 		if (currentModel == ()) {
 			return ();
 		} else {
-			return merge(currentModel, translation.environment);
+			return merge(currentModel, env);
 		}
 	}
 
-	if(solving.result.sat) {
+	if(solving.result) {
 		currentModel = firstModel(solverPid, vars);
-		return sat(merge(currentModel, translation.environment), originalProblem.uni, next, stop);
+		return sat(merge(currentModel, env), originalProblem.uni, next, stop);
 	} else {
-		return unsat(getUnsatCore(solverPid, solving.result.labels));
+		return unsat({});
 	}
 }
 

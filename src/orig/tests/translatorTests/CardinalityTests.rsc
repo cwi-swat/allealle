@@ -9,9 +9,9 @@ test bool testCardinality_some_noLowerBounds() {
 		' some Rel
 		";
 
-	TranslationResult result = translate(testProblem);  
+	Formula result = translate(testProblem);  
 	
-	return result.formula == 
+	return result == 
 		or({
 			var("Rel_a"),
 			var("Rel_b")
@@ -25,9 +25,9 @@ test bool testCardinality_some_withLowerBounds() {
 		' some Rel
 		";
 
-	TranslationResult result = translate(testProblem);  
+	Formula result = translate(testProblem);  
 	
-	return result.formula == \true();
+	return result == \true();
 }
 
 test bool testCardinality_one_noLowerBounds() {
@@ -37,9 +37,9 @@ test bool testCardinality_one_noLowerBounds() {
 		' one Rel
 		";
 
-	TranslationResult result = translate(testProblem);  
+	Formula result = translate(testProblem);  
 	
-	return result.formula == 
+	return result == 
 		or({
 			and({
 				var("Rel_a"),
@@ -59,9 +59,9 @@ test bool testCardinality_one_withLowerBounds() {
 		' one Rel
 		";
 
-	TranslationResult result = translate(testProblem);  
+	Formula result = translate(testProblem);  
 
-	return result.formula == \not(var("Rel_b"));
+	return result == \not(var("Rel_b"));
 }
 
 test bool testCardinality_lone_moreAtoms_noLowerBounds() {
@@ -71,9 +71,9 @@ test bool testCardinality_lone_moreAtoms_noLowerBounds() {
 		' lone Rel
 		";
 
-	TranslationResult result = translate(testProblem); 
+	Formula result = translate(testProblem); 
 	
-	return result.formula == or({
+	return result == or({
 		or({
 			and({var("Rel_a"),
 				not(var("Rel_b")),
@@ -104,9 +104,9 @@ test bool testCardinality_no_noLowerBounds() {
 		' no Rel
 		";
 
-	TranslationResult result = translate(testProblem);  
+	Formula result = translate(testProblem);  
 
-	return result.formula == 
+	return result == 
 		not(
 			or({
 				var("Rel_a"),
@@ -122,9 +122,9 @@ test bool testCardinality_no_withLowerBounds() {
 		' no Rel
 		";
 
-	TranslationResult result = translate(testProblem);  
+	Formula result = translate(testProblem);  
 
-	return result.formula == \false();
+	return result == \false();
 }
 
 test bool testCardinality_lone_noLowerBounds() {
@@ -134,9 +134,9 @@ test bool testCardinality_lone_noLowerBounds() {
 		' lone Rel
 		";
 
-	TranslationResult result = translate(testProblem);  
+	Formula result = translate(testProblem);  
 
-	return result.formula == 
+	return result == 
 		or({
 			not(
 				or({
@@ -164,9 +164,9 @@ test bool testCardinality_lone_withLowerBounds() {
 		' lone Rel
 		";
 
-	TranslationResult result = translate(testProblem);  
+	Formula result = translate(testProblem);  
 
-	return result.formula == not(var("Rel_b"));
+	return result == not(var("Rel_b"));
 }
 
 test bool testCardinality_lone_binaryRelationOnlyOnePossibleRelation() {
@@ -176,11 +176,9 @@ test bool testCardinality_lone_binaryRelationOnlyOnePossibleRelation() {
 		' lone rel
 		";
 		
-	TranslationResult result = translate(testProblem);  
+	Formula result = translate(testProblem);  
 	
-	iprintln(result.formula);
-	
-	return result.formula == \true(); //var("rel_a_b");
+	return result == \true(); //var("rel_a_b");
 }
 
 test bool testCardinality_lone_binaryRelationTwoPossibleRelation() {
@@ -190,9 +188,9 @@ test bool testCardinality_lone_binaryRelationTwoPossibleRelation() {
 		' lone rel
 		";
 		
-	TranslationResult result = translate(testProblem);  
+	Formula result = translate(testProblem);  
 
-	return result.formula == 
+	return result == 
 		or({
 			not(or({
 				var("rel_a_a"),

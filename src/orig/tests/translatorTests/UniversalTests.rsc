@@ -14,6 +14,8 @@ test bool testUniversal_onePigeonAndHole_pigeonIsAlwaysThere() {
 
 	TranslationResult result = translate(testProblem);
 	
+	iprintln(result.formula);
+	
 	return result.formula == 
 		and({
 			var("Hole_h1"),

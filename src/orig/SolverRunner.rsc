@@ -12,7 +12,7 @@ import Map;
 
 alias SolverPID = int;
 
-alias CheckSatResult = tuple[bool sat, map[str, Formula] labels];
+//alias CheckSatResult = tuple[bool sat, map[str, Formula] labels];
 
 alias Model = map[str var, bool exists];
 
@@ -29,24 +29,23 @@ void stopSolver(SolverPID pid) {
 	stopZ3(pid);
 }
 
-CheckSatResult isSatisfiable(SolverPID pid, set[str] vars, Formula formula) { 
+bool isSatisfiable(SolverPID pid, set[str] vars, str smtFormula) { 
 	if ("" !:= runSolver(pid, intercalate("\n", ["(declare-const <v> Bool)" | v <- vars]))) {
 		throw "Unable to declare needed variables in SMT";
 	}
+	
 	 
-	SMTCompilerResult smtCompResult = compileToSMT(formula);	 
-	 
-	if ("" !:= runSolver(pid, smtCompResult.smtFormula)) {
+	if ("" !:= runSolver(pid, smtFormula)) {
 		throw "Unable to assert clauses"; 
 	} 	
 	
-	return checkSat(pid, smtCompResult.labels);
+	return checkSat(pid);
 }
 
-private CheckSatResult checkSat(SolverPID pid, map[str, Formula] labels) {
+private bool checkSat(SolverPID pid) {
 	switch(runSolver(pid, "(check-sat)")) {
-		case "sat" : return <true, labels>;
-		case "unsat": return <false, labels>;
+		case "sat" : return true;
+		case "unsat": return false;
 		case "unknown": throw "Could not compute satisfiability";		
 	}
 }
@@ -67,7 +66,7 @@ Model nextModel(SolverPID pid, Model currentModel) {
 		throw "Unable to declare needed variables in SMT";
 	}		
 	
-	if (checkSat(pid, ()).sat) {
+	if (checkSat(pid)) {
 		return getValues(pid, domain(currentModel));
 	} else {
 		return ();
