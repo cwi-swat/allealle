@@ -10,9 +10,9 @@ test bool testSubset_inSubset_lowerBoundSet() {
 		' RelA in RelB
 		";
 
-	TranslationResult result = translate(testProblem);  
+	Formula result = translate(testProblem);  
 	
-	return result.formula == 
+	return result == 
 		and({
 			var("RelB_a"),
 			or({
@@ -30,9 +30,9 @@ test bool testSubset_inSubset_noLowerBoundSet() {
 		' RelA in RelB
 		";
 
-	TranslationResult result = translate(testProblem);  
+	Formula result = translate(testProblem);  
 	
-	return result.formula == 
+	return result == 
 		and({
 			or({
 				not(var("RelA_a")),
@@ -53,11 +53,9 @@ test bool testSubset_emptySetIsAProperSubset() {
 		' RelA in RelB
 		";
 
-	TranslationResult result = translate(testProblem);  
+	Formula result = translate(testProblem);  
 
-	iprintln(result.formula);
-
-	return result.formula == not(var("RelA_a")); 
+	return result == not(var("RelA_a")); 
 }
 
 test bool testSubset_neverASubset() {
@@ -68,9 +66,9 @@ test bool testSubset_neverASubset() {
 		' RelA in RelB
 		";
 
-	TranslationResult result = translate(testProblem);  
+	Formula result = translate(testProblem);  
 	
-	return result.formula == \false(); 
+	return result == \false(); 
 }
 
 test bool testSubset_alwaysASubset() {
@@ -81,10 +79,8 @@ test bool testSubset_alwaysASubset() {
 		' RelA in RelB
 		";
 
-	TranslationResult result = translate(testProblem);  
+	Formula result = translate(testProblem);  
 	
-	iprintln(result.formula);
-	
-	return result.formula == \true(); 
+	return result == \true(); 
 }
 

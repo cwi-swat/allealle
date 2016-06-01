@@ -10,4 +10,4 @@ connect in State -> State
 
 forall s:State | one s.hasColor
 
-forall s1:State, s2:State | ((s2 in s1.connect) => not s1.hasColor = s2.hasColor)
+forall s1:State, s2:State | ((s2 in s1.connect) => not s1.hasColor == s2.hasColor)

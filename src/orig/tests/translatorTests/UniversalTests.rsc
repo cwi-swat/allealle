@@ -12,11 +12,9 @@ test bool testUniversal_onePigeonAndHole_pigeonIsAlwaysThere() {
 		' forall p:Pigeon | one p.nest
 		";
 
-	TranslationResult result = translate(testProblem);
+	Formula result = translate(testProblem);
 	
-	iprintln(result.formula);
-	
-	return result.formula == 
+	return result == 
 		and({
 			var("Hole_h1"),
 			var("nest_p1_h1")
@@ -33,9 +31,9 @@ test bool testUniversal_onePigeonAndHole_allIsOptional() {
 		' forall p:Pigeon | one p.nest
 		";
 
-	TranslationResult result = translate(testProblem);
+	Formula result = translate(testProblem);
 	
-	return result.formula == 
+	return result == 
 		and({
 			or({
 				var("nest_p1_h1"),

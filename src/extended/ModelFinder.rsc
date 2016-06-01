@@ -1,11 +1,12 @@
-module orig::ModelFinder
+module extended::ModelFinder
 
 import logic::Propositional;
+
+import extended::SMTCompiler;
 
 import orig::AST;
 import orig::Imploder;
 import orig::Translator;
-import orig::SMTCompiler;
 import logic::CNFConverter;
 import orig::SolverRunner;
 import orig::Binder;
@@ -23,7 +24,7 @@ data ModelFinderResult
 	;
 
 ModelFinderResult checkInitialSolution(Problem problem) {
-	print("Building initial environment...");
+	print("Building initial environment maps...");
 	tuple[Environment env, int time] ie = benchmark(createInitialEnvironment, problem);
 	print("done, took: <(ie.time/1000000)> ms\n");
 	
@@ -56,10 +57,13 @@ private ModelFinderResult runInSolver(Problem originalProblem, Formula formula, 
 	
 	set[str] vars = {name | str relName <- env, Index idx  <- env[relName], var(str name) := env[relName][idx]};
 	
-	print("Translating to SMT-LIB...");
+	print("Translating to SMT formulae...");
 	tuple[str smt, int time] smtVars = benchmark(compileDeclaredVariables, vars);
 	tuple[str smt, int time] smtForm = benchmark(compileAssertedFormula, formula);
 	print("done, took: <(smtVars.time + smtForm.time) /1000000> ms\n");
+	
+	writeFile(|project://allealle/bin/test.smt|, smtVars.smt + smtForm.smt);
+		
 	
 	print("Solving by Z3...");
 	tuple[bool result, int time] solving = benchmark(isSatisfiable, solverPid, smtVars.smt + smtForm.smt); 

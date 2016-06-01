@@ -6,10 +6,10 @@ test bool testDifference() {
 	str testProblem = 
 		" {a,b}
 		' Set:1 [{\<a\>,\<b\>},{\<a\>,\<b\>}]
-		' no Set - Set
+		' no Set -- Set
 		";
 
-	TranslationResult result = translate(testProblem);
+	Formula result = translate(testProblem);
 	
-	return result.formula == \true();
+	return result == \true();
 }

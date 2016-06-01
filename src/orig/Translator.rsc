@@ -14,7 +14,7 @@ import logic::Propositional;
 alias Environment = map[str, Binding];
 
 Environment createInitialEnvironment(Problem p) 
-	= (rb.relName: createRelationalMapping(rb) | RelationalBound rb <- p.bounds);
+	= (rb.relName:createRelationalMapping(rb) | RelationalBound rb <- p.bounds);
 
 Formula translate(Problem p, Environment env) 
 	= (\true() | \and(it, translateFormula(f, env + binaryIdentity(p.uni) + emptyUnary(p.uni) + emptyBinary(p.uni))) | f <- p.formulas);
@@ -114,9 +114,9 @@ Binding translateExpr(ifThenElse(Formula caseForm, Expr thenExpr, Expr elseExpr)
 		 Binding q := translateExpr(elseExpr, env);
 		 
 Binding translateExpr(comprehension(list[VarDeclaration] decls, Formula form), Environment env) {
-	Index flatten([<Atom a>]) = <a>;
-	Index flatten([<Atom a>, <Atom b>]) = <a,b>;
-	Index flatten([<Atom a>, <Atom b>, <Atom c>]) = <a,b,c>;
+	Index flatten([<Atom a, relTheory()>]) = <a, relTheory()>;
+	Index flatten([<Atom a, relTheory()>, <Atom b, relTheory()>]) = <a,b, relTheory()>;
+	Index flatten([<Atom a, relTheory()>, <Atom b, relTheory()>, <Atom c, relTheory()>]) = <a,b,c, relTheory()>;
 	
 	Binding getVal(list[Index] currentIndex, Environment extendedEnv, int currentDecl, Formula declConstraints) {
 		if (currentDecl == size(decls)) {
@@ -141,14 +141,14 @@ Binding translateExpr(comprehension(list[VarDeclaration] decls, Formula form), E
 	
 default Binding translateExpr(Expr e, Environment env) { throw "Translation of expression \'<e>\' not yet implemented";}
 	
-map[Index, Formula] createRelationalMapping(relationalBound(str relName, 1, list[Tuple] lb, list[Tuple] ub)) 
-	= (<a>:\true() | \tuple([Atom a]) <- lb) + (<a>:var("<relName>_<a>") | \tuple([Atom a]) <- ub, \tuple([a]) notin lb); 
+Binding createRelationalMapping(relationalBound(str relName, 1, list[Tuple] lb, list[Tuple] ub)) 
+	= (<a, relTheory()>:\true() | \tuple([Atom a]) <- lb) + (<a, relTheory()>:var("<relName>_<a>") | \tuple([Atom a]) <- ub, \tuple([a]) notin lb); 
 
-map[Index, Formula] createRelationalMapping(relationalBound(str relName, 2, list[Tuple] lb, list[Tuple] ub)) 
-	= (<a,b>:\true() | \tuple([Atom a, Atom b]) <- lb) + (<a,b>:var("<relName>_<a>_<b>") | \tuple([Atom a, Atom b]) <- ub, \tuple([a,b]) notin lb);	
+Binding createRelationalMapping(relationalBound(str relName, 2, list[Tuple] lb, list[Tuple] ub)) 
+	= (<a,b, relTheory()>:\true() | \tuple([Atom a, Atom b]) <- lb) + (<a,b, relTheory()>:var("<relName>_<a>_<b>") | \tuple([Atom a, Atom b]) <- ub, \tuple([a,b]) notin lb);	
 
-default map[Index, Formula] createRelationalMapping(RelationalBound b) {throw "RelationalBounds with an arity of <b.arity> are not yet supported";}
+default Binding createRelationalMapping(relationalBound(str relName, int arity, list[Tuple] _, list[Tuple] _)) {throw "RelationalBounds with an arity of <b.arity> are not yet supported";}
 
-Environment binaryIdentity(Universe uni) = ("_binId":(<a,a>:\true() | Atom a <- uni.atoms));
-Environment emptyUnary(Universe uni) = ("_emptyUnary":(<a>:\true() | Atom a <- uni.atoms));
-Environment emptyBinary(Universe uni) = ("_emptyBinary":(<a,b>:\true() | Atom a <- uni.atoms, Atom b <- uni.atoms));
+Environment binaryIdentity(Universe uni) = ("_binId":(<a,a, relTheory()>:\true() | Atom a <- uni.atoms));
+Environment emptyUnary(Universe uni) = ("_emptyUnary":(<a, relTheory()>:\true() | Atom a <- uni.atoms));
+Environment emptyBinary(Universe uni) = ("_emptyBinary":(<a,b, relTheory()>:\true() | Atom a <- uni.atoms, Atom b <- uni.atoms));

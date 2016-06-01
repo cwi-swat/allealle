@@ -9,19 +9,21 @@ import Map;
 import Set;
 import IO;
 
+data Theory = relTheory();
+
 // index is a tuple of different arity depending on type of relation (unary, binary) 
 alias Index = value;
 alias Binding = map[Index, Formula]; 
 
-int arity(Binding b) = 1 when /<Atom _> := domain(b);
-int arity(Binding b) = 2 when /<Atom _, Atom _> := domain(b);
+int arity(Binding b) = 1 when /<Atom _, Theory _> := domain(b);
+int arity(Binding b) = 2 when /<Atom _, Atom _, Theory _> := domain(b);
 default int arity(Binding b) { throw "Relations with an arity greater then 2 are not allowed";}
 
 bool sameArity(Binding lhs, Binding rhs) = arity(lhs) == arity(rhs); 
 
 Binding transpose(Binding m) = transpose(arity(m), m);
 Binding transpose(1, Binding m) = m;
-Binding transpose(2, Binding m) =(() | it + (<b,a>:m[idx]) | Index idx:<Atom a, Atom b> <- m);
+Binding transpose(2, Binding m) =(() | it + (<b,a, relTheory()>:m[idx]) | Index idx:<Atom a, Atom b, relTheory()> <- m);
 default Binding transpose(int arity, Binding _) { throw "Unable to transpose a relation of arity <arity>";}
 
 int si(Binding m) = size(m) when arity(m) == 1;
@@ -47,36 +49,36 @@ Binding not(Binding orig, Binding constant) = (idx:val | Index idx <- constant, 
 default Binding not(Binding orig, Binding constant) { throw "Unable to negate relation without the corract constant relation"; }
 
 Binding product(Binding lhs, Binding rhs) = product(arity(lhs), arity(rhs), lhs, rhs);
-Binding product(1, 1, Binding lhs, Binding rhs) = (<a,b>:\and(lhs[x],rhs[y]) | x:<Atom a> <- lhs, y:<Atom b> <- rhs);
+Binding product(1, 1, Binding lhs, Binding rhs) = (<a,b, relTheory()>:\and(lhs[x],rhs[y]) | x:<Atom a, relTheory()> <- lhs, y:<Atom b, relTheory()> <- rhs);
 Binding product(2, 2, Binding lhs, Binding rhs)
-	= (<aa,ab,ba,bb>:\and(lhs[x],rhs[y]) | <Atom aa, _> <- lhs, Index x:<aa, Atom ab> <- lhs, <Atom ba, _> <- rhs, Index y:<ba, Atom bb> <- rhs);
+	= (<aa,ab,ba,bb, relTheory()>:\and(lhs[x],rhs[y]) | <Atom aa, _, relTheory()> <- lhs, Index x:<aa, Atom ab, relTheory()> <- lhs, <Atom ba, _, relTheory()> <- rhs, Index y:<ba, Atom bb, relTheory()> <- rhs);
 default Binding product(int arityLhs, int arityRhs, Binding _, Binding _) { throw "Cannot create product between two relations with arity <arityLhs> and <arityRhs>"; }
 
 Binding \join(Binding lhs, Binding rhs) = \join(arity(lhs), arity(rhs), lhs, rhs);	
 Binding \join(1, 1, Binding lhs, Binding rhs) { throw "Cannot join two relations of arity 1";}	
 Binding \join(1, 2, Binding lhs, Binding rhs) {
-	set[Atom] rows = {a | <Atom a> <- lhs} + {a | <_, Atom a> <- rhs};
+	set[Atom] rows = {a | <Atom a, relTheory()> <- lhs} + {a | <_, Atom a, relTheory()> <- rhs};
 
-	Formula consVal(Atom row) = \or({\and({lhs[<x>], rhs[y]}) | <Atom x> <- lhs, Index y:<x, row> <- rhs, rhs[y] != \false()});
-	return (<row>:val | Atom row <- rows, Formula val := consVal(row), val != \false());
+	Formula consVal(Atom row) = \or({\and({lhs[<x, relTheory()>], rhs[y]}) | <Atom x, relTheory()> <- lhs, Index y:<x, row, relTheory()> <- rhs, rhs[y] != \false()});
+	return (<row, relTheory()>:val | Atom row <- rows, Formula val := consVal(row), val != \false());
 }
 
 Binding \join(2, 1, Binding lhs, Binding rhs) {  
-	set[Atom] rows = {a | <Atom a, _> <- lhs};
+	set[Atom] rows = {a | <Atom a, _, relTheory()> <- lhs};
 	
 	Formula consVal(Atom row) = 
-		\or({\and({lhs[y], rhs[<x>]}) | Index y:<row, Atom x> <- lhs, lhs[y] != \false(), <x> in rhs, rhs[<x>] != \false()});
+		\or({\and({lhs[y], rhs[<x, relTheory()>]}) | Index y:<row, Atom x, relTheory()> <- lhs, lhs[y] != \false(), <x, relTheory()> in rhs, rhs[<x, relTheory()>] != \false()});
 
-	return (<row>:val | Atom row <- rows, Formula val := consVal(row), val != \false());
+	return (<row, relTheory()>:val | Atom row <- rows, Formula val := consVal(row), val != \false());
 }
 			
 Binding \join(2, 2, Binding lhs, Binding rhs) {
-	set[Atom] allAtoms = {a | <Atom a, _> <- lhs} + {a | <_, Atom a> <- rhs};
+	set[Atom] allAtoms = {a | <Atom a, _, relTheory()> <- lhs} + {a | <_, Atom a, relTheory()> <- rhs};
 
 	Formula consVal(Atom row, Atom col) = 
-		(\false() | \or({it, \and({lhs[<row,y>], rhs[<y,col>]})}) | <Atom y, col> <- rhs, <row, y> in lhs, lhs[<row, y>] != \false());	
+		(\false() | \or({it, \and({lhs[<row,y, relTheory()>], rhs[<y,col, relTheory()>]})}) | <Atom y, col, relTheory()> <- rhs, <row, y, relTheory()> in lhs, lhs[<row, y, relTheory()>] != \false());	
 
-	return (<row,col>:val | Atom row <- allAtoms, Atom col <- allAtoms, Formula val := consVal(row, col), val != \false());
+	return (<row,col, relTheory()>:val | Atom row <- allAtoms, Atom col <- allAtoms, Formula val := consVal(row, col), val != \false());
 	//return (<row,col>:val | <Atom row, _> <- lhs, <_, Atom col> <- rhs, Formula val := consVal(row, col), val != \false());
 }
 	

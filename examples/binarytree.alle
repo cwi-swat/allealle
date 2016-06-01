@@ -16,4 +16,4 @@ forall n:Node | lone edge.n
 forall n:Node | not (n in n.^edge)
 
 // Nodes can maximal have two outgoing edges
-forall n1:Node | exists n2:Node, n3:Node | ((no n1.edge) || (n1.edge = (n2+n3)))
+forall n1:Node | exists n2:Node, n3:Node | ((no n1.edge) || (n1.edge == (n2++n3)))

@@ -7,12 +7,12 @@ test bool testEquality_isEqual_noLowerBounds() {
 		" {a,b}
 		' RelA:1 [{},{\<a\>,\<b\>}]
 		' RelB:1 [{},{\<a\>,\<b\>}] 
-		' RelA = RelB
+		' RelA == RelB
 		";
 
-	TranslationResult result = translate(testProblem);  
+	Formula result = translate(testProblem);  
 	
-	return result.formula == 
+	return result == 
 		and({
 			and({
 				or({
@@ -42,12 +42,12 @@ test bool testEquality_isEqual_withLowerBounds() {
 		" {a,b}
 		' RelA:1 [{\<a\>},{\<a\>,\<b\>}]
 		' RelB:1 [{\<a\>},{\<a\>,\<b\>}] 
-		' RelA = RelB
+		' RelA == RelB
 		";
 
-	TranslationResult result = translate(testProblem);  
+	Formula result = translate(testProblem);  
 	
-	return result.formula == 
+	return result == 
 		and({
 			or({
 				not(var("RelA_b")), 
@@ -65,14 +65,13 @@ test bool testEquality_neverEqual() {
 		" {a,b}
 		' RelA:1 [{\<a\>},{\<a\>}]
 		' RelB:1 [{\<b\>},{\<b\>}] 
-		' RelA = RelB
+		' RelA == RelB
 		";
 
-	TranslationResult result = translate(testProblem);  
+	Formula result = translate(testProblem);  
 		
-	iprintln(result.formula);		
 		
-	return result.formula == \false();
+	return result == \false();
 }
 
 test bool testEquality_alwaysEqual() {
@@ -80,12 +79,12 @@ test bool testEquality_alwaysEqual() {
 		" {a,b}
 		' RelA:1 [{\<a\>},{\<a\>}]
 		' RelB:1 [{\<a\>},{\<a\>}] 
-		' RelA = RelB
+		' RelA == RelB
 		";
 
-	TranslationResult result = translate(testProblem);  
+	Formula result = translate(testProblem);  
 	
-	return result.formula == \true();
+	return result == \true();
 }
 
 

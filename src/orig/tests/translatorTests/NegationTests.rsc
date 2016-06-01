@@ -10,9 +10,9 @@ test bool testNegation_noLowerBounds() {
 		' not (RelA in RelB)
 		";
 
-	TranslationResult result = translate(testProblem);  
+	Formula result = translate(testProblem);  
 	
-	return result.formula == 
+	return result == 
 		not(
 			and({
 				or({
@@ -35,9 +35,9 @@ test bool testNegation_withLowerBounds() {
 		' not (RelA in RelB)
 		";
 
-	TranslationResult result = translate(testProblem);  
+	Formula result = translate(testProblem);  
 	
-	return result.formula == 
+	return result == 
 		not(
 			and({
 				var("RelB_a"),

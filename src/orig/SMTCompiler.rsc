@@ -2,11 +2,13 @@ module orig::SMTCompiler
 
 import logic::Propositional;
 
-//import List;
+import List;
 
 //alias SMTCompilerResult = tuple[str smtFormula, map[str label, Formula f] labels];
 
-str compileToSMT(Formula formula) {
+str compileDeclaredVariables(set[str] vars) = intercalate("\n", ["(declare-const <v> Bool)" | v <- vars]);
+
+str compileAssertedFormula(Formula formula) {
 	//int label = 0;
 	//
 	//map[str, Formula] labeledFormulas = ();

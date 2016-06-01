@@ -10,11 +10,9 @@ test bool testJoin_AlwaysOnePigeon_MustBeOneNest() {
 		' one Pigeon.nest
 		";
 
-	TranslationResult result = translate(testProblem);
+	Formula result = translate(testProblem);
 	
-	iprintln(result.formula);
-	
-	return result.formula == var("nest_p1_h1");
+	return result == var("nest_p1_h1");
 }
 
 test bool testJoin_MustBeOnePigeon() {
@@ -25,9 +23,9 @@ test bool testJoin_MustBeOnePigeon() {
 		' one Pigeon.nest
 		";
 
-	TranslationResult result = translate(testProblem);
+	Formula result = translate(testProblem);
 	
-	return result.formula == 
+	return result == 
 		and({
 			var("nest_p1_h1"),
 			var("Pigeon_p1")
