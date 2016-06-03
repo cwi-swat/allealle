@@ -5,7 +5,7 @@ extend orig::Syntax;
 syntax RelationalBound = relationalBound: Variable v  "(" Sort sort ")" ":" Arity a "[" "{" {Tuple ","}* lower "}" "," "{" {Tuple ","}* upper "}" "]";
 
 // Integer theory extensions
-lexical Sort
+syntax Sort
 	= intSort: "int"
 	;
 
@@ -19,7 +19,7 @@ syntax Formula
 	
 syntax Expr
 	= intLit:			IntLit intLit
-	| intProjection:	"[" Variable v "]"
+	//| intProjection:	"[" Expr expr "]"
 	| multiplication:	Expr lhs "*" Expr rhs
 	| division:			Expr lhs "\\" Expr rhs
 	> addition:			Expr lhs "+" Expr rhs

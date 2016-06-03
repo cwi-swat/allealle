@@ -1,9 +1,9 @@
-{p1,p2,p3}
-Person:1 [{}, {<p1>,<p2>,<p3>}]
-Adam:1 [{<p1>},{<p1>}]
-parent:2 [{}, {<p1,p2>,<p1,p3>,<p2,p1>,<p2,p3>,<p3,p1>,<p3,p2>}]
-child:2 [{}, {<p1,p2>,<p1,p3>,<p2,p1>,<p2,p3>,<p3,p1>,<p3,p2>}]
-sibling:2 [{}, {<p1,p2>,<p1,p3>,<p2,p3>,<p3,p2>,<p2,p1>,<p3,p1>}]
+{adam,bassie,adriaan}
+Person:1 [{}, {<adam>,<bassie>,<adriaan>}]
+Adam:1 [{<adam>},{<adam>}]
+parent:2 [{}, {<adam,bassie>,<adam,adriaan>,<bassie,adam>,<bassie,adriaan>,<adriaan,adam>,<adriaan,bassie>}]
+child:2 [{}, {<adam,bassie>,<adam,adriaan>,<bassie,adam>,<bassie,adriaan>,<adriaan,adam>,<adriaan,bassie>}]
+sibling:2 [{}, {<adam,adam>,<bassie,bassie>,<adriaan,adriaan>,<adam,bassie>,<adam,adriaan>,<bassie,adriaan>,<adriaan,bassie>,<bassie,adam>,<adriaan,adam>}]
 
 parent in Person -> Person
 sibling in Person -> Person
@@ -16,5 +16,4 @@ Person in Adam.*parent
 forall p:Person | ((not (p == Adam)) => one parent.p)
 
 child == ~parent
-//sibling == {p:Person, pp: Person | ((not p == pp) && (p.parent == pp.parent))}
 forall p:Person | p.sibling == {pp:Person | p.parent == pp.parent} -- p

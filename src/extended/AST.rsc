@@ -10,16 +10,16 @@ data Sort
 	;
 	
 data Formula
-	= lt(Expr lhs, Expr rhs)
-	| lte(Expr lhs, Expr rhs)
-	| gt(Expr lhs, Expr rhs)
-	| gte(Expr lhs, Expr rhs)
-	| intEqual(Expr lhs, Expr rhs)
+	= lt(Expr lhsExpr, Expr rhsExpr)
+	| lte(Expr lhExprs, Expr rhsExpr)
+	| gt(Expr lhsExpr, Expr rhsExpr)
+	| gte(Expr lhsExpr, Expr rhsExpr)
+	| intEqual(Expr lhsExpr, Expr rhsExpr)
 	;	
 	
 data Expr
 	= intLit(int i)
-	| intVar(str name)
+	//| intProjection(Expr expr)
 	| multiplication(Expr lhs, Expr rhs)
 	| division(Expr lhs, Expr rhs)
 	| addition(Expr lhs, Expr rhs)

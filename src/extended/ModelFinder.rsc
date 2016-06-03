@@ -1,15 +1,14 @@
 module extended::ModelFinder
 
+import logic::Integer;
 import logic::Propositional;
 
 import extended::SMTCompiler;
 
-import orig::AST;
-import orig::Imploder;
-import orig::Translator;
-import logic::CNFConverter;
-import orig::SolverRunner;
-import orig::Binder;
+import extended::AST;
+import extended::Translator;
+import extended::SolverRunner;
+import extended::Binder;
 
 import util::Benchmark;
 import IO;
@@ -29,7 +28,7 @@ ModelFinderResult checkInitialSolution(Problem problem) {
 	print("done, took: <(ie.time/1000000)> ms\n");
 	
 	print("Translating problem to SAT formula...");
-	tuple[Formula formula, int time] t = benchmark(translate, problem, ie.env);
+	tuple[Formula formula, int time] t = benchmark(translateExtended, problem, ie.env);
 	print("done, took: <(t.time/1000000)> ms\n");
 	
 	//iprintln(t.formula);
@@ -55,18 +54,19 @@ private ModelFinderResult runInSolver(Problem originalProblem, Formula formula, 
 		stopSolver(solverPid);
 	}
 	
-	set[str] vars = {name | str relName <- env, Index idx  <- env[relName], var(str name) := env[relName][idx]};
+	set[str] boolVars = {name | str relName <- env, Index idx  <- env[relName], var(str name) := env[relName][idx]};
+	set[str] intVars = {name | str relName <- env, Index idx  <- env[relName], intVar(str name) := env[relName][idx]};
 	
 	print("Translating to SMT formulae...");
-	tuple[str smt, int time] smtVars = benchmark(compileDeclaredVariables, vars);
+	tuple[str smt, int time] smtBoolVars = benchmark(compileDeclaredBoolVariables, boolVars);
+	tuple[str smt, int time] smtIntVars = benchmark(compileDeclaredIntVariables, intVars);
 	tuple[str smt, int time] smtForm = benchmark(compileAssertedFormula, formula);
-	print("done, took: <(smtVars.time + smtForm.time) /1000000> ms\n");
+	print("done, took: <(smtBoolVars.time + smtIntVars.time + smtForm.time) /1000000> ms\n");
 	
-	writeFile(|project://allealle/bin/test.smt|, smtVars.smt + smtForm.smt);
+	writeFile(|project://allealle/bin/test.smt|, smtBoolVars.smt + smtIntVars.smt + smtForm.smt);
 		
-	
 	print("Solving by Z3...");
-	tuple[bool result, int time] solving = benchmark(isSatisfiable, solverPid, smtVars.smt + smtForm.smt); 
+	tuple[bool result, int time] solving = benchmark(isSatisfiable, solverPid, smtBoolVars.smt + smtIntVars.smt + smtForm.smt); 
 	print("done, took: <solving.time/1000000> ms\n");
 	println("Outcome is \'<solving.result>\'");
 
@@ -81,7 +81,7 @@ private ModelFinderResult runInSolver(Problem originalProblem, Formula formula, 
 	}
 
 	if(solving.result) {
-		currentModel = firstModel(solverPid, vars);
+		currentModel = firstModel(solverPid, boolVars, intVars);
 		return sat(merge(currentModel, env), originalProblem.uni, next, stop);
 	} else {
 		return unsat({});
@@ -90,7 +90,8 @@ private ModelFinderResult runInSolver(Problem originalProblem, Formula formula, 
 
 Environment merge(Model model, Environment environment) 
 	= visit(environment) {
-		case var(str name) => model[name] ? \true() : \false() when name in model
+		case var(str name) => model[name].exists ? \true() : \false() when name in model
+		case intVar(str name) => \int(model[name].i) when name in model
 	};
 
 private tuple[&T, int] benchmark(&T () methodToBenchmark) {

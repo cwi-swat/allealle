@@ -4,35 +4,49 @@ extend smt::solver::SolverRunner;
 
 import logic::Propositional;
 
+import String;
+import Set;
+
 data ModelValue
-	= noVal()
-	| intVal(int i)
+	= val(bool exists)
+	| val(bool exists, int i)
 	;
-	
-alias 
 
-alias Model = map[str var, bool exists, WrappedValue val];
+alias Model = map[str, ModelValue];
 
-Model getValues(SolverPID pid, set[str] vars) {
-	resp = runSolver(pid, "(get-value (<("" | "<it> (boolVal <v>)" | v <- vars)>))");
-	
+Model getValues(SolverPID pid, set[str] boolVars, set[str] intVars) {
+	Model m = ();
+
+	if (size(intVars) > 0) {
+		resp = runSolver(pid, "(get-value (<("" | "<it> <v>_int" | v <- intVars)>))");
+		
+		if (resp != "") {
+			m = (var:val(false, toInt(v)) | /(<var:[A-Za-z_0-9]*>_int <v:[0-9]+>)/ := substring(resp, 1, size(resp)-1));	
+		}
+	}
+
+	str resp = runSolver(pid, "(get-value (<("" | "<it> <v>" | v <- boolVars)>))");
 	if (resp != "") {
-		return (() | it + (var:fromString(val)) | /(<var:[A-Za-z_0-9]*> <val:false|true>)/ := substring(resp, 1, size(resp)-1));
+		 m = (var:val(fromString(v), m[var].i) | /(<var:[A-Za-z_0-9]*> <v:false|true>)/ := substring(resp, 1, size(resp)-1), var in m) +
+		 	 (var:val(fromString(v)) | /(<var:[A-Za-z_0-9]*> <v:false|true>)/ := substring(resp, 1, size(resp)-1), var notin m);
 	}
 	
-	throw "Unable to get values for variables from solver";
+	return m;
 }
 
-Model firstModel(SolverPID pid, set[str] vars) = getValues(pid, vars);
+Model firstModel(SolverPID pid, set[str] boolVars, set[str] intVars) = getValues(pid, boolVars, intVars);
 
 Model nextModel(SolverPID pid, Model currentModel) {
-	if ("" !:= runSolver(pid, "(assert (or <intercalate(" ", [var | v <- currentModel, str var := (currentModel[v] ? "(not <v>)" : v)])>))")) {
+	if ("" !:= runSolver(pid, "(assert (or <intercalate(" ", [var | v <- currentModel, str var := (currentModel[v].exists ? "(not <v>)" : v)])>))")) {
 		throw "Unable to declare needed variables in SMT";
 	}		
 	
 	if (checkSat(pid)) {
-		return getValues(pid, domain(currentModel));
+		return getValues(pid, getBoolVars(currentModel), getIntVars(currentModel));
 	} else {
 		return ();
 	}
 }
+
+private set[str] getBoolVars(Model m) = {n | str n <- m};
+private set[str] getIntVars(Model m) = {n | str n <- m, val(_, int _) := m[n]};

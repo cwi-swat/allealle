@@ -42,7 +42,7 @@ bool checkSat(SolverPID pid) {
 
 str runSolver(SolverPID pid, str commands) {
 	try {
-		return run(pid, commands, debug=false);
+		return run(pid, commands, debug=true);
 	}
 	catch er: throw "Error while running SMT solver, reason: <er>"; 	
 }

@@ -7,6 +7,7 @@ data Problem = problem(Universe uni, list[RelationalBound] bounds, list[Formula]
 data Universe = universe(list[Atom] atoms);
 
 data RelationalBound = relationalBound(str relName, int arity, list[Tuple] lowerBounds, list[Tuple] upperBounds);
+
 data Tuple = \tuple(list[Atom] atoms);	
   
 data Formula

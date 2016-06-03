@@ -1,23 +1,21 @@
 module extended::SMTCompiler
 
-import logic::Propositional;
+extend orig::SMTCompiler;
 
-str compileDeclaredVariables(set[str] vars) = 	"(declare-sort Rel) 
-										'<("" | "<it>\n(declare-const <v> Rel)" | v <- vars)>
-										";
+import logic::Integer;
 
-str compileAssertedFormula(Formula formula) =
-	"(declare-fun boolVal (Rel) Bool)
-	'(assert <compile(formula)>)";
+str compileDeclaredBoolVariables(set[str] vars) = "<("" | "<it>\n(declare-const <v> Bool)" | v <- vars)>";
+str compileDeclaredIntVariables(set[str] vars) = "<("" | "<it>\n(declare-const <v>_int Int)" | v <- vars)>";
 
-@memo
-str compile(\and(set[Formula] forms)) = "(and <("" | "<it> <compile(f)>" | f <- forms)>)";
-@memo
-str compile(\or(set[Formula] forms)) = "(or <("" | "<it> <compile(f)>" | f <- forms)>)";
-@memo
-str compile(\not(formula)) = "(not <compile(formula)>)";
-@memo
-str compile(\var(name)) = "(boolVal <name>)";
-str compile(\false()) = "false";
-str compile(\true()) = "true";
-default str compile(Formula f) { throw "Compilation of <f> not supported"; }
+str compile(\int(int i)) = "<i>";
+str compile(intVar(str name)) = "<name>_int";
+str compile(lt(Formula lhs, Formula rhs)) = "(\< <compile(lhs)> <compile(rhs)>)";
+str compile(lte(Formula lhs, Formula rhs)) = "(\<= <compile(lhs)> <compile(rhs)>)";
+str compile(gt(Formula lhs, Formula rhs)) = "(\> <compile(lhs)> <compile(rhs)>)";
+str compile(gte(Formula lhs, Formula rhs)) = "(\>= <compile(lhs)> <compile(rhs)>)";
+str compile(equal(Formula lhs, Formula rhs)) = "(= <compile(lhs)> <compile(rhs)>)";
+str compile(addition(set[Formula] formulas)) = "(+ <("" | "<it> <compile(f)>" | f <- formulas)>)";
+str compile(substraction(set[Formula] formulas)) = "(- <("" | "<it> <compile(f)>" | f <- formulas)>)";
+str compile(multiplication(set[Formula] formulas)) = "(* <("" | "<it> <compile(f)>" | f <- formulas)>)";
+str compile(division(set[Formula] formulas)) = "(/ <("" | "<it> <compile(f)>" | f <- formulas)>)";
+

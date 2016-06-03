@@ -59,7 +59,7 @@ Formula translateFormula(implication(Formula lhsForm, Formula rhsForm), Environm
 	= \or(\not(translateFormula(lhsForm, env)), translateFormula(rhsForm, env));
 	
 Formula translateFormula(equality(Formula lhsForm, Formula rhsForm), Environment env)
-	= \or(\and(translateFormula(lhsForm, env), translateFormula(rhsForm, env)), \and(\not(translateFormula(lhsForm, env)), \not(translateFormula(rhsForm, env))));
+	= \or(\and(translateFormula(lhsForm, env),  translateFormula(rhsForm, env)), \and(\not(translateFormula(lhsForm, env)), \not(translateFormula(rhsForm, env))));
 
 Formula translateFormula(universal(list[VarDeclaration] decls, Formula form), Environment env) 
 	= \and({\or({\not(m[x]), translateFormula(f, env + (hd.name:getSingletonBinding(x)))}) | Index x <- m, Formula f := (([] == t) ? form : universal(t, form))})
@@ -71,7 +71,7 @@ Formula translateFormula(existential(list[VarDeclaration] decls, Formula form), 
 	when [VarDeclaration hd, *t] := decls,
 	     Binding m := translateExpr(hd.binding, env);
 	     	
-default Formula translateFormula(Formula f, Environment env) { throw "Translation of formula \'<f>\' not yet implemented";}
+default Formula translateFormula(Formula f, Environment env) { throw "Translation of formula \'<f>\' with function \'<translateFormula>\' not yet implemented";}
 
 @memo
 Binding getSingletonBinding(Index x) = (x:\true()); 

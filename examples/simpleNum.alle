@@ -1,11 +1,13 @@
-{n1,n2,n3,n4}
+{n1,n2,n3,n4,n5}
 
 Num1(int):1 [{<n1>},{<n1>,<n2>}]
-Num2(int):1 [{},{<n3>,<n4>}]
-link:2 [{}, {<n1,n3>,<n1,n4>,<n2,n3>,<n2,n4>}]
+Num2(int):1 [{},{<n3>,<n4>,<n5>}]
+link:2 [{}, {<n1,n3>,<n1,n4>,<n2,n3>,<n2,n4>,<n1,n5>,<n2,n5>}]
 
 link in Num1->Num2
 forall n:Num1 | one n.link
-forall n:Num2 | one link.n
+//forall n:Num2 | one link.n
 
-forall n1:Num1, n2:Num2 | n2 = n1.link => [n2] > 10
+//forall n1:Num1, n2:Num2 | n2 = n1.link => n2 > 10
+//(Num2 & Num1.link) > 10
+//(Num2 -- Num1.link) < 5

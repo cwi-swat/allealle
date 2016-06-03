@@ -2,6 +2,7 @@ module logic::Integer
 
 data Formula
 	= \int(int i)
+	| intVar(str name)
 	| lt(Formula lhs, Formula rhs)
 	| lte(Formula lhs, Formula rhs)
 	| gt(Formula lhs, Formula rhs)
