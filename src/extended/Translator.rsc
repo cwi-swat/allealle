@@ -4,9 +4,10 @@ extend orig::Translator;
 
 import logic::Integer;
 import extended::Binder;
+import extended::AST;
 
 Binding createRelationalMapping(relationalBound(str relName, intSort(), 1, list[Tuple] lb, list[Tuple] ub)) 
-	= (<a, intTheory()>:intVar("<relName>_<a>") | \tuple([Atom a]) <- ub) + 
+	= (<a, intTheory()>:intVar("<a>") | \tuple([Atom a]) <- ub) + 
 	  createRelationalMapping(relationalBound(relName, 1, lb, ub)); 
 
 default Environment createRelationalMapping(relationalBound(str relName, Sort s, int arity, list[Tuple] _, list[Tuple] _))
@@ -21,15 +22,15 @@ Formula translateExtFormula(atMostOne(Expr expr), Environment env)
 	= \or(translateExtFormula(empty(expr), env), translateExtFormula(exactlyOne(expr), env));
 
 Formula translateExtFormula(exactlyOne(Expr expr), Environment env) 	
-	= (\false() | \or(it, \and(m[x], (\true() | \and(it, \not(m[y])) | Index y <- m, y != x))) | Index x <- m)    
+	= (\false() | \or(it, \and(m[x], (\true() | \and(it, \not(m[y])) | Index y <- m, /relTheory() := y, y != x))) | Index x <- m, /relTheory() := x)    
 	when Binding m := translateExtExpr(expr, env);
 
 Formula translateExtFormula(nonEmpty(Expr expr), Environment env) 			
-	= (\false() | \or(it,  m[x]) | Index x <- m)
+	= (\false() | \or(it,  m[x]) | Index x <- m, /relTheory() := x)
 	when Binding m := translateExtExpr(expr, env);
 
 Formula translateExtFormula(subset(Expr lhsExpr, Expr rhsExpr), Environment env) 
-	= m == () ? \false() : (\true() | \and(it, m[x]) | Index x <- m)
+	= m == () ? \false() : (\true() | \and(it, m[x]) | Index x <- m, /relTheory() := x)
 	when Binding lhs := translateExtExpr(lhsExpr, env),
 		 Binding rhs := translateExtExpr(rhsExpr, env),
 		 //Binding m := \or(not(lhs, getConstant(lhs, env)), rhs); 
@@ -54,29 +55,58 @@ Formula translateExtFormula(equality(Formula lhsForm, Formula rhsForm), Environm
 	= \or(\and(translateExtFormula(lhsForm, env),  translateExtFormula(rhsForm, env)), \and(\not(translateExtFormula(lhsForm, env)), \not(translateExtFormula(rhsForm, env))));
 
 Formula translateExtFormula(universal(list[VarDeclaration] decls, Formula form), Environment env) 
-	= \and({\or({\not(m[x]), translateExtFormula(f, env + (hd.name:getSingletonBinding(x)))}) | Index x <- m, Formula f := (([] == t) ? form : universal(t, form))})
+	= \and({\or({\not(m[x]), translateExtFormula(f, env + (hd.name:getSingletonBinding(x)))}) | Index x <- m, /relTheory() := x, Formula f := (([] == t) ? form : universal(t, form))})
 	when [VarDeclaration hd, *t] := decls,
 	     Binding m := translateExtExpr(hd.binding, env);
-	 
+
 Formula translateExtFormula(existential(list[VarDeclaration] decls, Formula form), Environment env)
-	= \or({\and({m[x], translateExtFormula(f, env + (hd.name:getSingletonBinding(x)))}) | Index x <- m, Formula f := (([] == t) ? form : existential(t, form))}) 
+	= \or({\and({m[x], translateExtFormula(f, env + (hd.name: getSingletonBinding(x) + (<a,intTheory()>:m[<a,intTheory()>])))}) | Index x:<Atom a, relTheory()> <- m, Formula f := (([] == t) ? form : existential(t, form)), bprintln("name: <hd.name>, val <a>")}) 
 	when [VarDeclaration hd, *t] := decls,
 	     Binding m := translateExtExpr(hd.binding, env);
 
-Formula translateExtFormula(gt(Expr lhsExpr, Expr rhsExpr), Environment env) = (\true() | \and(it, val) | Index idx:<Atom a,relTheory()> <- m, Formula val := \or(not(m[idx]), m[<a, intTheory()>]))
+Formula translateExtFormula(gt(Expr lhsExpr, Expr rhsExpr), Environment env) 
+	= (\true() | \and(it, \or(not(m[idx]), iM[idx2])) | Index idx:<Atom a, Atom b, relTheory()> <- m, Index idx2:<a, b, intTheory()> <- iM)
 	when Binding lhs := translateExtExpr(lhsExpr, env),
 		 Binding rhs := translateExtExpr(rhsExpr, env),
 		 arity(lhs) == 1 && arity(rhs) == 1,
-		 Binding m := (idx:\and(lhs[idx],rhs[idx]) | Index idx:<Atom _, relTheory()> <- lhs) + 
-		 			  (<a,intTheory()>:gt(lhs[<a, intTheory()>], rhs[<a, intTheory()>]) | Index idx:<Atom a, relTheory()> <- lhs);
+		 Binding m := product(lhs, rhs),
+		 Binding iM := (<a,b,intTheory()>:gt(lhs[<a, intTheory()>],rhs[<b, intTheory()>]) | <Atom a, intTheory()> <- lhs, <Atom b, intTheory()> <- rhs);
 
-Formula translateExtFormula(lt(Expr lhsExpr, Expr rhsExpr), Environment env) = (\true() | \and(it, val) | Index idx:<Atom a,relTheory()> <- m, Formula val := \or(not(m[idx]), m[<a, intTheory()>]))
+Formula translateExtFormula(gte(Expr lhsExpr, Expr rhsExpr), Environment env) 
+	= (\true() | \and(it, \or(not(m[idx]), iM[idx2])) | Index idx:<Atom a, Atom b, relTheory()> <- m, Index idx2:<a, b, intTheory()> <- iM)
 	when Binding lhs := translateExtExpr(lhsExpr, env),
 		 Binding rhs := translateExtExpr(rhsExpr, env),
 		 arity(lhs) == 1 && arity(rhs) == 1,
-		 Binding m := (idx:\and(lhs[idx],rhs[idx]) | Index idx:<Atom _, relTheory()> <- lhs) + 
-		 			  (<a,intTheory()>:lt(lhs[<a, intTheory()>], rhs[<a, intTheory()>]) | Index idx:<Atom a, relTheory()> <- lhs);
+		 Binding m := product(lhs, rhs),
+		 Binding iM := (<a,b,intTheory()>:gte(lhs[<a, intTheory()>],rhs[<b, intTheory()>]) | <Atom a, intTheory()> <- lhs, <Atom b, intTheory()> <- rhs);
 
+Formula translateExtFormula(lt(Expr lhsExpr, Expr rhsExpr), Environment env) 
+	= (\true() | \and(it, \or(not(m[idx]), iM[idx2])) | Index idx:<Atom a, Atom b, relTheory()> <- m, Index idx2:<a, b, intTheory()> <- iM)
+	when Binding lhs := translateExtExpr(lhsExpr, env),
+		 Binding rhs := translateExtExpr(rhsExpr, env),
+		 arity(lhs) == 1 && arity(rhs) == 1,
+		 Binding m := product(lhs, rhs),
+		 Binding iM := (<a,b,intTheory()>:lt(lhs[<a, intTheory()>],rhs[<b, intTheory()>]) | <Atom a, intTheory()> <- lhs, <Atom b, intTheory()> <- rhs);
+
+Formula translateExtFormula(lte(Expr lhsExpr, Expr rhsExpr), Environment env) 
+	= (\true() | \and(it, \or(not(m[idx]), iM[idx2])) | Index idx:<Atom a, Atom b, relTheory()> <- m, Index idx2:<a, b, intTheory()> <- iM)
+	when Binding lhs := translateExtExpr(lhsExpr, env),
+		 Binding rhs := translateExtExpr(rhsExpr, env),
+		 arity(lhs) == 1 && arity(rhs) == 1,
+		 Binding m := product(lhs, rhs),
+		 Binding iM := (<a,b,intTheory()>:lte(lhs[<a, intTheory()>],rhs[<b, intTheory()>]) | <Atom a, intTheory()> <- lhs, <Atom b, intTheory()> <- rhs); 
+
+Formula translateExtFormula(intEqual(Expr lhsExpr, Expr rhsExpr), Environment env) 
+	= (\true() | \and(it, \or(not(m[idx]), iM[idx2])) | Index idx:<Atom a, Atom b, relTheory()> <- m, Index idx2:<a, b, intTheory()> <- iM)
+	when map[str, Binding] r := (n:env[n] | n <- env, /_|Side/ !:= n),
+		 bprintln(r),
+		 Binding lhs := translateExtExpr(lhsExpr, env),
+		 bprintln("lhs = <lhs>"),
+		 Binding rhs := translateExtExpr(rhsExpr, env),
+		 bprintln("rhs = <rhs>"),
+		 arity(lhs) == 1 && arity(rhs) == 1,
+		 Binding m := product(lhs, rhs), //(idx:val | Index idx:<Atom _, relTheory()> <- lhs, Formula val := (idx in rhs ? \and(lhs[idx],rhs[idx]) : lhs[idx])), 
+		 Binding iM := (<a,b,intTheory()>:equal(lhs[<a, intTheory()>],rhs[<b, intTheory()>]) | <Atom a, intTheory()> <- lhs, <Atom b, intTheory()> <- rhs);
 
 default Formula translateExtFormula(Formula f, Environment env) { throw "Translation of extended formula \'<f>\' not yet implemented";}
 
@@ -91,10 +121,6 @@ Binding translateExtExpr(closure(Expr expr), Environment env) = square(m, 1)
 Binding translateExtExpr(reflexClosure(Expr expr), Environment env) = \or(m, env["_binId"])  
 	when Binding m := translateExtExpr(closure(expr), env);
 		
-Binding translateExtExpr(union(Expr lhsExpr, Expr rhsExpr), Environment env) = \or(lhs,rhs)  
-	when Binding lhs := translateExtExpr(lhsExpr, env),
-		 Binding rhs := translateExtExpr(rhsExpr, env);
-
 Binding translateExtExpr(\join(Expr lhsExpr, Expr rhsExpr), Environment env) = \join(lhs, rhs) 
 	when Binding lhs := translateExtExpr(lhsExpr, env),
 		 Binding rhs := translateExtExpr(rhsExpr, env);
@@ -104,7 +130,7 @@ Binding translateExtExpr(product(Expr lhsExpr, Expr rhsExpr), Environment env) =
 		 Binding rhs := translateExtExpr(rhsExpr, env);
 
 Binding translateExtExpr(ifThenElse(Formula caseForm, Expr thenExpr, Expr elseExpr), Environment env)
-	 = (idx:ite(translateExtFormula(caseForm, env),p[idx],q[idx]) | Index idx <- p)
+	 = (idx:ite(translateExtFormula(caseForm, env),p[idx],q[idx]) | Index idx <- p, /relTheory() := idx)
 	when Binding p := translateExtExpr(thenExpr, env),
 		 Binding q := translateExtExpr(elseExpr, env);
 		 
@@ -112,7 +138,8 @@ Binding translateExtExpr(comprehension(list[VarDeclaration] decls, Formula form)
 	Index flatten([<Atom a, relTheory()>]) = <a, relTheory()>;
 	Index flatten([<Atom a, relTheory()>, <Atom b, relTheory()>]) = <a,b, relTheory()>;
 	Index flatten([<Atom a, relTheory()>, <Atom b, relTheory()>, <Atom c, relTheory()>]) = <a,b,c, relTheory()>;
-	
+	default Index flatten(list[Index] l) { throw "Unable to flatten a list of indices with an arity larger then 3"; }
+	 
 	Binding getVal(list[Index] currentIndex, Environment extendedEnv, int currentDecl, Formula declConstraints) {
 		if (currentDecl == size(decls)) {
 			return (flatten(currentIndex):\and(declConstraints, translateExtFormula(form, env + extendedEnv)));
@@ -140,14 +167,19 @@ Binding translateExtExpr(comprehension(list[VarDeclaration] decls, Formula form)
 //Binding translateExtFormulaExpr(e:reflexClosure(Expr expr), Environment env) = translateExtExpr(e,env);
 //Binding translateExtFormulaExpr(e:union(Expr lhsExpr, Expr rhsExpr), Environment env) = translateExtExpr(e,env);
 
+Binding translateExtExpr(union(Expr lhsExpr, Expr rhsExpr), Environment env) = \or(lhs,rhs) + (idx:lhs[idx] | Index idx:<Atom _, intTheory()> <- lhs) + (idx:rhs[idx] | Index idx:<Atom _, intTheory()> <- rhs)
+	when Binding lhs := translateExtExpr(lhsExpr, env),
+		 Binding rhs := translateExtExpr(rhsExpr, env);
+
+
 Binding translateExtExpr(intersection(Expr lhsExpr, Expr rhsExpr), Environment env) = \and(lhs, rhs) +
-	(idx:lhs[idx] | Index idx:<Atom _, intTheory()> <- lhs) // TODO: Not yet correct
+	(idx:lhs[idx] | Index idx:<Atom _, intTheory()> <- lhs)
 	when Binding lhs := translateExtExpr(lhsExpr, env),
 		 Binding rhs := translateExtExpr(rhsExpr, env);		
 
 Binding translateExtExpr(difference(Expr lhsExpr, Expr rhsExpr), Environment env) = 
 	(x:\and(lhs[x],rhsVal) | Index x <- lhs, /relTheory() := x, Formula rhsVal := ((x notin rhs) ? \true() : \not(rhs[x]))) +
-	(idx:lhs[idx] | Index idx:<Atom _, intTheory()> <- lhs) // TODO: Not yet correct
+	(idx:lhs[idx] | Index idx:<Atom _, intTheory()> <- lhs)
 	when Binding lhs := translateExtExpr(lhsExpr, env),
 		 Binding rhs := translateExtExpr(rhsExpr, env);		
 
@@ -157,17 +189,23 @@ Binding translateExtExpr(difference(Expr lhsExpr, Expr rhsExpr), Environment env
 //Binding translateExtFormulaExpr(e:comprehension(list[VarDeclaration] decls, Formula form), Environment env) = translateExtExpr(e,env);
 
 @memo
-Binding translateExtExpr(e:intLit(int i), Environment env) = (<a, intTheory()>:\int(i) | <Atom a,_> <- env["_emptyUnary"]) + (<a, relTheory()>:\true() | <Atom a,_> <- env["_emptyUnary"]);
-
-//Binding translateExtExpr(e:intProjection(Expr expr), Environment env) = translateExtExpr(expr, env);
+Binding translateExtExpr(intLit(int i), Environment env) = (<a, intTheory()>:\int(i) | <Atom a, Theory _> <- env["_emptyUnary"]) + (<a, relTheory()>:\true() | <Atom a, Theory _> <- env["_emptyUnary"]);
 
 Binding translateExtExpr(multiplication(Expr lhsExpr, Expr rhsExpr), Environment env) = multiply(lhs, rhs)
 	when Binding lhs := translateExtExpr(lhsExpr, env),
 		 Binding rhs := translateExtExpr(rhsExpr, env);
 
-	//| division(Expr lhs, Expr rhs)
-	//| addition(Expr lhs, Expr rhs)
-	//| subtraction(Expr lhs, Expr rhs)
+Binding translateExtExpr(division(Expr lhsExpr, Expr rhsExpr), Environment env) = divide(lhs, rhs)
+	when Binding lhs := translateExtExpr(lhsExpr, env),
+		 Binding rhs := translateExtExpr(rhsExpr, env);
+
+Binding translateExtExpr(addition(Expr lhsExpr, Expr rhsExpr), Environment env) = add(lhs, rhs)
+	when Binding lhs := translateExtExpr(lhsExpr, env),
+		 Binding rhs := translateExtExpr(rhsExpr, env);
+		 
+Binding translateExtExpr(subtraction(Expr lhsExpr, Expr rhsExpr), Environment env) = substract(lhs, rhs)
+	when Binding lhs := translateExtExpr(lhsExpr, env),
+		 Binding rhs := translateExtExpr(rhsExpr, env);
 
 default Binding translateExtExpr(Expr e, Environment env) { throw "Translation of extended expression \'<e>\' not yet implemented";}
 

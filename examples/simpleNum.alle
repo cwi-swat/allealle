@@ -8,6 +8,6 @@ link in Num1->Num2
 forall n:Num1 | one n.link
 //forall n:Num2 | one link.n
 
-//forall n1:Num1, n2:Num2 | n2 = n1.link => n2 > 10
+forall n1:Num1, n2:Num2 | ((n2 in n1.link) => n2 > 10)
 //(Num2 & Num1.link) > 10
-//(Num2 -- Num1.link) < 5
+(Num2 -- Num1.link) < 5

@@ -19,7 +19,6 @@ data Formula
 	
 data Expr
 	= intLit(int i)
-	//| intProjection(Expr expr)
 	| multiplication(Expr lhs, Expr rhs)
 	| division(Expr lhs, Expr rhs)
 	| addition(Expr lhs, Expr rhs)

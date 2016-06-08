@@ -1,0 +1,7 @@
+{s1,s2,s3}
+Side(int):1[{},{<s1>,<s2>,<s3>}]
+
+exists a:Side, b:Side, c:Side | ((c * c) = ((a * a) + (b * b)))
+//exists a:Side | a > 10
+
+//Side > 5 && Side < 15

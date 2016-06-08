@@ -14,8 +14,8 @@ str compile(lte(Formula lhs, Formula rhs)) = "(\<= <compile(lhs)> <compile(rhs)>
 str compile(gt(Formula lhs, Formula rhs)) = "(\> <compile(lhs)> <compile(rhs)>)";
 str compile(gte(Formula lhs, Formula rhs)) = "(\>= <compile(lhs)> <compile(rhs)>)";
 str compile(equal(Formula lhs, Formula rhs)) = "(= <compile(lhs)> <compile(rhs)>)";
-str compile(addition(set[Formula] formulas)) = "(+ <("" | "<it> <compile(f)>" | f <- formulas)>)";
-str compile(substraction(set[Formula] formulas)) = "(- <("" | "<it> <compile(f)>" | f <- formulas)>)";
-str compile(multiplication(set[Formula] formulas)) = "(* <("" | "<it> <compile(f)>" | f <- formulas)>)";
-str compile(division(set[Formula] formulas)) = "(/ <("" | "<it> <compile(f)>" | f <- formulas)>)";
+str compile(addition(Formula lhs, Formula rhs)) = "(+ <compile(lhs)> <compile(rhs)>)";
+str compile(substraction(Formula lhs, Formula rhs)) = "(- <compile(lhs)> <compile(rhs)>)";
+str compile(multiplication(Formula lhs, Formula rhs)) = "(* <compile(lhs)> <compile(rhs)>)";
+str compile(division(Formula lhs, Formula rhs)) = "(/ <compile(lhs)> <compile(rhs)>)";
 

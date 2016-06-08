@@ -31,7 +31,7 @@ ModelFinderResult checkInitialSolution(Problem problem) {
 	tuple[Formula formula, int time] t = benchmark(translateExtended, problem, ie.env);
 	print("done, took: <(t.time/1000000)> ms\n");
 	
-	//iprintln(t.formula);
+	iprintln(t.formula);
 	
 	//println("SAT Formula:");
 	//iprintln(t.result.formula); 
@@ -90,8 +90,8 @@ private ModelFinderResult runInSolver(Problem originalProblem, Formula formula, 
 
 Environment merge(Model model, Environment environment) 
 	= visit(environment) {
-		case var(str name) => model[name].exists ? \true() : \false() when name in model
-		case intVar(str name) => \int(model[name].i) when name in model
+		case var(str name) => model[name] when name in model
+		case intVar(str name) => model[name] when name in model
 	};
 
 private tuple[&T, int] benchmark(&T () methodToBenchmark) {

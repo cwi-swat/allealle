@@ -1,6 +1,17 @@
-{a,b,c,d,e}
-Num1(int):1[{},{<a>,<b>,<c>}]
-Num2(int):1[{},{<c>,<d>,<e>}]
+{anna,bert,chris,dirk,ernie}
+Leeftijd1(int):1[{},{<anna>,<bert>,<chris>}]
+Leeftijd2(int):1[{},{<chris>,<dirk>,<ernie>}]
 
-Num1 > 20
-Num2 < 10 && Num2 > 5
+Leeftijd1 < Leeftijd2
+
+Leeftijd1 -- Leeftijd2 > 10
+
+//Num1 = 10
+//Num2 = 15
+
+Leeftijd1 ++ Leeftijd2 > 0
+
+//some Leeftijd1
+some Leeftijd2
+
+//some Num1 & Num2
