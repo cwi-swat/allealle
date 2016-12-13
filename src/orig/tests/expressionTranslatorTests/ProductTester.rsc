@@ -1,6 +1,6 @@
-module orig::tests::binderTests::ProductTester
+module orig::tests::expressionTranslatorTests::ProductTester
 
-extend orig::tests::binderTests::BinderTesterBase;
+extend orig::tests::expressionTranslatorTests::TesterBase;
 
 test bool test1x1Product_onlyThruthValues() {
 	Binding dir = t("d1");

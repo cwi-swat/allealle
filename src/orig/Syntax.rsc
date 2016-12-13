@@ -29,14 +29,15 @@ syntax Formula
 syntax Expr
 	= bracket "(" Expr expr ")"
 	> \join:		Expr lhs "." Expr rhs
+	| accessorJoin: Expr set "[" Expr select "]"
 	> variable:		Variable v
 	| transpose:	"~" Expr expr
 	| closure:		"^" Expr expr
 	| reflexClosure:"*" Expr expr
 	| union:		Expr lhs "++" Expr rhs 
 	| intersection:	Expr lhs "&" Expr rhs
-	| difference:	Expr lhs "--" Expr rhs
-	| product:		Expr lhs "-\>" Expr rhs
+	| difference:	Expr lhs "\\" Expr rhs
+	| left product:		Expr lhs "-\>" Expr rhs
 	| ifThenElse:	Formula form "?" Expr then ":" Expr else
 	| comprehension:"{" {VarDeclaration ","}+ decls "|" Formula form "}"
 	;

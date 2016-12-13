@@ -3,9 +3,9 @@ module vis::ModelVisualizer
 import logic::Propositional;
 import logic::Integer;
 
-import extended::Translator;
-import extended::Binder;
-import extended::AST;
+import orig::FormulaTranslator;
+import orig::ExpressionTranslator;
+import orig::AST;
 
 import vis::Figure;
 import vis::Render;

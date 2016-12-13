@@ -1,40 +1,40 @@
-module orig::tests::binderTests::JoinTester
+module orig::tests::expressionTranslatorTests::JoinTester
 
-extend orig::tests::binderTests::BinderTesterBase;
+extend orig::tests::expressionTranslatorTests::TesterBase;
 
 test bool test1x2Join_onlyTruthValues() {
-	Binding person = t("jouke") + t("sara") + t("lucie");
-	Binding parent = t("jouke","lucie") + t("sara","lucie");
+	Binding person = t("j") + t("s") + t("l");
+	Binding parent = t("j","l") + t("s","l");
 
-	return 	\join(person, parent) == t("lucie");
+	return 	\join(person, parent) == t("l");
 }
 
 test bool test2x1Join_onlyTruthValues() {
-	Binding person = t("jouke") + t("sara") + t("lucie");
-	Binding parent = t("jouke","lucie") + t("sara","lucie");
+	Binding person = t("j") + t("s") + t("l");
+	Binding parent = t("j","l") + t("s","l");
 		
-	return 	\join(parent, person) == t("jouke")+t("sara");				 
+	return 	\join(parent, person) == t("j")+t("s");				 
 }
 
 test bool test1x2Join_withVars() {
-	Binding person = t("jouke")+t("sara")+t("lucie");
-	Binding parent = v("jouke","lucie")+v("sara","lucie");
+	Binding person = t("j")+t("s")+t("l");
+	Binding parent = v("j","l")+v("s","l");
 		
-	return 	\join(person, parent) == val("lucie", \or({var("jouke_lucie"), var("sara_lucie")}));
+	return 	\join(person, parent) == val("l", \or({var("j_l"), var("s_l")}));
 }
 
 test bool test2x1Join_withVars() {
-	Binding person = t("jouke")+t("sara")+t("lucie");
-	Binding parent = v("jouke","lucie")+v("sara","lucie");
+	Binding person = t("j")+t("s")+t("l");
+	Binding parent = v("j","l")+v("s","l");
 		
-	return \join(parent, person) == val("jouke", var("jouke_lucie"))+val("sara", var("sara_lucie"));				 
+	return \join(parent, person) == val("j", var("j_l"))+val("s", var("s_l"));				 
 }
 
 test bool test2x2_onlyTruthValues() {
-	Binding person = t("jouke")+t("heily")+t("lucie");
-	Binding parent = t("jouke","lucie")+t("heily","jouke");
+	Binding person = t("j")+t("heily")+t("l");
+	Binding parent = t("j","l")+t("heily","j");
 	
-	return \join(parent,parent) == t("heily","lucie");
+	return \join(parent,parent) == t("heily","l");
 }
 
 test bool test2x2_withVars() {
@@ -60,4 +60,11 @@ test bool test1x2_withVarsAndTruthVals() {
 	Binding n = v("p","h");
 	
 	return \join(p,n) == val("h", var("p_h"));
+}
+
+test bool test1x3_withTruthValues() {
+  Binding nums = t("n1"); 
+  Binding cells = t("n1", "n1", "n9") + t("n1", "n2", "n2") + t("n1", "n3", "n3");
+
+  return \join(nums, \join(nums, cells)) == t("n9");  
 }

@@ -21,7 +21,7 @@ syntax Expr
 	= intLit:			IntLit intLit
 	//| intProjection:	"[" Expr expr "]"
 	| multiplication:	Expr lhs "*" Expr rhs
-	| division:			Expr lhs "\\" Expr rhs
+	| division:			Expr lhs "/" Expr rhs
 	> addition:			Expr lhs "+" Expr rhs
 	| subtraction:		Expr lhs "-" Expr rhs
 	;

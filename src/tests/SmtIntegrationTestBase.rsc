@@ -2,7 +2,7 @@ module tests::SmtIntegrationTestBase
 
 import orig::AST;
 import orig::Imploder;
-import orig::Translator;
+import orig::FormulaTranslator;
 import orig::SMTCompiler;
 import logic::CNFConverter;
 import orig::SolverRunner;

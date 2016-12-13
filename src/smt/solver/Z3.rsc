@@ -17,7 +17,6 @@ import IO;
 import util::SystemAPI;
 
 import util::ShellExec;
-import smt::solver::ThreadUtil;
 
 @doc{
 	Starts the Z3 solver.
@@ -38,32 +37,31 @@ void stopZ3(PID z3) {
 	killProcess(z3);
 }
 
-str \run(PID z3, str command, bool debug = false) {
+str \run(PID z3, str command, bool debug = false, int wait = 0) {
 	printIfDebug(command, debug);
 		
 	writeTo(z3, "<command>\n"); // the \n is added because the outcome of the command will otherwise not be flushed
-	str outcome = read(z3);
+	str outcome = read(z3, wait);
 	
-	if (outcome != "") printIfDebug("Answer: <outcome>", debug);
+	if (outcome != "") {
+	  printIfDebug("Answer: <outcome>", debug);
+	  
+	  if (startsWith(outcome, "(error")) {
+	    throw "Problem with SMT constraints: <outcome>";
+	  }
+	}
 	
 	return outcome;	 
 }
 
 
-private str read(PID z3) {
-	str output = "";
-	// while the message is empty, keep reading till success or another output 
-	while(output == "") {
-		str out = readFrom(z3);
-		
-		while(out != "") {
-			output += out;
-			sleep(10);
-			out = readFrom(z3);
-		}
-	}
+private str read(PID z3, int wait) {
+	str output = readWithWait(z3, wait);
 	
-	return replaceLast(replaceAll(output, "success\n", ""), "\n", "");
+	while(output == "") {
+    output = trim(readWithWait(z3, wait));
+  }
+	return replaceAll(replaceAll(output, "success", ""), "\n", "");
 }
 
 private void printIfDebug(str line, bool debug) {

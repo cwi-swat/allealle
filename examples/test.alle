@@ -1,17 +1,15 @@
 {anna,bert,chris,dirk,ernie}
-Leeftijd1(int):1[{},{<anna>,<bert>,<chris>}]
-Leeftijd2(int):1[{},{<chris>,<dirk>,<ernie>}]
+
+Leeftijd1(int):1 [{},{<anna>,<bert>,<chris>}]
+Leeftijd2(int):1 [{},{<chris>,<dirk>,<ernie>}]
 
 Leeftijd1 < Leeftijd2
 
 Leeftijd1 -- Leeftijd2 > 10
 
-//Num1 = 10
-//Num2 = 15
+one Leeftijd1 & Leeftijd2
 
 Leeftijd1 ++ Leeftijd2 > 0
 
 //some Leeftijd1
 some Leeftijd2
-
-//some Num1 & Num2

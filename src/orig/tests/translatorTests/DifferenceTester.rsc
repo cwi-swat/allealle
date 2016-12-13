@@ -6,7 +6,7 @@ test bool testDifference() {
 	str testProblem = 
 		" {a,b}
 		' Set:1 [{\<a\>,\<b\>},{\<a\>,\<b\>}]
-		' no Set -- Set
+		' no Set \\ Set
 		";
 
 	Formula result = translate(testProblem);
