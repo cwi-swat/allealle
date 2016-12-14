@@ -14,6 +14,8 @@ import util::Maybe;
 import util::Math;
 
 import Map;
+import List;
+import Set;
 
 import IO;
 
@@ -44,7 +46,7 @@ void renderModel(Universe universe, Environment model, Environment () nextModel,
 						hcat([checkbox(name, name notin disOpt.filteredEdges, void (bool checked) {
 							disOpt = options(scale = disOpt.scale, filteredEdges = !checked ? disOpt.filteredEdges + edgeName : disOpt.filteredEdges - edgeName); 
 							r();
-							}) | str name <- getBinaryRelations(model), str edgeName := name]),
+							}) | str name <- getNaryRelations(model), str edgeName := name]),
 						hshrink(0.98), center()),
 					text("Zoom: <precision(disOpt.scale, 2)>"),
 					scaleSlider(int () { return  0; }, int () { return 100; }, int () { return round(disOpt.scale * 50.); }, void (int cur) {
@@ -73,30 +75,30 @@ void renderModel(Universe universe, Environment model, Environment () nextModel,
 	r();
 }
 
-set[str] getBinaryRelations(Environment model) = {relName | str relName <- model, /<_,_,relTheory()> := model[relName]};
+set[str] getNaryRelations(Environment model) = {relName | str relName <- model, Binding binding := model[relName], size(getOneFrom(binding<0>)) > 1};
 
 Figure visualizeModel(Universe universe, Environment model, DisplayOptions disOpt) {
 	if (model == ()) {
 		return text("No more models available", size(100));
 	}
 
-	rel[Atom, str] unaryRels = {<a, relName> | Atom a <- universe.atoms, str relName <- model, /idx:<a, relTheory()> := model[relName], model[relName][idx] == \true()};
-	rel[Atom, int] unaryIntVals = {<a, i> | Atom a <- universe.atoms, str relName <- model, /idx:<a, intTheory()> := model[relName], \int(int i) := model[relName][idx]};
+	rel[Atom, str] unaryRels = {<a, relName> | str relName <- model, map[Index,Formula] binding := model[relName], idx:[Atom a] <- binding, model[relName][idx] == \true()};
 	
-	rel[Atom, Atom, str] binaryRels = {<a, b, relName> | Atom a <- universe.atoms, Atom b <- universe.atoms, str relName <- model, /idx:<a,b, relTheory()> := model[relName], relName notin disOpt.filteredEdges, model[relName][idx] == \true()};
+	rel[list[Atom], str] naryRels = {<idx, relName> | str relName <- model, relName notin disOpt.filteredEdges, Binding binding := model[relName], size(getOneFrom(binding)) > 1, Index idx <- binding, model[relName][idx] == \true()};
 
-	Figures nodes = [n | Atom a <- universe.atoms, just(Figure n) := buildAtomNode(a, unaryRels, unaryIntVals, disOpt)];
-	nodes += [buildEdgeLabel(r<0>,r<1>,r<2>) | r <- binaryRels];
-	Edges edges = [edge(r<0>, labelId), edge(labelId, r<1>, triangle(round(10 * disOpt.scale), fillColor("black"))) | r <- binaryRels, str labelId := r<2> + "_" + r<0> + "_" + r<1>];
+	Figures nodes = [n | Atom a <- universe.atoms, just(Figure n) := buildAtomNode(a, unaryRels, disOpt)];
+	nodes += [buildEdgeLabel(a,b,i,relName) | <Index idx, str relName> <- naryRels, int i <- [0 .. size(idx)-1], Atom a := idx[i], Atom b := idx[i+1]];
+  
+	Edges edges = [edge(a, labelId), edge(labelId, b, triangle(round(10 * disOpt.scale), fillColor("black"))) | <Index idx, str relName> <- naryRels, int i <- [0 .. size(idx)-1], Atom a := idx[i], Atom b := idx[i+1], str labelId := "<relName>_<a>_<b>_step<i>"];
 	
 	return graph(nodes, edges, gap(round(20 * disOpt.scale)), hint("layered"));
 }
 
-Figure buildEdgeLabel(Atom from, Atom to, str relName) =
-	box(text(relName), id("<relName>_<from>_<to>"), lineWidth(0));
+Figure buildEdgeLabel(Atom from, Atom to, int index, str relName) =
+	box(text(relName), id("<relName>_<from>_<to>_step<index>"), lineWidth(0));
 
-Maybe[Figure] buildAtomNode(Atom a, rel[Atom, str] unaryRelations, rel[Atom, int] unaryIntVals, DisplayOptions disOpt) {
-	Figure getLabel() = vcat([text("\<<r>\>", center()) | str r <- unaryRelations[a]] + [text(a, [fontBold(true), center()])] + [text("<i>", [fontItalic(true), center()]) | int i <- unaryIntVals[a]]); 
+Maybe[Figure] buildAtomNode(Atom a, rel[Atom, str] unaryRelations, DisplayOptions disOpt) {
+	Figure getLabel() = vcat([text("\<<r>\>", center()) | str r <- unaryRelations[a]] + [text(a, [fontBold(true), center()])]); 
 	
 	if (unaryRelations[a] == {}) {
 		return nothing();

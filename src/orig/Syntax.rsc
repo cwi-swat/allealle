@@ -29,7 +29,7 @@ syntax Formula
 syntax Expr
 	= bracket "(" Expr expr ")"
 	> \join:		Expr lhs "." Expr rhs
-	| accessorJoin: Expr set "[" Expr select "]"
+	| accessorJoin: Expr col "[" Expr select "]"
 	> variable:		Variable v
 	| transpose:	"~" Expr expr
 	| closure:		"^" Expr expr

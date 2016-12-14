@@ -35,6 +35,7 @@ data Expr
 	| intersection(Expr lhs, Expr rhs)
 	| difference(Expr lhs, Expr rhs)
 	| \join(Expr lhs, Expr rhs)
+	| accessorJoin(Expr col, Expr select)
 	| product(Expr lhs, Expr rhs)
 	| ifThenElse(Formula caseForm, Expr thenExpr, Expr elseExpr)
 	| comprehension(list[VarDeclaration] decls, Formula form)

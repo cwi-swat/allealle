@@ -98,6 +98,8 @@ Binding translateExpr(difference(Expr lhsExpr, Expr rhsExpr), Environment env, U
 Binding translateExpr(\join(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni) = \join(lhs, rhs) 
 	when Binding lhs := translateExpr(lhsExpr, env, uni),
 		   Binding rhs := translateExpr(rhsExpr, env, uni);
+
+Binding translateExpr(accessorJoin(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni) = translateExpr(\join(rhsExpr, lhsExpr), env, uni);
 		
 Binding translateExpr(product(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni) = product(lhs, rhs)
 	when Binding lhs := translateExpr(lhsExpr, env, uni),
