@@ -3,9 +3,10 @@ module vis::tests::VisualizerTester
 import orig::ModelFinder;
 import orig::AST;
 import orig::Imploder;
-import orig::Translator;
+import orig::FormulaTranslator;
 
 import vis::ModelVisualizer;
+import IO;
 
 void testPigeonHoleProblem() {
 	str problem = 	"{h1, h2, p1, p2, p3}

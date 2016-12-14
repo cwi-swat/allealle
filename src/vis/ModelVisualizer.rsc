@@ -21,13 +21,24 @@ import IO;
 
 data DisplayOptions = options(real scale = 1.0, set[str] filteredEdges = {});
 
+data DisplayModus = textual() | visual();
+
 void renderModel(Universe universe, Environment model, Environment () nextModel, void () stop) {
 	DisplayOptions disOpt = options();
+	DisplayModus disModus = textual();
 	
 	Environment currentModel = model;
 
 	void visualizeNextModel() { currentModel = nextModel(); r();} 
-	
+	void switchDisplay() { 
+    switch(disModus) {
+      case visual(): disModus = textual(); 
+      case textual(): disModus = visual();
+    }
+    
+    r();
+  }
+  
 	Figure showButtons() = currentModel != () ?
 		hcat([
 			button("Next model", visualizeNextModel),
@@ -36,8 +47,15 @@ void renderModel(Universe universe, Environment model, Environment () nextModel,
 		hcat([
 			button("Stop", stop)
 		]); 
-	
-	Figure showDisplayOptions() = 
+				
+	Figure showToggle() {
+	  switch(disModus) {
+	    case visual():  return button("Current display: Visual\n Switch to textual", switchDisplay);
+	    case textual(): return button("Current display: Textual\n Switch to visual", switchDisplay);
+	  }
+  }
+  
+	Figure showDisplayOptions() = disModus == visual() ?
 		hcat([
 			box(
 				vcat([
@@ -57,19 +75,25 @@ void renderModel(Universe universe, Environment model, Environment () nextModel,
 				shrink(0.98),
 				center()
 			)
-		]);
+		]) : hcat([]);
+	
+	Figure showModel() =
+	 disModus == visual() ? 
+	   scrollable(visualizeModel(universe, currentModel, disOpt)) :
+	   scrollable(box(vcat(textualizeModel(currentModel) + box(lineWidth(0)), align(0,0)), lineWidth(0), hshrink(0.98))); 
 			
 	void r() = 
 		render("Model visualizer", 
 			vcat([
 				box(
 					hcat([
+					  box(showToggle(), hshrink(0.20)),
 						box(showDisplayOptions(), hshrink(0.40)),
 						showButtons()
 					]),
 					vshrink(0.10)
 				),
-				scrollable(visualizeModel(universe, currentModel, disOpt))
+			 showModel()	
 			]));
 
 	r();
@@ -105,6 +129,33 @@ Maybe[Figure] buildAtomNode(Atom a, rel[Atom, str] unaryRelations, DisplayOption
 	} else {
 		return just(ellipse(getLabel(), fillColor("white"), size(round(50 * disOpt.scale)), id(a), lineWidth(1.5)));
 	}			
+}
+
+Figures textualizeModel(Environment model) {
+  bool indexSort(Index a, Index b ) {
+    for (int i <- [0..size(a)]) {
+      if (a[i] > b[i]) { return false; }
+      else if (a[i] < b[i]) { return true; }  
+    }
+    
+    return false;
+  }
+  
+  Figures m = [];
+  list[str] sortedRel = sort(toList(model<0>));
+  for (str relName <- sortedRel) {
+    m += text("<relName>:", fontBold(true), fontItalic(true), left());
+    Binding b = model[relName];
+    list[Index] sortedIndices = sort(toList(b<0>), indexSort);
+    
+    for (Index idx <- sortedIndices, b[idx] == \true()) {
+      m += text("<intercalate(" -\> ", [a | Atom a <- idx])>", left());
+    } 
+    
+    m += text("");
+  }
+  
+  return m;
 }
 
 
