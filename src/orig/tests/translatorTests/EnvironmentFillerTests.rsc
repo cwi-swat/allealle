@@ -2,7 +2,7 @@ module orig::tests::translatorTests::EnvironmentFillerTests
 
 import orig::Imploder;
 import orig::AST;
-import orig::Translator;
+import orig::FormulaTranslator;
 
 import IO;
 

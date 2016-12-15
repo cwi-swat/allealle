@@ -8,24 +8,17 @@ data Formula
 	| \or(set[Formula] fs)
 	;
 
-Formula \or({})									= \false();
-Formula \or({Formula x}) 						= x;
+Formula \or({})									                    = \false();
+Formula \or({Formula x}) 						                = x;
+Formula \or(Formula a, Formula b) 				          = \or({a,b});
 
-Formula \or(Formula a, Formula b) 				= \or({a,b});
+@memo Formula \or({\false(), *Formula r})   			  = \or(r);
+@memo Formula \or({\true(), *Formula _})   			    = \true();
+@memo Formula \or({*Formula a, or(set[Formula] b)}) = \or(a + b);
+@memo Formula \or({Formula g,\not(g),*Formula r}) 	= \true();
 
-@memo
-Formula \or({\false(), *Formula r})   			= \or(r);
-@memo
-Formula \or({\true(), *Formula _})   			= \true();
-@memo
-Formula \or({*Formula a, or(set[Formula] b)}) 	= \or(a + b);
-@memo
-Formula \or({Formula g,\not(g),*Formula r}) 	= \true();
-
-@memo
-Formula \or({Formula g, \and({not(g), *Formula ra}), *Formula ro}) = \or({\and({not(g)} + ra)} + ro);
-@memo
-Formula \or({not(Formula g), \and({g, *Formula ra}), *Formula ro}) = \or({\and({g} + ra)} + ro);
+@memo Formula \or({Formula g, \and({not(g), *Formula ra}), *Formula ro}) = \or({\and({not(g)} + ra)} + ro);
+@memo Formula \or({not(Formula g), \and({g, *Formula ra}), *Formula ro}) = \or({\and({g} + ra)} + ro);
 
 Formula \and({})								= \true();
 Formula \and({Formula x}) 						= x;

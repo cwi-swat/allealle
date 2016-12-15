@@ -61,9 +61,9 @@ Binding \join(Binding lhs, Binding rhs) {
   @memo
   set[Index] indicesStartingWith(Atom a, Binding b) = {idx | Index idx <- b, [a, *Atom _] := idx};
     
-  // join by joining the right-most atom from the index of the lhs with the right-most atom from the index of the rhs. It is much like a database join
+  // join by joining the right-most atom from the index of the lhs with the left-most atom from the index of the rhs. It is much like a database join
   int arityLhs = arity(lhs);
-  set[Atom] mostRightAtomInLhs = {idx[arityLhs - 1] | Index idx <- lhs<0>};
+  set[Atom] mostRightAtomInLhs = {idx[arityLhs - 1] | Index idx <- lhs};
   
   Binding joinResult = ();
   for (Atom current <- mostRightAtomInLhs) {
@@ -73,10 +73,10 @@ Binding \join(Binding lhs, Binding rhs) {
     if (lhsIndices != {} && rhsIndices != {}) {  
 
       for (Index currentLhs <- lhsIndices, lhs[currentLhs] != \false(), Index currentRhs <- rhsIndices, rhs[currentRhs] != \false()) {
-        Index jointIndex = joinIndex(currentLhs, currentRhs);
         Formula val = and(lhs[currentLhs], rhs[currentRhs]);
         
         if (val != \false()) {
+          Index jointIndex = joinIndex(currentLhs, currentRhs);
           if (jointIndex notin joinResult) { 
             joinResult += (jointIndex : val);
           } else {
