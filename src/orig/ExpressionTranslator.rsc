@@ -16,7 +16,12 @@ alias Binding = map[Index, Formula];
 @memo
 private int sizeOfUniverse(Universe u) = size(u.atoms); 
 
-private int arity(Binding b) = size(idx) when Index idx := getOneFrom(b<0>);
+private int arity(Binding b) {
+  for (Index idx <- b) {
+    return size(idx);
+  }
+}
+
 private bool sameArity(Binding lhs, Binding rhs) = arity(lhs) == arity(rhs); 
 
 private Binding square(Binding m, int i, int sizeOfUniverse) = m when i >= sizeOfUniverse;
@@ -51,36 +56,34 @@ default Binding conjunction(Binding lhs, Binding rhs) { throw "Can not perform a
 Binding difference(Binding lhs, Binding rhs) = (idx:and(lhs[idx], rhsVal) |Index idx <- lhs, Formula rhsVal := ((idx in rhs) ? not(rhs[idx]) : \true())) when sameArity(lhs, rhs);
 default Binding different(Binding lhs, Binding rhs) { throw "Can not perform a difference on two relations with different arities"; }  
 
+@memo private set[Index] indicesEndingWith(Atom a, Binding b, int arity) = {idx | Index idx <- b, idx[arity - 1] == a};
+@memo private set[Index] indicesStartingWith(Atom a, Binding b) = {idx | Index idx <- b, idx[0] == a};
+
 Binding \join(Binding lhs, Binding rhs) {
   if (arity(lhs) == 1 && arity(rhs) == 1) { throw "Unable to join two unary relations"; }
-  
-  Index joinIndex([*Atom headLhs, Atom last], [Atom first, *Atom tailRhs]) = headLhs + tailRhs; 
-  
-  @memo
-  set[Index] indicesEndingWith(Atom a, Binding b) = {idx | Index idx <- b, [*Atom _, a] := idx};
-  @memo
-  set[Index] indicesStartingWith(Atom a, Binding b) = {idx | Index idx <- b, [a, *Atom _] := idx};
+  int arityLhs = arity(lhs);
+
+  Index joinIndex(Index lhsIndex, Index rhsIndex) = (lhsIndex - lhsIndex[arityLhs - 1]) + (rhsIndex - rhsIndex[0]); 
     
   // join by joining the right-most atom from the index of the lhs with the left-most atom from the index of the rhs. It is much like a database join
-  int arityLhs = arity(lhs);
   set[Atom] mostRightAtomInLhs = {idx[arityLhs - 1] | Index idx <- lhs};
   
   Binding joinResult = ();
   for (Atom current <- mostRightAtomInLhs) {
-    set[Index] lhsIndices = indicesEndingWith(current, lhs);
+    set[Index] lhsIndices = indicesEndingWith(current, lhs, arityLhs);
     set[Index] rhsIndices = indicesStartingWith(current, rhs);
     
     if (lhsIndices != {} && rhsIndices != {}) {  
 
-      for (Index currentLhs <- lhsIndices, lhs[currentLhs] != \false(), Index currentRhs <- rhsIndices, rhs[currentRhs] != \false()) {
-        Formula val = and(lhs[currentLhs], rhs[currentRhs]);
+      for (Index currentLhs <- lhsIndices, Formula lhsVal := lhs[currentLhs], lhsVal != \false(), Index currentRhs <- rhsIndices, Formula rhsVal := rhs[currentRhs], rhsVal != \false()) {
+        Formula val = and({lhsVal, rhsVal});
         
         if (val != \false()) {
           Index jointIndex = joinIndex(currentLhs, currentRhs);
           if (jointIndex notin joinResult) { 
             joinResult += (jointIndex : val);
           } else {
-            joinResult[jointIndex] = or(joinResult[jointIndex], val);
+            joinResult[jointIndex] = or({joinResult[jointIndex], val});
           }
         }
       }
