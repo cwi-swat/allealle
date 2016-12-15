@@ -14,8 +14,10 @@ void translateAndSolve(loc alleAlleFile) {
   println("Done");
   Problem p = implodeProblem(alleAlleFile);
   
-  ModelFinderResult r = checkInitialSolution(p);
-  if (sat(Environment currentModel, Universe universe, Environment () nextModel, void () stop) := r) {
-    stop();
+  for (int i <- [0..10]) {
+    ModelFinderResult r = checkInitialSolution(p);
+    if (sat(Environment currentModel, Universe universe, Environment () nextModel, void () stop) := r) {
+     stop();
+    }
   }  
 }

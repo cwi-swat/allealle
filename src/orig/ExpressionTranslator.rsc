@@ -63,28 +63,36 @@ Binding \join(Binding lhs, Binding rhs) {
   if (arity(lhs) == 1 && arity(rhs) == 1) { throw "Unable to join two unary relations"; }
   int arityLhs = arity(lhs);
 
-  Index joinIndex(Index lhsIndex, Index rhsIndex) = (lhsIndex - lhsIndex[arityLhs - 1]) + (rhsIndex - rhsIndex[0]); 
-    
   // join by joining the right-most atom from the index of the lhs with the left-most atom from the index of the rhs. It is much like a database join
-  set[Atom] mostRightAtomInLhs = {idx[arityLhs - 1] | Index idx <- lhs};
+  //set[Atom] mostRightAtomInLhs = {idx[arityLhs - 1] | Index idx <- lhs};
   
   Binding joinResult = ();
-  for (Atom current <- mostRightAtomInLhs) {
-    set[Index] lhsIndices = indicesEndingWith(current, lhs, arityLhs);
-    set[Index] rhsIndices = indicesStartingWith(current, rhs);
+  
+  map[Atom, set[Index]] lhsIndicesSortedByLastAtom = ();
+  for (Index idx <- lhs) {
+    Atom a = idx[arityLhs - 1];
+    if (a in lhsIndicesSortedByLastAtom) lhsIndicesSortedByLastAtom[a] += idx;
+    else lhsIndicesSortedByLastAtom[a] = {idx};
+  } 
+  map[Atom, set[Index]] rhsIndicesSortedByFirstAtom = ();
+  for (Index idx <- rhs) {
+    Atom a = idx[0];
+    if (a in rhsIndicesSortedByFirstAtom) rhsIndicesSortedByFirstAtom[a] += idx;
+    else rhsIndicesSortedByFirstAtom[a] = {idx};
+  }
+  
+  for (Atom current <- lhsIndicesSortedByLastAtom, current in rhsIndicesSortedByFirstAtom) {
     
-    if (lhsIndices != {} && rhsIndices != {}) {  
-
-      for (Index currentLhs <- lhsIndices, Formula lhsVal := lhs[currentLhs], lhsVal != \false(), Index currentRhs <- rhsIndices, Formula rhsVal := rhs[currentRhs], rhsVal != \false()) {
-        Formula val = and({lhsVal, rhsVal});
+    for (Index currentLhs <- lhsIndicesSortedByLastAtom[current], Formula lhsVal := lhs[currentLhs], lhsVal != \false(), Index currentRhs <- rhsIndicesSortedByFirstAtom[current], Formula rhsVal := rhs[currentRhs], rhsVal != \false()) {
+      Formula val = and(lhsVal, rhsVal);
         
-        if (val != \false()) {
-          Index jointIndex = joinIndex(currentLhs, currentRhs);
-          if (jointIndex notin joinResult) { 
-            joinResult += (jointIndex : val);
-          } else {
-            joinResult[jointIndex] = or({joinResult[jointIndex], val});
-          }
+      if (val != \false()) {
+        Index jointIndex = (currentLhs - currentLhs[arityLhs - 1]) + (currentRhs - currentRhs[0]);
+
+        if (jointIndex notin joinResult) { 
+          joinResult[jointIndex] = val;
+        } else {
+          joinResult[jointIndex] = or(joinResult[jointIndex], val);
         }
       }
     }
