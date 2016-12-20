@@ -20,6 +20,8 @@ private int arity(Binding b) {
   for (Index idx <- b) {
     return size(idx);
   }
+  
+  return 0;
 }
 
 private bool sameArity(Binding lhs, Binding rhs) = arity(lhs) == arity(rhs); 
