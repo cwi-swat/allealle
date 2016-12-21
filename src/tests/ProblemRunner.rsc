@@ -1,14 +1,14 @@
 module tests::ProblemRunner
 
-import orig::ModelFinder;
-import orig::Parser;
-import orig::Imploder;
-import orig::AST;
-import orig::FormulaTranslator;
+import ModelFinder;
+import relational::Imploder;
+import AST;
+import Binder;
+import Translator;
 
 import IO;
 
-void translateAndSolveSudoku() = translateAndSolve(|project://allealle/examples/sudoku.alle|);
+void translateAndSolveSudoku() = translateAndSolve(|project://allealle/examples/relational/sudoku.alle|);
 
 void translateAndSolve(loc alleAlleFile) {
   println("Done");

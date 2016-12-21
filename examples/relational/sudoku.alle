@@ -17,5 +17,4 @@ forall x: r2, y: r2  | no (grid[x][y] & grid[r2\x][r2\y])
 forall x: r2, y: r3  | no (grid[x][y] & grid[r2\x][r3\y])
 forall x: r3, y: r1  | no (grid[x][y] & grid[r3\x][r1\y])                
 forall x: r3, y: r2  | no (grid[x][y] & grid[r3\x][r2\y])                
-forall x: r3, y: r3  | no (grid[x][y] & grid[r3\x][r3\y])                
-                
+forall x: r3, y: r3  | no (grid[x][y] & grid[r3\x][r3\y])

@@ -1,11 +1,13 @@
 module Plugin
 
-import orig::Parser;
-import orig::Syntax;
-import orig::AST;
-import orig::Imploder;
-import orig::FormulaTranslator; 
-import orig::ModelFinder;
+import relational::Parser;
+import relational::Syntax;
+import relational::AST;
+import relational::Imploder;
+
+import Translator; 
+import ModelFinder;
+import Binder;
 
 import vis::ModelVisualizer;
 
@@ -23,18 +25,18 @@ void main(){
 	contribs = {
 		popup(
 			action("Check and visualize", (Tree current, loc file) {
-				if (/orig::Syntax::Problem p := current) {checkAndVisualize(p);}
+				if (/relational::Syntax::Problem p := current) {checkAndVisualize(p);}
 			})
 		)
 	};
 	
 	registerContributions(lang, contribs);
 }
-
-void checkAndVisualize(orig::Syntax::Problem p) {
+ 
+void checkAndVisualize(relational::Syntax::Problem p) {
 	ModelFinderResult result = checkInitialSolution(implodeProblem(p));
 
-	if (sat(Environment currentModel, orig::AST::Universe uni, Environment () nextModel, void () stop) := result) {
+	if (sat(Environment currentModel, relational::AST::Universe uni, Environment () nextModel, void () stop) := result) {
 		renderModel(uni, currentModel, nextModel, stop);
 	} else {
 		alert("Not satisfiable, can not visualize");

@@ -1,6 +1,6 @@
-module orig::tests::expressionTranslatorTests::JoinTester
+module relational::tests::binderTests::JoinTester
 
-extend orig::tests::expressionTranslatorTests::TesterBase;
+extend relational::tests::binderTests::TesterBase;
 
 test bool test1x2Join_onlyTruthValues() {
 	Binding person = t("j") + t("s") + t("l");

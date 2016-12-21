@@ -1,6 +1,6 @@
-module orig::tests::translatorTests::EqualityTests
+module relational::tests::translatorTests::EqualityTests
 
-extend orig::tests::translatorTests::BaseTester;
+extend relational::tests::translatorTests::BaseTester;
 
 test bool testEquality_isEqual_noLowerBounds() {
 	str testProblem = 

@@ -3,9 +3,9 @@ module vis::ModelVisualizer
 import logic::Propositional;
 import logic::Integer;
 
-import orig::FormulaTranslator;
-import orig::ExpressionTranslator;
-import orig::AST;
+import relational::Translator;
+import relational::AST;
+import Binder;
 
 import vis::Figure;
 import vis::Render;
@@ -99,21 +99,21 @@ void renderModel(Universe universe, Environment model, Environment () nextModel,
 	r();
 }
 
-set[str] getNaryRelations(Environment model) = {relName | str relName <- model, Binding binding := model[relName], size(getOneFrom(binding<0>)) > 1};
+set[str] getNaryRelations(Environment model) = {relName | str relName <- model, Binding binding := model[relName], size(getOneFrom(binding).vector) > 1};
 
 Figure visualizeModel(Universe universe, Environment model, DisplayOptions disOpt) {
 	if (model == ()) {
 		return text("No more models available", size(100));
 	}
 
-	rel[Atom, str] unaryRels = {<a, relName> | str relName <- model, map[Index,Formula] binding := model[relName], idx:[Atom a] <- binding, model[relName][idx] == \true()};
+	rel[Atom, str] unaryRels = {<a, relName> | str relName <- model, map[Index,Formula] binding := model[relName], idx:<relational(),[Atom a]> <- binding, model[relName][idx] == \true()};
 	
-	rel[list[Atom], str] naryRels = {<idx, relName> | str relName <- model, relName notin disOpt.filteredEdges, Binding binding := model[relName], size(getOneFrom(binding)) > 1, Index idx <- binding, model[relName][idx] == \true()};
+	rel[list[Atom], str] naryRels = {<idx.vector, relName> | str relName <- model, relName notin disOpt.filteredEdges, Binding binding := model[relName], size(getOneFrom(binding).vector) > 1, Index idx <- binding, model[relName][idx] == \true()};
 
 	Figures nodes = [n | Atom a <- universe.atoms, just(Figure n) := buildAtomNode(a, unaryRels, disOpt)];
-	nodes += [buildEdgeLabel(a,b,i,relName) | <Index idx, str relName> <- naryRels, int i <- [0 .. size(idx)-1], Atom a := idx[i], Atom b := idx[i+1]];
+	nodes += [buildEdgeLabel(a,b,i,relName) | <list[Atom] idx, str relName> <- naryRels, int i <- [0 .. size(idx)-1], Atom a := idx[i], Atom b := idx[i+1]];
   
-	Edges edges = [edge(a, labelId), edge(labelId, b, triangle(round(10 * disOpt.scale), fillColor("black"))) | <Index idx, str relName> <- naryRels, int i <- [0 .. size(idx)-1], Atom a := idx[i], Atom b := idx[i+1], str labelId := "<relName>_<a>_<b>_step<i>"];
+	Edges edges = [edge(a, labelId), edge(labelId, b, triangle(round(10 * disOpt.scale), fillColor("black"))) | <list[Atom] idx, str relName> <- naryRels, int i <- [0 .. size(idx)-1], Atom a := idx[i], Atom b := idx[i+1], str labelId := "<relName>_<a>_<b>_step<i>"];
 	
 	return graph(nodes, edges, gap(round(20 * disOpt.scale)), hint("layered"));
 }
@@ -132,26 +132,37 @@ Maybe[Figure] buildAtomNode(Atom a, rel[Atom, str] unaryRelations, DisplayOption
 }
 
 Figures textualizeModel(Environment model) {
+  if (model == ()) {
+    return [text(""), text("No more models available", fontBold(true), left())];
+  }
+  
   bool indexSort(Index a, Index b ) {
-    for (int i <- [0..size(a)]) {
-      if (a[i] > b[i]) { return false; }
-      else if (a[i] < b[i]) { return true; }  
+    for (int i <- [0..size(a.vector)]) {
+      if (a.vector[i] > b.vector[i]) { return false; }
+      else if (a.vector[i] < b.vector[i]) { return true; }  
     }
     
     return false;
   }
   
-  Figures m = [];
+  Figures m = [text("")];
   list[str] sortedRel = sort(toList(model<0>));
   for (str relName <- sortedRel) {
     m += text("<relName>:", fontBold(true), fontItalic(true), left());
     Binding b = model[relName];
     list[Index] sortedIndices = sort(toList(b<0>), indexSort);
     
+    bool hasRelations = false;
+
     for (Index idx <- sortedIndices, b[idx] == \true()) {
-      m += text("<intercalate(" -\> ", [a | Atom a <- idx])>", left());
+      m += text("  <intercalate(" -\> ", [a | Atom a <- idx.vector])>", left());
+      hasRelations = true;
     } 
     
+    if (!hasRelations) {
+      m += text("  \<none\>", left());
+    }
+        
     m += text("");
   }
   

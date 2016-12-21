@@ -1,19 +1,21 @@
-module orig::ModelFinder
+module ModelFinder
 
 import logic::Propositional;
 
-import orig::AST;
-import orig::Imploder;
-import orig::FormulaTranslator;
-import orig::SMTCompiler;
-import logic::CNFConverter;
-import orig::SolverRunner;
-import orig::ExpressionTranslator;
+import relational::AST;
+import relational::Translator;
 
+import logic::CNFConverter;
+ 
+import Translator;
+import SolverRunner; 
+import Binder;
+import SMTCompiler;
+ 
 import util::Benchmark;
 import IO;
 import List;
-
+ 
 alias PID = int;
 
 data ModelFinderResult 
@@ -23,12 +25,16 @@ data ModelFinderResult
 	;
 
 ModelFinderResult checkInitialSolution(Problem problem) {
+  println("Constructing translators");
+  list[Translator] translators = [getRelationalTranslator()];
+
 	print("Building initial environment...");
-	tuple[Environment env, int time] ie = benchmark(createInitialEnvironment, problem);
+	//Environment env = createInitialEnvironment(problem, translators);
+	tuple[Environment env, int time] ie = benchmark(createInitialEnvironment, problem, translators);
 	print("done, took: <(ie.time/1000000)> ms\n");
 	
 	print("Translating problem to SAT formula...");
-	tuple[Formula formula, int time] t = benchmark(translate, problem, ie.env);
+	tuple[Formula formula, int time] t = benchmark(translate, problem, ie.env, translators);
 	print("done, took: <(t.time/1000000)> ms\n");
 	
 	//iprintln(t.formula);

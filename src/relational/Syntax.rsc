@@ -1,12 +1,18 @@
-module orig::Syntax
+module relational::Syntax
 
 extend lang::std::Layout;
 
-start syntax Problem = problem: Universe uni RelationalBound* bounds Formula* formulas;
+start syntax Problem = problem: Universe uni RelationalBound* bounds Formula* constraints;
 
 syntax Universe = universe: "{" {Atom ","}+ atoms "}";
 
-syntax RelationalBound = relationalBound: Variable v ":" Arity a "[" "{" {Tuple ","}* lower "}" "," "{" {Tuple ","}* upper "}" "]";
+syntax RelationalBound 
+  = relationalBound: Variable v ":" Arity a "[" "{" {Tuple ","}* lower "}" "," "{" {Tuple ","}* upper "}" "]"
+  | relationalBoundWithTheory: Variable v "(" Theory theory ")" ":" Arity a "[" "{" {Tuple ","}* lower "}" "," "{" {Tuple ","}* upper "}" "]"
+  ;
+  
+syntax Theory = "rel";  
+  
 syntax Tuple = \tuple: "\<" {Atom ","}+ atoms "\>";	
   
 syntax Formula

@@ -1,8 +1,9 @@
-module orig::SolverRunner
+module SolverRunner
 
 extend smt::solver::SolverRunner;
 
-import orig::SMTCompiler;
+import SMTCompiler; 
+
 import logic::Propositional;
 
 alias Model = map[str var, bool exists];

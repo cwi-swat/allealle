@@ -1,11 +1,13 @@
 module vis::tests::VisualizerTester
 
-import orig::ModelFinder;
-import orig::AST;
-import orig::Imploder;
-import orig::FormulaTranslator;
+import ModelFinder;
+import AST;
+import Binder;
 
-import vis::ModelVisualizer;
+import relational::Imploder;
+import relational::Translator;
+
+import vis::ModelVisualizer; 
 import IO;
 
 void testPigeonHoleProblem() {

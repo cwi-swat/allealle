@@ -1,6 +1,6 @@
-module orig::Parser
+module relational::Parser
 
-import orig::Syntax;
+import relational::Syntax;
 
 import ParseTree;
 
