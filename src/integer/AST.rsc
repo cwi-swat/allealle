@@ -1,10 +1,10 @@
-module extended::AST
+module integer::AST
 
-extend orig::AST;
-
-data RelationalBound = relationalBound(str relName, Sort sort, int arity, list[Tuple] lowerBounds, list[Tuple] upperBounds);
+extend AST;
 
 // Integer theory extensions
+data Theory = integers();
+
 data Sort
 	= intSort()
 	;

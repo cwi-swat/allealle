@@ -1,20 +1,18 @@
 module ModelFinder
 
 import logic::Propositional;
-
-import relational::AST;
-import relational::Translator;
-
-import logic::CNFConverter;
  
+import AST;
 import Translator;
-import SolverRunner; 
+import SMTInterface; 
 import Binder;
-import SMTCompiler;
- 
+import smt::solver::SolverRunner; 
+
 import util::Benchmark;
 import IO;
 import List;
+import String;
+import Map;
  
 alias PID = int;
 
@@ -24,17 +22,19 @@ data ModelFinderResult
 	| trivial(bool sat)
 	;
 
-ModelFinderResult checkInitialSolution(Problem problem) {
-  println("Constructing translators");
-  list[Translator] translators = [getRelationalTranslator()];
+alias TranslationUnit = tuple[Translator translator, SMTInterface smtInterface]; 
 
+list[Translator] getTranslators(list[TranslationUnit] tus) = [t.translator | TranslationUnit t <- tus];
+list[SMTInterface] getSMTInterfaces(list[TranslationUnit] tus) = [t.smtInterface | TranslationUnit t <- tus]; 
+list[SMTInterpreter] getSMTInterpreters(list[SMTInterface] apis) = [a.interpreter | SMTInterface a <- apis];
+
+ModelFinderResult checkInitialSolution(Problem problem, list[TranslationUnit] translationUnits) {
 	print("Building initial environment...");
-	//Environment env = createInitialEnvironment(problem, translators);
-	tuple[Environment env, int time] ie = benchmark(createInitialEnvironment, problem, translators);
+	tuple[Environment env, int time] ie = benchmark(createInitialEnvironment, problem, getTranslators(translationUnits));
 	print("done, took: <(ie.time/1000000)> ms\n");
 	
 	print("Translating problem to SAT formula...");
-	tuple[Formula formula, int time] t = benchmark(translate, problem, ie.env, translators);
+	tuple[Formula formula, int time] t = benchmark(translate, problem, ie.env, getTranslators(translationUnits));
 	print("done, took: <(t.time/1000000)> ms\n");
 	
 	//iprintln(t.formula);
@@ -51,19 +51,68 @@ ModelFinderResult checkInitialSolution(Problem problem) {
 		return trivial(true);
 	}
 
-	return runInSolver(problem, t.formula, ie.env);
+	return runInSolver(problem, t.formula, ie.env, getSMTInterfaces(translationUnits));
 }
 
-private ModelFinderResult runInSolver(Problem originalProblem, Formula formula, Environment env) {
+private ModelFinderResult runInSolver(Problem originalProblem, Formula formula, Environment env, list[SMTInterface] interfaces) {
 	PID solverPid = startSolver();
 	void stop() {
 		stopSolver(solverPid);
 	}
 	
-	set[str] vars = {name | str relName <- env, Index idx  <- env[relName], var(str name) := env[relName][idx]};
+	set[SMTVar] vars = ({} | it + v | SMTInterface i <- interfaces, set[SMTVar] v := i.collectVars(env));
+	
+	str compileVariableDeclarations(set[SMTVar] vars) {
+	  str result = "";
+	  
+	  for (SMTVar var <- vars) {
+      str compilerResult = "";
+      bool alreadyCompiled = false;
+            
+	    for (SMTInterface interface <- interfaces) {
+	      compilerResult = interface.compiler.declareVariable(var);
+	      if (alreadyCompiled && compilerResult != "") {
+	       throw "SMT Compilation error, more then two configured compilers compiled the same variable \'<var>\'";
+	      }
+	      result += "<compilerResult>";
+	      compilerResult = "";
+	      alreadyCompile = true;
+	    }
+	  }
+	  
+	  return result;	   
+	}
+	
+  str compileAssertedFormula(Formula formula) {
+    str result = "";
+    
+    for (SMTInterface interface <- interfaces, str smt := interface.compiler.compile(formula, compileFormula)) {
+      if (result != "" && smt != "") {
+        throw "SMT Compilation error, more then two configured compilers compiled the same asserted formula";
+      }
+      
+      result = "(assert <smt>)"; 
+    } 
+    
+    return result;
+  }
+
+	str compileFormula(Formula formula) {
+	  str result = "";
+	  
+	  for (SMTInterface interface <- interfaces, str smt := interface.compiler.compile(formula, compileFormula)) {
+      if (result != "" && smt != "") {
+        throw "SMT Compilation error, more then two configured compilers compiled the same formula";
+      }
+
+      result = smt;
+	  } 
+	  
+	  return result;
+	}
 	
 	print("Translating to SMT-LIB...");
-	tuple[str smt, int time] smtVars = benchmark(compileDeclaredVariables, vars);
+	tuple[str smt, int time] smtVars = benchmark(compileVariableDeclarations, vars);
 	tuple[str smt, int time] smtForm = benchmark(compileAssertedFormula, formula);
 	print("done, took: <(smtVars.time + smtForm.time) /1000000> ms\n");
 	
@@ -71,29 +120,60 @@ private ModelFinderResult runInSolver(Problem originalProblem, Formula formula, 
 	tuple[bool result, int time] solving = benchmark(isSatisfiable, solverPid, smtVars.smt + smtForm.smt); 
 	print("done, took: <solving.time/1000000> ms\n");
 	println("Outcome is \'<solving.result>\'");
-
+ 
+  list[SMTInterpreter] interpreters = getSMTInterpreters(interfaces);
+ 
 	Model currentModel = ();
 	Environment next() {
-		currentModel = nextModel(solverPid, currentModel);
+		currentModel = nextModel(solverPid, currentModel, interpreters);
 		if (currentModel == ()) {
 			return ();
 		} else {
-			return merge(currentModel, env);
+			return merge(currentModel, env, interpreters);
 		}
 	}
 
 	if(solving.result) {
-		currentModel = firstModel(solverPid, vars);
-		return sat(merge(currentModel, env), originalProblem.uni, next, stop);
+		currentModel = firstModel(solverPid, vars, interpreters);
+		return sat(merge(currentModel, env, interpreters), originalProblem.uni, next, stop);
 	} else {
 		return unsat({});
 	}
 }
 
-Environment merge(Model model, Environment environment) 
-	= visit(environment) {
-		case var(str name) => model[name] ? \true() : \false() when name in model
-	};
+Environment merge(Model model, Environment environment, list[SMTInterpreter] interpreters) =
+  (environment | interpreter.merge(model, it) | SMTInterpreter interpreter <- interpreters); 
+
+	//= visit(environment) {
+	//	  case var(str name) => model[name] ? \true() : \false() when name in model
+ //     //case intVar(str name) => 
+	//};
+
+Model getValues(SolverPID pid, set[SMTVar] vars, list[SMTInterpreter] interpreters) {
+  resp = runSolver(pid, "(get-value (<intercalate(" ", [v.name | v <- vars])>))");
+  
+  if (resp != "") {
+    map[str,str] foundValues = (() | it + (var:val) | /(<var:[A-Za-z_0-9]+> <val:[^(^)]+>)/ := substring(resp, 1, size(resp)-1));
+  
+    return (() | it + interpreter.getValues(foundValues, vars) | SMTInterpreter interpreter <- interpreters); 
+  }
+  
+  throw "Unable to get values for variables from solver";
+}
+ 
+Model firstModel(SolverPID pid, set[SMTVar] vars, list[SMTInterpreter] interpreters) = getValues(pid, vars, interpreters);
+
+Model nextModel(SolverPID pid, Model currentModel, list[SMTInterpreter] interpreters) {
+  if ("" !:= runSolver(pid, "(assert (or <intercalate(" ", [var | v <- currentModel, v.theory == relational(), str var := (currentModel[v] == \true() ? "(not <v.name>)" : v)])>))")) {
+    throw "Unable to declare needed variables in SMT";
+  }   
+  
+  if (checkSat(pid)) {
+    return getValues(pid, domain(currentModel), interpreters);
+  } else {
+    return ();
+  }
+}
 
 private tuple[&T, int] benchmark(&T () methodToBenchmark) {
 	int startTime = userTime();

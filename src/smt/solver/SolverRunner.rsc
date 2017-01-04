@@ -25,6 +25,7 @@ void stopSolver(SolverPID pid) {
 
 bool isSatisfiable(SolverPID pid, str smtFormula) { 
 	str solverResult = runSolver(pid, smtFormula); 
+	println("Starting to check satisfiability");
 	if ("" !:= solverResult) {
 		throw "Unable to assert clauses: <solverResult>"; 
 	} 	
@@ -43,7 +44,7 @@ bool checkSat(SolverPID pid) {
 
 str runSolver(SolverPID pid, str commands, int wait = 0) {
 	try {
-		return run(pid, commands, debug=false, wait = wait);
+		return run(pid, commands, debug=true, wait = wait);
 	}
 	catch er: throw "Error while running SMT solver, reason: <er>"; 	
 }

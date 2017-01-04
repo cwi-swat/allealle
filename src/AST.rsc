@@ -1,10 +1,8 @@
 module AST
 
-alias Atom = str;
-
-data Theory;
-
 data Problem = problem(Universe uni, list[RelationalBound] bounds, list[Formula] constraints);
+
+data Universe = universe(list[Atom] atoms);
 
 data RelationalBound 
   = relationalBound(str relName, int arity, list[Tuple] lowerBounds, list[Tuple] upperBounds)
@@ -13,7 +11,9 @@ data RelationalBound
 
 data Tuple = \tuple(list[Atom] atoms);  
 
-data Universe = universe(list[Atom] atoms);
+alias Atom = str;
+
+data Theory;
 
 data Formula;
 data Expr;

@@ -4,7 +4,7 @@ extend Binder;
 
 import logic::Propositional;
 import relational::AST;
-
+ 
 import List;
 //import Relation;
 import Map;

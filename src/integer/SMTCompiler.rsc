@@ -1,10 +1,9 @@
-module extended::SMTCompiler
+module integer::SMTCompiler
 
-extend orig::SMTCompiler;
+extend SMTCompiler;
 
 import logic::Integer;
 
-str compileDeclaredBoolVariables(set[str] vars) = "<("" | "<it>\n(declare-const <v> Bool)" | v <- vars)>";
 str compileDeclaredIntVariables(set[str] vars) = "<("" | "<it>\n(declare-const <v>_int Int)" | v <- vars)>";
 
 str compile(\int(int i)) = "<i>";

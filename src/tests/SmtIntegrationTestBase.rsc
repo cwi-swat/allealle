@@ -1,11 +1,13 @@
 module tests::SmtIntegrationTestBase
 
-import orig::AST;
-import orig::Imploder;
-import orig::FormulaTranslator;
-import orig::SMTCompiler;
-import logic::CNFConverter;
-import orig::SolverRunner;
+import AST;
+import Translator;
+import SMTCompiler;
+import SolverRunner;
+import Binder;
+
+import relational::Imploder;
+import relational::Translator;
 
 import util::Benchmark;
 import util::ShellExec;
@@ -16,19 +18,21 @@ void executeTest(loc file) = executeTest("File: <file>", readFile(file));
 
 void executeTest(str title, str problem) {
 	println(title);
+	
+	list[Translator] translators = [getRelationalTranslator()];
 	 
 	print("Parsing and imploding problem...");
 	Problem p = implodeProblem(problem);
 	print("done\n");
 	 
 	print("Building initial relational environment...");
-	tuple[Environment env, int time] ie = benchmark(createInitialEnvironment, p);
+	tuple[Environment env, int time] ie = benchmark(createInitialEnvironment, p, translators);
 	print("done\n");	 
 	 
 	print("Translating problem to SAT formula...");
-	tuple[Formula f, int time] trans = benchmark(translate, p, ie.env);
+	tuple[Formula f, int time] trans = benchmark(translate, p, ie.env, translators);
 	print("done\n");
-	 
+	  
 	//print("Converting to CNF...");
 	//tuple[Formula formula, int time] cnf = benchmark(convertToCNF, trans.f);
 	//print("done\n");
