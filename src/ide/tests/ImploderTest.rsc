@@ -1,7 +1,7 @@
-module tests::ImploderTest
+module ide::tests::ImploderTest
 
-import relational::Imploder;
-import relational::AST;
+import ide::Imploder;
+import ide::CombinedAST;
 
 import IO;
 

@@ -84,6 +84,7 @@ Binding product(Binding lhs, Binding rhs)
       Index currentLhs <- lhs, 
       currentLhs.theory == relational(),
       Index currentRhs <- rhs, 
+      currentRhs.theory == relational(),
       Formula val := and(lhs[currentLhs], rhs[currentRhs]), 
       val !:= \false()); 
 

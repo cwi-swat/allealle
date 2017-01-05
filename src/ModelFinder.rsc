@@ -33,14 +33,15 @@ ModelFinderResult checkInitialSolution(Problem problem, list[TranslationUnit] tr
 	tuple[Environment env, int time] ie = benchmark(createInitialEnvironment, problem, getTranslators(translationUnits));
 	print("done, took: <(ie.time/1000000)> ms\n");
 	
+	iprintln(ie.env);
+	
 	print("Translating problem to SAT formula...");
 	tuple[Formula formula, int time] t = benchmark(translate, problem, ie.env, getTranslators(translationUnits));
 	print("done, took: <(t.time/1000000)> ms\n");
 	
-	//iprintln(t.formula);
-	
-	//println("SAT Formula:");
-	//iprintln(t.result.formula); 
+
+	println("SAT Formula:");
+	iprintln(t.formula); 
 	 
 	//print("Converting to CNF...");
 	//tuple[Formula formula, int time] cnf = <t.result.formula, t.time>; //benchmark(convertToCNF, t.result.formula);
@@ -86,8 +87,8 @@ private ModelFinderResult runInSolver(Problem originalProblem, Formula formula, 
   str compileAssertedFormula(Formula formula) {
     str result = "";
     
-    for (SMTInterface interface <- interfaces, str smt := interface.compiler.compile(formula, compileFormula)) {
-      if (result != "" && smt != "") {
+    for (SMTInterface interface <- interfaces, str smt := interface.compiler.compile(formula, compileFormula), smt != "") {
+      if (result != "") {
         throw "SMT Compilation error, more then two configured compilers compiled the same asserted formula";
       }
       
@@ -100,8 +101,8 @@ private ModelFinderResult runInSolver(Problem originalProblem, Formula formula, 
 	str compileFormula(Formula formula) {
 	  str result = "";
 	  
-	  for (SMTInterface interface <- interfaces, str smt := interface.compiler.compile(formula, compileFormula)) {
-      if (result != "" && smt != "") {
+	  for (SMTInterface interface <- interfaces, str smt := interface.compiler.compile(formula, compileFormula), smt != "") {
+      if (result != "") {
         throw "SMT Compilation error, more then two configured compilers compiled the same formula";
       }
 
@@ -116,6 +117,8 @@ private ModelFinderResult runInSolver(Problem originalProblem, Formula formula, 
 	tuple[str smt, int time] smtForm = benchmark(compileAssertedFormula, formula);
 	print("done, took: <(smtVars.time + smtForm.time) /1000000> ms\n");
 	
+	writeFile(|project://allealle/bin/latestSmt.smt|, "<smtVars.smt>\n<smtForm.smt>");
+	
 	print("Solving by Z3...");
 	tuple[bool result, int time] solving = benchmark(isSatisfiable, solverPid, smtVars.smt + smtForm.smt); 
 	print("done, took: <solving.time/1000000> ms\n");
@@ -126,6 +129,10 @@ private ModelFinderResult runInSolver(Problem originalProblem, Formula formula, 
 	Model currentModel = ();
 	Environment next() {
 		currentModel = nextModel(solverPid, currentModel, interpreters);
+	  
+	  println("Next model is:");
+    iprintln(currentModel);
+  
 		if (currentModel == ()) {
 			return ();
 		} else {
@@ -135,6 +142,10 @@ private ModelFinderResult runInSolver(Problem originalProblem, Formula formula, 
 
 	if(solving.result) {
 		currentModel = firstModel(solverPid, vars, interpreters);
+		
+		println("Found model is:");
+		iprintln(currentModel);
+		
 		return sat(merge(currentModel, env, interpreters), originalProblem.uni, next, stop);
 	} else {
 		return unsat({});
@@ -143,11 +154,6 @@ private ModelFinderResult runInSolver(Problem originalProblem, Formula formula, 
 
 Environment merge(Model model, Environment environment, list[SMTInterpreter] interpreters) =
   (environment | interpreter.merge(model, it) | SMTInterpreter interpreter <- interpreters); 
-
-	//= visit(environment) {
-	//	  case var(str name) => model[name] ? \true() : \false() when name in model
- //     //case intVar(str name) => 
-	//};
 
 Model getValues(SolverPID pid, set[SMTVar] vars, list[SMTInterpreter] interpreters) {
   resp = runSolver(pid, "(get-value (<intercalate(" ", [v.name | v <- vars])>))");
@@ -164,7 +170,13 @@ Model getValues(SolverPID pid, set[SMTVar] vars, list[SMTInterpreter] interprete
 Model firstModel(SolverPID pid, set[SMTVar] vars, list[SMTInterpreter] interpreters) = getValues(pid, vars, interpreters);
 
 Model nextModel(SolverPID pid, Model currentModel, list[SMTInterpreter] interpreters) {
-  if ("" !:= runSolver(pid, "(assert (or <intercalate(" ", [var | v <- currentModel, v.theory == relational(), str var := (currentModel[v] == \true() ? "(not <v.name>)" : v)])>))")) {
+  str smt = "";
+  
+  for (SMTVar var <- currentModel, SMTInterpreter interpreter <- interpreters, str cur := interpreter.variableNegator(var, currentModel), cur != "") {
+    smt += " <cur>";
+  }
+  
+  if ("" !:= runSolver(pid, "(assert (or <smt>))")) {
     throw "Unable to declare needed variables in SMT";
   }   
   

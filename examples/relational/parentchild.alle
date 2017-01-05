@@ -13,7 +13,7 @@ Adam in Person
 no parent.Adam
 Person in Adam.*parent
 
-forall p:Person | ((not (p == Adam)) => one parent.p)
+forall p:Person | ((not (p == Adam)) -> one parent.p)
 
 child == ~parent
 forall p:Person | p.sibling == {pp:Person | p.parent == pp.parent} \ p

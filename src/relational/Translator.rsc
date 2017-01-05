@@ -20,7 +20,7 @@ Environment createInitialEnvironment(Problem p)
 private Binding createRelationalMapping(relationalBound(str relName, int arity, list[Tuple] lowerBounds, list[Tuple] upperBounds)) =
   createRelationalMapping(relationalBoundWithTheory(relName, relational(), arity, lowerBounds, upperBounds));
 
-private Binding createRelationalMapping(relationalBoundWithTheory(str relName, relational(), int arity, list[Tuple] lb, list[Tuple] ub)) {
+private Binding createRelationalMapping(relationalBoundWithTheory(str relName, _, int arity, list[Tuple] lb, list[Tuple] ub)) {
   str idxToStr(list[Atom] idx) = intercalate("_", idx);
   
   Binding result = (<relational(), idx> : \true() | \tuple(list[Atom] idx) <- lb);
@@ -28,6 +28,8 @@ private Binding createRelationalMapping(relationalBoundWithTheory(str relName, r
   
   return result;
 } 
+
+private default Binding createRelationalMapping(RelationalBound _) = (); 
 
 bool has(empty(Expr _)) = true;
 bool has(atMostOne(Expr _)) = true;
@@ -51,7 +53,7 @@ Formula translateFormula(atMostOne(Expr expr), Environment env, Universe uni, Tr
   = \or(aggregate.translateFormula(empty(expr), env, uni), aggregate.translateFormula(exactlyOne(expr), env, uni));
 
 Formula translateFormula(exactlyOne(Expr expr), Environment env, Universe uni, TranslatorAggregatorFunctions aggregate)  
-  = (\false() | \or(it, \and(m[x], (\true() | \and(it, \not(m[y])) | Index y <- m, relational() := y.theory, y != x))) | Index x <- m)    
+  = (\false() | \or(it, \and(m[x], (\true() | \and(it, \not(m[y])) | Index y <- m, relational() := y.theory, y != x))) | Index x <- m, x.theory == relational())    
   when Binding m := aggregate.translateExpression(expr, env, uni);
 
 Formula translateFormula(nonEmpty(Expr expr), Environment env, Universe uni, TranslatorAggregatorFunctions aggregate)      
@@ -164,4 +166,4 @@ Binding translateExpr(ifThenElse(Formula caseForm, Expr thenExpr, Expr elseExpr)
 //  return result;  
 //}
   
-default Binding translateExpr(Expr e, Environment env, Universe uni, TranslatorAggregatorFunctions aggregate) { throw "Translation of expression \'<e>\' not yet implemented";}
+default Binding translateExpr(Expr e, Environment env, Universe uni, TranslatorAggregatorFunctions aggregate) = ();

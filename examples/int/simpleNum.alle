@@ -1,13 +1,8 @@
-{n1,n2,n3,n4,n5}
+{n1,n2,n3}
 
-Num1(int):1 [{<n1>},{<n1>,<n2>}]
-Num2(int):1 [{},{<n3>,<n4>,<n5>}]
-link:2 [{}, {<n1,n3>,<n1,n4>,<n2,n3>,<n2,n4>,<n1,n5>,<n2,n5>}]
+Num(int):1 [{},{<n1>,<n2>,<n3>}]
 
-link in Num1->Num2
-forall n:Num1 | one n.link
-//forall n:Num2 | one link.n
+Num > 0
 
-forall n1:Num1, n2:Num2 | ((n2 in n1.link) => n2 > 10)
-//(Num2 & Num1.link) > 10
-(Num2 -- Num1.link) < 5
+// For all two elements, if they are different elements, then they are of different values
+forall n1: Num, n2: Num | ((not (n1 == n2)) -> (not (n1 = n2))) 

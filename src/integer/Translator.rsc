@@ -8,24 +8,30 @@ import logic::Boolean;
 import integer::Binder;
 import integer::AST;
 
+import relational::AST;
+import relational::Binder;
+
 import List; 
+
+import IO;
  
-Translator getIntegerTranslator() = translator(createInitialEnv, has, translateFormula, translateExpression, constructSingletonBinding);
+Translator getIntTheoryTranslator() = translator(createInitialEnv, has, translateFormula, translateExpression, constructSingletonBinding);
   
 Environment createInitialEnv(Problem p) 
   = (rb.relName:createRelationalMapping(rb) | RelationalBound rb <- p.bounds);
 
-private Binding createRelationalMapping(relationalBound(str relName, int arity, list[Tuple] lowerBounds, list[Tuple] upperBounds)) = ();
-
 private Binding createRelationalMapping(relationalBoundWithTheory(str relName, integers(), 1, list[Tuple] lb, list[Tuple] ub))
   = (<integers(), [a]>: intVar(a) | \tuple([Atom a]) <- ub);
 
-bool has(gt(Expr _, Expr _))       = true;
-bool has(gte(Expr _, Expr _))      = true;
-bool has(lt(Expr _, Expr _))       = true;
-bool has(lte(Expr _, Expr _))      = true;
-bool has(intEqual(Expr _, Expr _)) = true;
-default bool has(integer::AST::Formula _)        = false; 
+private default Binding createRelationalMapping(RelationalBound _) = ();
+
+
+bool has(gt(Expr _, Expr _))              = true;
+bool has(gte(Expr _, Expr _))             = true;
+bool has(lt(Expr _, Expr _))              = true;
+bool has(lte(Expr _, Expr _))             = true;
+bool has(intEqual(Expr _, Expr _))        = true;
+default bool has(integer::AST::Formula _) = false; 
 
 @memo
 Environment constructSingletonBinding(str newVarName, Binding orig, list[Atom] vector) = (newVarName:(idx:orig[idx])) when Index idx:<integers(), vector> <- orig; 
@@ -69,21 +75,21 @@ Formula translateFormula(intEqual(Expr lhsExpr, Expr rhsExpr), Environment env, 
        
 @memo
 Binding translateExpression(intLit(int i), Environment env, Universe uni, TranslatorAggregatorFunctions aggregate) 
-  = (<integers(),[a]>:\int(i) | Atom a <- uni.atoms);
+  = (<integers(),[a]>:\int(i) | Atom a <- uni.atoms) + (<relational(), [a]>:\true() | Atom a <- uni.atoms);
 
-Binding translateExpression(multiplication(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni, TranslatorAggregatorFunctions aggregate) = multiply(lhs, rhs)
+Binding translateExpression(multiplication(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni, TranslatorAggregatorFunctions aggregate) = multiply(lhs, rhs) + product(lhs, rhs)
 	when Binding lhs := aggregate.translateExpression(lhsExpr, env, uni),
 		   Binding rhs := aggregate.translateExpression(rhsExpr, env, uni);
 
-Binding translateExpression(division(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni, TranslatorAggregatorFunctions aggregate) = divide(lhs, rhs)
+Binding translateExpression(division(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni, TranslatorAggregatorFunctions aggregate) = divide(lhs, rhs) + product(lhs, rhs)
   when Binding lhs := aggregate.translateExpression(lhsExpr, env, uni),
        Binding rhs := aggregate.translateExpression(rhsExpr, env, uni);
 
-Binding translateExpression(addition(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni, TranslatorAggregatorFunctions aggregate) = add(lhs, rhs)
+Binding translateExpression(addition(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni, TranslatorAggregatorFunctions aggregate) = add(lhs, rhs) + product(lhs, rhs)
   when Binding lhs := aggregate.translateExpression(lhsExpr, env, uni),
        Binding rhs := aggregate.translateExpression(rhsExpr, env, uni);
 		 
-Binding translateExpression(subtraction(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni, TranslatorAggregatorFunctions aggregate) = substract(lhs, rhs)
+Binding translateExpression(subtraction(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni, TranslatorAggregatorFunctions aggregate) = substract(lhs, rhs) + product(lhs, rhs)
   when Binding lhs := aggregate.translateExpression(lhsExpr, env, uni),
        Binding rhs := aggregate.translateExpression(rhsExpr, env, uni);
 

@@ -1,7 +1,8 @@
 module integer::Binder
 
-extend relational::Binder;
 
+import Binder;
+import relational::Binder;
 import logic::Integer;
 import integer::AST;
 

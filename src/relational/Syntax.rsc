@@ -7,7 +7,7 @@ syntax Theory =   relational: "rel";
 syntax Formula
 	= universal:	  "forall" {VarDeclaration ","}+ decls "|" Formula form
 	| existential:	"exists" {VarDeclaration ","}+ decls "|" Formula form 
-	> implication:	Formula lhsForm "=\>" Formula rhsForm
+	> implication:	Formula lhsForm "-\>" Formula rhsForm
 	| equality:		  Formula lhsForm "\<=\>" Formula rhsForm
 	> empty:		    "no" Expr expr
 	| atMostOne:	  "lone" Expr expr

@@ -1,10 +1,10 @@
-module vis::ModelVisualizer
+module ide::vis::ModelVisualizer
 
 import logic::Propositional;
 import logic::Integer;
 
-import relational::Translator;
-import relational::AST;
+import ide::CombinedAST;
+
 import Binder;
 
 import vis::Figure;
@@ -145,6 +145,9 @@ Figures textualizeModel(Environment model) {
     return false;
   }
   
+  str intTheoryValue(str relName, list[Atom] vector) = "(int value = <i>)" when relName in model, <integers(), vector> in model[relName], \int(int i) := model[relName][<integers(),vector>];
+  default str intTheoryValue(str _, list[Atom] _) = "";
+  
   Figures m = [text("")];
   list[str] sortedRel = sort(toList(model<0>));
   for (str relName <- sortedRel) {
@@ -154,8 +157,8 @@ Figures textualizeModel(Environment model) {
     
     bool hasRelations = false;
 
-    for (Index idx <- sortedIndices, b[idx] == \true()) {
-      m += text("  <intercalate(" -\> ", [a | Atom a <- idx.vector])>", left());
+    for (Index idx <- sortedIndices, idx.theory == relational(), b[idx] == \true()) {
+      m += text("  <intercalate(" -\> ", [a | Atom a <- idx.vector])> <intTheoryValue(relName, idx.vector)>", left());
       hasRelations = true;
     } 
     

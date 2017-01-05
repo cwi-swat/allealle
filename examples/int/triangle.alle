@@ -1,8 +1,8 @@
 {p1,p2,p3,l1,l2,l3,l4,l5,l6}
 
-Point:1  [{<p1>,<p2>,<p3>},{<p1>,<p2>,<p3>}]
+Point:1       [{<p1>,<p2>,<p3>},{<p1>,<p2>,<p3>}]
 Length(int):1 [{},{<l1>,<l2>,<l3>,<l4>,<l5>,<l6>}]
-side:3   [{},{<p1,p2,l1>,<p1,p3,l2>,<p2,p3,l3>,<p2,p1,l4>,<p3,p1,l5>,<p3,p2,l6>}]
+side:3        [{},{<p1,p2,l1>,<p1,p3,l2>,<p2,p3,l3>,<p2,p1,l4>,<p3,p1,l5>,<p3,p2,l6>}]
 
 side in Point -> Point -> Length
 
@@ -11,5 +11,6 @@ forall p1: Point | exists p2: Point | one p1.(side[p2])
 
 forall l: Length | (one side.l || no l)
 
-// Pythagoras
-exists l1: Length, l2: Length, l3: Length | (l1 * l1) + (l2 * l2) == (l3 * l3)
+Length > 0 && Length < 10
+
+exists l1: Length, l2: Length, l3: Length | ((l3 * l3) = ((l2 * l2) + (l1 * l1)))

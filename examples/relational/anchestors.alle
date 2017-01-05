@@ -9,7 +9,7 @@ parent in Person -> Person
 anchestor in Person -> Person
 
 // Everybody has a parent except Adam
-forall p:Person | ((not p == Adam) => one parent.p)
+forall p:Person | ((not p == Adam) -> one parent.p)
 no parent.Adam
 
 // Nobody is its own parent

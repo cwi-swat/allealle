@@ -1,5 +1,7 @@
 module logic::Integer
 
+extend logic::Boolean;
+
 data Formula
 	= \int(int i)
 	| intVar(str name)

@@ -4,6 +4,8 @@ import logic::Boolean;
 import AST;
 import Binder;
 
+import IO;
+
 alias FormulaTranslator = logic::Boolean::Formula (AST::Formula, Environment, Universe);
 alias ExpressionTranslator = Binding (Expr, Environment, Universe); 
 alias SingletonConstructor = Environment (str, Binding, list[Atom]);
@@ -16,7 +18,18 @@ data Translator = translator(Environment (Problem) constructEnvironment,
                              Binding (Expr, Environment, Universe, TranslatorAggregatorFunctions) translateExpression,
                              Environment (str, Binding, list[Atom]) constructSingletonBinding);
 
-Environment createInitialEnvironment(Problem p, list[Translator] translators) = (() | it + translator.constructEnvironment(p) | Translator translator <- translators);
+Environment createInitialEnvironment(Problem p, list[Translator] translators) {
+  Environment env = ();
+  
+  for (Translator translator <- translators) {
+    Environment partialEnv = translator.constructEnvironment(p);
+    for (str relName <- partialEnv) {
+      env[relName] = (relName in env) ? env[relName] + partialEnv[relName] : partialEnv[relName];
+    }   
+  }
+  
+  return env;
+}
                                
 logic::Boolean::Formula translate(Problem p, Environment env, list[Translator] translators) {
   
@@ -39,8 +52,8 @@ logic::Boolean::Formula translate(Problem p, Environment env, list[Translator] t
   Binding translateExpression(AST::Expr expr, Environment env, Universe uni) {
     Binding result = ();
   
-    for (Translator translator <- translators, Binding r := translator.translateExpression(expr, env, uni, <translateFormula, translateExpression, constructSingleton>)) {
-      if (result != () && r != ()) {
+    for (Translator translator <- translators, Binding r := translator.translateExpression(expr, env, uni, <translateFormula, translateExpression, constructSingleton>), r != ()) {
+      if (result != ()) {
         throw "Error while translating the expr \'<expr>\'; more then one translator translated the expression"; 
       }
       
@@ -50,13 +63,20 @@ logic::Boolean::Formula translate(Problem p, Environment env, list[Translator] t
     return result;
   }
     
-  Environment constructSingleton(str newVarName, Binding orig, list[Atom] vector) =
-    (() | it + r | Translator translator <- translators, Environment r := translator.constructSingletonBinding(newVarName, orig, vector));
-
-  logic::Boolean::Formula translationResult = (\true() | and(it, r) | AST::Formula f <- p.constraints, 
-                                                                      Translator translator <- translators, 
-                                                                      translator.has(f), 
-                                                                      logic::Boolean::Formula r := translator.translateFormula(f, env, p.uni, <translateFormula, translateExpression, constructSingleton>));  
+  Environment constructSingleton(str newVarName, Binding orig, list[Atom] vector) {
+    Environment singleton = ();
+  
+    for (Translator translator <- translators) {
+      Environment partialSingleton = translator.constructSingletonBinding(newVarName, orig, vector);
+      for (str relName <- partialSingleton) {
+        singleton[relName] = (relName in singleton) ? singleton[relName] + partialSingleton[relName] : partialSingleton[relName];
+      }   
+    }
+  
+    return singleton;
+  }
+  
+  logic::Boolean::Formula translationResult = (\true() | and(it, r) | AST::Formula f <- p.constraints, logic::Boolean::Formula r := translateFormula(f, env, p.uni));  
 
   return translationResult;
 }
