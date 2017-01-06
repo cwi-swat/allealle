@@ -33,12 +33,9 @@ ModelFinderResult checkInitialSolution(Problem problem, list[TranslationUnit] tr
 	tuple[Environment env, int time] ie = benchmark(createInitialEnvironment, problem, getTranslators(translationUnits));
 	print("done, took: <(ie.time/1000000)> ms\n");
 	
-	iprintln(ie.env);
-	
 	print("Translating problem to SAT formula...");
 	tuple[Formula formula, int time] t = benchmark(translate, problem, ie.env, getTranslators(translationUnits));
 	print("done, took: <(t.time/1000000)> ms\n");
-	
 
 	println("SAT Formula:");
 	iprintln(t.formula); 

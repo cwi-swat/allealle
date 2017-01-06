@@ -7,16 +7,16 @@ syntax Theory =   relational: "rel";
 syntax Formula
 	= universal:	  "forall" {VarDeclaration ","}+ decls "|" Formula form
 	| existential:	"exists" {VarDeclaration ","}+ decls "|" Formula form 
-	> implication:	Formula lhsForm "-\>" Formula rhsForm
+	> implication:	Formula lhsForm "=\>" Formula rhsForm
 	| equality:		  Formula lhsForm "\<=\>" Formula rhsForm
+  > left conjunction:  Formula lhsForm "&&" Formula rhsForm
+  | left disjunction:  Formula lhsForm "||" Formula rhsForm  
 	> empty:		    "no" Expr expr
 	| atMostOne:	  "lone" Expr expr
 	| exactlyOne:	  "one" Expr expr
 	| nonEmpty:		  "some" Expr expr
 	| subset:		    Expr lhsExpr "in" Expr rhsExpr
 	| equal:		    Expr lhsExpr "==" Expr rhsExpr
-	| conjunction:	Formula lhsForm "&&" Formula rhsForm
-	| disjunction:	Formula lhsForm "||" Formula rhsForm
 	> negation:		  "not" Formula form
 	; 
 

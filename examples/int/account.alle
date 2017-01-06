@@ -6,7 +6,12 @@ balance:2 [{}, {<ac1,am1>,<ac1,am2>,<ac2,am1>,<ac2,am2>}]
 
 balance in Account -> Amount
 
+// Every account only has one balance
 forall a:Account | one a.balance
-forall a1:Account, a2:Account | ((not (a1 == a2)) -> (not (a1.balance == a2.balance)))
+// All balances are distinct
+forall a1:Account, a2:Account | ((not (a1 == a2)) => (not (a1.balance == a2.balance)))
+// All balances contain more than 10 dollars 
+Amount > 10
 
-forall am:Amount | (am in Account.balance -> am > 10)
+// There is an account with a 5 dollar balance
+exists am:Amount | am = 15 

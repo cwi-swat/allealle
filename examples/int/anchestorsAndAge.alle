@@ -1,0 +1,51 @@
+{p1,p2,p3,p4,n1,n2,n3,n4}
+
+Person:1	[{},{<p1>,<p2>,<p3>,<p4>}]
+Adam:1		[{<p1>},{<p1>}]
+parent:2	[{},{<p1,p2>,<p1,p3>,<p1,p4>,<p2,p1>,<p2,p3>,<p2,p4>,<p3,p1>,<p3,p2>,<p3,p4>,<p4,p1>,<p4,p2>,<p4,p3>}]
+anchestor:2 [{},{<p1,p2>,<p1,p3>,<p1,p4>,<p2,p1>,<p2,p3>,<p2,p4>,<p3,p1>,<p3,p2>,<p3,p4>,<p4,p1>,<p4,p2>,<p4,p3>}]
+
+Num(int):1 [{},{<n1>,<n2>,<n3>,<n4>}]
+age:2 [{},{<p1,n1>,<p2,n2>,<p3,n3>,<p4,n4>}]
+
+Adam in Person
+parent in Person -> Person
+anchestor in Person -> Person
+age in Person -> Num
+
+// Everybody has a parent except Adam
+forall p:Person | ((not p == Adam) => one parent.p)
+no parent.Adam
+
+// Nobody is its own parent
+forall p:Person | not (p == parent.p) 
+
+// Nobody is the parent of an anchestor
+forall p:Person | not (p in (^parent).p)
+
+// Everybody is a decendant of Adam
+Person in Adam.(*parent)
+
+// Anchestor is the transposed transitive closure of the parent relation (if you are somebodies parent, grandparent, etc you are an anchestor
+anchestor == ~(^parent) 
+
+// Nobody, even Adam, is older then 149
+Num > 0 && Num < 150
+
+// Everybody has an age
+forall p: Person | one age[p]
+
+// Adam is 134 years
+//exists n: Num | (age[Adam] == n && n = 134)
+//(Num & age[Adam]) = 134
+
+// Nobody is older than Adam
+forall p: Person | ((not (p == Adam)) => (exists n1: Num, n2:Num | (age[p] == n1 && age[Adam] == n2 && n1 < n2)))
+
+// There are always two adults
+// exists p1: Person, p2: Person, n1: Num, n2: Num | ((not (p1 == p2)) && (age[p1] == n1) && (age[p2] == n2) && (n1 > 17) && (n2 > 17))
+exists n1: Num, n2: Num | ((not (n1 == n2)) && n1 > 17 && n2 > 17)
+
+// There is also someone who is twice the age of someone else
+//exists p1: Person, p2: Person, n1: Num, n2: Num | ((not (p1 == p2)) && (age[p1] == n1) && (age[p2] == n2) && (n1 = (n2 * 2)))
+exists n1: Num, n2: Num | ((not (n1 == n2)) && n1 = n2 * 2)
