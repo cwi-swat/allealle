@@ -3,7 +3,7 @@ module ModelFinder
 import logic::Propositional;
  
 import AST;
-import Translator;
+import Translator; 
 import SMTInterface; 
 import Binder;
 import smt::solver::SolverRunner; 
@@ -37,8 +37,8 @@ ModelFinderResult checkInitialSolution(Problem problem, list[TranslationUnit] tr
 	tuple[Formula formula, int time] t = benchmark(translate, problem, ie.env, getTranslators(translationUnits));
 	print("done, took: <(t.time/1000000)> ms\n");
 
-	println("SAT Formula:");
-	iprintln(t.formula); 
+	//println("SAT Formula:");
+	//iprintln(t.formula); 
 	 
 	//print("Converting to CNF...");
 	//tuple[Formula formula, int time] cnf = <t.result.formula, t.time>; //benchmark(convertToCNF, t.result.formula);

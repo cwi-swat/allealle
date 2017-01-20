@@ -28,7 +28,7 @@ str compile(substraction(Formula lhs, Formula rhs), str (Formula) compileAll)   
 str compile(multiplication(Formula lhs, Formula rhs), str (Formula) compileAll) = "(* <compileAll(lhs)> <compileAll(rhs)>)";
 str compile(division(Formula lhs, Formula rhs), str (Formula) compileAll)       = "(/ <compileAll(lhs)> <compileAll(rhs)>)";
 
-default str compile(integer::AST::Formula _, str (Formula) _) = "";
+default str compile(Formula _, str (Formula) _) = "";
 
 Model getValues(map[str, str] smtValues, set[SMTVar] smtVars) =
   (var : toFormula(smtValues[var.name]) | SMTVar var <- smtVars, var.name in smtValues, var.theory == integers());

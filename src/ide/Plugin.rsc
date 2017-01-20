@@ -28,7 +28,8 @@ void main(){
 			action("Check and visualize", (Tree current, loc file) {
 				if (/ide::CombinedSyntax::Problem p := current) {checkAndVisualize(p);}
 			})
-		)
+		),
+		syntaxProperties(#start[Problem])
 	};
 	
 	registerContributions(lang, contribs);

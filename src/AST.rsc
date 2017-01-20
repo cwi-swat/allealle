@@ -1,6 +1,6 @@
 module AST
 
-data Problem = problem(Universe uni, list[RelationalBound] bounds, list[Formula] constraints);
+data Problem = problem(Universe uni, list[RelationalBound] bounds, list[AlleFormula] constraints);
 
 data Universe = universe(list[Atom] atoms);
 
@@ -15,5 +15,5 @@ alias Atom = str;
 
 data Theory;
 
-data Formula;
+data AlleFormula;
 data Expr;

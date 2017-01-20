@@ -9,7 +9,7 @@ data Sort
 	= intSort()
 	;
 	
-data Formula
+data AlleFormula
 	= lt(Expr lhsExpr, Expr rhsExpr)
 	| lte(Expr lhExprs, Expr rhsExpr)
 	| gt(Expr lhsExpr, Expr rhsExpr)

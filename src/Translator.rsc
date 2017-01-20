@@ -6,15 +6,15 @@ import Binder;
 
 import IO;
 
-alias FormulaTranslator = logic::Boolean::Formula (AST::Formula, Environment, Universe);
+alias FormulaTranslator = Formula (AlleFormula, Environment, Universe);
 alias ExpressionTranslator = Binding (Expr, Environment, Universe); 
 alias SingletonConstructor = Environment (str, Binding, list[Atom]);
 
 alias TranslatorAggregatorFunctions = tuple[FormulaTranslator translateFormula, ExpressionTranslator translateExpression, SingletonConstructor constructSingleton];
 
 data Translator = translator(Environment (Problem) constructEnvironment,
-                             bool (AST::Formula) has,
-                             Formula (AST::Formula, Environment, Universe, TranslatorAggregatorFunctions) translateFormula,
+                             bool (AlleFormula) has,
+                             Formula (AlleFormula, Environment, Universe, TranslatorAggregatorFunctions) translateFormula,
                              Binding (Expr, Environment, Universe, TranslatorAggregatorFunctions) translateExpression,
                              Environment (str, Binding, list[Atom]) constructSingletonBinding);
 
@@ -31,13 +31,15 @@ Environment createInitialEnvironment(Problem p, list[Translator] translators) {
   return env;
 }
                                
-logic::Boolean::Formula translate(Problem p, Environment env, list[Translator] translators) {
+Formula translate(Problem p, Environment env, list[Translator] translators) {
+  @memo
+  tuple[Formula (AlleFormula, Environment, Universe), Binding (Expr, Environment, Universe), Environment (str, Binding, list[Atom])] aggregates() = <translateFormula, translateExpression, constructSingleton>;  
   
-  logic::Boolean::Formula translateFormula(AST::Formula form, Environment env, Universe uni) {
+  Formula translateFormula(AlleFormula form, Environment env, Universe uni) {
     Formula result = \false(); 
     bool alreadyTranslated = false;
     
-    for (Translator translator <- translators, translator.has(form), Formula r := translator.translateFormula(form, env, uni, <translateFormula, translateExpression, constructSingleton>)) {
+    for (Translator translator <- translators, translator.has(form), Formula r := translator.translateFormula(form, env, uni, aggregates())) {
       if (alreadyTranslated) {
         throw "Error while translating the formula \'<form>\'; more then one translator translated the formula";
       }
@@ -49,10 +51,10 @@ logic::Boolean::Formula translate(Problem p, Environment env, list[Translator] t
     return result;
   }
   
-  Binding translateExpression(AST::Expr expr, Environment env, Universe uni) {
+  Binding translateExpression(Expr expr, Environment env, Universe uni) {
     Binding result = ();
   
-    for (Translator translator <- translators, Binding r := translator.translateExpression(expr, env, uni, <translateFormula, translateExpression, constructSingleton>), r != ()) {
+    for (Translator translator <- translators, Binding r := translator.translateExpression(expr, env, uni, aggregates()), r != ()) {
       if (result != ()) {
         throw "Error while translating the expr \'<expr>\'; more then one translator translated the expression"; 
       }
@@ -62,7 +64,7 @@ logic::Boolean::Formula translate(Problem p, Environment env, list[Translator] t
     
     return result;
   }
-    
+  
   Environment constructSingleton(str newVarName, Binding orig, list[Atom] vector) {
     Environment singleton = ();
   
@@ -76,7 +78,7 @@ logic::Boolean::Formula translate(Problem p, Environment env, list[Translator] t
     return singleton;
   }
   
-  logic::Boolean::Formula translationResult = (\true() | and(it, r) | AST::Formula f <- p.constraints, logic::Boolean::Formula r := translateFormula(f, env, p.uni));  
+  Formula translationResult = (\true() | and(it, r) | AlleFormula f <- p.constraints, Formula r := translateFormula(f, env, p.uni));  
 
   return translationResult;
 }

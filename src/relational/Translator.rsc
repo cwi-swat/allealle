@@ -12,6 +12,8 @@ import Set;
  
 import logic::Propositional;
 
+data AlleFormula = existential(Formula prevForm, list[VarDeclaration] decls, AlleFormula form); 
+
 Translator getRelationalTranslator() = translator(createInitialEnvironment, has, translateFormula, translateExpr, constructSingletonBinding);
 
 Environment createInitialEnvironment(Problem p) 
@@ -25,7 +27,7 @@ private Binding createRelationalMapping(relationalBoundWithTheory(str relName, _
   
   Binding result = (<relational(), idx> : \true() | \tuple(list[Atom] idx) <- lb);
   result += (<relational(), idx> : var("<relName>_<idxToStr(idx)>") | \tuple(list[Atom] idx) <- ub, <relational(), idx> notin result);
-  
+   
   return result;
 } 
 
@@ -37,14 +39,14 @@ bool has(exactlyOne(Expr _)) = true;
 bool has(nonEmpty(Expr _)) = true;
 bool has(subset(Expr _, Expr _)) = true;
 bool has(equal(Expr _, Expr _)) = true;
-bool has(negation(Formula _)) = true;
-bool has(conjunction(Formula _, Formula _)) = true;
-bool has(disjunction(Formula _, Formula _)) = true;
-bool has(implication(Formula _, Formula _)) = true;
-bool has(equality(Formula _, Formula _)) = true;
-bool has(universal(list[VarDeclaration] _, Formula _)) = true;
-bool has(existential(list[VarDeclaration] _, Formula _) ) = true;
-default bool has(Formula _) = false;
+bool has(negation(AlleFormula _)) = true;
+bool has(conjunction(AlleFormula _, AlleFormula _)) = true;
+bool has(disjunction(AlleFormula _, AlleFormula _)) = true;
+bool has(implication(AlleFormula _, AlleFormula _)) = true;
+bool has(equality(AlleFormula _, AlleFormula _)) = true;
+bool has(universal(list[VarDeclaration] _, AlleFormula _)) = true;
+bool has(existential(list[VarDeclaration] _, AlleFormula _) ) = true;
+default bool has(AlleFormula _) = false;
 
 Formula translateFormula(empty(Expr expr), Environment env, Universe uni, TranslatorAggregatorFunctions aggregate) 
   = \not(aggregate.translateFormula(nonEmpty(expr), env, uni));
@@ -69,32 +71,68 @@ Formula translateFormula(subset(Expr lhsExpr, Expr rhsExpr), Environment env, Un
 Formula translateFormula(equal(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni, TranslatorAggregatorFunctions aggregate)
   = \and(aggregate.translateFormula(subset(lhsExpr, rhsExpr), env, uni), aggregate.translateFormula(subset(rhsExpr, lhsExpr), env, uni));
   
-Formula translateFormula(negation(Formula form), Environment env, Universe uni, TranslatorAggregatorFunctions aggregate) 
+Formula translateFormula(negation(AlleFormula form), Environment env, Universe uni, TranslatorAggregatorFunctions aggregate) 
   = \not(aggregate.translateFormula(form, env, uni));
   
-Formula translateFormula(conjunction(Formula lhsForm, Formula rhsForm), Environment env, Universe uni, TranslatorAggregatorFunctions aggregate)
+Formula translateFormula(conjunction(AlleFormula lhsForm, AlleFormula rhsForm), Environment env, Universe uni, TranslatorAggregatorFunctions aggregate)
   = \and(aggregate.translateFormula(lhsForm, env, uni), aggregate.translateFormula(rhsForm, env, uni));
   
-Formula translateFormula(disjunction(Formula lhsForm, Formula rhsForm), Environment env, Universe uni, TranslatorAggregatorFunctions aggregate)
+Formula translateFormula(disjunction(AlleFormula lhsForm, AlleFormula rhsForm), Environment env, Universe uni, TranslatorAggregatorFunctions aggregate)
   = \or(aggregate.translateFormula(lhsForm, env, uni), aggregate.translateFormula(rhsForm, env, uni));
   
-Formula translateFormula(implication(Formula lhsForm, Formula rhsForm), Environment env, Universe uni, TranslatorAggregatorFunctions aggregate)
+Formula translateFormula(implication(AlleFormula lhsForm, AlleFormula rhsForm), Environment env, Universe uni, TranslatorAggregatorFunctions aggregate)
   = \or(\not(aggregate.translateFormula(lhsForm, env, uni)), aggregate.translateFormula(rhsForm, env, uni));
   
-Formula translateFormula(equality(Formula lhsForm, Formula rhsForm), Environment env, Universe uni, TranslatorAggregatorFunctions aggregate)
+Formula translateFormula(equality(AlleFormula lhsForm, AlleFormula rhsForm), Environment env, Universe uni, TranslatorAggregatorFunctions aggregate)
   = \or(\and(aggregate.translateFormula(lhsForm, env, uni),  aggregate.translateFormula(rhsForm, env, uni)), \and(\not(aggregate.translateFormula(lhsForm, env, uni)), \not(aggregate.translateFormula(rhsForm, env, uni))));
 
-Formula translateFormula(universal(list[VarDeclaration] decls, Formula form), Environment env, Universe uni, TranslatorAggregatorFunctions aggregate) 
-  = \and({\or({\not(m[x]), aggregate.translateFormula(f, env + aggregate.constructSingleton(hd.name, m, x.vector), uni)}) | Index x <- m, relational() := x.theory, Formula f := (([] == t) ? form : universal(t, form))})
+Formula translateFormula(universal(list[VarDeclaration] decls, AlleFormula form), Environment env, Universe uni, TranslatorAggregatorFunctions aggregate) 
+  = \and({\or({\not(m[x]), aggregate.translateFormula(f, env + aggregate.constructSingleton(hd.name, m, x.vector), uni)}) | Index x <- m, x.theory == relational(), AlleFormula f := (([] == t) ? form : universal(t, form))})
   when [VarDeclaration hd, *t] := decls,
        Binding m := aggregate.translateExpression(hd.binding, env, uni);
    
-Formula translateFormula(existential(list[VarDeclaration] decls, Formula form), Environment env, Universe uni, TranslatorAggregatorFunctions aggregate)
-  = \or({\and({m[x], aggregate.translateFormula(f, env + aggregate.constructSingleton(hd.name, m, x.vector), uni)}) | Index x <- m, relational() := x.theory, Formula f := (([] == t) ? form : existential(t, form))}) 
+//Formula translateFormula(existential(list[VarDeclaration] decls, AlleFormula form), Environment env, Universe uni, TranslatorAggregatorFunctions aggregate) {
+//  Formula result = \true();
+//    
+//  VarDeclaration hd = decls[0];
+//  list[VarDeclaration] tl = (size(decls) > 1) ? decls[1..] : [];
+//  
+//  Binding m = aggregate.translateExpression(hd.binding, env, uni);
+//  
+//  for (Index x <- m, x.theory == relational(), m[x] != \false()) {
+//    AlleFormula f = tl != [] ? existential(tl, form) : form;
+//
+//    result = \and({m[x], aggregate.translateFormula(f, env + aggregate.constructSingleton(hd.name, m, x.vector), uni)});
+//    
+//    //if (result == \true()) { return \true(); }
+//  }
+//  
+//  return \or({result});
+//}
+
+//Formula translateFormula(existential(Formula prevForm, list[VarDeclaration] decls, AlleFormula form), Environment env, Universe uni, TranslatorAggregatorFunctions aggregate) {
+//  Formula result = \true();
+//    
+//  VarDeclaration hd = decls[0];
+//  list[VarDeclaration] tl = (size(decls) > 1) ? decls[1..] : [];
+//  
+//  Binding m = aggregate.translateExpression(hd.binding, env, uni);
+//  
+//  for (Index x <- m, x.theory == relational(), m[x] != \false()) {
+//    AlleFormula f = tl != [] ? existential(m[x], tl, form) : form;
+//
+//    result = \and({m[x], aggregate.translateFormula(f, env + aggregate.constructSingleton(hd.name, m, x.vector), uni)});
+//    
+//    if (result == \true()) { return \true(); }
+//  }
+//  
+//  return \or({result});
+//}
+
+Formula translateFormula(existential(list[VarDeclaration] decls, AlleFormula form), Environment env, Universe uni, TranslatorAggregatorFunctions aggregate)
+  = \or({\and({m[x], aggregate.translateFormula(f, env + aggregate.constructSingleton(hd.name, m, x.vector), uni)}) | Index x <- m, x.theory == relational(), AlleFormula f := (([] == t) ? form : existential(t, form))}) 
   when [VarDeclaration hd, *t] := decls,
        Binding m := aggregate.translateExpression(hd.binding, env, uni);
-        
-default Formula translateFormula(Formula f, Environment env, Universe uni) { throw "Translation of formula \'<f>\' with function \'<translateFormula>\' not yet implemented";}
 
 @memo
 Environment constructSingletonBinding(str newVarName, Binding orig, list[Atom] vector) = (newVarName:(<relational(), vector>:\true())) when <relational(), vector> <- orig; 
@@ -135,8 +173,8 @@ Binding translateExpr(product(Expr lhsExpr, Expr rhsExpr), Environment env, Univ
   when Binding lhs := aggregate.translateExpression(lhsExpr, env, uni),
        Binding rhs := aggregate.translateExpression(rhsExpr, env, uni);
 
-Binding translateExpr(ifThenElse(Formula caseForm, Expr thenExpr, Expr elseExpr), Environment env, Universe uni, TranslatorAggregatorFunctions aggregate)
-   = (idx:ite(translateFormula(caseForm, env, uni),p[idx],q[idx]) | Index idx <- p)
+Binding translateExpr(ifThenElse(AlleFormula caseForm, Expr thenExpr, Expr elseExpr), Environment env, Universe uni, TranslatorAggregatorFunctions aggregate)
+   = (idx:ite(aggregate.translateFormula(caseForm, env, uni),p[idx],q[idx]) | Index idx <- p)
   when Binding p := aggregate.translateExpression(thenExpr, env, uni),
        Binding q := aggregate.translateExpression(elseExpr, env, uni);
      

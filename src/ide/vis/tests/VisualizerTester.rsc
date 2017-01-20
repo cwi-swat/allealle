@@ -1,13 +1,13 @@
-module vis::tests::VisualizerTester
+module ide::vis::tests::VisualizerTester
 
 import ModelFinder;
-import AST;
 import Binder;
 
-import relational::Imploder;
-import relational::Translator;
+import ide::CombinedAST;
+import ide::CombinedTranslationUnits;
+import ide::Imploder;
+import ide::vis::ModelVisualizer; 
 
-import vis::ModelVisualizer; 
 import IO;
 
 void testPigeonHoleProblem() {
@@ -20,12 +20,24 @@ void testPigeonHoleProblem() {
 					'forall h:Hole | lone nest.h";
 	
 	Problem p = implodeProblem(problem);
-	ModelFinderResult result = checkInitialSolution(p);
+	ModelFinderResult result = checkInitialSolution(p, getTranslationUnits());
 	
 	if (sat(Environment currentModel, Universe uni, Environment () nextModel, void () stop) := result) {
 		renderModel(uni, currentModel, nextModel, stop);
 	} else {
 		println("Not satisfiable, can not visualize");
 	}	
+}
+
+void translateAndVis(loc problem) {
+  Problem p = implodeProblem(problem);
+  ModelFinderResult result = checkInitialSolution(p, getTranslationUnits());
+  
+  if (sat(Environment currentModel, Universe uni, Environment () nextModel, void () stop) := result) {
+    renderModel(uni, currentModel, nextModel, stop);
+  } else {
+    println("Not satisfiable, can not visualize");
+  } 
+  
 }
 

@@ -16,7 +16,7 @@ void translateAndSolveTriangle() = translateAndSolve(|project://allealle/example
 void translateAndSolve(loc alleAlleFile) {
   Problem p = implodeProblem(alleAlleFile);
   
-  for (int i <- [0..10]) {
+  for (int i <- [0..1]) {
     ModelFinderResult r = checkInitialSolution(p, getTranslationUnits()); //[<getRelationalTranslator(), getRelationalSMTInterface()>]);
     if (sat(Environment currentModel, Universe universe, Environment () nextModel, void () stop) := r) {
      stop();

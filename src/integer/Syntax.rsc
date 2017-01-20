@@ -8,7 +8,7 @@ syntax Sort
   = intSort: "int"
   ;
 
-syntax Formula
+syntax AlleFormula
   = lt:       Expr lhs "\<"  Expr rhs
   | lte:      Expr lhs "\<=" Expr rhs
   | gt:       Expr lhs "\>"  Expr rhs

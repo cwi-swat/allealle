@@ -1,33 +1,33 @@
-{s1,s2,s3,s4,s5,s6,s7,s8,goat,wolf,gabbage,farmer}
+{s1,s2,s3,s4,s5,s6,s7,s8,goat,wolf,cabbage,farmer}
 
 State:1 [{<s1>,<s2>,<s3>,<s4>,<s5>,<s6>,<s7>,<s8>}, {<s1>,<s2>,<s3>,<s4>,<s5>,<s6>,<s7>,<s8>}]
 StartState: 1 [{<s1>}, {<s1>}]
 ordering:2 [{<s1,s2>,<s2,s3>,<s3,s4>,<s4,s5>,<s5,s6>,<s6,s7>,<s7,s8>}, {<s1,s2>,<s2,s3>,<s3,s4>,<s4,s5>,<s5,s6>,<s6,s7>,<s7,s8>}]
 
-Passenger: 1 [{<goat>,<wolf>,<gabbage>,<farmer>}, {<goat>,<wolf>,<gabbage>,<farmer>}]
+Passenger: 1 [{<goat>,<wolf>,<cabbage>,<farmer>}, {<goat>,<wolf>,<cabbage>,<farmer>}]
 Goat: 1 [{<goat>},{<goat>}]
 Wolf: 1 [{<wolf>},{<wolf>}]
-Gabbage: 1 [{<gabbage>}, {<gabbage>}]
+Cabbage: 1 [{<cabbage>}, {<cabbage>}]
 Farmer: 1 [{<farmer>}, {<farmer>}]
 
-eats: 2 [{<goat,gabbage>, <wolf,goat>}, {<goat,gabbage>, <wolf,goat>}]           
+eats: 2 [{<goat,cabbage>, <wolf,goat>}, {<goat,cabbage>, <wolf,goat>}]           
 
-near: 2 [{<s1,goat>,<s1,gabbage>,<s1,farmer>,<s1,wolf>}, 
-         {<s1,goat>,<s1,gabbage>,<s1,farmer>,<s1,wolf>,<s2,goat>,<s2,gabbage>,<s2,farmer>,<s2,wolf>,<s3,goat>,<s3,gabbage>,<s3,farmer>,<s3,wolf>,
-          <s4,goat>,<s4,gabbage>,<s4,farmer>,<s4,wolf>,<s5,goat>,<s5,gabbage>,<s5,farmer>,<s5,wolf>,<s6,goat>,<s6,gabbage>,<s6,farmer>,<s6,wolf>,
-          <s7,goat>,<s7,gabbage>,<s7,farmer>,<s7,wolf>,<s8,goat>,<s8,gabbage>,<s8,farmer>,<s8,wolf>}] 
+near: 2 [{<s1,goat>,<s1,cabbage>,<s1,farmer>,<s1,wolf>}, 
+         {<s1,goat>,<s1,cabbage>,<s1,farmer>,<s1,wolf>,<s2,goat>,<s2,cabbage>,<s2,farmer>,<s2,wolf>,<s3,goat>,<s3,cabbage>,<s3,farmer>,<s3,wolf>,
+          <s4,goat>,<s4,cabbage>,<s4,farmer>,<s4,wolf>,<s5,goat>,<s5,cabbage>,<s5,farmer>,<s5,wolf>,<s6,goat>,<s6,cabbage>,<s6,farmer>,<s6,wolf>,
+          <s7,goat>,<s7,cabbage>,<s7,farmer>,<s7,wolf>,<s8,goat>,<s8,cabbage>,<s8,farmer>,<s8,wolf>}] 
 
 far: 2  [{}, 
-         {<s1,goat>,<s1,gabbage>,<s1,farmer>,<s1,wolf>,<s2,goat>,<s2,gabbage>,<s2,farmer>,<s2,wolf>,<s3,goat>,<s3,gabbage>,<s3,farmer>,<s3,wolf>,
-          <s4,goat>,<s4,gabbage>,<s4,farmer>,<s4,wolf>,<s5,goat>,<s5,gabbage>,<s5,farmer>,<s5,wolf>,<s6,goat>,<s6,gabbage>,<s6,farmer>,<s6,wolf>,
-          <s7,goat>,<s7,gabbage>,<s7,farmer>,<s7,wolf>,<s8,goat>,<s8,gabbage>,<s8,farmer>,<s8,wolf>}] 
+         {<s1,goat>,<s1,cabbage>,<s1,farmer>,<s1,wolf>,<s2,goat>,<s2,cabbage>,<s2,farmer>,<s2,wolf>,<s3,goat>,<s3,cabbage>,<s3,farmer>,<s3,wolf>,
+          <s4,goat>,<s4,cabbage>,<s4,farmer>,<s4,wolf>,<s5,goat>,<s5,cabbage>,<s5,farmer>,<s5,wolf>,<s6,goat>,<s6,cabbage>,<s6,farmer>,<s6,wolf>,
+          <s7,goat>,<s7,cabbage>,<s7,farmer>,<s7,wolf>,<s8,goat>,<s8,cabbage>,<s8,farmer>,<s8,wolf>}] 
 
              
 ordering in State -> State
 
 Goat in Passenger
 Wolf in Passenger
-Gabbage in Passenger
+Cabbage in Passenger
 Farmer in Passenger
 
 eats in Passenger -> Passenger
@@ -51,5 +51,5 @@ forall s1:State, s2: State, p1:(Passenger\Farmer), p2:(Passenger\Farmer) | ((s1 
 forall s1:State, s2:State, p:(Passenger\Farmer) | ((s1 -> s2 in ordering) => ( ((p in (near[s1] & far[s2])) => Farmer in near[s1] & far[s2]) &&
                                                                                ((p in (far[s1] & near[s2])) => Farmer in far[s1] & near[s2]) ))
 
-// The Wolf can never be on the same shore then the Goat and the Gabbage can never be on the same shore then the Goat unless the Farmer is there as well
+// The Wolf can never be on the same shore then the Goat and the Cabbage can never be on the same shore then the Goat unless the Farmer is there as well
 forall s:State, p1:Passenger, p2: Passenger | ((p1 -> p2 in eats) => ((p1 in near[s] && p2 in far[s]) || (p1 in far[s] && p2 in near[s]) || p1 ++ p2 ++ Farmer in near[s] || p1 ++ p2 ++ Farmer in far[s]))

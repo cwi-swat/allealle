@@ -4,20 +4,20 @@ extend Syntax;
   
 syntax Theory =   relational: "rel";  
 
-syntax Formula
-	= universal:	  "forall" {VarDeclaration ","}+ decls "|" Formula form
-	| existential:	"exists" {VarDeclaration ","}+ decls "|" Formula form 
-	> implication:	Formula lhsForm "=\>" Formula rhsForm
-	| equality:		  Formula lhsForm "\<=\>" Formula rhsForm
-  > left conjunction:  Formula lhsForm "&&" Formula rhsForm
-  | left disjunction:  Formula lhsForm "||" Formula rhsForm  
+syntax AlleFormula
+	= universal:	  "forall" {VarDeclaration ","}+ decls "|" AlleFormula form
+	| existential:	"exists" {VarDeclaration ","}+ decls "|" AlleFormula form 
+	> implication:	AlleFormula lhsForm "=\>" AlleFormula rhsForm
+	| equality:		  AlleFormula lhsForm "\<=\>" AlleFormula rhsForm
+  > left conjunction:  AlleFormula lhsForm "&&" AlleFormula rhsForm
+  | left disjunction:  AlleFormula lhsForm "||" AlleFormula rhsForm  
 	> empty:		    "no" Expr expr
 	| atMostOne:	  "lone" Expr expr
 	| exactlyOne:	  "one" Expr expr
 	| nonEmpty:		  "some" Expr expr
 	| subset:		    Expr lhsExpr "in" Expr rhsExpr
 	| equal:		    Expr lhsExpr "==" Expr rhsExpr
-	> negation:		  "not" Formula form
+	> negation:		  "not" AlleFormula form
 	; 
 
 syntax Expr
@@ -27,12 +27,12 @@ syntax Expr
 	| transpose:	   "~" Expr expr
 	| closure:		   "^" Expr expr
 	| reflexClosure: "*" Expr expr
-	| union:		     Expr lhs "++" Expr rhs 
-	| intersection:	 Expr lhs "&" Expr rhs
-	| difference:	   Expr lhs "\\" Expr rhs
+	| left union:		     Expr lhs "++" Expr rhs 
+	| left intersection:	 Expr lhs "&" Expr rhs
+	| left difference:	   Expr lhs "\\" Expr rhs
 	| left product:	 Expr lhs "-\>" Expr rhs
-	| ifThenElse:	   Formula form "?" Expr then ":" Expr else
-	| comprehension: "{" {VarDeclaration ","}+ decls "|" Formula form "}"
+	| ifThenElse:	   AlleFormula form "?" Expr then ":" Expr else
+	| comprehension: "{" {VarDeclaration ","}+ decls "|" AlleFormula form "}"
 	;
 
 syntax VarDeclaration = varDecl: Variable var ":" Expr expr;

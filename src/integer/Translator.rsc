@@ -31,7 +31,7 @@ bool has(gte(Expr _, Expr _))             = true;
 bool has(lt(Expr _, Expr _))              = true;
 bool has(lte(Expr _, Expr _))             = true;
 bool has(intEqual(Expr _, Expr _))        = true;
-default bool has(integer::AST::Formula _) = false; 
+default bool has(AlleFormula _) = false; 
 
 @memo
 Environment constructSingletonBinding(str newVarName, Binding orig, list[Atom] vector) = (newVarName:(idx:orig[idx])) when Index idx:<integers(), vector> <- orig; 

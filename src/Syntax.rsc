@@ -2,7 +2,7 @@ module Syntax
 
 extend Layout;
 
-start syntax Problem = problem: Universe uni RelationalBound* bounds Formula* constraints;
+start syntax Problem = problem: Universe uni RelationalBound* bounds AlleFormula* constraints;
 
 syntax Universe = universe: "{" {Atom ","}+ atoms "}";
 
@@ -15,8 +15,8 @@ syntax Theory = none: "none";
   
 syntax Tuple = \tuple: "\<" {Atom ","}+ atoms "\>"; 
   
-syntax Formula
-  = bracket "(" Formula form ")"
+syntax AlleFormula
+  = bracket "(" AlleFormula form ")"
   ; 
 
 syntax Expr

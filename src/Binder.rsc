@@ -15,6 +15,7 @@ alias Environment = map[LookupKey, Binding];
 @memo
 int sizeOfUniverse(Universe u) = size(u.atoms);
 
+@memo
 private int arity(Binding b) {
   for (Index idx <- b) {
     return size(idx.vector);
@@ -23,6 +24,7 @@ private int arity(Binding b) {
   return 0;
 }
 
+@memo
 private bool sameArity(Binding lhs, Binding rhs) = arity(lhs) == arity(rhs); 
  
 

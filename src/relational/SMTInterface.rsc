@@ -25,7 +25,7 @@ str compile(\true(), str (Formula) _)  = "true";
 
 str compile(\var(name), str (Formula) _) = "<name>";
 
-default str compile(relational::AST::Formula _, str (Formula) _) = "";
+default str compile(Formula _, str (Formula) _) = "";
 
 Model getValues(map[str, str] smtValues, set[SMTVar] smtVars) =
   (var : toFormula(smtValues[var.name]) | SMTVar var <- smtVars, var.name in smtValues, var.theory == relational());
