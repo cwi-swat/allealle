@@ -91,24 +91,25 @@ Formula translateFormula(universal(list[VarDeclaration] decls, AlleFormula form)
   when [VarDeclaration hd, *t] := decls,
        Binding m := aggregate.translateExpression(hd.binding, env, uni);
    
-//Formula translateFormula(existential(list[VarDeclaration] decls, AlleFormula form), Environment env, Universe uni, TranslatorAggregatorFunctions aggregate) {
-//  Formula result = \true();
-//    
-//  VarDeclaration hd = decls[0];
-//  list[VarDeclaration] tl = (size(decls) > 1) ? decls[1..] : [];
-//  
-//  Binding m = aggregate.translateExpression(hd.binding, env, uni);
-//  
-//  for (Index x <- m, x.theory == relational(), m[x] != \false()) {
-//    AlleFormula f = tl != [] ? existential(tl, form) : form;
-//
-//    result = \and({m[x], aggregate.translateFormula(f, env + aggregate.constructSingleton(hd.name, m, x.vector), uni)});
-//    
-//    //if (result == \true()) { return \true(); }
-//  }
-//  
-//  return \or({result});
-//}
+Formula translateFormula(existential(list[VarDeclaration] decls, AlleFormula form), Environment env, Universe uni, TranslatorAggregatorFunctions aggregate) {
+  set[Formula] clauses = {};
+    
+  VarDeclaration hd = decls[0];
+  list[VarDeclaration] tl = (size(decls) > 1) ? decls[1..] : [];
+  
+  Binding m = aggregate.translateExpression(hd.binding, env, uni);
+  
+  for (Index x <- m, x.theory == relational(), m[x] != \false()) {
+    AlleFormula f = tl != [] ? existential(tl, form) : form;
+
+    Formula clause = \and({m[x], aggregate.translateFormula(f, env + aggregate.constructSingleton(hd.name, m, x.vector), uni)});
+    
+    if (clause == \true()) { return \true(); }
+    clauses += clause;
+  }
+  
+  return \or(clauses);
+}
 
 //Formula translateFormula(existential(Formula prevForm, list[VarDeclaration] decls, AlleFormula form), Environment env, Universe uni, TranslatorAggregatorFunctions aggregate) {
 //  Formula result = \true();
@@ -129,10 +130,10 @@ Formula translateFormula(universal(list[VarDeclaration] decls, AlleFormula form)
 //  return \or({result});
 //}
 
-Formula translateFormula(existential(list[VarDeclaration] decls, AlleFormula form), Environment env, Universe uni, TranslatorAggregatorFunctions aggregate)
-  = \or({\and({m[x], aggregate.translateFormula(f, env + aggregate.constructSingleton(hd.name, m, x.vector), uni)}) | Index x <- m, x.theory == relational(), AlleFormula f := (([] == t) ? form : existential(t, form))}) 
-  when [VarDeclaration hd, *t] := decls,
-       Binding m := aggregate.translateExpression(hd.binding, env, uni);
+//Formula translateFormula(existential(list[VarDeclaration] decls, AlleFormula form), Environment env, Universe uni, TranslatorAggregatorFunctions aggregate)
+//  = \or({\and({m[x], aggregate.translateFormula(f, env + aggregate.constructSingleton(hd.name, m, x.vector), uni)}) | Index x <- m, x.theory == relational(), AlleFormula f := (([] == t) ? form : existential(t, form))}) 
+//  when [VarDeclaration hd, *t] := decls,
+//       Binding m := aggregate.translateExpression(hd.binding, env, uni);
 
 @memo
 Environment constructSingletonBinding(str newVarName, Binding orig, list[Atom] vector) = (newVarName:(<relational(), vector>:\true())) when <relational(), vector> <- orig; 

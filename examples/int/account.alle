@@ -12,8 +12,8 @@ ordering in State -> State
 accountInState in State -> Account 
 balance in Account -> Amount
 
-//Amount > 0
+Amount > 0
 
 forall s1: State, s2:State | ((s1 -> s2 in ordering) => 
-  (exists ac1: Account, ac2: Account, am1: Amount, am2: Amount | (ac1 == accountInState[s1] && ac2 == accountInState[s2] && am1 == balance[ac1] && am2 == balance[ac2]  
+  (exists ac1: Account, ac2: Account, am1: Amount, am2: Amount | (ac1 == accountInState[s1] && ac2 == accountInState[s2] && am1 == balance[ac1] && am2 == balance[ac2] && am2 = am1 + 10  
     )))

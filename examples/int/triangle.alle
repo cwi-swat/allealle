@@ -12,7 +12,7 @@ forall p: Point | one p.side
 forall l: Length | one side.l
 
 // all Length should be between 1 and 9
-Length > 0 && Length < 10
+Length > 4 && Length < 26
 
 
 exists a: Length, b: Length, c: Length | ((c * c) = ((a * a) + (b * b)))
