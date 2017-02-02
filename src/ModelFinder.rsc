@@ -140,9 +140,6 @@ private ModelFinderResult runInSolver(Problem originalProblem, Formula formula, 
 	if(solving.result) {
 		currentModel = firstModel(solverPid, vars, interpreters);
 		
-		println("Found model is:");
-		iprintln(currentModel);
-		
 		return sat(merge(currentModel, env, interpreters), originalProblem.uni, next, stop);
 	} else {
 		return unsat({});

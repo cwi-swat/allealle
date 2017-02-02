@@ -1,6 +1,6 @@
 module relational::tests::translatorTests::BaseTester
 
-import relational::Imploder;
+import ide::Imploder;
 import relational::Translator;
 
 import AST;

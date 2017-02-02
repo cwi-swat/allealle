@@ -5,10 +5,10 @@ extend relational::tests::translatorTests::BaseTester;
 test bool testCardinality_some_noLowerBounds() {
 	str testProblem = 
 		" {a,b}
-		' Rel:1 [{},{\<a\>,\<b\>}]
+		' Rel:1 [{},{\<a\>,\<b\>}] 
 		' some Rel
 		";
-
+ 
 	Formula result = translate(testProblem);  
 	
 	return result == 
