@@ -14,9 +14,9 @@ import logic::Propositional;
 
 data AlleFormula = existential(Formula prevForm, list[VarDeclaration] decls, AlleFormula form); 
 
-Translator getRelationalTranslator() = translator(createInitialEnvironment, has, translateFormula, translateExpr, constructSingletonBinding);
+Translator getRelationalTranslator() = translator(createInitEnv, has, translateFormula, translateExpr, constructSingletonBinding);
 
-Environment createInitialEnvironment(Problem p) 
+Environment createInitEnv(Problem p) 
   = (rb.relName:createRelationalMapping(rb) | RelationalBound rb <- p.bounds);
 
 private Binding createRelationalMapping(relationalBound(str relName, int arity, list[Tuple] lowerBounds, list[Tuple] upperBounds)) =
@@ -55,18 +55,18 @@ Formula translateFormula(atMostOne(Expr expr), Environment env, Universe uni, Tr
   = \or(aggregate.translateFormula(empty(expr), env, uni), aggregate.translateFormula(exactlyOne(expr), env, uni));
 
 Formula translateFormula(exactlyOne(Expr expr), Environment env, Universe uni, TranslatorAggregatorFunctions aggregate)  
-  = (\false() | \or(it, \and(m[x], (\true() | \and(it, \not(m[y])) | Index y <- m, relational() := y.theory, y != x))) | Index x <- m, x.theory == relational())    
+  = (\false() | \or(it, \and(m[x], (\true() | \and(it, \not(m[y])) | Index y <- m, y.theory == relational(), y != x))) | Index x <- m, x.theory == relational())    
   when Binding m := aggregate.translateExpression(expr, env, uni);
 
 Formula translateFormula(nonEmpty(Expr expr), Environment env, Universe uni, TranslatorAggregatorFunctions aggregate)      
-  = (\false() | \or(it,  m[x]) | Index x <- m, relational() := x.theory)
+  = (\false() | \or(it,  m[x]) | Index x <- m, x.theory == relational())
   when Binding m := aggregate.translateExpression(expr, env, uni);
 
 Formula translateFormula(subset(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni, TranslatorAggregatorFunctions aggregate) 
-  = m == () ? \false() : (\true() | \and(it, m[x]) | Index x <- m, relational() := x.theory)
+  = m == () ? \false() : (\true() | \and(it, m[x]) | Index x <- m, x.theory == relational())
   when Binding lhs := aggregate.translateExpression(lhsExpr, env, uni),
      Binding rhs := aggregate.translateExpression(rhsExpr, env, uni),
-     Binding m :=(idx:\or({\not(lhsVal), rhsVal}) | Index idx <- (lhs + rhs), relational() := idx.theory, Formula lhsVal := ((idx in lhs) ? lhs[idx] : \false()), Formula rhsVal := ((idx in rhs) ? rhs[idx] : \false())); 
+     Binding m :=(idx:\or({\not(lhsVal), rhsVal}) | Index idx <- (lhs + rhs), idx.theory == relational(), Formula lhsVal := ((idx in lhs) ? lhs[idx] : \false()), Formula rhsVal := ((idx in rhs) ? rhs[idx] : \false())); 
      
 Formula translateFormula(equal(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni, TranslatorAggregatorFunctions aggregate)
   = \and(aggregate.translateFormula(subset(lhsExpr, rhsExpr), env, uni), aggregate.translateFormula(subset(rhsExpr, lhsExpr), env, uni));
