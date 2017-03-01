@@ -5,7 +5,7 @@ import logic::Integer;
 
 import ide::CombinedAST;
 
-import Binder;
+import theories::Binder;
 
 import vis::Figure;
 import vis::Render;
@@ -13,8 +13,8 @@ import vis::Render;
 import util::Maybe;
 import util::Math;
 
-import Map;
-import List;
+import Map; 
+import List;  
 import Set;
 
 import IO;
@@ -22,6 +22,8 @@ import IO;
 data DisplayOptions = options(real scale = 1.0, set[str] filteredEdges = {});
 
 data DisplayModus = textual() | visual();
+
+FProperty myLeft() = halign(0.0);
 
 void renderModel(Universe universe, Environment model, Environment () nextModel, void () stop) {
 	DisplayOptions disOpt = options();
@@ -55,48 +57,55 @@ void renderModel(Universe universe, Environment model, Environment () nextModel,
 	  }
   }
   
-	Figure showDisplayOptions() = disModus == visual() ?
-		hcat([
-			box(
-				vcat([
-					text("Visualization options:", fontBold(true)),
-					box(
-						hcat([checkbox(name, name notin disOpt.filteredEdges, void (bool checked) {
-							disOpt = options(scale = disOpt.scale, filteredEdges = !checked ? disOpt.filteredEdges + edgeName : disOpt.filteredEdges - edgeName); 
-							r();
-							}) | str name <- getNaryRelations(model), str edgeName := name]),
-						hshrink(0.98), center()),
-					text("Zoom: <precision(disOpt.scale, 2)>"),
-					scaleSlider(int () { return  0; }, int () { return 100; }, int () { return round(disOpt.scale * 50.); }, void (int cur) {
-						disOpt = options(scale = toReal(cur) / 50., filteredEdges = disOpt.filteredEdges);
-						r();
-					}, hshrink(0.8))
-				]),	
-				shrink(0.98),
-				center()
-			)
-		]) : hcat([]);
-	
+	//Figure showDisplayOptions() = disModus == visual() ?
+	//	hcat([
+	//		box(
+	//			vcat([
+	//				text("Visualization options:", fontBold(true)),
+	//				box(
+	//					hcat([checkbox(name, name notin disOpt.filteredEdges, void (bool checked) {
+	//						disOpt = options(scale = disOpt.scale, filteredEdges = !checked ? disOpt.filteredEdges + edgeName : disOpt.filteredEdges - edgeName); 
+	//						r();
+	//						}) | str name <- getNaryRelations(model), str edgeName := name]),
+	//					hshrink(0.98), center()),
+	//				text("Zoom: <precision(disOpt.scale, 2)>"),
+	//				scaleSlider(int () { return  0; }, int () { return 100; }, int () { return round(disOpt.scale * 50.); }, void (int cur) {
+	//					disOpt = options(scale = toReal(cur) / 50., filteredEdges = disOpt.filteredEdges);
+	//					r();
+	//				}, hshrink(0.8))
+	//			]),	
+	//			shrink(0.98),
+	//			center()
+	//		)
+	//	]) : hcat([]);
+//	
+
 	Figure showModel() =
 	 disModus == visual() ? 
 	   scrollable(visualizeModel(universe, currentModel, disOpt)) :
 	   scrollable(box(vcat(textualizeModel(currentModel) + box(lineWidth(0)), align(0,0)), lineWidth(0), hshrink(0.98))); 
+
 			
-	void r() = 
+	Figures textualModel = textualizeModel(model);
+	iprintln(model);		
+			
+	void r() {  
 		render("Model visualizer", 
 			vcat([
 				box(
 					hcat([
 					  box(showToggle(), hshrink(0.20)),
-						box(showDisplayOptions(), hshrink(0.40)),
+						//box(showDisplayOptions(), hshrink(0.40)),
 						showButtons()
 					]),
 					vshrink(0.10)
 				),
-			 showModel()	
+			 showModel()
 			]));
+	}
 
 	r();
+
 }
 
 set[str] getNaryRelations(Environment model) = {relName | str relName <- model, Binding binding := model[relName], size(getOneFrom(binding).vector) > 1};
@@ -133,7 +142,7 @@ Maybe[Figure] buildAtomNode(Atom a, rel[Atom, str] unaryRelations, DisplayOption
 
 Figures textualizeModel(Environment model) {
   if (model == ()) {
-    return [text(""), text("No more models available", fontBold(true), left())];
+    return [text(""), text("No more models available", fontBold(true), myLeft())];
   }
   
   bool indexSort(Index a, Index b ) {
@@ -150,20 +159,21 @@ Figures textualizeModel(Environment model) {
   
   Figures m = [text("")];
   list[str] sortedRel = sort(toList(model<0>));
+  
   for (str relName <- sortedRel) {
-    m += text("<relName>:", fontBold(true), fontItalic(true), left());
+    m += text("<relName>:", fontBold(true), fontItalic(true), myLeft());
     Binding b = model[relName];
     list[Index] sortedIndices = sort(toList(b<0>), indexSort);
     
     bool hasRelations = false;
 
     for (Index idx <- sortedIndices, idx.theory == relational(), b[idx] == \true()) {
-      m += text("  <intercalate(" -\> ", [a | Atom a <- idx.vector])> <intTheoryValue(relName, idx.vector)>", left());
+      m += text("  <intercalate(" -\> ", [a | Atom a <- idx.vector])> <intTheoryValue(relName, idx.vector)>", myLeft());
       hasRelations = true;
     } 
     
     if (!hasRelations) {
-      m += text("  \<none\>", left());
+      m += text("  \<none\>", myLeft());
     }
         
     m += text("");

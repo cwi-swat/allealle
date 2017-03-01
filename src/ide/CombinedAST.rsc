@@ -1,4 +1,4 @@
 module ide::CombinedAST
 
-extend relational::AST;
-extend integer::AST;
+extend theories::relational::AST;
+extend theories::integer::AST;  

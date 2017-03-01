@@ -1,6 +1,6 @@
 module logic::tests::CNFConverterTester
 
-import logic::CNFConverter;
+import CNFConverter;
 import logic::Propositional;
 
 test bool testNNF_notAandBIsNotAOrNotB() = convertToCNF(\not(\and({var("a"),var("b")}))) == \or({not(var("a")), not(var("b"))}); 

@@ -1,4 +1,4 @@
-module logic::CNFConverter
+module CNFConverter
 
 import logic::Propositional;
 

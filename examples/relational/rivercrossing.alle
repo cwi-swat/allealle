@@ -52,4 +52,4 @@ forall s1:State, s2:State, p:(Passenger\Farmer) | ((s1 -> s2 in ordering) => ( (
                                                                                ((p in (far[s1] & near[s2])) => Farmer in far[s1] & near[s2]) ))
 
 // The Wolf can never be on the same shore then the Goat and the Cabbage can never be on the same shore then the Goat unless the Farmer is there as well
-forall s:State, p1:Passenger, p2: Passenger | ((p1 -> p2 in eats) => ((p1 in near[s] && p2 in far[s]) || (p1 in far[s] && p2 in near[s]) || p1 ++ p2 ++ Farmer in near[s] || p1 ++ p2 ++ Farmer in far[s]))
+forall s:State, p1:Passenger, p2: Passenger | ((p1 -> p2 in eats) => ((p1 in near[s] && p2 in far[s]) || (p1 in far[s] && p2 in near[s]) || (p1 ++ p2 ++ Farmer in near[s]) || (p1 ++ p2 ++ Farmer in far[s])))

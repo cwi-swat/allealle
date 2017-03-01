@@ -1,4 +1,4 @@
 module ide::CombinedSyntax
 
-extend relational::Syntax;
-extend integer::Syntax;
+extend theories::relational::Syntax;
+extend theories::integer::Syntax;

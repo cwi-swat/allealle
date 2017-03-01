@@ -4,11 +4,11 @@ import ide::Parser;
 import ide::CombinedSyntax;
 import ide::CombinedAST;
 import ide::Imploder;
-import ide::CombinedTranslationUnits;
+import ide::CombinedModelFinder;
 
-import Translator; 
+import theories::Translator; 
 import ModelFinder;
-import Binder;
+import theories::Binder;
 
 import ide::vis::ModelVisualizer;
 
