@@ -24,7 +24,7 @@ void stopSolver(SolverPID pid) {
 }
 
 bool isSatisfiable(SolverPID pid, str smtFormula) { 
-	str solverResult = runSolver(pid, smtFormula, wait=10); 
+	str solverResult = runSolver(pid, smtFormula, wait=20); 
 	println("Starting to check satisfiability");
 	if ("" !:= solverResult) {
 		throw "Unable to assert clauses: <solverResult>"; 
@@ -34,7 +34,7 @@ bool isSatisfiable(SolverPID pid, str smtFormula) {
 }
 
 bool checkSat(SolverPID pid) {
-	switch(runSolver(pid, "(check-sat)", wait = 20)) {
+	switch(runSolver(pid, "(check-sat)", wait = 5)) {
 		case "sat" : return true;
 		case "unsat": return false;
 		case "unknown": throw "Could not compute satisfiability";		

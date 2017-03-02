@@ -14,7 +14,7 @@ alias Environment = map[str, Binding];
 int sizeOfUniverse(Universe u) = size(u.atoms);
 
 @memo
-private int arity(Binding b) {
+int arity(Binding b) {
   for (Index idx <- b) {
     return size(idx.vector);
   }

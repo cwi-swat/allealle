@@ -10,7 +10,7 @@ test bool testSmallComprehension() {
 		' child:2 [{}, {\<p1,p2\>,\<p2,p1\>}]
 		' child in Person -\> Person
 		' parent in Person -\> Person
-		' child = {p:Person, pp:Person | pp in p.parent} 
+		' child == {p:Person, pp:Person | (pp in p.parent)} 
 		";
  
 	Formula result = translate(testProblem);  

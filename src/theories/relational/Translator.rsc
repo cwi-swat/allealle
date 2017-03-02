@@ -238,28 +238,27 @@ Binding translateExpression(ifThenElse(AlleFormula caseForm, Expr thenExpr, Expr
   when Binding p := translateExpression(thenExpr, env, uni),
        Binding q := translateExpression(elseExpr, env, uni);
      
-////Binding translateExpression(comprehension(list[VarDeclaration] decls, Formula form), Environment env) {
-////  Index flatten([<Atom a, relTheory()>]) = <a, relTheory()>;
-////  Index flatten([<Atom a, relTheory()>, <Atom b, relTheory()>]) = <a,b, relTheory()>;
-////  Index flatten([<Atom a, relTheory()>, <Atom b, relTheory()>, <Atom c, relTheory()>]) = <a,b,c, relTheory()>;
-////  
-////  Binding getVal(list[Index] currentIndex, Environment extendedEnv, int currentDecl, Formula declConstraints) {
-////    if (currentDecl == size(decls)) {
-////      return (flatten(currentIndex):\and(declConstraints, translateFormula(form, env + extendedEnv)));
-////    }
-////    
-////    VarDeclaration decl = decls[currentDecl];
-////    Binding m = translateExpression(decl.binding, env + extendedEnv);
-////        
-////    Binding result = ();
-////    for (Index idx <- m) {
-////      result += getVal([*currentIndex, idx], extendedEnv + (decl.name:getSingletonBinding(idx)), currentDecl + 1, \and(declConstraints, m[idx]));
-////    }   
-////    
-////    return result; 
-////  }
-////  
-////  Binding result = getVal([], env, 0, \true());
-////  
-////  return result;  
-////}
+Binding translateExpression(comprehension(list[VarDeclaration] decls, AlleFormula form), Environment env, Universe uni) {
+  list[tuple[str,Binding]] varBindings = [];
+  
+  for (VarDeclaration decl <- decls) {
+    Binding b = translateExpression(decl.binding, env, uni);
+    if (arity(b) > 1) { throw "Can not have higher order comprehensions"; }
+    varBindings += <decl.name, b>; 
+  } 
+  
+  Binding calculate(list[Atom] curVector, [<str name, Binding last>], Environment extendedEnv, Formula partialFormula) = 
+    (<relTheory(), curVector + idx.vector> : \and(partialFormula, translateFormula(form, extendedEnv + constructSingleton(name, idx.vector, last), uni)) | Index idx <- last, idx.theory == relTheory());
+   
+  default Binding calculate(list[Atom] curVector, [<str name, Binding next>, *tuple[str,Binding] tl], Environment extendedEnv, Formula partialFormula) {
+    Binding result = (); 
+    
+    for (Index idx <- next, idx.theory == relTheory()) {
+      result += calculate(curVector + idx.vector, tl, extendedEnv + constructSingleton(name, idx.vector, next), \and(partialFormula, next[idx]));  
+    }
+    
+    return result;
+  } 
+  
+  return calculate([], varBindings, env, \true());
+}
