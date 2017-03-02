@@ -2,7 +2,7 @@ module theories::relational::AST
 
 extend theories::AST;
 
-data Theory = relational();
+data Theory = relTheory();
   
 data AlleFormula
   = empty(Expr expr)

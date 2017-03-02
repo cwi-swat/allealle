@@ -115,7 +115,7 @@ Figure visualizeModel(Universe universe, Environment model, DisplayOptions disOp
 		return text("No more models available", size(100));
 	}
 
-	rel[Atom, str] unaryRels = {<a, relName> | str relName <- model, map[Index,Formula] binding := model[relName], idx:<relational(),[Atom a]> <- binding, model[relName][idx] == \true()};
+	rel[Atom, str] unaryRels = {<a, relName> | str relName <- model, map[Index,Formula] binding := model[relName], idx:<relTheory(),[Atom a]> <- binding, model[relName][idx] == \true()};
 	
 	rel[list[Atom], str] naryRels = {<idx.vector, relName> | str relName <- model, relName notin disOpt.filteredEdges, Binding binding := model[relName], size(getOneFrom(binding).vector) > 1, Index idx <- binding, model[relName][idx] == \true()};
 
@@ -167,7 +167,7 @@ Figures textualizeModel(Environment model) {
     
     bool hasRelations = false;
 
-    for (Index idx <- sortedIndices, idx.theory == relational(), b[idx] == \true()) {
+    for (Index idx <- sortedIndices, idx.theory == relTheory(), b[idx] == \true()) {
       m += text("  <intercalate(" -\> ", [a | Atom a <- idx.vector])> <intTheoryValue(relName, idx.vector)>", myLeft());
       hasRelations = true;
     } 

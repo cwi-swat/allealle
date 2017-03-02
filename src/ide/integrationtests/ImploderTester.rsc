@@ -1,4 +1,4 @@
-module ide::integrationtests::ImploderTest
+module ide::integrationtests::ImploderTester
 
 import ide::Imploder;
 import ide::CombinedAST;

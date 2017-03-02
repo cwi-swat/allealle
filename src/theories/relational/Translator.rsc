@@ -1,24 +1,25 @@
 module theories::relational::Translator
 
 extend theories::Translator; 
+
 import theories::relational::AST;
 import theories::relational::Binder;
+
+import logic::Propositional;
 
 import IO;
 import List; 
 import Map;
 import Set;
- 
-import logic::Propositional;
- 
+  
 Binding createRelationalMapping(relationalBound(str relName, int arity, list[Tuple] lowerBounds, list[Tuple] upperBounds)) =
-  createRelationalMapping(relationalBoundWithTheory(relName, relational(), arity, lowerBounds, upperBounds));
+  createRelationalMapping(relationalBoundWithTheory(relName, relTheory(), arity, lowerBounds, upperBounds));
 
-Binding createRelationalMapping(relationalBoundWithTheory(str relName, relational(), int arity, list[Tuple] lb, list[Tuple] ub)) {
+Binding createRelationalMapping(relationalBoundWithTheory(str relName, relTheory(), int arity, list[Tuple] lb, list[Tuple] ub)) {
   str idxToStr(list[Atom] idx) = intercalate("_", idx);
   
-  Binding result = (<relational(), idx> : \true() | \tuple(list[Atom] idx) <- lb);
-  result += (<relational(), idx> : var("<relName>_<idxToStr(idx)>") | \tuple(list[Atom] idx) <- ub, <relational(), idx> notin result);
+  Binding result = (<relTheory(), idx> : \true() | \tuple(list[Atom] idx) <- lb);
+  result += (<relTheory(), idx> : var("<relName>_<idxToStr(idx)>") | \tuple(list[Atom] idx) <- ub, <relTheory(), idx> notin result);
    
   return result;
 } 
@@ -30,16 +31,16 @@ Formula translateFormula(atMostOne(Expr expr), Environment env, Universe uni)
   = \or(translateFormula(empty(expr), env, uni), translateFormula(exactlyOne(expr), env, uni));
 
 Formula translateFormula(exactlyOne(Expr expr), Environment env, Universe uni) 
-  = (\false() | \or(it, \and(m[x], (\true() | \and(it, \not(m[y])) | Index y <- m, y.theory == relational(), y != x))) | Index x <- m, x.theory == relational())    
+  = (\false() | \or(it, \and(m[x], (\true() | \and(it, \not(m[y])) | Index y <- m, y.theory == relTheory(), y != x))) | Index x <- m, x.theory == relTheory())    
     when Binding m := translateExpression(expr, env, uni);
 //{
 //  Binding m = translateExpression(expr, env, uni);
 //
 //  Formula orClause = \false();
-//  for (Index x <- m, x.theory == relational(), m[x] != \false()) {
+//  for (Index x <- m, x.theory == relTheory(), m[x] != \false()) {
 //    Formula innerAndClause = m[x];
 //    
-//    for (Index y <- m, y.theory == relational(), y != x) {
+//    for (Index y <- m, y.theory == relTheory(), y != x) {
 //
 //      if (m[y] == \true()) {
 //        innerAndClause = \false();
@@ -62,13 +63,13 @@ Formula translateFormula(exactlyOne(Expr expr), Environment env, Universe uni)
 //}
 
 Formula translateFormula(nonEmpty(Expr expr), Environment env, Universe uni)      
-  = (\false() | \or(it,  m[x]) | Index x <- m, x.theory == relational())
+  = (\false() | \or(it,  m[x]) | Index x <- m, x.theory == relTheory())
   when Binding m := translateExpression(expr, env, uni);
 //{
 //  Binding m = translateExpression(expr, env, uni);
 //  
 //  Formula orClause = \false();
-//  for (Index x <- m, x.theory == relational(), m[x] != \false()) {
+//  for (Index x <- m, x.theory == relTheory(), m[x] != \false()) {
 //    if (m[x] == \true()) {
 //      return \true();
 //    }
@@ -81,16 +82,16 @@ Formula translateFormula(nonEmpty(Expr expr), Environment env, Universe uni)
 
 
 Formula translateFormula(subset(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni) 
-  //= m == () ? \false() : (\true() | \and(it, m[x]) | Index x <- m, x.theory == relational())
+  //= m == () ? \false() : (\true() | \and(it, m[x]) | Index x <- m, x.theory == relTheory())
   //when Binding lhs := translateExpression(lhsExpr, env, uni),
   //   Binding rhs := translateExpression(rhsExpr, env, uni),
-  //   Binding m :=(idx:\or({\not(lhsVal), rhsVal}) | Index idx <- (lhs + rhs), idx.theory == relational(), Formula lhsVal := ((idx in lhs) ? lhs[idx] : \false()), Formula rhsVal := ((idx in rhs) ? rhs[idx] : \false())); 
+  //   Binding m :=(idx:\or({\not(lhsVal), rhsVal}) | Index idx <- (lhs + rhs), idx.theory == relTheory(), Formula lhsVal := ((idx in lhs) ? lhs[idx] : \false()), Formula rhsVal := ((idx in rhs) ? rhs[idx] : \false())); 
 {
   Binding lhs = translateExpression(lhsExpr, env, uni);
   Binding rhs = translateExpression(rhsExpr, env, uni);
   
   Binding m = ();
-  for (Index idx <- (lhs + rhs), idx.theory == relational()) {
+  for (Index idx <- (lhs + rhs), idx.theory == relTheory()) {
     Formula lhsVal = (idx in lhs) ? lhs[idx] : \false();
     Formula rhsVal = (idx in rhs) ? rhs[idx] : \false();
  
@@ -146,8 +147,8 @@ Formula translateFormula(universal(list[VarDeclaration] decls, AlleFormula form)
     set[Formula] result = {};
     
     Binding m = translateExpression(hd.binding, env, uni);
-    for (Index idx <- m, idx.theory == relational()) {
-      extendedEnvironment["<hd.name>"] = (<relational(), idx.vector>:\true());
+    for (Index idx <- m, idx.theory == relTheory()) {
+      extendedEnvironment["<hd.name>"] = (<relTheory(), idx.vector>:\true());
       Formula clause = buildOr(tl, extendedEnvironment);
     
       if (clause == \false() && m[idx] == \true()) {
@@ -167,7 +168,7 @@ Formula translateFormula(universal(list[VarDeclaration] decls, AlleFormula form)
   
   return result;
 }
-  //= \and({\or({\not(m[x]), translateFormula(f, env + singletonConstructor.constructSingleton(hd.name, m, x.vector), uni)}) | Index x <- m, x.theory == relational(), AlleFormula f := (([] == t) ? form : universal(t, form))})
+  //= \and({\or({\not(m[x]), translateFormula(f, env + singletonConstructor.constructSingleton(hd.name, m, x.vector), uni)}) | Index x <- m, x.theory == relTheory(), AlleFormula f := (([] == t) ? form : universal(t, form))})
   //when [VarDeclaration hd, *t] := decls,
   //     Binding m := translateExpression(hd.binding, env, uni);
    
@@ -179,7 +180,7 @@ Formula translateFormula(existential(list[VarDeclaration] decls, AlleFormula for
   
   Binding m = translateExpression(hd.binding, env, uni);
   
-  for (Index x <- m, x.theory == relational(), m[x] != \false()) {
+  for (Index x <- m, x.theory == relTheory(), m[x] != \false()) {
     AlleFormula f = tl != [] ? existential(tl, form) : form;
 
     Formula clause = \and({m[x], translateFormula(f, env + constructSingleton(hd.name, x.vector, m), uni)});
@@ -192,11 +193,11 @@ Formula translateFormula(existential(list[VarDeclaration] decls, AlleFormula for
 }
 
 //Formula translateFormula(existential(list[VarDeclaration] decls, AlleFormula form), Environment env, Universe uni)
-//  = \or({\and({m[x], translateFormula(f, env + singletonConstructor.constructSingleton(hd.name, m, x.vector), uni)}) | Index x <- m, x.theory == relational(), AlleFormula f := (([] == t) ? form : existential(t, form))}) 
+//  = \or({\and({m[x], translateFormula(f, env + singletonConstructor.constructSingleton(hd.name, m, x.vector), uni)}) | Index x <- m, x.theory == relTheory(), AlleFormula f := (([] == t) ? form : existential(t, form))}) 
 //  when [VarDeclaration hd, *t] := decls,
 //       Binding m := translateExpression(hd.binding, env, uni);
 
-Binding constructSingletonWithTheory(relational(), list[Atom] vector, Formula originalValue) = (<relational(), vector>:\true()); 
+Binding constructSingletonWithTheory(relTheory(), list[Atom] vector, Formula originalValue) = (<relTheory(), vector>:\true()); 
 
 Binding translateExpression(variable(str name), Environment env, Universe uni) = env[name];
 
@@ -218,7 +219,7 @@ Binding translateExpression(intersection(Expr lhsExpr, Expr rhsExpr), Environmen
        Binding rhs := translateExpression(rhsExpr, env, uni);
 
 Binding translateExpression(difference(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni) = 
-  (x:\and(lhs[x],rhsVal) | Index x <- lhs, x.theory == relational(), Formula rhsVal := ((x notin rhs) ? \true() : \not(rhs[x])))
+  (x:\and(lhs[x],rhsVal) | Index x <- lhs, x.theory == relTheory(), Formula rhsVal := ((x notin rhs) ? \true() : \not(rhs[x])))
   when Binding lhs := translateExpression(lhsExpr, env, uni),
        Binding rhs := translateExpression(rhsExpr, env, uni);
 

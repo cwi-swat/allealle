@@ -8,7 +8,7 @@ import logic::Boolean;
 import theories::integer::Binder;
 import theories::integer::AST;
 
-import theories::relational::AST;
+import theories::relational::AST; 
 import theories::relational::Binder;
 import theories::relational::Translator;
 
@@ -16,10 +16,10 @@ import List;
 
 import IO;
  
-Binding createRelationalMapping(relationalBoundWithTheory(str relName, integers(), 1, list[Tuple] lb, list[Tuple] ub))
-  = (<integers(), [a]>: intVar(a) | \tuple([Atom a]) <- ub) + createRelationalMapping(relationalBoundWithTheory(relName, relational(), 1, lb, ub));
+Binding createRelationalMapping(relationalBoundWithTheory(str relName, intTheory(), 1, list[Tuple] lb, list[Tuple] ub))
+  = (<intTheory(), [a]>: intVar(a) | \tuple([Atom a]) <- ub) + createRelationalMapping(relationalBoundWithTheory(relName, relTheory(), 1, lb, ub));
 
-Binding constructSingletonWithTheory(integers(), list[Atom] vector, Formula originalValue) = (<integers(),vector>:originalValue); 
+Binding constructSingletonWithTheory(intTheory(), list[Atom] vector, Formula originalValue) = (<intTheory(),vector>:originalValue); 
 
 Formula translateFormula(gt(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni) 
 	= (\true() | \and(it, \or(not(relResult[relIdx]), intResult[intIdx])) | Index relIdx <- relResult, Index intIdx <- intResult)
@@ -58,7 +58,7 @@ Formula translateFormula(intEqual(Expr lhsExpr, Expr rhsExpr), Environment env, 
        
 @memo
 Binding translateExpression(intLit(int i), Environment env, Universe uni) 
-  = (<integers(),[a]>:\int(i) | Atom a <- uni.atoms) + (<relational(), [a]>:\true() | Atom a <- uni.atoms);
+  = (<intTheory(),[a]>:\int(i) | Atom a <- uni.atoms) + (<relTheory(), [a]>:\true() | Atom a <- uni.atoms);
 
 Binding translateExpression(multiplication(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni) = multiply(lhs, rhs) + product(lhs, rhs)
 	when Binding lhs := translateExpression(lhsExpr, env, uni),

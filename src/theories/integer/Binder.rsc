@@ -18,4 +18,4 @@ Binding lte(Binding lhs, Binding rhs) = translate(lhs, rhs, Formula (Formula l, 
 Binding equal(Binding lhs, Binding rhs) = translate(lhs, rhs, Formula (Formula l, Formula r) { return equal(l,r); });
 
 private Binding translate(Binding lhs, Binding rhs, Formula (Formula, Formula) operation) 
-  = (<integers(), a.vector + b.vector>:operation(lhs[a], rhs[b]) | Index a <- lhs, a.theory == integers(), Index b <- rhs, b.theory == integers());
+  = (<intTheory(), a.vector + b.vector>:operation(lhs[a], rhs[b]) | Index a <- lhs, a.theory == intTheory(), Index b <- rhs, b.theory == intTheory());

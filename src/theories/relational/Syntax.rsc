@@ -2,7 +2,7 @@ module theories::relational::Syntax
 
 extend theories::Syntax;
   
-syntax Theory =   relational: "rel";  
+syntax Theory =   relTheory: "rel";  
 
 syntax AlleFormula
 	= universal:	  "forall" {VarDeclaration ","}+ decls "|" AlleFormula form

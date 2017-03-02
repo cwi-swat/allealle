@@ -7,6 +7,8 @@ import logic::Boolean;
 import util::Maybe; 
 import String;
 
+import IO;
+
 alias Model = map[SMTVar, Formula];
 alias SMTVar = tuple[str name, Theory theory];
 

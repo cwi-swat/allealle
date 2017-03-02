@@ -1,9 +1,8 @@
-module ide::integrationtests::ProbemRunner
+module ide::integrationtests::ProblemRunner
 
 import theories::AST;
 import theories::Binder;
-import theories::Translator;
-import ModelFinder;
+//import theories::Translator;
 
 import ide::Imploder;
 import ide::CombinedModelFinder;
@@ -25,6 +24,6 @@ void translateAndSolve(Problem p, int nrOfTestsToPerform) {
     }
   }   
 }
-
+ 
 void performanceTestRiverCrossing(int nr) = translateAndSolve(|project://allealle/examples/relational/rivercrossing.alle|,nr);
 void performanceTestSudoku(int nr) = translateAndSolve(|project://allealle/examples/relational/sudoku.alle|,nr);

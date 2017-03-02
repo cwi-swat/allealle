@@ -3,7 +3,7 @@ module theories::integer::AST
 extend theories::AST;
 
 // Integer theory extensions
-data Theory = integers();
+data Theory = intTheory();
 
 data Sort
 	= intSort()

@@ -5,12 +5,9 @@ import ide::CombinedSyntax;
 import ide::CombinedAST;
 import ide::Imploder;
 import ide::CombinedModelFinder;
-
-import theories::Translator; 
-import ModelFinder;
-import theories::Binder;
-
 import ide::vis::ModelVisualizer;
+
+import theories::Binder;
 
 import util::IDE;
 import util::Prompt;
@@ -21,7 +18,7 @@ import ParseTree;
 void main(){
 	str lang = "AlleAlle";
 
-	registerLanguage(lang,"alle", parseFile);
+	registerLanguage(lang,"alle", parseFile); 
 	
 	contribs = {
 		popup(
@@ -36,7 +33,7 @@ void main(){
 }
  
 void checkAndVisualize(ide::CombinedSyntax::Problem p) {
-	ModelFinderResult result = checkInitialSolution(implodeProblem(p), getTranslationUnits());
+	ModelFinderResult result = checkInitialSolution(implodeProblem(p));
 
 	if (sat(Environment currentModel, ide::CombinedAST::Universe uni, Environment () nextModel, void () stop) := result) {
 		renderModel(uni, currentModel, nextModel, stop);

@@ -13,19 +13,19 @@ import IO;
 private Binding square(Binding m, int i, int sizeOfUniverse) = m when i >= sizeOfUniverse;
 private Binding square(Binding m, int i, int sizeOfUniverse) = or(n, \join(n, n)) when Binding n := square(m, i * 2, sizeOfUniverse); 
 
-private list[Index] constructIdentityIndex(int arity, Universe uni) = [idx | Atom a <- uni.atoms, list[Atom] vector := [a | int _ <- [0..arity]], Index idx := <relational(), vector>];
+private list[Index] constructIdentityIndex(int arity, Universe uni) = [idx | Atom a <- uni.atoms, list[Atom] vector := [a | int _ <- [0..arity]], Index idx := <relTheory(), vector>];
 
 @memo
 private Binding identity(Binding orig, Universe uni) = identity(arity(orig), uni);
 private Binding identity(int arity, Universe uni) = (idx:\true() | Index idx <- constructIdentityIndex(arity, uni));
 
-private Binding or(Binding lhs, Binding rhs) = (x:\or(lhsVal,rhsVal) | Index x <- (lhs + rhs), x.theory == relational(), Formula lhsVal := ((x in lhs) ? lhs[x] : \false()), Formula rhsVal := ((x in rhs) ? rhs[x] : \false())) when sameArity(lhs, rhs);
+private Binding or(Binding lhs, Binding rhs) = (x:\or(lhsVal,rhsVal) | Index x <- (lhs + rhs), x.theory == relTheory(), Formula lhsVal := ((x in lhs) ? lhs[x] : \false()), Formula rhsVal := ((x in rhs) ? rhs[x] : \false())) when sameArity(lhs, rhs);
 private default Binding or(Binding _, Binding _) { throw "Unable to perform disjunction of bindings with different arity"; }
 
-private Binding and(Binding lhs, Binding rhs) = (x:\and(lhs[x],rhs[x]) | Index x <- lhs, x.theory == relational() , x in rhs) when sameArity(lhs, rhs);
+private Binding and(Binding lhs, Binding rhs) = (x:\and(lhs[x],rhs[x]) | Index x <- lhs, x.theory == relTheory() , x in rhs) when sameArity(lhs, rhs);
 private default Binding and(Binding _, Binding _) { throw "Unable to perform conjunction of bindings with different arity"; }
  
-Binding transpose(Binding m, Universe uni) = (() | it + (reversedIndex : m[key]) | Index key <- m, key.theory == relational(), Index reversedIndex := <relational(), reverse(key.vector)>);
+Binding transpose(Binding m, Universe uni) = (() | it + (reversedIndex : m[key]) | Index key <- m, key.theory == relTheory(), Index reversedIndex := <relTheory(), reverse(key.vector)>);
 
 Binding transitiveClosure(Binding m, Universe uni) = square(m, 1, sizeOfUniverse(uni)) when arity(m) == 2;
 default Binding transitiveClosure(Binding m, Universe uni) { throw "Can not perform a transitive closure on a non-binary relation"; }
@@ -39,7 +39,7 @@ default Binding disjunction(Binding lhs, Binding rhs) { throw "Can not perform a
 Binding conjunction(Binding lhs, Binding rhs) = and(lhs, rhs) when sameArity(lhs, rhs);
 default Binding conjunction(Binding lhs, Binding rhs) { throw "Can not perform a conjunction on two relations with different arities"; }
 
-Binding difference(Binding lhs, Binding rhs) = (idx:and(lhs[idx], rhsVal) |Index idx <- lhs, idx.theory == relational(), Formula rhsVal := ((idx in rhs) ? not(rhs[idx]) : \true())) when sameArity(lhs, rhs);
+Binding difference(Binding lhs, Binding rhs) = (idx:and(lhs[idx], rhsVal) |Index idx <- lhs, idx.theory == relTheory(), Formula rhsVal := ((idx in rhs) ? not(rhs[idx]) : \true())) when sameArity(lhs, rhs);
 default Binding different(Binding lhs, Binding rhs) { throw "Can not perform a difference on two relations with different arities"; }  
 
 
@@ -75,22 +75,22 @@ Binding \join(Binding lhs, Binding rhs) {
     
   Binding j(Binding lhs, Binding rhs, 1, 1) { throw "Unable to join two unary relations"; }
   
-  //Binding \join(Binding lhs, Binding rhs, 1, 2) = (<relational(),[idx.vector[1]]>:\and(lhs[<relational(), [idx.vector[0]]>], rhsFormulas[idx.vector[0]]) |  Index idx <- rhs, idx.vector[0] in lhsAtoms)
+  //Binding \join(Binding lhs, Binding rhs, 1, 2) = (<relTheory(),[idx.vector[1]]>:\and(lhs[<relTheory(), [idx.vector[0]]>], rhsFormulas[idx.vector[0]]) |  Index idx <- rhs, idx.vector[0] in lhsAtoms)
   //  when set[Atom] lhsAtoms := {idx.vector[0] | Index idx <- lhs},
   //       map[Atom, Formula] rhsFormulas := formulasStartingWith(lhsAtoms, rhs);
   //
-  //Binding \join(Binding lhs, Binding rhs, 2, 1) = (<relational(),[idx.vector[0]]>:\and(rhs[<relational(), [idx.vector[1]]>], lhsFormulas[idx.vector[1]]) |  Index idx <- lhs, idx.vector[1] in rhsAtoms)
+  //Binding \join(Binding lhs, Binding rhs, 2, 1) = (<relTheory(),[idx.vector[0]]>:\and(rhs[<relTheory(), [idx.vector[1]]>], lhsFormulas[idx.vector[1]]) |  Index idx <- lhs, idx.vector[1] in rhsAtoms)
   //  when set[Atom] rhsAtoms := {idx.vector[0] | Index idx <- rhs},
   //       map[Atom, Formula] lhsFormulas := formulasEndingWith(rhsAtoms, lhs);
          
   //Binding \join(Binding lhs, Binding rhs, 2, 2) = ();
   
   default Binding j(Binding lhs, Binding rhs, int arityLhs, int arityRhs) { 
-    set[Index] indicesEndingWith(Atom a, Binding b) = {idx | Index idx <- b, idx.theory == relational(), idx.vector[-1] == a};
-    set[Index] indicesStartingWith(Atom a, Binding b) = {idx | Index idx <- b, idx.theory == relational(), idx.vector[0] == a};
+    set[Index] indicesEndingWith(Atom a, Binding b) = {idx | Index idx <- b, idx.theory == relTheory(), idx.vector[-1] == a};
+    set[Index] indicesStartingWith(Atom a, Binding b) = {idx | Index idx <- b, idx.theory == relTheory(), idx.vector[0] == a};
 
     // join by joining the right-most atom from the index of the lhs with the left-most atom from the index of the rhs. It is much like a database join
-    set[Atom] mostRightAtomInLhs = {idx.vector[-1] | Index idx <- lhs, idx.theory == relational()};
+    set[Atom] mostRightAtomInLhs = {idx.vector[-1] | Index idx <- lhs, idx.theory == relTheory()};
     
     Binding joinResult = ();
     for (Atom current <- mostRightAtomInLhs) {
@@ -103,7 +103,7 @@ Binding \join(Binding lhs, Binding rhs) {
           Formula val = and(lhsVal, rhsVal);
           
           if (val != \false()) {
-            Index jointIndex = <relational(), (currentLhs.vector - currentLhs.vector[arityLhs - 1]) + (currentRhs.vector - currentRhs.vector[0])>;
+            Index jointIndex = <relTheory(), (currentLhs.vector - currentLhs.vector[arityLhs - 1]) + (currentRhs.vector - currentRhs.vector[0])>;
   
             if (jointIndex notin joinResult) { 
               joinResult[jointIndex] = val;
@@ -124,13 +124,13 @@ Binding \join(Binding lhs, Binding rhs) {
 }
   
 Binding product(Binding lhs, Binding rhs) 
-  = (<relational(), currentLhs.vector + currentRhs.vector> : val | 
+  = (<relTheory(), currentLhs.vector + currentRhs.vector> : val | 
       Index currentLhs <- lhs, 
       lhs[currentLhs] != \false(),
-      currentLhs.theory == relational(),
+      currentLhs.theory == relTheory(),
       Index currentRhs <- rhs, 
       rhs[currentRhs] != \false(),
-      currentRhs.theory == relational(),
+      currentRhs.theory == relTheory(),
       Formula val := and(lhs[currentLhs], rhs[currentRhs]), 
       val !:= \false()); 
 

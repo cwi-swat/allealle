@@ -8,9 +8,7 @@ import List;
 alias Index = tuple[Theory theory, list[Atom] vector];
 alias Binding = map[Index, Formula];
 
-alias LookupKey = str;
-
-alias Environment = map[LookupKey, Binding];
+alias Environment = map[str, Binding];
 
 @memo
 int sizeOfUniverse(Universe u) = size(u.atoms);

@@ -2,7 +2,7 @@ module theories::integer::Syntax
 
 extend theories::Syntax;
 
-syntax Theory = integers: "int";
+syntax Theory = intTheory: "int";
 
 syntax Sort
   = intSort: "int"
