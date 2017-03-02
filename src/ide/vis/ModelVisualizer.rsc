@@ -154,7 +154,7 @@ Figures textualizeModel(Environment model) {
     return false;
   }
   
-  str intTheoryValue(str relName, list[Atom] vector) = "(int value = <i>)" when relName in model, <integers(), vector> in model[relName], \int(int i) := model[relName][<integers(),vector>];
+  str intTheoryValue(str relName, list[Atom] vector) = "(int value = <i>)" when relName in model, <intTheory(), vector> in model[relName], \int(int i) := model[relName][<intTheory(),vector>];
   default str intTheoryValue(str _, list[Atom] _) = "";
   
   Figures m = [text("")];

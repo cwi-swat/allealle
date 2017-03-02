@@ -11,8 +11,8 @@ data Formula
 Formula \or({})									                      = \false();
 Formula \or({Formula x}) 						                  = x;
   
-//Formula \or({\false(), *Formula r})   			    = \or(r);
-//Formula \or({\true(), *Formula _})   			      = \true();
+Formula \or({\false(), *Formula r})   			    = \or(r);
+Formula \or({\true(), *Formula _})   			      = \true();
 //Formula \or({*Formula a, or(set[Formula] b)})   = \or(a + b);
 //Formula \or({Formula g,\not(g),*Formula r}) 	  = \true();
 //
@@ -22,8 +22,8 @@ Formula \or({Formula x}) 						                  = x;
 Formula \and({})								                      = \true();
 Formula \and({Formula x}) 						                = x;
 
-//Formula \and({\true(), *Formula r})				      = \and(r);
-//Formula \and({\false(), *Formula _}) 			      = \false();
+Formula \and({\true(), *Formula r})				      = \and(r);
+Formula \and({\false(), *Formula _}) 			      = \false();
 //Formula \and({*Formula a, and(set[Formula] b)}) = \and(a + b);
 //Formula \and({Formula g,\not(g),*Formula r}) 	  = \false();
 //
@@ -40,6 +40,10 @@ Formula \or(\not(Formula a), a)                       = \true();
 Formula \or(Formula a, \not(a))                       = \true();
 Formula \or(Formula a, \or(set[Formula] inner))       = \or({a, *inner});
 Formula \or(\or(set[Formula] inner), Formula a)       = \or({a, *inner});
+Formula \or(Formula a, \and({not(a), *Formula rest})) = \or({\and({not(a), *rest})});
+Formula \or(\and({not(Formula a), *Formula rest}), a) = \or({\and({not(a), *rest})});
+Formula \or(not(Formula a), \and({a, *Formula rest})) = \or({\and({a, *rest})});
+Formula \or(\and({Formula a, *Formula rest}), not(a)) = \or({\and({a, *rest})});
 default Formula \or(Formula a, Formula b)             = \or({a,b});
 
 Formula \and(\true(), Formula b)                      = b;
@@ -52,6 +56,11 @@ Formula \and(Formula a, not(a))                       = \false();
 Formula \and(not(Formula a), a)                       = \false();
 Formula \and(Formula a, \and(set[Formula] inner))     = \and({a, *inner});
 Formula \and(\and(set[Formula] inner), Formula a)     = \and({a, *inner});
+Formula \and(Formula a, \or({not(a), *Formula rest})) = \and({a, \or(rest)});
+Formula \and(\or({not(Formula a), *Formula rest}), a) = \and({a, \or(rest)});
+Formula \and(not(Formula a), \or({a, *Formula rest})) = \and({not(a), \or(rest)});
+Formula \and(\or({not(Formula a), *Formula rest}), a) = \and({not(a), \or(rest)});
+
 default Formula \and(Formula a, Formula b)            = \and({a,b});
 
 Formula \not(not(Formula g)) 					                = g;

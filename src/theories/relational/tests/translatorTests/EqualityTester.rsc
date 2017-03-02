@@ -11,30 +11,28 @@ test bool testEquality_isEqual_noLowerBounds() {
 		";
 
 	Formula result = translate(testProblem);  
-	
+
 	return result == 
 		and({
 			and({
-				or({
-					not(var("RelA_a")), 
-					var("RelB_a")
-				}),
-				or({
-					not(var("RelA_b")), 
-					var("RelB_b")
-				})
-			}),
-			and({
-				or({
-					not(var("RelB_a")), 
-					var("RelA_a")
-				}),
-				or({
-					not(var("RelB_b")), 
-					var("RelA_b")
-				})
-			})		
-		});
+        or({
+            var("RelA_b"),
+            not(var("RelB_b"))
+          }),
+        or({
+            var("RelA_a"),
+            not(var("RelB_a"))
+          })
+      }),
+    or({
+        var("RelB_b"),
+        not(var("RelA_b"))
+      }),
+    or({
+        var("RelB_a"),
+        not(var("RelA_a"))
+      })
+  });
 }
 
 test bool testEquality_isEqual_withLowerBounds() {
