@@ -40,7 +40,7 @@ Formula translateFormula(exactlyOne(Expr expr), Environment env, Universe uni)
 //  for (Index x <- m, x.theory == relTheory(), m[x] != \false()) {
 //    Formula innerAndClause = m[x];
 //    
-//    for (Index y <- m, y.theory == relTheory(), y != x) {
+//    for (Index y <- m, y.theory == relTheory(), y != x) { 
 //
 //      if (m[y] == \true()) {
 //        innerAndClause = \false();
@@ -201,7 +201,7 @@ Binding constructSingletonWithTheory(relTheory(), list[Atom] vector, Formula ori
 
 Binding translateExpression(variable(str name), Environment env, Universe uni) = env[name];
 
-Binding translateExpression(transpose(Expr expr), Environment env, Universe uni) = transpose(m, uni)
+Binding translateExpression(transpose(Expr expr), Environment env, Universe uni) = transpose(m)
   when Binding m := translateExpression(expr, env, uni); 
 
 Binding translateExpression(closure(Expr expr), Environment env, Universe uni) = transitiveClosure(m, uni)

@@ -25,7 +25,7 @@ private default Binding or(Binding _, Binding _) { throw "Unable to perform disj
 private Binding and(Binding lhs, Binding rhs) = (x:\and(lhs[x],rhs[x]) | Index x <- lhs, x.theory == relTheory() , x in rhs) when sameArity(lhs, rhs);
 private default Binding and(Binding _, Binding _) { throw "Unable to perform conjunction of bindings with different arity"; }
  
-Binding transpose(Binding m, Universe uni) = (() | it + (reversedIndex : m[key]) | Index key <- m, key.theory == relTheory(), Index reversedIndex := <relTheory(), reverse(key.vector)>);
+Binding transpose(Binding m) = (() | it + (reversedIndex : m[key]) | Index key <- m, key.theory == relTheory(), Index reversedIndex := <relTheory(), reverse(key.vector)>);
 
 Binding transitiveClosure(Binding m, Universe uni) = square(m, 1, sizeOfUniverse(uni)) when arity(m) == 2;
 default Binding transitiveClosure(Binding m, Universe uni) { throw "Can not perform a transitive closure on a non-binary relation"; }
