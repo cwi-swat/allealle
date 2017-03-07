@@ -3,22 +3,19 @@ module theories::relational::tests::binderTests::TransposeTester
 extend theories::relational::tests::binderTests::TesterBase;
 
 test bool transposeOfUnaryRelationIsItself() {
-  Universe uni = universe(["a","b"]);
-  Binding unary = t("a") + t("b");
+  Binding unary = t(["a"]) + t(["b"]);
 
-  return transpose(unary, uni) == unary;
+  return transpose(unary) == unary;
 }
 
 test bool transposeOfBinary() {
-  Universe uni = universe(["a","b","c"]);
-  Binding binary = t("a","b") + t("a","c");
+  Binding binary = t(["a","b"]) + t(["a","c"]);
   
-  return transpose(binary, uni) == t("b","a") + t("c","a");
+  return transpose(binary) == t(["b","a"]) + t(["c","a"]);
 }
 
 test bool tranposeOfTenary() {
-  Universe uni = universe(["a","b","c","d"]);
-  Binding tenary = t("a","b","c") + t("a","b","d");
+  Binding tenary = t(["a","b","c"]) + t(["a","b","d"]);
   
-  return transpose(tenary, uni) == t("c","b","a") + t("d","b","a");
+  return transpose(tenary) == t(["c","b","a"]) + t(["d","b","a"]);
 }
