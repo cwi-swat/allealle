@@ -20,7 +20,8 @@ alias PID = int;
 data ModelFinderResult 
 	= sat(Environment currentModel, Universe universe, Environment () nextModel, void () stop)
 	| unsat(set[Formula] unsatCore)
-	| trivial(bool sat)
+	| trivialSat(Environment model, Universe universe)
+	| trivialUnsat()	
 	;
 
 ModelFinderResult checkInitialSolution(Problem problem) {
@@ -39,9 +40,9 @@ ModelFinderResult checkInitialSolution(Problem problem) {
 	//tuple[Formula formula, int time] cnf = <t.result.formula, t.time>; //benchmark(convertToCNF, t.result.formula);
 
 	if (t.formula == \false()) {
-		return trivial(false);
+		return trivialUnsat();
 	} else if (t.formula == \true()) {
-		return trivial(true);
+		return trivialSat(ie.env, problem.uni);
 	}
 
 	return runInSolver(problem, t.formula, ie.env);

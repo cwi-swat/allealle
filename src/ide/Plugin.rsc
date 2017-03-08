@@ -37,7 +37,11 @@ void checkAndVisualize(ide::CombinedSyntax::Problem p) {
 
 	if (sat(Environment currentModel, ide::CombinedAST::Universe uni, Environment () nextModel, void () stop) := result) {
 		renderModel(uni, currentModel, nextModel, stop);
+	} else if (trivialSat(Environment model, ide::CombinedAST::Universe uni) := result) {
+	  renderModel(uni, model, Environment () { return (); }, void () {;});
+	} else if (trivialUnsat() := result) {
+    alert("Not satisfiable (trivially), nothing to visualize");
 	} else {
-		alert("Not satisfiable, can not visualize");
+		alert("Not satisfiable (smt solver can not find a model), nothing to visualize");
 	}
 }

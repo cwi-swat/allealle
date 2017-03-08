@@ -1,6 +1,6 @@
 module logic::Integer
 
-extend logic::Boolean;
+extend logic::Propositional;
 
 data Formula
 	= \int(int i)
