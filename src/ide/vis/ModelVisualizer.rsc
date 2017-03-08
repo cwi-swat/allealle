@@ -57,28 +57,28 @@ void renderModel(Universe universe, Environment model, Environment () nextModel,
 	  }
   }
   
-	//Figure showDisplayOptions() = disModus == visual() ?
-	//	hcat([
-	//		box(
-	//			vcat([
-	//				text("Visualization options:", fontBold(true)),
-	//				box(
-	//					hcat([checkbox(name, name notin disOpt.filteredEdges, void (bool checked) {
-	//						disOpt = options(scale = disOpt.scale, filteredEdges = !checked ? disOpt.filteredEdges + edgeName : disOpt.filteredEdges - edgeName); 
-	//						r();
-	//						}) | str name <- getNaryRelations(model), str edgeName := name]),
-	//					hshrink(0.98), center()),
-	//				text("Zoom: <precision(disOpt.scale, 2)>"),
-	//				scaleSlider(int () { return  0; }, int () { return 100; }, int () { return round(disOpt.scale * 50.); }, void (int cur) {
-	//					disOpt = options(scale = toReal(cur) / 50., filteredEdges = disOpt.filteredEdges);
-	//					r();
-	//				}, hshrink(0.8))
-	//			]),	
-	//			shrink(0.98),
-	//			center()
-	//		)
-	//	]) : hcat([]);
-//	
+	Figure showDisplayOptions() = disModus == visual() ?
+		hcat([
+			box(
+				vcat([
+					text("Visualization options:", fontBold(true)),
+					box(
+						hcat([checkbox(name, name notin disOpt.filteredEdges, void (bool checked) {
+							disOpt = options(scale = disOpt.scale, filteredEdges = !checked ? disOpt.filteredEdges + edgeName : disOpt.filteredEdges - edgeName); 
+							r();
+							}) | str name <- getNaryRelations(model), str edgeName := name]),
+						hshrink(0.98), center()),
+					text("Zoom: <precision(disOpt.scale, 2)>"),
+					scaleSlider(int () { return  0; }, int () { return 100; }, int () { return round(disOpt.scale * 50.); }, void (int cur) {
+						disOpt = options(scale = toReal(cur) / 50., filteredEdges = disOpt.filteredEdges);
+						r();
+					}, hshrink(0.8))
+				]),	
+				shrink(0.98),
+				center()
+			)
+		]) : hcat([]);
+	
 
 	Figure showModel() =
 	 disModus == visual() ? 
@@ -95,7 +95,7 @@ void renderModel(Universe universe, Environment model, Environment () nextModel,
 				box(
 					hcat([
 					  box(showToggle(), hshrink(0.20)),
-						//box(showDisplayOptions(), hshrink(0.40)),
+						box(showDisplayOptions(), hshrink(0.40)),
 						showButtons()
 					]),
 					vshrink(0.10)

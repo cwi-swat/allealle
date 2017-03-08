@@ -1,7 +1,0 @@
-{s1,s2,s3}
-
-Side(int):1[{<s1>,<s2>,<s3>},{<s1>,<s2>,<s3>}]
-
-Side > 1 && Side < 15
-
-exists a:Side, b:Side, c:Side | ((c * c) = ((a * a) + (b * b)))
