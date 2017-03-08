@@ -36,17 +36,14 @@ test bool pythagorasOnRelations() {
   ' RelA(int):1 [{},{\<a\>}]
   ' RelB(int):1 [{},{\<b\>}]
   ' RelC(int):1 [{},{\<c\>}] 
-   
-  ' RelC * RelC == RelA * Rel A + RelB * RelB
+  ' RelC * RelC = RelA * RelA + RelB * RelB
   ";
 
   Formula result = translate(testProblem);
   
   return result == 
     \and({
-      \or({\not(\and({var("Rel1_a"), var("Rel2_b"), var("Rel2_c")})), \gt(intVar("a"), intVar("c"))}),
-      \or({\not(\and({var("Rel1_a"), var("Rel2_d")})), \gt(intVar("a"), intVar("d"))}),
-      \or({\not(\and({var("Rel1_b"), var("Rel2_c")})), \gt(intVar("b"), intVar("c"))}),
-      \or({\not(\and({var("Rel1_b"), var("Rel2_d")})), \gt(intVar("b"), intVar("d"))})
-   });       
+      \or({\not(\and({var("RelA_a"), var("RelB_b"), var("RelC_c")})), 
+        \equal(\multiplication(intVar("c"),intVar("c")), \addition(\multiplication(intVar("a"), intVar("a")), \multiplication(intVar("b"), intVar("b"))))})
+    });       
 }
