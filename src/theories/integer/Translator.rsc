@@ -46,6 +46,8 @@ Formula translateFormula(intEqual(Expr lhsExpr, Expr rhsExpr), Environment env, 
        Binding rhs := translateExpression(rhsExpr, env, uni),
        Binding result := equal(lhs, rhs);
 
+Formula translateFormula(intInequal(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni) = translateFormula(negation(intEqual(lhsExpr, rhsExpr)), env, uni);
+
 private Formula translateFormula(Binding operationResult) 
   = (\true() | \and(it, \or(\not(operationResult[idx]), operationResult[<intTheory(), vector>])) | Index idx:<relTheory(), list[Atom] vector> <- operationResult);
   

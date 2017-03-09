@@ -119,6 +119,9 @@ Formula translateFormula(subset(Expr lhsExpr, Expr rhsExpr), Environment env, Un
      
 Formula translateFormula(equal(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni)
   = \and(translateFormula(subset(lhsExpr, rhsExpr), env, uni), translateFormula(subset(rhsExpr, lhsExpr), env, uni));
+
+Formula translateFormula(inequal(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni) 
+  = translateFormula(negation(equal(lhsExpr, rhsExpr)), env, uni);
   
 Formula translateFormula(negation(AlleFormula form), Environment env, Universe uni) 
   = \not(translateFormula(form, env, uni));
@@ -146,10 +149,9 @@ Formula translateFormula(universal(list[VarDeclaration] decls, AlleFormula form)
   Formula buildOr([VarDeclaration hd, *VarDeclaration tl], Environment extendedEnvironment) {
     set[Formula] result = {};
     
-    Binding m = translateExpression(hd.binding, env, uni);
+    Binding m = translateExpression(hd.binding, env + extendedEnvironment, uni);
     for (Index idx <- m, idx.theory == relTheory()) {
-      extendedEnvironment["<hd.name>"] = (<relTheory(), idx.vector>:\true());
-      Formula clause = buildOr(tl, extendedEnvironment);
+      Formula clause = buildOr(tl, extendedEnvironment + constructSingleton(hd.name, idx.vector, m));
     
       if (clause == \false() && m[idx] == \true()) {
         return \false();

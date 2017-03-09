@@ -15,6 +15,7 @@ data AlleFormula
 	| gt(Expr lhsExpr, Expr rhsExpr)
 	| gte(Expr lhsExpr, Expr rhsExpr)
 	| intEqual(Expr lhsExpr, Expr rhsExpr)
+	| intInequal(Expr lhsExpr, Expr rhsExpr)
 	;	
 	
 data Expr

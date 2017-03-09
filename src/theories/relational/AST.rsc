@@ -11,6 +11,7 @@ data AlleFormula
   | nonEmpty(Expr expr)
   | subset(Expr lhsExpr, Expr rhsExpr)
   | equal(Expr lhsExpr, Expr rhsExpr)
+  | inequal(Expr lhsExpr, Expr rhsExpr)
   | negation(AlleFormula form)
   | conjunction(AlleFormula lhsForm, AlleFormula rhsForm)
   | disjunction(AlleFormula lhsForm, AlleFormula rhsForm)

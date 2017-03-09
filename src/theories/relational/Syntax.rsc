@@ -5,19 +5,20 @@ extend theories::Syntax;
 syntax Theory =   relTheory: "rel";  
 
 syntax AlleFormula
-	= universal:	  "forall" {VarDeclaration ","}+ decls "|" AlleFormula form
-	| existential:	"exists" {VarDeclaration ","}+ decls "|" AlleFormula form 
-	> implication:	AlleFormula lhsForm "=\>" AlleFormula rhsForm
-	| equality:		  AlleFormula lhsForm "\<=\>" AlleFormula rhsForm
+  = negation:     "not" AlleFormula form
+  > empty:        "no" Expr expr
+  | atMostOne:    "lone" Expr expr
+  | exactlyOne:   "one" Expr expr
+  | nonEmpty:     "some" Expr expr
+  | subset:       Expr lhsExpr "in" Expr rhsExpr
+  | equal:        Expr lhsExpr "==" Expr rhsExpr
+  | inequal:      Expr lhsExpr "!==" Expr rhsExpr
   > left conjunction:  AlleFormula lhsForm "&&" AlleFormula rhsForm
   | left disjunction:  AlleFormula lhsForm "||" AlleFormula rhsForm  
-	> empty:		    "no" Expr expr
-	| atMostOne:	  "lone" Expr expr
-	| exactlyOne:	  "one" Expr expr
-	| nonEmpty:		  "some" Expr expr
-	| subset:		    Expr lhsExpr "in" Expr rhsExpr
-	| equal:		    Expr lhsExpr "==" Expr rhsExpr
-	> negation:		  "not" AlleFormula form
+	> implication:	AlleFormula lhsForm "=\>" AlleFormula rhsForm
+	| equality:		  AlleFormula lhsForm "\<=\>" AlleFormula rhsForm
+  > universal:    "forall" {VarDeclaration ","}+ decls "|" AlleFormula form
+  | existential:  "exists" {VarDeclaration ","}+ decls "|" AlleFormula form 
 	; 
 
 syntax Expr
@@ -34,7 +35,5 @@ syntax Expr
 	| ifThenElse:	   AlleFormula form "?" Expr then ":" Expr else
 	| comprehension: "{" {VarDeclaration ","}+ decls "|" AlleFormula form "}"
 	;
-
-syntax VarDeclaration = varDecl: Variable var ":" Expr expr;
 
 keyword Keywords = "no" | "lone" | "one" | "some" | "not" | "forall" | "exists";

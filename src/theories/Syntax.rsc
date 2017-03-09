@@ -23,9 +23,11 @@ syntax Expr
   = bracket "(" Expr expr ")"
   ;
 
+syntax VarDeclaration = varDecl: Variable var ":" Expr expr;
+
 lexical Atom = ([a-z] !<< [a-z][a-z A-Z 0-9]* !>> [a-z A-Z 0-9]) \ Keywords;
 
-lexical Variable = ([a-z A-Z] !<< [a-z A-Z][a-z A-Z 0-9]* !>> [a-z A-Z 0-9]) \ Keywords;
+lexical Variable = ([a-z A-Z] !<< [a-z A-Z][a-z A-Z 0-9 _]* !>> [a-z A-Z 0-9 _]) \ Keywords;
 
 lexical Arity = [0-9]+;
 
