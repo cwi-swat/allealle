@@ -37,7 +37,7 @@ Num > 0 && Num < 150
 forall p: Person | one age[p]
 
 // Nobody is older than Adam
-forall p: Person | ((not (p == Adam)) => (exists n1: Num, n2:Num | (age[p] == n1 && age[Adam] == n2 && n1 < n2)))
+forall p: Person\Adam | (exists n1: Num, n2:Num | (age[p] == n1 && age[Adam] == n2 && n1 < n2))
 //forall p: Person | ((not (p == Adam)) => age[p] == age[Adam])
 
 // If p is c's parent then p must have been an adult when c was born 
