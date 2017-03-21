@@ -18,7 +18,7 @@ void testPigeonHoleProblem() {
 					'nest in Pigeon -\> Hole
 					'forall p:Pigeon | one p.nest
 					'forall h:Hole | lone nest.h";
-	
+	 
 	Problem p = implodeProblem(problem);
 	ModelFinderResult result = checkInitialSolution(p);
 	

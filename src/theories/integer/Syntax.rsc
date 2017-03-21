@@ -4,6 +4,8 @@ extend theories::Syntax;
 
 syntax Theory = intTheory: "int";
 
+syntax AtomValue = intVal: IntLit intLit;
+
 syntax Sort
   = intSort: "int"
   ;
@@ -19,7 +21,7 @@ syntax AlleFormula
   
 syntax Expr
   = intLit:         IntLit intLit
-  | multiplication: Expr lhs "*" Expr rhs
+  > multiplication: Expr lhs "*" Expr rhs
   | division:       Expr lhs "/" Expr rhs
   > addition:       Expr lhs "+" Expr rhs
   | subtraction:    Expr lhs "-" Expr rhs

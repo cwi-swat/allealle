@@ -1,7 +1,7 @@
-{p1,p2,p3,l1,l2,l3,l4,l5,l6}
-
+{p1,p2,p3,l1(int),l2(int),l3(int),l4(int),l5(int),l6(int)}
+ 
 Point:1       [{<p1>,<p2>,<p3>},{<p1>,<p2>,<p3>}]
-Length(int):1 [{},{<l1>,<l2>,<l3>,<l4>,<l5>,<l6>}]
+Length:1      [{},{<l1>,<l2>,<l3>,<l4>,<l5>,<l6>}]
 side:3        [{},{<p1,p2,l1>,<p1,p3,l2>,<p2,p3,l3>,<p2,p1,l4>,<p3,p1,l5>,<p3,p2,l6>}]
 
 side in Point -> Point -> Length
@@ -11,8 +11,9 @@ forall p1: Point | exists p2: Point | one p1.(side[p2])
 
 forall l: Length | one side.l
 
-// all Length should be between 1 and 9
-Length > 0 && Length < 10
+// all sides should be between 1 and 9
+side.Length > 0 && side.Length < 10
 
+exists a: side, b: side, c:side | (c.Length) * (c.Length) = (a.Length) * (a.Length) + (b.Length) * (b.Length) 
 
-exists a: Length, b: Length, c: Length | ((c * c) = ((a * a) + (b * b)))
+//exists s:side | s.Length = 5

@@ -1,11 +1,11 @@
-{p1,p2,p3,p4,n1,n2,n3,n4}
+{p1,p2,p3,p4,n1(int),n2(int),n3(int),n4(int)}
 
 Person:1	[{},{<p1>,<p2>,<p3>,<p4>}]
 Adam:1		[{<p1>},{<p1>}]
 parent:2	[{},{<p1,p2>,<p1,p3>,<p1,p4>,<p2,p1>,<p2,p3>,<p2,p4>,<p3,p1>,<p3,p2>,<p3,p4>,<p4,p1>,<p4,p2>,<p4,p3>}]
 anchestor:2 [{},{<p1,p2>,<p1,p3>,<p1,p4>,<p2,p1>,<p2,p3>,<p2,p4>,<p3,p1>,<p3,p2>,<p3,p4>,<p4,p1>,<p4,p2>,<p4,p3>}]
 
-Num(int):1 [{},{<n1>,<n2>,<n3>,<n4>}]
+Num:1 [{},{<n1>,<n2>,<n3>,<n4>}]
 age:2 [{},{<p1,n1>,<p2,n2>,<p3,n3>,<p4,n4>}]
 
 
@@ -37,16 +37,8 @@ Num > 0 && Num < 150
 forall p: Person | one age[p]
 
 // Nobody is older than Adam
-forall p: Person\Adam | (exists n1: Num, n2:Num | (age[p] == n1 && age[Adam] == n2 && n1 < n2))
-//forall p: Person | ((not (p == Adam)) => age[p] == age[Adam])
+//forall p: Person\Adam | (exists n1: Num, n2:Num | (age[p] == n1 && age[Adam] == n2 && n1 < n2))
+forall p: Person\Adam | age[p] < age[Adam]
 
 // If p is c's parent then p must have been an adult when c was born 
-forall p: Person, c: Person | (((p -> c) in parent) => (exists n1: Num, n2: Num  | (age[p] == n1 && age[c] == n2 && (n1 - n2 > 17))))
-
-// There are always two adults
-// exists p1: Person, p2: Person, n1: Num, n2: Num | ((not (p1 == p2)) && (age[p1] == n1) && (age[p2] == n2) && (n1 > 17) && (n2 > 17))
-//exists n1: Num, n2: Num | ((not (n1 == n2)) && n1 > 17 && n2 > 17)
-
-// There is also someone who is twice the age of someone else
-//exists p1: Person, p2: Person, n1: Num, n2: Num | ((not (p1 == p2)) && (age[p1] == n1) && (age[p2] == n2) && (n1 = (n2 * 2)))
-//exists n1: Num, n2: Num | ((not (n1 == n2)) && n1 = n2 * 2)
+forall p: Person, c: Person\p | p -> c in parent => (age[p]) - (age[c]) > 17

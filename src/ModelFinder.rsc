@@ -6,6 +6,7 @@ import theories::AST;
 import theories::Translator; 
 import theories::SMTInterface; 
 import theories::Binder;
+
 import smt::solver::SolverRunner; 
 
 import util::Benchmark;
@@ -26,7 +27,7 @@ data ModelFinderResult
 
 ModelFinderResult checkInitialSolution(Problem problem) {
 	print("Building initial environment...");
-	tuple[Environment env, int time] ie = benchmark(createInitialEnvironment, problem);
+	tuple[Environment env, int time] ie = benchmark(createInitialEnvironment, problem); 
 	print("done, took: <(ie.time/1000000)> ms\n");
 	
 	print("Translating problem to SAT formula...");

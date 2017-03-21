@@ -1,19 +1,20 @@
-{ac1, ac2, ac3, am1, am2, am3, s1, s2, s3}
+{ac1, ac2, ac3, am1(int), am2(int), am3(int), s1, s2, s3}
 
 State: 1 [{<s1>,<s2>,<s3>},{<s1>,<s2>,<s3>}]
+InitialState: 1 [{<s1>},{<s1>}]
 ordering: 2[{<s1,s2>,<s2,s3>}, {<s1,s2>,<s2,s3>}]
 Account:1 [{<ac1>,<ac2>,<ac3>},{<ac1>,<ac2>,<ac3>}]
 accountInState:2 [{<s1,ac1>,<s2,ac2>,<s3,ac3>},{<s1,ac1>,<s2,ac2>,<s3,ac3>}]
 
-Amount(int):1 [{<am1>,<am2>,<am3>}, {<am1>,<am2>,<am3>}]
+Amount:1 [{<am1>,<am2>,<am3>}, {<am1>,<am2>,<am3>}]
 balance:2 [{<ac1,am1>,<ac2,am2>,<ac3,am3>}, {<ac1,am1>,<ac2,am2>,<ac3,am3>}]
 
 ordering in State -> State
 accountInState in State -> Account 
 balance in Account -> Amount
 
-Amount > 0
+// The balance in the first state is 50 euro
+balance[accountInState[InitialState]] = 50
 
-forall s1: State, s2:State | ((s1 -> s2 in ordering) => 
-  (exists ac1: Account, ac2: Account, am1: Amount, am2: Amount | (ac1 == accountInState[s1] && ac2 == accountInState[s2] && am1 == balance[ac1] && am2 == balance[ac2] && am2 = am1 + 10  
-    )))
+forall s1: State, s2:State | s1 -> s2 in ordering => 
+  exists ac1: Account, ac2: Account | ac1 == accountInState[s1] && ac2 == accountInState[s2] && balance[ac2] = balance[ac1] + 10

@@ -2,23 +2,30 @@ module theories::integer::Binder
 
 extend theories::Binder;
 
-import theories::relational::Binder;
 import logic::Integer;
 import theories::integer::AST;
 
-Binding multiply(Binding lhs, Binding rhs) = translate(lhs, rhs, Formula (Formula l, Formula r) { return multiplication(l,r); });
-Binding divide(Binding lhs, Binding rhs) = translate(lhs, rhs, Formula (Formula l, Formula r) { return division(l,r); }); 
-Binding add(Binding lhs, Binding rhs) = translate(lhs, rhs, Formula (Formula l, Formula r) { return addition(l,r); });
-Binding substract(Binding lhs, Binding rhs) = translate(lhs, rhs, Formula (Formula l, Formula r) { return substraction(l,r); }); 
+RelationMatrix multiply(RelationMatrix lhs, RelationMatrix rhs) = translate(lhs, rhs, Formula (Formula l, Formula r) { return multiplication(l,r); });
+RelationMatrix divide(RelationMatrix lhs, RelationMatrix rhs) = translate(lhs, rhs, Formula (Formula l, Formula r) { return division(l,r); }); 
+RelationMatrix add(RelationMatrix lhs, RelationMatrix rhs) = translate(lhs, rhs, Formula (Formula l, Formula r) { return addition(l,r); });
+RelationMatrix substract(RelationMatrix lhs, RelationMatrix rhs) = translate(lhs, rhs, Formula (Formula l, Formula r) { return substraction(l,r); }); 
 
-Binding gt(Binding lhs, Binding rhs) = translate(lhs, rhs, Formula (Formula l, Formula r) { return gt(l,r); });
-Binding gte(Binding lhs, Binding rhs) = translate(lhs, rhs, Formula (Formula l, Formula r) { return gte(l,r); });
-Binding lt(Binding lhs, Binding rhs) = translate(lhs, rhs, Formula (Formula l, Formula r) { return lt(l,r); });
-Binding lte(Binding lhs, Binding rhs) = translate(lhs, rhs, Formula (Formula l, Formula r) { return lte(l,r); });
-Binding lte(Binding lhs, Binding rhs) = translate(lhs, rhs, Formula (Formula l, Formula r) { return lte(l,r); });
-Binding equal(Binding lhs, Binding rhs) = translate(lhs, rhs, Formula (Formula l, Formula r) { return equal(l,r); });
+RelationMatrix gt(RelationMatrix lhs, RelationMatrix rhs) = translate(lhs, rhs, Formula (Formula l, Formula r) { return gt(l,r); });
+RelationMatrix gte(RelationMatrix lhs, RelationMatrix rhs) = translate(lhs, rhs, Formula (Formula l, Formula r) { return gte(l,r); });
+RelationMatrix lt(RelationMatrix lhs, RelationMatrix rhs) = translate(lhs, rhs, Formula (Formula l, Formula r) { return lt(l,r); });
+RelationMatrix lte(RelationMatrix lhs, RelationMatrix rhs) = translate(lhs, rhs, Formula (Formula l, Formula r) { return lte(l,r); });
+RelationMatrix lte(RelationMatrix lhs, RelationMatrix rhs) = translate(lhs, rhs, Formula (Formula l, Formula r) { return lte(l,r); });
+RelationMatrix equal(RelationMatrix lhs, RelationMatrix rhs) = translate(lhs, rhs, Formula (Formula l, Formula r) { return equal(l,r); });
 
-private Binding translate(Binding lhs, Binding rhs, Formula (Formula, Formula) operation) 
-  = (<intTheory(), a.vector + b.vector>:operation(lhs[a], rhs[b]) | Index a <- lhs, a.theory == intTheory(), Index b <- rhs, b.theory == intTheory()) + product(lhs, rhs);
-
-//private default Binding translate(Binding lhs, Binding rhs, Formula (Formula, Formula) operation) { throw "Can only apply integer operators on unary relations"; }
+private RelationMatrix translate(RelationMatrix lhs, RelationMatrix rhs, Formula (Formula, Formula) operation) 
+  = (currentLhs + currentRhs : <val, (intTheory(): {operation(lhsIntVal, rhsIntVal) | Formula lhsIntVal <- lhs[currentLhs].ext[intTheory()], Formula rhsIntVal <- rhs[currentRhs].ext[intTheory()]})> | 
+      Index currentLhs <- lhs, 
+      lhs[currentLhs].relForm != \false(),
+      intTheory() in lhs[currentLhs].ext,
+      Index currentRhs <- rhs, 
+      rhs[currentRhs].relForm != \false(),
+      intTheory() in rhs[currentRhs].ext,
+      Formula val := and(lhs[currentLhs].relForm, rhs[currentRhs].relForm), 
+      val !:= \false()); 
+   
+  //= (<a + b:operation(lhs[a], rhs[b]) | Index a <- lhs, a.theory == intTheory(), Index b <- rhs, b.theory == intTheory()) + product(lhs, rhs);

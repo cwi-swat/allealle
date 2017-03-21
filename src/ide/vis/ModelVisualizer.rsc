@@ -10,7 +10,7 @@ import theories::Binder;
 import vis::Figure;
 import vis::Render;
 
-import util::Maybe;
+import util::Maybe; 
 import util::Math;
 
 import Map; 
@@ -108,18 +108,19 @@ void renderModel(Universe universe, Environment model, Environment () nextModel,
 
 }
 
-set[str] getNaryRelations(Environment model) = {relName | str relName <- model, Binding binding := model[relName], size(getOneFrom(binding).vector) > 1};
+set[str] getNaryRelations(Environment model) = {relName | str relName <- model, RelationMatrix rm := model[relName], size(getOneFrom(rm)) > 1};
 
 Figure visualizeModel(Universe universe, Environment model, DisplayOptions disOpt) {
 	if (model == ()) {
 		return text("No more models available", size(100));
 	}
 
-	rel[Atom, str] unaryRels = {<a, relName> | str relName <- model, map[Index,Formula] binding := model[relName], idx:<relTheory(),[Atom a]> <- binding, model[relName][idx] == \true()};
+	rel[Atom, str] unaryRels = {<a, relName> | str relName <- model, RelationMatrix rm:= model[relName], Index idx:[Atom a] <- rm,  model[relName][idx].relForm == \true()};
+	rel[Atom, int] intValues = {<a, i> | str relName <- model, RelationMatrix rm:= model[relName], Index idx:[Atom a] <- rm,  model[relName][idx].relForm == \true(), intTheory() in model[relName][idx].ext, {\int(int i)} := model[relName][idx].ext[intTheory()]};
 	
-	rel[list[Atom], str] naryRels = {<idx.vector, relName> | str relName <- model, relName notin disOpt.filteredEdges, Binding binding := model[relName], size(getOneFrom(binding).vector) > 1, Index idx <- binding, model[relName][idx] == \true()};
+	rel[list[Atom], str] naryRels = {<idx, relName> | str relName <- model, relName notin disOpt.filteredEdges, RelationMatrix rm := model[relName], size(getOneFrom(rm)) > 1, Index idx <- rm, model[relName][idx].relForm == \true()};
 
-	Figures nodes = [n | Atom a <- universe.atoms, just(Figure n) := buildAtomNode(a, unaryRels, disOpt)];
+	Figures nodes = [n | AtomDecl ad <- universe.atoms, just(Figure n) := buildAtomNode(ad.atom, unaryRels, intValues, disOpt)];
 	nodes += [buildEdgeLabel(a,b,i,relName) | <list[Atom] idx, str relName> <- naryRels, int i <- [0 .. size(idx)-1], Atom a := idx[i], Atom b := idx[i+1]];
   
 	Edges edges = [edge(a, labelId), edge(labelId, b, triangle(round(10 * disOpt.scale), fillColor("black"))) | <list[Atom] idx, str relName> <- naryRels, int i <- [0 .. size(idx)-1], Atom a := idx[i], Atom b := idx[i+1], str labelId := "<relName>_<a>_<b>_step<i>"];
@@ -130,8 +131,8 @@ Figure visualizeModel(Universe universe, Environment model, DisplayOptions disOp
 Figure buildEdgeLabel(Atom from, Atom to, int index, str relName) =
 	box(text(relName), id("<relName>_<from>_<to>_step<index>"), lineWidth(0));
 
-Maybe[Figure] buildAtomNode(Atom a, rel[Atom, str] unaryRelations, DisplayOptions disOpt) {
-	Figure getLabel() = vcat([text("\<<r>\>", center()) | str r <- unaryRelations[a]] + [text(a, [fontBold(true), center()])]); 
+Maybe[Figure] buildAtomNode(Atom a, rel[Atom, str] unaryRelations, rel[Atom, int] intValues, DisplayOptions disOpt) {
+	Figure getLabel() = vcat([text("\<<r>\>", center()) | str r <- unaryRelations[a]] + [text(a, [fontBold(true), center()])] + [text("<i>", [fontItalic(true), center()]) | int i <- intValues[a]]); 
 	
 	if (unaryRelations[a] == {}) {
 		return nothing();
@@ -146,15 +147,15 @@ Figures textualizeModel(Environment model) {
   }
   
   bool indexSort(Index a, Index b ) {
-    for (int i <- [0..size(a.vector)]) {
-      if (a.vector[i] > b.vector[i]) { return false; }
-      else if (a.vector[i] < b.vector[i]) { return true; }  
+    for (int i <- [0..size(a)]) {
+      if (a[i] > b[i]) { return false; }
+      else if (a[i] < b[i]) { return true; }  
     }
     
     return false;
   }
   
-  str intTheoryValue(str relName, list[Atom] vector) = "(int value = <i>)" when relName in model, <intTheory(), vector> in model[relName], \int(int i) := model[relName][<intTheory(),vector>];
+  str intTheoryValue(str relName, list[Atom] vector) = "(int value = <i>)" when relName in model, vector in model[relName], TheoryExtension te := model[relName][vector].ext, intTheory() in te, set[Formula] intForms := te[intTheory()], \int(int i) <- intForms;
   default str intTheoryValue(str _, list[Atom] _) = "";
   
   Figures m = [text("")];
@@ -162,13 +163,13 @@ Figures textualizeModel(Environment model) {
   
   for (str relName <- sortedRel) {
     m += text("<relName>:", fontBold(true), fontItalic(true), myLeft());
-    Binding b = model[relName];
-    list[Index] sortedIndices = sort(toList(b<0>), indexSort);
+    RelationMatrix rm = model[relName];
+    list[Index] sortedIndices = sort(toList(rm<0>), indexSort);
     
     bool hasRelations = false;
 
-    for (Index idx <- sortedIndices, idx.theory == relTheory(), b[idx] == \true()) {
-      m += text("  <intercalate(" -\> ", [a | Atom a <- idx.vector])> <intTheoryValue(relName, idx.vector)>", myLeft());
+    for (Index idx <- sortedIndices, rm[idx].relForm == \true()) {
+      m += text("  <intercalate(" -\> ", [a | Atom a <- idx])> <intTheoryValue(relName, idx)>", myLeft());
       hasRelations = true;
     } 
     

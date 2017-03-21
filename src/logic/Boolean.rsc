@@ -11,8 +11,8 @@ data Formula
 Formula \or({})									                      = \false();
 Formula \or({Formula x}) 						                  = x;
   
-Formula \or({\false(), *Formula r})   			    = \or(r);
-Formula \or({\true(), *Formula _})   			      = \true();
+Formula \or({\false(), *Formula r})   			          = \or(r);
+Formula \or({\true(), *Formula _})   			            = \true();
 //Formula \or({*Formula a, or(set[Formula] b)})   = \or(a + b);
 //Formula \or({Formula g,\not(g),*Formula r}) 	  = \true();
 //
@@ -22,8 +22,8 @@ Formula \or({\true(), *Formula _})   			      = \true();
 Formula \and({})								                      = \true();
 Formula \and({Formula x}) 						                = x;
 
-Formula \and({\true(), *Formula r})				      = \and(r);
-Formula \and({\false(), *Formula _}) 			      = \false();
+Formula \and({\true(), *Formula r})				            = \and(r);
+Formula \and({\false(), *Formula _}) 			            = \false();
 //Formula \and({*Formula a, and(set[Formula] b)}) = \and(a + b);
 //Formula \and({Formula g,\not(g),*Formula r}) 	  = \false();
 //

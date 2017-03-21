@@ -5,6 +5,8 @@ extend theories::AST;
 // Integer theory extensions
 data Theory = intTheory();
 
+data AtomValue = intVal(int val);
+
 data Sort
 	= intSort()
 	;

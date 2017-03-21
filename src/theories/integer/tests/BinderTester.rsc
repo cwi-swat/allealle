@@ -1,6 +1,6 @@
 module theories::integer::tests::BinderTester
 
-extend theories::relational::tests::binderTests::TesterBase;
+extend theories::tests::binderTests::TesterBase;
 
 import logic::Integer;
 

@@ -1,8 +1,8 @@
 // Killer sudoku coming from http://www.killersudoku.nl/killer.php?ster=1&nr=1&grootte=2
 
-{n1,n2,n3,n4,n5,n6,n7,n8,n9}
+{n1(int)=1,n2(int)=2,n3(int)=3,n4(int)=4,n5(int)=5,n6(int)=6,n7(int)=7,n8(int)=8,n9(int)=9}
 
-num(int): 1 [{<n1>,<n2>,<n3>,<n4>,<n5>,<n6>,<n7>,<n8>,<n9>},{<n1>,<n2>,<n3>,<n4>,<n5>,<n6>,<n7>,<n8>,<n9>}]
+num: 1 [{<n1>,<n2>,<n3>,<n4>,<n5>,<n6>,<n7>,<n8>,<n9>},{<n1>,<n2>,<n3>,<n4>,<n5>,<n6>,<n7>,<n8>,<n9>}]
 r1:  1 [{<n1>,<n2>,<n3>},{<n1>,<n2>,<n3>}]
 r2:  1 [{<n4>,<n5>,<n6>},{<n4>,<n5>,<n6>}]
 r3:  1 [{<n7>,<n8>,<n9>},{<n7>,<n8>,<n9>}]
@@ -23,7 +23,6 @@ forall x: r3, y: r1  | no (grid[x][y] & grid[r3\x][r1\y])
 forall x: r3, y: r2  | no (grid[x][y] & grid[r3\x][r2\y])                
 forall x: r3, y: r3  | no (grid[x][y] & grid[r3\x][r3\y])
 
-forall x:num, y: num | x !== y => x != y
-num > 0 && num < 10
+//forall x:num, y: num\x | x != y
 
 //sum{x: num, y:num | region1[x][y]} = 34  

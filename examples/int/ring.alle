@@ -1,0 +1,19 @@
+{n1(int),n2(int),n3(int)}
+
+Num:1 [{},{<n1>,<n2>,<n3>}]
+Start:1 [{},{<n1>,<n2>,<n3>}]
+ring:2 [{},{<n1,n1>,<n1,n2>,<n2,n1>,<n2,n2>,<n1,n3>,<n3,n1>,<n2,n3>,<n3,n2>,<n3,n3>}]
+
+ring in Num -> Num
+Start in Num
+
+one Start
+
+Num > 10
+
+exists n: Num | n = 20
+
+forall n1: Num, n2:Num\n1 | n1->n2 in ^ring
+forall n: Num | one ring[n]
+
+forall n1: Num, n2: Num\(n1++Start) | n1->n2 in ring => n2 = n1 + 1

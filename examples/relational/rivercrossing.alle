@@ -33,10 +33,10 @@ Farmer in Passenger
 eats in Passenger -> Passenger
 
 // a Passenger can only be on one shore in each state
-forall s:State| (no near[s] & far[s])
+forall s:State| no near[s] & far[s]
 
 // All states should have all passengers on one side or another 
-forall s:State | (near[s] ++ far[s] == Passenger)
+forall s:State | (near[s] ++ far[s]) == Passenger
 
 // The goal is to get all Passengers to the other side compared to the start state
 exists s:State | (Passenger in far[s])

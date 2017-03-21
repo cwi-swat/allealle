@@ -9,7 +9,8 @@ import theories::integer::AST;
 import List;
 import String;
  
-Maybe[SMTVar] constructSMTVar(intVar(str name)) = just(<"<name>_int", intTheory()>);
+Maybe[str] constructExtendedTheoryVar(intVar(str name)) = just("<name>_int");
+Maybe[str] constructExtendedTheoryVar(\int(int _)) = nothing();
 
 str compileVariableDeclaration(SMTVar var) = "(declare-const <var.name> Int)" when var.theory == intTheory();
 
@@ -22,7 +23,7 @@ str compile(gte(Formula lhs, Formula rhs))            = "(\>= <compile(lhs)> <co
 str compile(equal(Formula lhs, Formula rhs))          = "(= <compile(lhs)> <compile(rhs)>)";
 str compile(addition(Formula lhs, Formula rhs))       = "(+ <compile(lhs)> <compile(rhs)>)";
 str compile(substraction(Formula lhs, Formula rhs))   = "(- <compile(lhs)> <compile(rhs)>)";
-str compile(multiplication(Formula lhs, Formula rhs)) = "(* <compile(lhs)> <compile(rhs)>)";
+str compile(multiplication(Formula lhs, Formula rhs)) = "(* <compile(lhs)> <compile(rhs)>)"; 
 str compile(division(Formula lhs, Formula rhs))       = "(/ <compile(lhs)> <compile(rhs)>)";
 
 Formula getValue(str smtValue, SMTVar var) = toFormula(smtValue) when var.theory == intTheory();
@@ -36,5 +37,6 @@ Formula toFormula(str someVal) {
 }
 
 Formula mergeModel(Model foundValues, intVar(str name)) = foundValues[<"<name>_int", intTheory()>] when <"<name>_int", intTheory()> in foundValues;
+Formula mergeModel(Model foundValues, \int(int i)) = \int(i);
 
 str negateVariable(SMTVar var, \int(int i)) = "";
