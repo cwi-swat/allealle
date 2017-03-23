@@ -22,6 +22,8 @@ private ExtensionEncoding performOperation(ExtensionEncoding lhs, ExtensionEncod
   
   for (int i <- lhs) {
     if (i notin rhs) { throw "Unable to combine to Integer extensions with different arities together. Lhs = \'<lhs>\', Rhs = \'<rhs>\'"; }
+    println(lhs[i]);
+    println(rhs[i]);
     result[i] = operation(lhs[i], rhs[i]);  
   }
   

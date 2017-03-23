@@ -13,7 +13,7 @@ Elem > 0
 one Start
 
 // The ring is cyclic, all two combinations of Elem should be in the transitive closure of ring
-//forall e1: Elem, e2:Elem\e1 | e1->e2 in ^ring
+forall e1: Elem, e2:Elem\e1 | e1->e2 in ^ring
 
 // Every element is part of the ring
 forall e: Elem | one ring[e]

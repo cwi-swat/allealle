@@ -37,7 +37,7 @@ TheoryExtension merge(TheoryExtension lhs, TheoryExtension rhs) {
     
     for (int i <- lhs[t]) {
       if (i in rhs[t], lhs[t][i] != rhs[t][i]) {
-          throw "Unable to merge theory extensions, both relations encode theory variable but have different variable on the same vector. Lhs has \'<lhs[t][i]>\' while rhs has \'<rhs[t][i]>\'";
+          throw "Unable to merge theory extensions, both relations encode theory variable but have different variable on the same position (<i>). Lhs has \'<lhs[t][i]>\' while rhs has \'<rhs[t][i]>\'";
       }
         
       merged[i] = lhs[t][i];
@@ -52,6 +52,8 @@ TheoryExtension merge(TheoryExtension lhs, TheoryExtension rhs) {
   
   return result;
 } 
+
+private bool p(RelationMatrix m) { println("Printing matrix:"); iprintln(m); return true;}
 
 private RelationMatrix square(RelationMatrix m, int i, int sizeOfUniverse) = m when i >= sizeOfUniverse;
 private RelationMatrix square(RelationMatrix m, int i, int sizeOfUniverse) = or(n, \join(n, n)) when RelationMatrix n := square(m, i * 2, sizeOfUniverse); 
@@ -99,8 +101,8 @@ RelationMatrix \join(RelationMatrix lhs, RelationMatrix rhs) {
     when current == (), lhsExt != (), rhsExt == ();
   TheoryExtension compose(TheoryExtension current, TheoryExtension lhsExt, TheoryExtension rhsExt) = (t : (i-1:rhsExt[t][i] | int i <- [1..arityRhs], i in rhsExt[t]) | Theory t <- rhsExt) 
     when current == (), lhsExt == (), rhsExt != ();
-  TheoryExtension compose(TheoryExtension current, TheoryExtension lhsExt, TheoryExtension rhsExt) = compose((), lhsExt, ()) + compose((), (), rhsExt) 
-    when current == (), lhsExt != (), rhsExt != ();
+  TheoryExtension compose(TheoryExtension current, TheoryExtension lhsExt, TheoryExtension rhsExt) = (t : compLhs[t] + (i + arityLhs - 1 : compRhs[t][i] | int i <- compRhs[t]) | Theory t <- compLhs)  
+    when current == (), lhsExt != (), rhsExt != (), TheoryExtension compLhs := compose((), lhsExt, ()), TheoryExtension compRhs := compose((), (), rhsExt);
   
   TheoryExtension compose(TheoryExtension current, TheoryExtension lhsExt, TheoryExtension rhsExt) = current 
     when current != (), lhsExt != (), rhsExt == (), compose((), lhsExt, ()) == current;
@@ -139,7 +141,10 @@ RelationMatrix \join(RelationMatrix lhs, RelationMatrix rhs) {
       }
     }
   }
-    
+  
+  //println("After join");
+  //p(joinResult);
+  //  
   return joinResult;
 }
 

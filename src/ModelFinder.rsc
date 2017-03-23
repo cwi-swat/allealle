@@ -72,9 +72,7 @@ ModelFinderResult runInSolver(Problem originalProblem, Formula formula, Environm
 	Model currentModel = ();
 	Environment next() {
 		currentModel = nextModel(solverPid, currentModel);
-	  
-	  println("Next model is:");
-  
+	        
 		if (currentModel == ()) {
 			return ();
 		} else {

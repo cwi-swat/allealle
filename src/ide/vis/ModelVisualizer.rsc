@@ -155,8 +155,9 @@ Figures textualizeModel(Environment model) {
     return false;
   }
   
-  str intTheoryValue(str relName, list[Atom] vector) = "(int value = <i>)" when relName in model, vector in model[relName], TheoryExtension te := model[relName][vector].ext, intTheory() in te, /\int(int i) := te[intTheory()];
-  default str intTheoryValue(str _, list[Atom] _) = "";
+  str intTheoryValue(str relName, list[Atom] vector, int idx) = " (<i>)"
+    when relName in model, vector in model[relName], TheoryExtension te := model[relName][vector].ext, intTheory() in te, idx in te[intTheory()], \int(int i) := te[intTheory()][idx];
+  default str intTheoryValue(str _, list[Atom] _, int _) = "";
   
   Figures m = [text("")];
   list[str] sortedRel = sort(toList(model<0>));
@@ -169,7 +170,7 @@ Figures textualizeModel(Environment model) {
     bool hasRelations = false;
 
     for (Index idx <- sortedIndices, rm[idx].relForm == \true()) {
-      m += text("  <intercalate(" -\> ", [a | Atom a <- idx])> <intTheoryValue(relName, idx)>", myLeft());
+      m += text("  <intercalate(" -\> ", ["<idx[i]><intTheoryValue(relName, idx, i)>" | int i <- [0..size(idx)]])>", myLeft());
       hasRelations = true;
     } 
     

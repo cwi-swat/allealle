@@ -12,8 +12,7 @@ forall p1: Point | exists p2: Point | one p1.(side[p2])
 forall l: Length | one side.l
 
 // all sides should be between 1 and 9
-side.Length > 0 && side.Length < 10
+//forall p1: Point, p2: Point | some side[p1][p2] => side[p1][p2] > 1 && side[p1][p2] < 10
+Length > 2 && Length < 10
 
-exists a: side, b: side, c:side | (c.Length) * (c.Length) = (a.Length) * (a.Length) + (b.Length) * (b.Length) 
-
-//exists s:side | s.Length = 5
+exists a:Length,b:Length\a,c:Length\(a++b) | c*c = a*a + b*b

@@ -22,8 +22,8 @@ str compile(lte(Formula lhs, Formula rhs))            = "(\<= <compile(lhs)> <co
 str compile(gt(Formula lhs, Formula rhs))             = "(\> <compile(lhs)> <compile(rhs)>)";
 str compile(gte(Formula lhs, Formula rhs))            = "(\>= <compile(lhs)> <compile(rhs)>)";
 str compile(equal(Formula lhs, Formula rhs))          = "(= <compile(lhs)> <compile(rhs)>)";
-str compile(addition(set[Formula] forms))             = "(+ <for (f <- forms) {><compile(f)><}>)";
-str compile(multiplication(set[Formula] forms))       = "(* <for (f <- forms) {><compile(f)><}>)"; 
+str compile(addition(list[Formula] forms))             = "(+ <for (f <- forms) {><compile(f)> <}>)";
+str compile(multiplication(list[Formula] forms))       = "(* <for (f <- forms) {><compile(f)> <}>)"; 
 str compile(division(Formula lhs, Formula rhs))       = "(/ <compile(lhs)> <compile(rhs)>)";
 
 Formula getValue(str smtValue, SMTVar var) = toFormula(smtValue) when var.theory == intTheory();

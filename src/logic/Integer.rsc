@@ -11,14 +11,14 @@ data Formula
 	| gt(Formula lhs, Formula rhs)
 	| gte(Formula lhs, Formula rhs)
 	| equal(Formula lhs, Formula rhs)
-	| addition(set[Formula] forms)
-	| multiplication(set[Formula] forms)
+	| addition(list[Formula] forms)
+	| multiplication(list[Formula] forms)
 	| division(Formula lhs, Formula rhss)
 	;
 	
-Formula addition(Formula lhs, Formula rhs) = addition({lhs,rhs});
-Formula substraction(Formula lhs, Formula rhs) = addition({lhs, neg(rhs)});
-Formula multiplication(Formula lhs, Formula rhs) = multiplication({lhs,rhs});
+Formula addition(Formula lhs, Formula rhs) = addition([lhs,rhs]);
+Formula substraction(Formula lhs, Formula rhs) = addition([lhs, neg(rhs)]);
+Formula multiplication(Formula lhs, Formula rhs) = multiplication([lhs,rhs]);
 
 Formula addition(\int(x), \int(y)) = \int(x+y);
 Formula multiplication(\int(x), \int(y)) = \int(x*y);

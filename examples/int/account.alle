@@ -17,4 +17,5 @@ balance in Account -> Amount
 balance[accountInState[InitialState]] = 50
 
 forall s1: State, s2:State | s1 -> s2 in ordering => 
-  exists ac1: Account, ac2: Account | ac1 == accountInState[s1] && ac2 == accountInState[s2] && balance[ac2] = balance[ac1] + 10
+  (exists ac1: Account, ac2: Account | ac1 == accountInState[s1] && ac2 == accountInState[s2] && balance[ac2] = balance[ac1] + 10) ||
+  (exists ac1: Account, ac2: Account | ac1 == accountInState[s1] && ac2 == accountInState[s2] && balance[ac2] = balance[ac1] - 10)
