@@ -16,7 +16,7 @@ import String;
 import Map;
 import Set;
  
-alias PID = int;
+alias PID = int; 
 
 data ModelFinderResult 
 	= sat(Environment currentModel, Universe universe, Environment () nextModel, void () stop)
@@ -34,8 +34,8 @@ ModelFinderResult checkInitialSolution(Problem problem) {
 	tuple[Formula formula, int time] t = benchmark(translate, problem, ie.env);
 	print("done, took: <(t.time/1000000)> ms\n");
 
-	//println("SAT Formula:");
-	//iprintln(t.formula); 
+	println("SAT Formula:");
+	iprintln(t.formula); 
 	 
 	//print("Converting to CNF...");
 	//tuple[Formula formula, int time] cnf = <t.result.formula, t.time>; //benchmark(convertToCNF, t.result.formula);

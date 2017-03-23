@@ -16,7 +16,7 @@ import util::Math;
 import Map; 
 import List;  
 import Set;
-
+ 
 import IO;
 
 data DisplayOptions = options(real scale = 1.0, set[str] filteredEdges = {});
@@ -116,7 +116,7 @@ Figure visualizeModel(Universe universe, Environment model, DisplayOptions disOp
 	}
 
 	rel[Atom, str] unaryRels = {<a, relName> | str relName <- model, RelationMatrix rm:= model[relName], Index idx:[Atom a] <- rm,  model[relName][idx].relForm == \true()};
-	rel[Atom, int] intValues = {<a, i> | str relName <- model, RelationMatrix rm:= model[relName], Index idx:[Atom a] <- rm,  model[relName][idx].relForm == \true(), intTheory() in model[relName][idx].ext, {\int(int i)} := model[relName][idx].ext[intTheory()]};
+	rel[Atom, int] intValues = {<a, i> | str relName <- model, RelationMatrix rm:= model[relName], Index idx:[Atom a] <- rm,  model[relName][idx].relForm == \true(), intTheory() in model[relName][idx].ext, /\int(int i) := model[relName][idx].ext[intTheory()]};
 	
 	rel[list[Atom], str] naryRels = {<idx, relName> | str relName <- model, relName notin disOpt.filteredEdges, RelationMatrix rm := model[relName], size(getOneFrom(rm)) > 1, Index idx <- rm, model[relName][idx].relForm == \true()};
 
@@ -134,7 +134,7 @@ Figure buildEdgeLabel(Atom from, Atom to, int index, str relName) =
 Maybe[Figure] buildAtomNode(Atom a, rel[Atom, str] unaryRelations, rel[Atom, int] intValues, DisplayOptions disOpt) {
 	Figure getLabel() = vcat([text("\<<r>\>", center()) | str r <- unaryRelations[a]] + [text(a, [fontBold(true), center()])] + [text("<i>", [fontItalic(true), center()]) | int i <- intValues[a]]); 
 	
-	if (unaryRelations[a] == {}) {
+	if (unaryRelations[a] == {}) { 
 		return nothing();
 	} else {
 		return just(ellipse(getLabel(), fillColor("white"), size(round(50 * disOpt.scale)), id(a), lineWidth(1.5)));
@@ -155,7 +155,7 @@ Figures textualizeModel(Environment model) {
     return false;
   }
   
-  str intTheoryValue(str relName, list[Atom] vector) = "(int value = <i>)" when relName in model, vector in model[relName], TheoryExtension te := model[relName][vector].ext, intTheory() in te, set[Formula] intForms := te[intTheory()], \int(int i) <- intForms;
+  str intTheoryValue(str relName, list[Atom] vector) = "(int value = <i>)" when relName in model, vector in model[relName], TheoryExtension te := model[relName][vector].ext, intTheory() in te, /\int(int i) := te[intTheory()];
   default str intTheoryValue(str _, list[Atom] _) = "";
   
   Figures m = [text("")];

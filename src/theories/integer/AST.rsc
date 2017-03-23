@@ -26,4 +26,5 @@ data Expr
 	| division(Expr lhs, Expr rhs)
 	| addition(Expr lhs, Expr rhs)
 	| subtraction(Expr lhs, Expr rhs)
+	| sum(VarDeclaration decl, Expr expr)
 	;

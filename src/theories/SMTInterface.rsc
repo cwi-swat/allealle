@@ -14,7 +14,7 @@ alias Model = map[SMTVar, Formula];
 alias SMTVar = tuple[str name, Theory theory];
 
 set[SMTVar] collectSMTVars(Environment env) = {<name, relTheory()> | str varName <- env, RelationMatrix rm := env[varName], Index idx <- rm, var(str name) := rm[idx].relForm} +
-                                              {<var, t> | str varName <- env, RelationMatrix rm := env[varName], Index idx <- rm, Theory t <- rm[idx].ext, Formula f <- rm[idx].ext[t], /just(str var) := constructExtendedTheoryVar(f)}; 
+                                              {<var, t> | str varName <- env, RelationMatrix rm := env[varName], Index idx <- rm, Theory t <- rm[idx].ext, int i <- rm[idx].ext[t], /just(str var) := constructExtendedTheoryVar(rm[idx].ext[t][i])}; 
 
 default Maybe[str] constructExtendedTheoryVar(Formula f) { throw "Unable to construct a variable for formula \'<f>\'"; }
 

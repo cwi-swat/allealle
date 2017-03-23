@@ -6,13 +6,15 @@ parent:2	[{},{<p1,p2>,<p1,p3>,<p1,p4>,<p2,p1>,<p2,p3>,<p2,p4>,<p3,p1>,<p3,p2>,<p
 anchestor:2 [{},{<p1,p2>,<p1,p3>,<p1,p4>,<p2,p1>,<p2,p3>,<p2,p4>,<p3,p1>,<p3,p2>,<p3,p4>,<p4,p1>,<p4,p2>,<p4,p3>}]
 
 Num:1 [{},{<n1>,<n2>,<n3>,<n4>}]
-age:2 [{},{<p1,n1>,<p2,n2>,<p3,n3>,<p4,n4>}]
+age:2 [{},{<p1,n1>,<p1,n2>,<p1,n3>,<p1,n4>,<p2,n1>,<p2,n2>,<p2,n3>,<p2,n4>,<p3,n1>,<p3,n2>,<p3,n3>,<p3,n4>,<p4,n1>,<p4,n2>,<p4,n3>,<p4,n4>}]
 
+twin:2 [{},{<p1,p2>,<p2,p1>,<p1,p3>,<p3,p1>,<p1,p4>,<p4,p1>,<p2,p3>,<p3,p2>,<p2,p4>,<p4,p2>,<p3,p4>,<p4,p3>}]
 
 Adam in Person
 parent in Person -> Person
 anchestor in Person -> Person
 age in Person -> Num
+twin in Person -> Person
 
 // Everybody has a parent except Adam
 forall p:Person | ((not p == Adam) => one parent.p)
@@ -27,11 +29,11 @@ forall p:Person | not (p in (^parent).p)
 // Everybody is a decendant of Adam
 Person in Adam.(*parent)
 
-// Anchestor is the transposed transitive closure of the parent relation (if you are somebodies parent, grandparent, etc you are an anchestor
+// Anchestor is the transposed transitive closure of the parent relation (if you are somebodies parent, grandparent, etc you are an anchestor)
 anchestor == ~(^parent) 
 
 // Nobody, even Adam, is older then 149
-Num > 0 && Num < 150
+age[Person] >= 0 && age[Person] < 150
 
 // Everybody has an age
 forall p: Person | one age[p]
@@ -42,3 +44,9 @@ forall p: Person\Adam | age[p] < age[Adam]
 
 // If p is c's parent then p must have been an adult when c was born 
 forall p: Person, c: Person\p | p -> c in parent => (age[p]) - (age[c]) > 17
+
+// Every number is connected to at least one age
+forall n:Num | some age.n
+
+// If two persons have the same parent and the same age, they must be twins
+twin == {p1: Person, p2: Person\p1 | parent.p1 == parent.p2 && age[p1] = age[p2]}

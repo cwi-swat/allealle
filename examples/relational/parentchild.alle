@@ -16,4 +16,4 @@ Person in Adam.*parent
 forall p:Person | ((not (p == Adam)) => one parent.p)
 
 child == ~parent
-sibling == {p: Person, pp:Person | parent.p == parent.pp}  \ {p: Person, pp: Person | p == pp}
+sibling == {p: Person, pp:Person\p | parent.p == parent.pp}

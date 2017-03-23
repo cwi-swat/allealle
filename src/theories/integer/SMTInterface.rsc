@@ -16,14 +16,14 @@ str compileVariableDeclaration(SMTVar var) = "(declare-const <var.name> Int)" wh
 
 str compile(\int(int i))                              = "<i>";
 str compile(intVar(str name))                         = "<name>_int";
+str compile(neg(Formula f))                           = "(- <compile(f)>)";
 str compile(lt(Formula lhs, Formula rhs))             = "(\< <compile(lhs)> <compile(rhs)>)";
 str compile(lte(Formula lhs, Formula rhs))            = "(\<= <compile(lhs)> <compile(rhs)>)";
 str compile(gt(Formula lhs, Formula rhs))             = "(\> <compile(lhs)> <compile(rhs)>)";
 str compile(gte(Formula lhs, Formula rhs))            = "(\>= <compile(lhs)> <compile(rhs)>)";
 str compile(equal(Formula lhs, Formula rhs))          = "(= <compile(lhs)> <compile(rhs)>)";
-str compile(addition(Formula lhs, Formula rhs))       = "(+ <compile(lhs)> <compile(rhs)>)";
-str compile(substraction(Formula lhs, Formula rhs))   = "(- <compile(lhs)> <compile(rhs)>)";
-str compile(multiplication(Formula lhs, Formula rhs)) = "(* <compile(lhs)> <compile(rhs)>)"; 
+str compile(addition(set[Formula] forms))             = "(+ <for (f <- forms) {><compile(f)><}>)";
+str compile(multiplication(set[Formula] forms))       = "(* <for (f <- forms) {><compile(f)><}>)"; 
 str compile(division(Formula lhs, Formula rhs))       = "(/ <compile(lhs)> <compile(rhs)>)";
 
 Formula getValue(str smtValue, SMTVar var) = toFormula(smtValue) when var.theory == intTheory();

@@ -16,9 +16,20 @@ RelationMatrix lt(RelationMatrix lhs, RelationMatrix rhs) = translate(lhs, rhs, 
 RelationMatrix lte(RelationMatrix lhs, RelationMatrix rhs) = translate(lhs, rhs, Formula (Formula l, Formula r) { return lte(l,r); });
 RelationMatrix lte(RelationMatrix lhs, RelationMatrix rhs) = translate(lhs, rhs, Formula (Formula l, Formula r) { return lte(l,r); });
 RelationMatrix equal(RelationMatrix lhs, RelationMatrix rhs) = translate(lhs, rhs, Formula (Formula l, Formula r) { return equal(l,r); });
-
+ 
+private ExtensionEncoding performOperation(ExtensionEncoding lhs, ExtensionEncoding rhs, Formula (Formula, Formula) operation) {
+  ExtensionEncoding result = ();
+  
+  for (int i <- lhs) {
+    if (i notin rhs) { throw "Unable to combine to Integer extensions with different arities together. Lhs = \'<lhs>\', Rhs = \'<rhs>\'"; }
+    result[i] = operation(lhs[i], rhs[i]);  
+  }
+  
+  return result;
+} 
+ 
 private RelationMatrix translate(RelationMatrix lhs, RelationMatrix rhs, Formula (Formula, Formula) operation) 
-  = (currentLhs + currentRhs : <val, (intTheory(): {operation(lhsIntVal, rhsIntVal) | Formula lhsIntVal <- lhs[currentLhs].ext[intTheory()], Formula rhsIntVal <- rhs[currentRhs].ext[intTheory()]})> | 
+  = (currentLhs + currentRhs : <val, (intTheory() : performOperation(lhs[currentLhs].ext[intTheory()], rhs[currentRhs].ext[intTheory()], operation))> | 
       Index currentLhs <- lhs, 
       lhs[currentLhs].relForm != \false(),
       intTheory() in lhs[currentLhs].ext,
@@ -26,6 +37,4 @@ private RelationMatrix translate(RelationMatrix lhs, RelationMatrix rhs, Formula
       rhs[currentRhs].relForm != \false(),
       intTheory() in rhs[currentRhs].ext,
       Formula val := and(lhs[currentLhs].relForm, rhs[currentRhs].relForm), 
-      val !:= \false()); 
-   
-  //= (<a + b:operation(lhs[a], rhs[b]) | Index a <- lhs, a.theory == intTheory(), Index b <- rhs, b.theory == intTheory()) + product(lhs, rhs);
+      val !:= \false());       

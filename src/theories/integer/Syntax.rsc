@@ -25,7 +25,7 @@ syntax Expr
   | division:       Expr lhs "/" Expr rhs
   > addition:       Expr lhs "+" Expr rhs
   | subtraction:    Expr lhs "-" Expr rhs
-  > sum:            "sum" "{" {VarDeclaration ","}+ decls "|" AlleFormula formula "}" 
+  > sum:            "sum" "{" VarDeclaration decl "|" Expr expr "}" 
   ; 
 
 lexical IntLit = [0-9]+;
