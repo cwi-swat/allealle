@@ -1,0 +1,10 @@
+{n1(int)=1,n2(int)=2,n3(int)=3,n4(int)=4,n5(int)=5,n6(int)=6,n7(int)=7,n8(int)=8,n9(int)=9,n10(int)=10,n11(int)=11,n12(int)=12,n13(int)=13,n14(int)=14,n15(int)=15,n16(int)=16,n17(int)=17,n18(int)=18,n19(int)=19,n20(int)=20}
+
+Num:1    [{<n1>,<n2>,<n3>,<n4>,<n5>,<n6>,<n7>,<n8>,<n9>,<n10>,<n11>,<n12>,<n13>,<n14>,<n15>,<n16>,<n17>,<n18>,<n19>,<n20>},{<n1>,<n2>,<n3>,<n4>,<n5>,<n6>,<n7>,<n8>,<n9>,<n10>,<n11>,<n12>,<n13>,<n14>,<n15>,<n16>,<n17>,<n18>,<n19>,<n20>}]
+One:1    [{<n1>},{<n1>}]
+Primes:1 [{},{<n1>,<n2>,<n3>,<n4>,<n5>,<n6>,<n7>,<n8>,<n9>,<n10>,<n11>,<n12>,<n13>,<n14>,<n15>,<n16>,<n17>,<n18>,<n19>,<n20>}]
+
+Primes in Num
+One in Num
+
+forall p:Num | (exists n:Num\(p++One) | p % n = 0) <=> not (p in Primes)

@@ -40,8 +40,8 @@ TheoryExtension constructTheoryExtensions(Index idx, map[Atom, AtomDecl] atomsWi
 
 default ExtensionEncoding constructTheoryExtension(int idx, AtomDecl ad) { throw "No theory extension found for theory \'<ad.theory>\'"; } 
                                                                                             
-Formula translate(Problem p, Environment env) = (\true() | and(it, r) | AlleFormula f <- p.constraints, Formula r := translateFormula(f, env, p.uni));  
-
+Formula translate(Problem p, Environment env) = (\true() | and(it, r) | AlleFormula f <- p.constraints, Formula r := translateFormula(f, env, p.uni));
+  
 Environment constructSingleton(str newVarName, list[Atom] vector, RelationMatrix origMatrix) = (newVarName : (vector : <\true(), origMatrix[vector].ext>));
 
 Formula translateFormula(empty(Expr expr), Environment env, Universe uni) 
@@ -283,3 +283,4 @@ RelationMatrix translateExpression(comprehension(list[VarDeclaration] decls, All
 
 default RelationMatrix translateExpression(Expr expr, Environment env, Universe uni) { throw "Translation of expression \'<expr>\' not supported"; }
 
+default bool contains(TheoryExtension ext, str varName, Theory t) = false;

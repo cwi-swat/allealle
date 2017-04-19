@@ -14,7 +14,7 @@ alias Content = tuple[Formula relForm,  TheoryExtension ext];
 alias Index = list[Atom]; 
 alias RelationMatrix = map[Index, Content];
 
-alias Environment = map[str, RelationMatrix];
+alias Environment = map[str, RelationMatrix]; 
 
 @memo
 int sizeOfUniverse(Universe u) = size(u.atoms);
@@ -69,7 +69,7 @@ RelationMatrix or(RelationMatrix lhs, RelationMatrix rhs)
   when sameArity(lhs, rhs);
 default RelationMatrix or(RelationMatrix _, RelationMatrix _) { throw "Unable to perform disjunction of bindings with different arity"; }
 
-RelationMatrix and(RelationMatrix lhs, RelationMatrix rhs) = (x:construct(\and(lhs[x].relForm, rhs[x].relForm), merge(lhs[x].ext, rhs[x].ext)) | Index x <- lhs, x in rhs) when sameArity(lhs, rhs);
+RelationMatrix and(RelationMatrix lhs, RelationMatrix rhs) = (x:<\and(lhs[x].relForm, rhs[x].relForm), merge(lhs[x].ext, rhs[x].ext)> | Index x <- lhs, x in rhs) when sameArity(lhs, rhs);
 default RelationMatrix and(RelationMatrix _, RelationMatrix _) { throw "Unable to perform conjunction of bindings with different arity"; }
  
 private TheoryExtension transposeTheoryExtension(TheoryExtension ext, int arity) = (t : (arity - 1 - i : ext[t][i] | int i <- ext[t]) | Theory t <- ext); 

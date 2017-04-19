@@ -23,7 +23,7 @@ forall x: r3, y: r1  | no (grid[x][y] & grid[r3\x][r1\y])
 forall x: r3, y: r2  | no (grid[x][y] & grid[r3\x][r2\y])                
 forall x: r3, y: r3  | no (grid[x][y] & grid[r3\x][r3\y])
 
-exists x:r1, y:r1 | x->y in region1 && grid[x][y] = 7
+exists x:num, y:num | x->y in region1 && grid[x][y] = 7
 
-//sum{x: num, y:num | grid[x][y] | x->y in region1} = 34
+//sum(n:{x: num, y:num | x->y in region1} | ) = 34
 //sum{r:region1 | grid[r]} = 34 

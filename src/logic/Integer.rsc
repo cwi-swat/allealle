@@ -2,6 +2,8 @@ module logic::Integer
 
 extend logic::Propositional;
 
+import IO;
+
 data Formula
 	= \int(int i)
 	| intVar(str name)
@@ -13,27 +15,31 @@ data Formula
 	| equal(Formula lhs, Formula rhs)
 	| addition(list[Formula] forms)
 	| multiplication(list[Formula] forms)
-	| division(Formula lhs, Formula rhss)
+	| division(Formula lhs, Formula rhs)
+	| modulo(Formula lhs, Formula rhs) 
 	;
 	
 Formula addition(Formula lhs, Formula rhs) = addition([lhs,rhs]);
 Formula substraction(Formula lhs, Formula rhs) = addition([lhs, neg(rhs)]);
+// todo: Add 0 and 1 multiplication rules
 Formula multiplication(Formula lhs, Formula rhs) = multiplication([lhs,rhs]);
 
 Formula addition(\int(x), \int(y)) = \int(x+y);
 Formula multiplication(\int(x), \int(y)) = \int(x*y);
 
+Formula modulo(\int(x),\int(y)) = \int(x%y); 
+
 Formula lt(\int(x),\int(y)) = \false() when x >= y;
 Formula lt(\int(x),\int(y)) = \true() when x < y;
 
 Formula lte(\int(x),\int(y)) = \false() when x > y;
-Formula lte(\int(x),\int(y)) = \false() when x <= y;
+Formula lte(\int(x),\int(y)) = \true() when x <= y;
 
 Formula equal(\int(x),\int(y)) = \false() when x != y;
 Formula equal(\int(x),\int(x)) = \true();
 
 Formula gt(\int(x),\int(y)) = \false() when x <= y;
-Formula gt(\int(x),\int(y)) = \false() when x > y;
+Formula gt(\int(x),\int(y)) = \true() when x > y;
 
 Formula gte(\int(x),\int(y)) = \false() when x < y;
-Formula gte(\int(x),\int(y)) = \false() when x >= y;
+Formula gte(\int(x),\int(y)) = \true() when x >= y;

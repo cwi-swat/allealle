@@ -1,8 +1,12 @@
-{a(int)=5,b(int)}
+{a(int),b(int)}
 
 N:1[{},{<a>,<b>}]
 grid:3[{},{<a,a,a>,<a,a,b>,<a,b,a>,<a,b,b>,<b,a,a>,<b,a,b>,<b,b,a>,<b,b,b>}]
 
 grid in N->N->N 
 
-forall x:N, y:N | grid[x][y] = 6
+N > 0 && N < 10 
+
+exists x:N, y:N | some grid[x][y] && grid[x][y] = 7
+
+exists n:N | n = 3

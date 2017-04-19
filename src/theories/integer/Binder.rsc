@@ -7,6 +7,7 @@ import theories::integer::AST;
 
 RelationMatrix multiply(RelationMatrix lhs, RelationMatrix rhs) = translate(lhs, rhs, Formula (Formula l, Formula r) { return multiplication(l,r); });
 RelationMatrix divide(RelationMatrix lhs, RelationMatrix rhs) = translate(lhs, rhs, Formula (Formula l, Formula r) { return division(l,r); }); 
+RelationMatrix modd(RelationMatrix lhs, RelationMatrix rhs) = translate(lhs, rhs, Formula (Formula l, Formula r) { return modulo(l,r); }); 
 RelationMatrix add(RelationMatrix lhs, RelationMatrix rhs) = translate(lhs, rhs, Formula (Formula l, Formula r) { return addition(l,r); });
 RelationMatrix substract(RelationMatrix lhs, RelationMatrix rhs) = translate(lhs, rhs, Formula (Formula l, Formula r) { return substraction(l,r); }); 
 
@@ -22,8 +23,6 @@ private ExtensionEncoding performOperation(ExtensionEncoding lhs, ExtensionEncod
   
   for (int i <- lhs) {
     if (i notin rhs) { throw "Unable to combine to Integer extensions with different arities together. Lhs = \'<lhs>\', Rhs = \'<rhs>\'"; }
-    println(lhs[i]);
-    println(rhs[i]);
     result[i] = operation(lhs[i], rhs[i]);  
   }
   

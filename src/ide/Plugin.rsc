@@ -35,10 +35,10 @@ void main(){
 void checkAndVisualize(ide::CombinedSyntax::Problem p) {
 	ModelFinderResult result = checkInitialSolution(implodeProblem(p));
 
-	if (sat(Environment currentModel, ide::CombinedAST::Universe uni, Environment () nextModel, void () stop) := result) {
+	if (sat(Environment currentModel, ide::CombinedAST::Universe uni, Environment (Theory) nextModel, void () stop) := result) {
 		renderModel(uni, currentModel, nextModel, stop);
 	} else if (trivialSat(Environment model, ide::CombinedAST::Universe uni) := result) {
-	  renderModel(uni, model, Environment () { return (); }, void () {;});
+	  renderModel(uni, model, Environment (Theory) { return (); }, void () {;});
 	} else if (trivialUnsat() := result) {
     alert("Not satisfiable (trivially), nothing to visualize");
 	} else {

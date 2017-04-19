@@ -19,7 +19,7 @@ import Set;
 alias PID = int; 
 
 data ModelFinderResult 
-	= sat(Environment currentModel, Universe universe, Environment () nextModel, void () stop)
+	= sat(Environment currentModel, Universe universe, Environment (Theory) nextModel, void () stop)
 	| unsat(set[Formula] unsatCore)
 	| trivialSat(Environment model, Universe universe)
 	| trivialUnsat()	
@@ -33,9 +33,6 @@ ModelFinderResult checkInitialSolution(Problem problem) {
 	print("Translating problem to SAT formula...");
 	tuple[Formula formula, int time] t = benchmark(translate, problem, ie.env);
 	print("done, took: <(t.time/1000000)> ms\n");
-
-	println("SAT Formula:");
-	iprintln(t.formula); 
 	 
 	//print("Converting to CNF...");
 	//tuple[Formula formula, int time] cnf = <t.result.formula, t.time>; //benchmark(convertToCNF, t.result.formula);
@@ -62,7 +59,7 @@ ModelFinderResult runInSolver(Problem originalProblem, Formula formula, Environm
 	print("done, took: <(smtVarCollectResult.time + smtVarDeclResult.time + smtCompileFormResult.time) /1000000> ms in total (variable collection fase: <smtVarCollectResult.time / 1000000>, variable declaration fase: <smtVarDeclResult.time / 1000000>, formula compilation fase: <smtCompileFormResult.time / 1000000>\n");
 	println("Total nr of clauses in formula: <countClauses(formula)>, total nr of variables in formula: <countVars(smtVarCollectResult.vars)>"); 
 	
-	writeFile(|project://allealle/bin/latestSmt.smt|, "<smtVarDeclResult.smt>\n<smtCompileFormResult.smt>");
+	writeFile(|project://allealle/bin/latestSmt.smt2|, "<smtVarDeclResult.smt>\n<smtCompileFormResult.smt>");
 	
 	print("Solving by Z3...");
 	tuple[bool result, int time] solving = benchmark(isSatisfiable, solverPid, "<smtVarDeclResult.smt>\n<smtCompileFormResult.smt>"); 
@@ -70,8 +67,8 @@ ModelFinderResult runInSolver(Problem originalProblem, Formula formula, Environm
 	println("Outcome is \'<solving.result>\'");
  
 	Model currentModel = ();
-	Environment next() {
-		currentModel = nextModel(solverPid, currentModel);
+	Environment next(Theory t) {
+		currentModel = nextModel(solverPid, currentModel, env, t);
 	        
 		if (currentModel == ()) {
 			return ();
@@ -96,12 +93,26 @@ Model getValues(SolverPID pid, set[SMTVar] vars) {
  
 Model firstModel(SolverPID pid, set[SMTVar] vars) = getValues(pid, vars);
 
-Model nextModel(SolverPID pid, Model currentModel) {
+Model nextModel(SolverPID pid, Model currentModel, Environment origEnv, Theory t) { 
   str smt = "";
   
-  for (SMTVar var <- currentModel, str cur := negateVariable(var, currentModel[var]), cur != "") {
-    smt += " <cur>";
+  for (SMTVar var <- currentModel, var.theory == t) {
+    if (t == relTheory()) {
+      smt += " <negateVariable(var, currentModel[var], t)>";
+    } else {
+      // Look it up in the original environment and check whether or not (one of) the relation is part of the current model. If so, then negate the variable, otherwise skip
+      if (str relName <- origEnv, Index idx <- origEnv[relName], contains(origEnv[relName][idx].ext, var.name, t)) { 
+        if (var(str name) := origEnv[relName][idx].relForm, <name, relTheory()> in currentModel, \true() := currentModel[<name, relTheory()>]) {
+          smt += " <negateVariable(var, currentModel[var], t)>";
+        }
+        else if (\true() := origEnv[relName][idx].relForm) {
+          smt += " <negateVariable(var, currentModel[var], t)>";
+        }  
+      }
+    }
   }
+  
+  println(smt); 
   
   if ("" !:= runSolver(pid, "(assert (or <smt>))")) {
     throw "Unable to declare needed variables in SMT";

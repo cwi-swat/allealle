@@ -9,10 +9,12 @@ side in Point -> Point -> Length
 forall p: Point | one p.side
 forall p1: Point | exists p2: Point | one p1.(side[p2])
 
-forall l: Length | one side.l
-
 // all sides should be between 1 and 9
 //forall p1: Point, p2: Point | some side[p1][p2] => side[p1][p2] > 1 && side[p1][p2] < 10
 Length > 2 && Length < 10
 
-exists a:Length,b:Length\a,c:Length\(a++b) | c*c = a*a + b*b
+forall l:Length | some side.l
+
+exists p1:Point, p2:Point\p1, p3:Point\(p1++p2) | some side[p1][p2] && some side[p2][p3] && some side[p3][p1] && (side[p3][p1]) * (side[p3][p1]) = (side[p1][p2]) * (side[p1][p2]) + (side[p2][p3]) * (side[p2][p3])
+
+//exists a:Length,b:Length\a,c:Length\(a++b) | c*c = a*a + b*b

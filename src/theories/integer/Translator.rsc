@@ -11,7 +11,7 @@ import theories::integer::AST;
 import theories::AST; 
 import theories::Binder;
 import theories::Translator;
-
+ 
 import List;  
  
 import IO;
@@ -49,6 +49,15 @@ Formula translateFormula(intInequal(Expr lhsExpr, Expr rhsExpr), Environment env
 
 private Formula translateFormula(RelationMatrix operationResult) 
   = (\true() | \and(it, \or(\not(operationResult[idx].relForm), (\true() | \and(it, enc[i]) | ExtensionEncoding enc := operationResult[idx].ext[intTheory()], int i <- enc))) | Index idx <- operationResult, intTheory() in operationResult[idx].ext);
+
+//private Formula translateFormula(RelationMatrix operationResult) {
+//  for (Index idx <- operationResult, intTheory() in operationResult[idx].ext) {
+//    extraTheoryConstraints(\or(\not(operationResult[idx].relForm), (\true() | \and(it, enc[i]) | ExtensionEncoding enc := operationResult[idx].ext[intTheory()], int i <- enc)));
+//  }
+//  
+//  return (\true() | \and(it, operationResult[idx].relForm) | Index idx <- operationResult, intTheory() in operationResult[idx].ext);
+//}
+  //= (\true() | \and(it, operationResult[idx].relForm) | Index idx <- operationResult, intTheory() in operationResult[idx].ext);
        
 @memo
 RelationMatrix translateExpression(intLit(int i), Environment env, Universe uni) 
@@ -62,6 +71,10 @@ RelationMatrix translateExpression(division(Expr lhsExpr, Expr rhsExpr), Environ
   when RelationMatrix lhs := translateExpression(lhsExpr, env, uni),
        RelationMatrix rhs := translateExpression(rhsExpr, env, uni);
 
+RelationMatrix translateExpression(modulo(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni) = modd(lhs, rhs)
+  when RelationMatrix lhs := translateExpression(lhsExpr, env, uni),
+       RelationMatrix rhs := translateExpression(rhsExpr, env, uni);
+
 RelationMatrix translateExpression(addition(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni) = add(lhs, rhs)
   when RelationMatrix lhs := translateExpression(lhsExpr, env, uni),
        RelationMatrix rhs := translateExpression(rhsExpr, env, uni);
@@ -71,7 +84,10 @@ RelationMatrix translateExpression(subtraction(Expr lhsExpr, Expr rhsExpr), Envi
        RelationMatrix rhs := translateExpression(rhsExpr, env, uni);
        
 //RelationMatrix translateExpression(sum(VarDeclaration decl, Expr expr), Environment env, Universe uni) {
-//  Enviroment declEnv = (decl.name : translateExpression(decl.binding, env, uni));
-//   
-//  RelationMatrix buildSumMatrix(
+//  RelationMatrix m = translateExpression(decl.binding, env, uni);
+//  if (arity(m) > 1) { throw "Unable to translate summation on a non-unary relation"; }
+//  
+//  for (
 //}
+
+bool contains(TheoryExtension ext, str varName, intTheory()) = /intVar(varName) := ext;

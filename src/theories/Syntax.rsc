@@ -44,18 +44,18 @@ syntax AlleFormula
 
 syntax Expr
   = bracket "(" Expr expr ")"
-  > \join:         Expr lhs "." Expr rhs
-  | accessorJoin:  Expr col "[" Expr select "]"
-  > variable:      Variable v
-  | transpose:     "~" Expr expr
-  | closure:       "^" Expr expr
-  | reflexClosure: "*" Expr expr
-  | left union:        Expr lhs "++" Expr rhs 
-  | left intersection:   Expr lhs "&" Expr rhs
-  | left difference:     Expr lhs "\\" Expr rhs
-  | left product:  Expr lhs "-\>" Expr rhs
-  | ifThenElse:    AlleFormula form "?" Expr then ":" Expr else
-  | comprehension: "{" {VarDeclaration ","}+ decls "|" AlleFormula form "}"
+  > \join:              Expr lhs "." Expr rhs
+  | accessorJoin:       Expr col "[" Expr select "]"
+  > variable:           Variable v
+  | transpose:          "~" Expr expr
+  | closure:            "^" Expr expr
+  | reflexClosure:      "*" Expr expr
+  | left union:         Expr lhs "++" Expr rhs 
+  | left intersection:  Expr lhs "&" Expr rhs
+  | left difference:    Expr lhs "\\" Expr rhs
+  | left product:       Expr lhs "-\>" Expr rhs
+  | ifThenElse:         AlleFormula form "?" Expr then ":" Expr else
+  | comprehension:      "{" {VarDeclaration ","}+ decls "|" AlleFormula form "}"
   ;
 
 lexical Atom = ([a-z] !<< [a-z][a-z A-Z 0-9]* !>> [a-z A-Z 0-9]) \ Keywords;

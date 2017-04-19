@@ -24,6 +24,7 @@ data Expr
 	= intLit(int i)
 	| multiplication(Expr lhs, Expr rhs)
 	| division(Expr lhs, Expr rhs)
+	| modulo(Expr lhs, Expr rhs)
 	| addition(Expr lhs, Expr rhs)
 	| subtraction(Expr lhs, Expr rhs)
 	| sum(VarDeclaration decl, Expr expr)

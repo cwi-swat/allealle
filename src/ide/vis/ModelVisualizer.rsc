@@ -16,6 +16,7 @@ import util::Math;
 import Map; 
 import List;  
 import Set;
+import Node;
  
 import IO;
 
@@ -25,13 +26,12 @@ data DisplayModus = textual() | visual();
 
 FProperty myLeft() = halign(0.0);
 
-void renderModel(Universe universe, Environment model, Environment () nextModel, void () stop) {
+void renderModel(Universe universe, Environment model, Environment (Theory) nextModel, void () stop) {
 	DisplayOptions disOpt = options();
 	DisplayModus disModus = textual();
 	
 	Environment currentModel = model;
 
-	void visualizeNextModel() { currentModel = nextModel(); r();} 
 	void switchDisplay() { 
     switch(disModus) {
       case visual(): disModus = textual(); 
@@ -41,11 +41,16 @@ void renderModel(Universe universe, Environment model, Environment () nextModel,
     r();
   }
   
+  set[Theory] theoriesInModel = {delAnnotations(t) | /Theory t := currentModel}; 
+ 
+  str toStr(intTheory()) = "integer";
+   
 	Figure showButtons() = currentModel != () ?
-		hcat([
-			button("Next model", visualizeNextModel),
-			button("Stop", stop)
-		]) :
+		hcat(
+		  [button("Next relational model", void () { currentModel = nextModel(relTheory()); r();})] + 
+		  [button("Next <toStr(t)> model", void () { currentModel = nextModel(t); r();}) | Theory t <- theoriesInModel] +
+			[button("Stop", stop)]
+		) :
 		hcat([
 			button("Stop", stop)
 		]); 
@@ -87,7 +92,6 @@ void renderModel(Universe universe, Environment model, Environment () nextModel,
 
 			
 	Figures textualModel = textualizeModel(model);
-	iprintln(model);		
 			
 	void r() {  
 		render("Model visualizer", 
@@ -126,7 +130,7 @@ Figure visualizeModel(Universe universe, Environment model, DisplayOptions disOp
 	Edges edges = [edge(a, labelId), edge(labelId, b, triangle(round(10 * disOpt.scale), fillColor("black"))) | <list[Atom] idx, str relName> <- naryRels, int i <- [0 .. size(idx)-1], Atom a := idx[i], Atom b := idx[i+1], str labelId := "<relName>_<a>_<b>_step<i>"];
 	
 	return graph(nodes, edges, gap(round(20 * disOpt.scale)), hint("layered"));
-}
+} 
 
 Figure buildEdgeLabel(Atom from, Atom to, int index, str relName) =
 	box(text(relName), id("<relName>_<from>_<to>_step<index>"), lineWidth(0));
