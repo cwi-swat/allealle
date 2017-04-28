@@ -1,4 +1,4 @@
-{ac1, ac2, ac3, am1(int), am2(int), am3(int), s1, s2, s3, event1, event2}
+{ac1, ac2, ac3, am1(int), am2(int), am3(int), s1, s2, s3, event1, event2, wa1(int), wa1(int), da1(int), da2(int)}
 
 State: 1 [{<s1>,<s2>,<s3>},{<s1>,<s2>,<s3>}]
 InitialState: 1 [{<s1>},{<s1>}]
@@ -30,5 +30,4 @@ forall s1: State, s2:State | s1 -> s2 in ordering =>
   (balance[accountInState[s2]] = balance[accountInState[s1]] + 10 && triggeredEvent[s2] == Deposit) ||
   (balance[accountInState[s2]] = balance[accountInState[s1]] - 10 && triggeredEvent[s2] == Withdraw)
   
-  
-exists s:State | some ordering.s && balance[accountInState[s]] = 70
+exists s:State | some ordering.s && balance[accountInState[s]] > 60

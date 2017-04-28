@@ -1,12 +1,22 @@
-{a(int),b(int)}
+{a(int),b(int),c(int)}
 
-N:1[{},{<a>,<b>}]
-grid:3[{},{<a,a,a>,<a,a,b>,<a,b,a>,<a,b,b>,<b,a,a>,<b,a,b>,<b,b,a>,<b,b,b>}]
+N:1[{},{<a>,<b>,<c>}]
+//grid:3[{},{<a,a,a>,<a,a,b>,<a,b,a>,<a,b,b>,<b,a,a>,<b,a,b>,<b,b,a>,<b,b,b>}]
 
-grid in N->N->N 
+//region:2[{<a,a>,<a,b>},{<a,a>,<a,b>}]
 
-N > 0 && N < 10 
+//grid in N->N->N 
 
-exists x:N, y:N | some grid[x][y] && grid[x][y] = 7
+N > 0
 
-exists n:N | n = 3
+//sum(n:N | n+2) = 35
+
+forall n:N| n == N => n + 2 = 35
+forall n1:N, n2:N\n1 | n1++n2 == N => (n1 + 2) + (n2 + 2) = 35
+forall n1:N, n2:N\n1, n3:N\(n1++n2) | n1++n2++n3 == N => (n1 + 2) + ((n2 + 2) + (n3 + 2)) = 35  
+
+//exists n:N | n = 3
+
+//forall x:N, y:N | one grid[x][y]
+
+//forall x1:N, y1:N, x2: N, y2:N | ((x1->y1) ++ (x2->y2)) == region && (no (x1->y1)&(x2->y2)) => (grid[x1][y1]) + (grid[x2][y2]) = 35 

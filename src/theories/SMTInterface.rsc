@@ -29,6 +29,11 @@ str compile(\and(set[Formula] forms)) = "(and <for (f <- forms) {>
 str compile(\or(set[Formula] forms))  = "(or <for (f <- forms) {>
                                                    '  <compile(f)><}>)";
 str compile(\not(formula))            = "(not <compile(formula)>)";
+str compile(ite(Formula c, Formula t, Formula e)) = "(ite 
+                                                    '  <compile(c)>
+                                                    '  <compile(t)>
+                                                    '  <compile(e)>
+                                                    ')";                                                      
 str compile(\false())                 = "false"; 
 str compile(\true())                  = "true";
 str compile(\var(name))               = name; 

@@ -119,6 +119,8 @@ RelationMatrix \join(RelationMatrix lhs, RelationMatrix rhs) {
   // join by joining the right-most atom from the index of the lhs with the left-most atom from the index of the rhs. It is much like a database join
   set[Atom] mostRightAtomInLhs = {idx[-1] | Index idx <- lhs};
     
+    
+    
   RelationMatrix joinResult = ();
   for (Atom current <- mostRightAtomInLhs) {
     set[Index] lhsIndices = indicesEndingWith(current, lhs);
@@ -135,7 +137,9 @@ RelationMatrix \join(RelationMatrix lhs, RelationMatrix rhs) {
           if (jointIndex notin joinResult) { 
             joinResult[jointIndex] = <val, compose((), lhs[currentLhs].ext, rhs[currentRhs].ext)>;
           }else {
+            println("More join result on one vector. Current compose val: <joinResult[jointIndex].ext>, Lhs val: <lhs[currentLhs].ext>, Rhs val: <rhs[currentRhs].ext>, Result of compose: <compose(joinResult[jointIndex].ext, lhs[currentLhs].ext, rhs[currentRhs].ext)>");
             joinResult[jointIndex] = <or(joinResult[jointIndex].relForm, val), compose(joinResult[jointIndex].ext, lhs[currentLhs].ext, rhs[currentRhs].ext)>;
+            println("RElational join result = <joinResult[jointIndex]>");
           }
         }
       }

@@ -58,9 +58,9 @@ syntax Expr
   | comprehension:      "{" {VarDeclaration ","}+ decls "|" AlleFormula form "}"
   ;
 
-lexical Atom = ([a-z] !<< [a-z][a-z A-Z 0-9]* !>> [a-z A-Z 0-9]) \ Keywords;
+lexical Atom = ([a-z] !<< [a-z][a-zA-Z0-9_]* !>> [a-zA-Z0-9_]) \ Keywords;
 
-lexical Variable = ([a-z A-Z] !<< [a-z A-Z][a-z A-Z 0-9 _]* !>> [a-z A-Z 0-9 _]) \ Keywords;
+lexical Variable = ([a-zA-Z] !<< [a-zA-Z][a-zA-Z0-9_]* !>> [a-zA-Z0-9_]) \ Keywords;
 
 lexical Arity = [0-9]+;
 

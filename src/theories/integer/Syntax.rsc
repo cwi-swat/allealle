@@ -24,9 +24,9 @@ syntax Expr
   > multiplication: Expr lhs "*" Expr rhs
   | division:       Expr lhs "/" Expr rhs
   | modulo:         Expr lhs "%" Expr rhs
-  > addition:       Expr lhs "+" Expr rhs
+  > addition:       Expr lhs "+" Expr rhs 
   | subtraction:    Expr lhs "-" Expr rhs
-  > sum:            "sum" "(" VarDeclaration decl "|" Expr expr ")" 
+  > sum:            "sum" "(" {VarDeclaration ","}+ decls "|" Expr expr ")"
   ; 
 
 lexical IntLit = [0-9]+;

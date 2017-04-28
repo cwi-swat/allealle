@@ -27,5 +27,5 @@ data Expr
 	| modulo(Expr lhs, Expr rhs)
 	| addition(Expr lhs, Expr rhs)
 	| subtraction(Expr lhs, Expr rhs)
-	| sum(VarDeclaration decl, Expr expr)
+  | sum(list[VarDeclaration] decls, Expr expr)
 	;

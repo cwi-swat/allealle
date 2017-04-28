@@ -49,19 +49,12 @@ Formula translateFormula(intInequal(Expr lhsExpr, Expr rhsExpr), Environment env
 
 private Formula translateFormula(RelationMatrix operationResult) 
   = (\true() | \and(it, \or(\not(operationResult[idx].relForm), (\true() | \and(it, enc[i]) | ExtensionEncoding enc := operationResult[idx].ext[intTheory()], int i <- enc))) | Index idx <- operationResult, intTheory() in operationResult[idx].ext);
-
-//private Formula translateFormula(RelationMatrix operationResult) {
-//  for (Index idx <- operationResult, intTheory() in operationResult[idx].ext) {
-//    extraTheoryConstraints(\or(\not(operationResult[idx].relForm), (\true() | \and(it, enc[i]) | ExtensionEncoding enc := operationResult[idx].ext[intTheory()], int i <- enc)));
-//  }
-//  
-//  return (\true() | \and(it, operationResult[idx].relForm) | Index idx <- operationResult, intTheory() in operationResult[idx].ext);
-//}
-  //= (\true() | \and(it, operationResult[idx].relForm) | Index idx <- operationResult, intTheory() in operationResult[idx].ext);
        
 @memo
-RelationMatrix translateExpression(intLit(int i), Environment env, Universe uni) 
-  = ([a]:<\true(), (intTheory():(0:\int(i)))> | AtomDecl ad <- uni.atoms, atomAndTheory(Atom a, intTheory()) := ad || atomTheoryAndValue(Atom a, intTheory(), intVal(int _)) := ad);
+RelationMatrix translateExpression(intLit(int i), Environment env, Universe uni) = translateIntConstant(\int(i), env, uni); 
+
+private RelationMatrix translateIntConstant(Formula f, Environment env, Universe uni)
+  = ([a]:<\true(), (intTheory():(0:f))> | AtomDecl ad <- uni.atoms, atomAndTheory(Atom a, intTheory()) := ad || atomTheoryAndValue(Atom a, intTheory(), intVal(int _)) := ad);
 
 RelationMatrix translateExpression(multiplication(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni) = multiply(lhs, rhs)
 	when RelationMatrix lhs := translateExpression(lhsExpr, env, uni),
@@ -83,11 +76,19 @@ RelationMatrix translateExpression(subtraction(Expr lhsExpr, Expr rhsExpr), Envi
   when RelationMatrix lhs := translateExpression(lhsExpr, env, uni),
        RelationMatrix rhs := translateExpression(rhsExpr, env, uni);
        
-//RelationMatrix translateExpression(sum(VarDeclaration decl, Expr expr), Environment env, Universe uni) {
-//  RelationMatrix m = translateExpression(decl.binding, env, uni);
-//  if (arity(m) > 1) { throw "Unable to translate summation on a non-unary relation"; }
-//  
-//  for (
-//}
+RelationMatrix translateExpression(sum(list[VarDeclaration] decls, Expr expr), Environment env, Universe uni) {
+  
+  RelationMatrix m = translateExpression(decls[0].binding, env, uni);
+  
+  Formula sumExpr = \int(0);
+  
+  for (Index idx <- m) {
+    if (intTheory() notin m[idx].ext) { throw "Relation does not uniformly refer to integer variables"; }
+    
+    sumExpr = addition(\ite(m[idx].relForm, m[idx].ext[intTheory()][0], \int(0)), sumExpr);
+  } 
+  
+  return translateIntConstant(sumExpr, env, uni);    
+}
 
 bool contains(TheoryExtension ext, str varName, intTheory()) = /intVar(varName) := ext;

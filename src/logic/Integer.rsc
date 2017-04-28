@@ -19,10 +19,19 @@ data Formula
 	| modulo(Formula lhs, Formula rhs) 
 	;
 	
-Formula addition(Formula lhs, Formula rhs) = addition([lhs,rhs]);
-Formula substraction(Formula lhs, Formula rhs) = addition([lhs, neg(rhs)]);
-// todo: Add 0 and 1 multiplication rules
-Formula multiplication(Formula lhs, Formula rhs) = multiplication([lhs,rhs]);
+Formula addition(\int(0), Formula rhs) = rhs;
+Formula addition(Formula lhs, \int(0)) = lhs;	
+default Formula addition(Formula lhs, Formula rhs) = addition([lhs,rhs]);
+
+Formula substraction(\int(0), Formula rhs) = rhs;
+Formula substraction(Formula lhs, \int(0)) = lhs;
+default Formula substraction(Formula lhs, Formula rhs) = addition([lhs, neg(rhs)]);
+
+Formula multiplication(\int(0), Formula rhs) = \int(0);
+Formula multiplication(Formula lhs, \int(0)) = \int(0);
+Formula multiplication(\int(1), Formula rhs) = rhs;
+Formula multiplication(Formula lhs, \int(1)) = lhs;
+default Formula multiplication(Formula lhs, Formula rhs) = multiplication([lhs,rhs]);
 
 Formula addition(\int(x), \int(y)) = \int(x+y);
 Formula multiplication(\int(x), \int(y)) = \int(x*y);
