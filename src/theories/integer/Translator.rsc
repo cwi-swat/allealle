@@ -16,45 +16,55 @@ import List;
  
 import IO;
  
-ExtensionEncoding constructTheoryExtension(int idx, atomAndTheory(Atom a, intTheory())) = (idx : \intVar(a));
-ExtensionEncoding constructTheoryExtension(int idx, atomTheoryAndValue(Atom a, intTheory(), intVal(int i))) = (idx:\int(i));
+TheoryFormula constructTheoryFormula(str relName, Formula relForm, atomAndTheory(Atom a, intTheory())) = form(relForm, equal(intVar("<relName>_<a>_int"), intVar("<a>")));
+TheoryFormula constructTheoryFormula(str relName, Formula relForm, atomTheoryAndValue(Atom a, intTheory(), intVal(int i))) = form(relForm, equal(intVar("<relName>_<a>_int"), \int(i)));
 
-Formula translateFormula(gt(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni) = translateFormula(result)
+Formula translateFormula(gt(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni) = translateFormula(lhs, rhs, Formula (Formula l, Formula r) { return gt(l, r);})
   when RelationMatrix lhs := translateExpression(lhsExpr, env, uni),
-       RelationMatrix rhs := translateExpression(rhsExpr, env, uni),
-       RelationMatrix result := gt(lhs, rhs);
+       RelationMatrix rhs := translateExpression(rhsExpr, env, uni);
 
-Formula translateFormula(gte(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni) = translateFormula(result)
+Formula translateFormula(gte(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni) = translateFormula(lhs, rhs, Formula (Formula l, Formula r) { return gte(l, r);})
   when RelationMatrix lhs := translateExpression(lhsExpr, env, uni),
-       RelationMatrix rhs := translateExpression(rhsExpr, env, uni),
-       RelationMatrix result := gte(lhs, rhs);
+       RelationMatrix rhs := translateExpression(rhsExpr, env, uni);
 
-Formula translateFormula(lt(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni) = translateFormula(result)
+Formula translateFormula(lt(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni) = translateFormula(lhs, rhs, Formula (Formula l, Formula r) { return lt(l, r);})
   when RelationMatrix lhs := translateExpression(lhsExpr, env, uni),
-       RelationMatrix rhs := translateExpression(rhsExpr, env, uni),
-       RelationMatrix result := lt(lhs, rhs);
+       RelationMatrix rhs := translateExpression(rhsExpr, env, uni);
        
-Formula translateFormula(lte(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni) = translateFormula(result)
+Formula translateFormula(lte(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni) = translateFormula(lhs, rhs, Formula (Formula l, Formula r) { return lte(l, r);})
   when RelationMatrix lhs := translateExpression(lhsExpr, env, uni),
-       RelationMatrix rhs := translateExpression(rhsExpr, env, uni),
-       RelationMatrix result := lte(lhs, rhs);
+       RelationMatrix rhs := translateExpression(rhsExpr, env, uni);
        
-Formula translateFormula(intEqual(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni) = formResult 
+Formula translateFormula(intEqual(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni) = translateFormula(lhs, rhs, Formula (Formula l, Formula r) { return equal(l, r);}) 
   when RelationMatrix lhs := translateExpression(lhsExpr, env, uni),
-       RelationMatrix rhs := translateExpression(rhsExpr, env, uni),
-       RelationMatrix result := equal(lhs, rhs),
-       Formula formResult := translateFormula(result);
+       RelationMatrix rhs := translateExpression(rhsExpr, env, uni);
 
 Formula translateFormula(intInequal(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni) = translateFormula(negation(intEqual(lhsExpr, rhsExpr)), env, uni);
 
-private Formula translateFormula(RelationMatrix operationResult) 
-  = (\true() | \and(it, \or(\not(operationResult[idx].relForm), (\true() | \and(it, enc[i]) | ExtensionEncoding enc := operationResult[idx].ext[intTheory()], int i <- enc))) | Index idx <- operationResult, intTheory() in operationResult[idx].ext);
+Formula translateFormula(RelationMatrix lhs, RelationMatrix rhs, Formula (Formula lhsElement, Formula rhsElement) operation) {
+  if (arity(lhs) != 1 || arity(rhs) != 1) {
+    throw "Unable to perform an integer equation on non-unary relations";
+  }
+  
+  Formula result = \true();
+  
+  for(Index lhsIdx <- lhs, Index rhsIdx <- rhs) {
+    if (0 notin lhs[lhsIdx].ext || 0 notin rhs[rhsIdx].ext) {
+      throw "Can not perform an integer equation on relations that do not capture integer constraints";
+    }
+        
+    for (form(Formula lhsRelForm, l:equal(lhsIntVar:intVar(str _), Formula _)) <- lhs[lhsIdx].ext[0], form(Formula rhsRelForm, r:equal(rhsIntVar:intVar(str _), Formula _)) <- rhs[rhsIdx].ext[0]) {
+      result = \and(result, operation(lhsIntVar, rhsIntVar));
+      result = \and(result,\if(lhsRelForm,l));
+      result = \and(result,\if(rhsRelForm,r)); 
+    } 
+  }
+  
+  return result; 
+}
        
 @memo
-RelationMatrix translateExpression(intLit(int i), Environment env, Universe uni) = translateIntConstant(\int(i), env, uni); 
-
-private RelationMatrix translateIntConstant(Formula f, Environment env, Universe uni)
-  = ([a]:<\true(), (intTheory():(0:f))> | AtomDecl ad <- uni.atoms, atomAndTheory(Atom a, intTheory()) := ad || atomTheoryAndValue(Atom a, intTheory(), intVal(int _)) := ad);
+RelationMatrix translateExpression(intLit(int i), Environment env, Universe uni) { throw "Int literal should have been removed from constraints by pre processing"; } 
 
 RelationMatrix translateExpression(multiplication(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni) = multiply(lhs, rhs)
 	when RelationMatrix lhs := translateExpression(lhsExpr, env, uni),
@@ -82,13 +92,11 @@ RelationMatrix translateExpression(sum(list[VarDeclaration] decls, Expr expr), E
   
   Formula sumExpr = \int(0);
   
-  for (Index idx <- m) {
-    if (intTheory() notin m[idx].ext) { throw "Relation does not uniformly refer to integer variables"; }
-    
-    sumExpr = addition(\ite(m[idx].relForm, m[idx].ext[intTheory()][0], \int(0)), sumExpr);
-  } 
+  //for (Index idx <- m) {
+  //  if (intTheory() notin m[idx].ext) { throw "Relation does not uniformly refer to integer variables"; }
+  //  
+  //  sumExpr = addition(\ite(m[idx].relForm, m[idx].ext[intTheory()][0], \int(0)), sumExpr);
+  //} 
   
-  return translateIntConstant(sumExpr, env, uni);    
+  return m; //translateIntConstant(sumExpr, env, uni);    
 }
-
-bool contains(TheoryExtension ext, str varName, intTheory()) = /intVar(varName) := ext;

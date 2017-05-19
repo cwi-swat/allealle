@@ -115,12 +115,14 @@ void renderModel(Universe universe, Environment model, Environment (Theory) next
 set[str] getNaryRelations(Environment model) = {relName | str relName <- model, RelationMatrix rm := model[relName], size(getOneFrom(rm)) > 1};
 
 Figure visualizeModel(Universe universe, Environment model, DisplayOptions disOpt) {
+  
+
 	if (model == ()) {
 		return text("No more models available", size(100));
 	}
 
 	rel[Atom, str] unaryRels = {<a, relName> | str relName <- model, RelationMatrix rm:= model[relName], Index idx:[Atom a] <- rm,  model[relName][idx].relForm == \true()};
-	rel[Atom, int] intValues = {<a, i> | str relName <- model, RelationMatrix rm:= model[relName], Index idx:[Atom a] <- rm,  model[relName][idx].relForm == \true(), intTheory() in model[relName][idx].ext, /\int(int i) := model[relName][idx].ext[intTheory()]};
+	rel[Atom, int] intValues = {<a, i> | str relName <- model, RelationMatrix rm:= model[relName], Index idx:[Atom a] <- rm,  model[relName][idx].relForm == \true(), /\int(int i) := model[relName][idx].ext};
 	
 	rel[list[Atom], str] naryRels = {<idx, relName> | str relName <- model, relName notin disOpt.filteredEdges, RelationMatrix rm := model[relName], size(getOneFrom(rm)) > 1, Index idx <- rm, model[relName][idx].relForm == \true()};
 
@@ -146,6 +148,8 @@ Maybe[Figure] buildAtomNode(Atom a, rel[Atom, str] unaryRelations, rel[Atom, int
 }
 
 Figures textualizeModel(Environment model) {
+  iprintln(model);
+
   if (model == ()) {
     return [text(""), text("No more models available", fontBold(true), myLeft())];
   }
@@ -160,7 +164,7 @@ Figures textualizeModel(Environment model) {
   }
   
   str intTheoryValue(str relName, list[Atom] vector, int idx) = " (<i>)"
-    when relName in model, vector in model[relName], TheoryExtension te := model[relName][vector].ext, intTheory() in te, idx in te[intTheory()], \int(int i) := te[intTheory()][idx];
+    when relName in model, vector in model[relName], ExtensionEncoding ee := model[relName][vector].ext, idx in ee, /\int(int i) := ee[idx];
   default str intTheoryValue(str _, list[Atom] _, int _) = "";
   
   Figures m = [text("")];

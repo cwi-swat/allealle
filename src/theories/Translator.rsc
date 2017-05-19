@@ -18,27 +18,23 @@ Environment createInitialEnvironment(Problem p) {
 RelationMatrix createRelationalMapping(relationalBound(str relName, int arity, list[Tuple] lb, list[Tuple] ub), map[Atom, AtomDecl] atomsWithTheories) {
   str idxToStr(list[Atom] idx) = intercalate("_", idx);
   
-  RelationMatrix result = (idx : <\true(), constructTheoryExtensions(idx, atomsWithTheories)> | \tuple(list[Atom] idx) <- lb);
-  result += (idx : <var("<relName>_<idxToStr(idx)>"), constructTheoryExtensions(idx, atomsWithTheories)> | \tuple(list[Atom] idx) <- ub, idx notin result);
+  RelationMatrix result = (idx : <\true(), constructTheoryExtensions(relName, \true(), idx, atomsWithTheories)> | \tuple(list[Atom] idx) <- lb);
+  result += (idx : <var, constructTheoryExtensions(relName, var, idx, atomsWithTheories)> | \tuple(list[Atom] idx) <- ub, idx notin result, Formula var := var("<relName>_<idxToStr(idx)>"));
    
   return result;
 } 
                                            
-TheoryExtension constructTheoryExtensions(Index idx, map[Atom, AtomDecl] atomsWithTheories) {
-  TheoryExtension result = ();
+ExtensionEncoding constructTheoryExtensions(str relName, Formula relForm, Index idx, map[Atom, AtomDecl] atomsWithTheories) {
+  ExtensionEncoding result = ();
   
   for (int i <- [0..size(idx)], Atom a := idx[i], a in atomsWithTheories) {
-    if (atomsWithTheories[a].theory in result) {
-      result[atomsWithTheories[a].theory] += constructTheoryExtension(i, atomsWithTheories[a]);
-    } else {
-      result[atomsWithTheories[a].theory] = constructTheoryExtension(i, atomsWithTheories[a]);
-    }
+    result[i] = {constructTheoryFormula(relName, relForm, atomsWithTheories[a])};
   }
   
   return result;
 }
 
-default ExtensionEncoding constructTheoryExtension(int idx, AtomDecl ad) { throw "No theory extension found for theory \'<ad.theory>\'"; } 
+default TheoryFormula constructTheoryFormula(str relName, Formula relForm, AtomDecl ad) { throw "No theory extension found for theory \'<ad.theory>\' for atom \'<ad.atom>\'"; } 
                                                                                             
 Formula translate(Problem p, Environment env) = (\true() | and(it, r) | AlleFormula f <- p.constraints, Formula r := translateFormula(f, env, p.uni));
   
@@ -245,7 +241,7 @@ RelationMatrix translateExpression(difference(Expr lhsExpr, Expr rhsExpr), Envir
        RelationMatrix rhs := translateExpression(rhsExpr, env, uni);
 
 RelationMatrix translateExpression(\join(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni) = \join(lhs, rhs) 
-  when RelationMatrix lhs := translateExpression(lhsExpr, env, uni),
+  when RelationMatrix lhs := translateExpression(lhsExpr, env, uni), 
        RelationMatrix rhs := translateExpression(rhsExpr, env, uni);
 
 RelationMatrix translateExpression(accessorJoin(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni) = translateExpression(\join(rhsExpr, lhsExpr), env, uni);
@@ -260,27 +256,27 @@ RelationMatrix translateExpression(product(Expr lhsExpr, Expr rhsExpr), Environm
 //       RelationMatrix elseRm := translateExpression(elseExpr, env, uni),
 //       Formula translatedCase := translateFormula(caseForm, env, uni);
      
-RelationMatrix translateExpression(comprehension(list[VarDeclaration] decls, AlleFormula form), Environment env, Universe uni) {
-  RelationMatrix calculate(Index currentIdx, [], Environment extendedEnv, Formula partialForm, TheoryExtension extension) =
-    (currentIdx : <\and(partialForm, translateFormula(form, extendedEnv, uni)), extension>);
-  
-  RelationMatrix calculate(Index currentIdx, [VarDeclaration hd, *VarDeclaration tl], Environment extendedEnv, Formula partialForm, TheoryExtension partialExtensions) {
-    RelationMatrix result = ();
-    
-    RelationMatrix decl = translateExpression(hd.binding, extendedEnv, uni);
-    if (arity(decl) > 1) { throw "Higher order comprehensions are not allowed"; }
-    
-    for (Index idx <- decl) {
-      result += calculate(currentIdx + idx, tl, extendedEnv + constructSingleton(hd.name, idx, decl), \and(partialForm, decl[idx].relForm), productTheoryExtension(size(currentIdx + idx), partialExtensions, decl[idx].ext));
-    }
-    
-    return result;
-  }
-   
-  
-  return calculate([], decls, env, \true(), ());
-}
+//RelationMatrix translateExpression(comprehension(list[VarDeclaration] decls, AlleFormula form), Environment env, Universe uni) {
+  //RelationMatrix calculate(Index currentIdx, [], Environment extendedEnv, Formula partialForm, TheoryExtension extension) =
+  //  (currentIdx : <\and(partialForm, translateFormula(form, extendedEnv, uni)), extension>);
+  //
+  //RelationMatrix calculate(Index currentIdx, [VarDeclaration hd, *VarDeclaration tl], Environment extendedEnv, Formula partialForm, TheoryExtension partialExtensions) {
+  //  RelationMatrix result = ();
+  //  
+  //  RelationMatrix decl = translateExpression(hd.binding, extendedEnv, uni);
+  //  if (arity(decl) > 1) { throw "Higher order comprehensions are not allowed"; }
+  //  
+  //  for (Index idx <- decl) {
+  //    result += calculate(currentIdx + idx, tl, extendedEnv + constructSingleton(hd.name, idx, decl), \and(partialForm, decl[idx].relForm), productTheoryExtension(size(currentIdx + idx), partialExtensions, decl[idx].ext));
+  //  }
+  //  
+  //  return result;
+  //}
+  // 
+  //
+  //return calculate([], decls, env, \true(), ());
+//}
 
 default RelationMatrix translateExpression(Expr expr, Environment env, Universe uni) { throw "Translation of expression \'<expr>\' not supported"; }
 
-default bool contains(TheoryExtension ext, str varName, Theory t) = false;
+//default bool contains(TheoryExtension ext, str varName, Theory t) = false;

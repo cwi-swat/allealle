@@ -9,8 +9,11 @@ import theories::integer::AST;
 import List;
 import String; 
  
-Maybe[str] constructExtendedTheoryVar(intVar(str name)) = just("<name>"); 
-Maybe[str] constructExtendedTheoryVar(\int(int _)) = nothing();
+Maybe[tuple[str,Theory]] constructExtendedTheoryVar({form(Formula _, equal(intVar(str name), _))}) = just(<"<name>", intTheory()>); 
+Maybe[tuple[str,Theory]] constructExtendedTheoryVar({form(Formula _, equal(Formula _, \int(int _)))}) = nothing();
+
+Maybe[tuple[str,Theory]] constructExtendedTheoryVar(atomAndTheory(str atom, intTheory())) = just(<"<atom>", intTheory()>); 
+Maybe[tuple[str,Theory]] constructExtendedTheoryVar(atomTheoryAndValue(str _, intTheory(), AtomValue _)) = nothing(); 
 
 str compileVariableDeclaration(SMTVar var) = "(declare-const <var.name> Int)" when var.theory == intTheory();
 
@@ -33,7 +36,7 @@ Formula toFormula((Value)`<Val v>`) = \int(toInt("<v>"));
 Formula toFormula((Value)`(- <Val v>)`) = \int(-toInt("<v>")); 
 default Formula toFormula(Value v) { throw "Unable to convert found value <v> to an Integer formula"; } 
 
-Formula mergeModel(Model foundValues, intVar(str name)) = foundValues[<"<name>", intTheory()>] when <name, intTheory()> in foundValues;
-Formula mergeModel(Model foundValues, \int(int i)) = \int(i);
+AtomDecl findAtomValue(Atom a, intTheory(), SMTModel smtModel) = atomTheoryAndValue(a, intTheory(), intVal(val)) 
+  when <a, intTheory()> in smtModel, \int(int val) := smtModel[<a, intTheory()>];
 
-str negateVariable(SMTVar var, \int(int i), intTheory()) = "(not (= <var.name> <i>))";
+str negateVariable(str var, \int(int i), intTheory()) = "(not (= <var> <i>))";

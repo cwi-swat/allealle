@@ -9,16 +9,35 @@ import String;
 
 import IO;
 import List;
+import Map;
 
 import theories::SMTValueSyntax;
 
-alias Model = map[SMTVar, Formula];
 alias SMTVar = tuple[str name, Theory theory];
+alias SMTModel = map[SMTVar, Formula];
 
-set[SMTVar] collectSMTVars(Environment env) = {<name, relTheory()> | str varName <- env, RelationMatrix rm := env[varName], Index idx <- rm, var(str name) := rm[idx].relForm} +
-                                              {<var, t> | str varName <- env, RelationMatrix rm := env[varName], Index idx <- rm, Theory t <- rm[idx].ext, int i <- rm[idx].ext[t], /just(str var) := constructExtendedTheoryVar(rm[idx].ext[t][i])}; 
+data VectorAndVar 
+  = vectorAndVar(list[Atom] vector, str smtVarName)
+  | vectorOnly(list[Atom] vector) 
+  ;
 
-default Maybe[str] constructExtendedTheoryVar(Formula f) { throw "Unable to construct a variable for formula \'<f>\'"; }
+data Relation 
+  = unary(str name, set[VectorAndVar] relation)
+  | nary(str name, set[VectorAndVar] relation)
+  ;
+    
+data Model 
+  = model(set[AtomDecl] visibleAtoms, set[Relation] relations)
+  | empty()
+  ;
+
+set[SMTVar] collectSMTVars(Universe uni, Environment env) 
+  = {<name, relTheory()> | str varName <- env, RelationMatrix rm := env[varName], Index idx <- rm, var(str name) := rm[idx].relForm} +
+    {<r.var, r.t> | str varName <- env, RelationMatrix rm := env[varName], Index idx <- rm, int i <- rm[idx].ext, /just(tuple[str var, Theory t] r) := constructExtendedTheoryVar(rm[idx].ext[i])} +
+    {<r.var, r.t> | AtomDecl ad <- uni.atoms, ad has theory, /just(tuple[str var, Theory t] r) := constructExtendedTheoryVar(ad)}; 
+
+default Maybe[tuple[str, Theory]] constructExtendedTheoryVar(AtomDecl ad) { throw "Unable to construct a variable for atom declaration \'<ad>\'"; }
+default Maybe[tuple[str, Theory]] constructExtendedTheoryVar(set[TheoryFormula] f) { throw "Unable to construct a variable for formula \'<f>\'"; } 
 
 str compileSMTVariableDeclarations(set[SMTVar] vars) = ("" | "<it>\n<compileVariableDeclaration(var)>" | SMTVar var <- vars);
 str compileVariableDeclaration(SMTVar var) = "(declare-const <var.name> Bool)" when var.theory == relTheory();
@@ -44,11 +63,11 @@ str compileAssert(Formula f) = "\n(assert
                                '  <compile(f)>
                                ')"; 
 
-Model getValues(str smtResult, set[SMTVar] vars) {
+SMTModel getValues(str smtResult, set[SMTVar] vars) {
   Values foundValues = [Values]"<smtResult>"; 
   map[str,Value] rawSmtVals = (() | it + ("<varAndVal.name>":varAndVal.val) | VarAndValue varAndVal <- foundValues.values);
-  
-  Model m = (var : form | str varName <- rawSmtVals, SMTVar var:<varName, Theory _> <- vars, Formula form := getValue(rawSmtVals[varName], var));
+
+  SMTModel m = (var : form | str varName <- rawSmtVals, SMTVar var:<varName, Theory _> <- vars, Formula form := getValue(rawSmtVals[varName], var));
   
   return m;
 }   
@@ -60,18 +79,44 @@ default Formula toFormula(Value someVal) { throw "Unable to construct Boolean fo
 Formula getValue(Value smtValue, SMTVar var) = toFormula(smtValue) when var.theory == relTheory();
 default Formula getValue(Value smtValue, SMTVar var) { throw "Unable to get the value for SMT value <smtValue>"; }
 
-str negateVariable(SMTVar var, \true(), relTheory()) = "(not <var.name>)";
-str negateVariable(SMTVar var, \false(), relTheory()) = var.name;
-default str negateVariable(SMTVar v, Formula f, Theory t) { throw "Unable to negate variable <v> with current value <f> for theory <t>, no SMT negator available"; }
+str negateVariable(str var, \true(), relTheory()) = "(not <var>)";
+str negateVariable(str var, \false(), relTheory()) = var;
+default str negateVariable(str v, Formula f, Theory t) { throw "Unable to negate variable <v> with current value <f> for theory <t>, no SMT negator available"; }
 
-Environment merge(Model foundModel, Environment environment) { 
-  return visit(environment) {
-    case Formula f => mergeModel(foundModel, f)
-  } 
+Model constructModel(SMTModel smtModel, Universe uni, Environment env) { 
+  AtomDecl findAtomDecl(Atom a) = ad when AtomDecl ad <- uni.atoms, ad.atom == a;
+  
+  set[AtomDecl] visibleAtoms = {};
+  set[Relation] relations = {};
+  
+  for (str relName <- env) {
+    set[VectorAndVar] relTuples = {};
+     
+    for (Index idx <- env[relName]) {
+      // all the atoms referenced in the vector should be visible
+      if (<var(str name), ExtensionEncoding _> := env[relName][idx], smtModel[<name, relTheory()>] == \true() ) {
+        visibleAtoms += {findAtomDecl(a) | Atom a <- idx};
+        relTuples += {vectorAndVar(idx,  name)};
+      }
+      else if (<\true(), ExtensionEncoding _> := env[relName][idx]) {
+        visibleAtoms += {findAtomDecl(a) | Atom a <- idx};
+        relTuples += {vectorOnly(idx)};        
+      }
+    }
+    
+    if (size(getOneFrom(env[relName])) == 1) {
+      relations += {unary(relName, relTuples)};
+    } else {
+      relations += {nary(relName, relTuples)};
+    } 
+  }
+  
+  // Now make sure that visible atoms which hold variables in other theories get their values set
+  visibleAtoms = visit(visibleAtoms) {
+    case atomAndTheory(Atom a, Theory t) => findAtomValue(a, t, smtModel)
+  };   
+
+  return model(visibleAtoms, relations);
 } 
- 
-Formula mergeModel(Model foundValues, var(str name)) = foundValues[<name, relTheory()>] when <name, relTheory()> in foundValues;
 
-Formula mergeModel(Model _, \true()) = \true();
-Formula mergeModel(Model _, \false()) = \false();
-default Formula mergeModel(Model foundValues, Formula f) { throw "Unable to merge model for formula <f>, no SMT merger available";}
+default AtomDecl findAtomValue(Atom a, Theory t, SMTModel smtModel) { throw "Unable to find atom value for atom <a> with theory \'<t>\'";}

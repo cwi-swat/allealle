@@ -1,0 +1,11 @@
+{a(int),b(int),c(int),p1,p2,p3}
+
+P:1[{},{<p1>,<p2>,<p3>}]
+N:1[{},{<a>,<b>,<c>}]
+age:2[{},{<p1,a>,<p1,b>,<p1,c>,<p2,a>,<p2,b>,<p2,c>}]
+
+age in P->N
+
+P.age > 10
+
+exists p:P | age[p] = 0

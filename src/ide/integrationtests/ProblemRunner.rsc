@@ -1,29 +1,72 @@
 module ide::integrationtests::ProblemRunner
 
-import theories::AST;
 import theories::Binder;
 //import theories::Translator;
 
 import ide::Imploder;
+import ide::CombinedAST;
 import ide::CombinedModelFinder;
   
 import IO;
+import List;
+import Set;
 
-void translateAndSolveSudoku() = translateAndSolve(|project://allealle/examples/relational/sudoku.alle|,1);
-void translateAndSolveTriangle() = translateAndSolve(|project://allealle/examples/int/triangle.alle|,1);
-void translateAndSolveRiverCrossing() = translateAndSolve(|project://allealle/examples/relational/rivercrossing.alle|,1);
+tuple[void () next, void () stop] translateAndSolve(loc problem) {
+  Problem p = implodeProblem(problem);
+  
+  Model m = empty();
+  
+  ModelFinderResult r = checkInitialSolution(p);
+  if (sat(Model model, Universe universe, Model (Theory) nextModel, void () stop) := r) {
+    m = model;
+    
+    void next() {
+      model = nextModel(relTheory());
+      printModel(model);
+  
+      if (model == empty()) { stop(); }
+    }  
 
-void translateAndSolve(loc alleAlleFile, int nrOfTestsToPerform) = translateAndSolve(implodeProblem(alleAlleFile), nrOfTestsToPerform);
-void translateAndSolve(str problem, int nrOfTestsToPerform) = translateAndSolve(implodeProblem(problem), nrOfTestsToPerform);
-
-void translateAndSolve(Problem p, int nrOfTestsToPerform) {
-  for (int i <- [0..nrOfTestsToPerform]) {
-    ModelFinderResult r = checkInitialSolution(p);
-    if (sat(Environment currentModel, Universe universe, Environment () nextModel, void () stop) := r) {
-     stop();
-    }
-  }   
+    printModel(model);
+    
+    return <next, stop>;
+  }  
+  else if (trivialSat(Model model, Universe uni) := r) {
+    println("Trivially satisfiable");
+  }
+  else if (unsat(set[Formula] _) := r) {
+    println("Unsatisfiable");
+  }
+  else if (trivialUnsat() := r) {
+    println("Trivially unsatisfiable");
+  }
+  
 }
- 
-void performanceTestRiverCrossing(int nr) = translateAndSolve(|project://allealle/examples/relational/rivercrossing.alle|,nr);
-void performanceTestSudoku(int nr) = translateAndSolve(|project://allealle/examples/relational/sudoku.alle|,nr);
+
+void printModel(empty()) { println("no more models"); }
+
+void printModel(Model model) {
+  str getVectorLabel(list[Atom] vector) = "\<<intercalate(",", [a | Atom a <- vector])>\>";
+  
+  str getAtomLabel(atomOnly(str name)) = name;
+  str getAtomLabel(atomAndTheory(str name, Theory t)) = "<name> (no value. Bug?)";
+  str getAtomLabel(atomTheoryAndValue(str name, intTheory(), intVal(int i))) = "<name> (<i>)";
+
+  println("-----------");
+  if (size(model.visibleAtoms) == 0) {
+    println("No visible atoms");
+  } else { 
+    println("Visible atoms: <intercalate(", ", [getAtomLabel(ad) | AtomDecl ad <- model.visibleAtoms])>");
+  }
+  println("");
+  bool visibleRel = true;
+  
+  if (!visibleRel) {
+    println("No visible relations");
+  } else {
+    for (Relation r <- model.relations) {
+      println("Relation \'<r.name>\': <intercalate(",", [getVectorLabel(vv.vector) | VectorAndVar vv <- r.relation])>");
+    }
+  }
+  println("-----------");
+}

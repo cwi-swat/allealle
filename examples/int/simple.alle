@@ -1,8 +1,12 @@
-{a(int),b(int),c(int)}
+{a(int),b(int)}
 
-N:1 [{},{<a>,<b>,<c>}]
-s:3 [{},{<a,a>,<a,b>,<a,c>,<b,a>,<b,b>}]
+N:1 [{},{<a>,<b>}]
 
-s in N->N
+//forall n:N | n > 10
+((((N->N->N).N).N)->N)[N] = 10
 
-forall x:N | s[x] != s[N\x]
+//exists n:N | n > 20
+
+//((N->N->N).N).N > 10
+
+//some N

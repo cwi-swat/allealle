@@ -10,32 +10,27 @@ RelationMatrix divide(RelationMatrix lhs, RelationMatrix rhs) = translate(lhs, r
 RelationMatrix modd(RelationMatrix lhs, RelationMatrix rhs) = translate(lhs, rhs, Formula (Formula l, Formula r) { return modulo(l,r); }); 
 RelationMatrix add(RelationMatrix lhs, RelationMatrix rhs) = translate(lhs, rhs, Formula (Formula l, Formula r) { return addition(l,r); });
 RelationMatrix substract(RelationMatrix lhs, RelationMatrix rhs) = translate(lhs, rhs, Formula (Formula l, Formula r) { return substraction(l,r); }); 
-
-RelationMatrix gt(RelationMatrix lhs, RelationMatrix rhs) = translate(lhs, rhs, Formula (Formula l, Formula r) { return gt(l,r); });
-RelationMatrix gte(RelationMatrix lhs, RelationMatrix rhs) = translate(lhs, rhs, Formula (Formula l, Formula r) { return gte(l,r); });
-RelationMatrix lt(RelationMatrix lhs, RelationMatrix rhs) = translate(lhs, rhs, Formula (Formula l, Formula r) { return lt(l,r); });
-RelationMatrix lte(RelationMatrix lhs, RelationMatrix rhs) = translate(lhs, rhs, Formula (Formula l, Formula r) { return lte(l,r); });
-RelationMatrix lte(RelationMatrix lhs, RelationMatrix rhs) = translate(lhs, rhs, Formula (Formula l, Formula r) { return lte(l,r); });
-RelationMatrix equal(RelationMatrix lhs, RelationMatrix rhs) = translate(lhs, rhs, Formula (Formula l, Formula r) { return equal(l,r); });
  
 private ExtensionEncoding performOperation(ExtensionEncoding lhs, ExtensionEncoding rhs, Formula (Formula, Formula) operation) {
-  ExtensionEncoding result = ();
+  //ExtensionEncoding result = ();
+  //
+  //for (int i <- lhs) {
+  //  if (i notin rhs) { throw "Unable to combine to Integer extensions with different arities together. Lhs = \'<lhs>\', Rhs = \'<rhs>\'"; }
+  //  result[i] = operation(lhs[i], rhs[i]);  
+  //}
+  //
+  //return result;
   
-  for (int i <- lhs) {
-    if (i notin rhs) { throw "Unable to combine to Integer extensions with different arities together. Lhs = \'<lhs>\', Rhs = \'<rhs>\'"; }
-    result[i] = operation(lhs[i], rhs[i]);  
-  }
-  
-  return result;
+  return ();
 } 
  
-private RelationMatrix translate(RelationMatrix lhs, RelationMatrix rhs, Formula (Formula, Formula) operation) 
-  = (currentLhs + currentRhs : <val, (intTheory() : performOperation(lhs[currentLhs].ext[intTheory()], rhs[currentRhs].ext[intTheory()], operation))> | 
-      Index currentLhs <- lhs, 
-      lhs[currentLhs].relForm != \false(),
-      intTheory() in lhs[currentLhs].ext,
-      Index currentRhs <- rhs, 
-      rhs[currentRhs].relForm != \false(),
-      intTheory() in rhs[currentRhs].ext,
-      Formula val := and(lhs[currentLhs].relForm, rhs[currentRhs].relForm), 
-      val !:= \false());       
+private RelationMatrix translate(RelationMatrix lhs, RelationMatrix rhs, Formula (Formula, Formula) operation) = (); 
+  //= (currentLhs + currentRhs : <val, (intTheory() : performOperation(lhs[currentLhs].ext[intTheory()], rhs[currentRhs].ext[intTheory()], operation))> | 
+  //    Index currentLhs <- lhs, 
+  //    lhs[currentLhs].relForm != \false(),
+  //    intTheory() in lhs[currentLhs].ext,
+  //    Index currentRhs <- rhs, 
+  //    rhs[currentRhs].relForm != \false(),
+  //    intTheory() in rhs[currentRhs].ext,
+  //    Formula val := and(lhs[currentLhs].relForm, rhs[currentRhs].relForm), 
+  //    val !:= \false());       

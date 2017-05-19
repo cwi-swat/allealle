@@ -3,6 +3,7 @@ module ModelFinder
 import logic::Propositional;
  
 import theories::AST;
+import theories::PreProcessor;
 import theories::Translator; 
 import theories::SMTInterface; 
 import theories::Binder;
@@ -19,19 +20,23 @@ import Set;
 alias PID = int; 
 
 data ModelFinderResult 
-	= sat(Environment currentModel, Universe universe, Environment (Theory) nextModel, void () stop)
+	= sat(Model currentModel, Universe universe, Model (Theory) nextModel, void () stop)
 	| unsat(set[Formula] unsatCore)
-	| trivialSat(Environment model, Universe universe)
+	| trivialSat(Model model, Universe universe)
 	| trivialUnsat()	
 	;
 
 ModelFinderResult checkInitialSolution(Problem problem) {
+	println("Preprocessing problem (replacing constants with unary, singelton relations)");
+	Problem augmentedProblem = replaceConstants(problem);
+	
 	print("Building initial environment...");
-	tuple[Environment env, int time] ie = benchmark(createInitialEnvironment, problem); 
+	tuple[Environment env, int time] ie = benchmark(createInitialEnvironment, augmentedProblem); 
 	print("done, took: <(ie.time/1000000)> ms\n");
 	
+
 	print("Translating problem to SAT formula...");
-	tuple[Formula formula, int time] t = benchmark(translate, problem, ie.env);
+	tuple[Formula formula, int time] t = benchmark(translate, augmentedProblem, ie.env);
 	print("done, took: <(t.time/1000000)> ms\n");
 	 
 	//print("Converting to CNF...");
@@ -40,76 +45,73 @@ ModelFinderResult checkInitialSolution(Problem problem) {
 	if (t.formula == \false()) {
 		return trivialUnsat();
 	} else if (t.formula == \true()) {
-		return trivialSat(ie.env, problem.uni);
+		return trivialSat(empty(), problem.uni);
 	}
 
-	return runInSolver(problem, t.formula, ie.env);
+	return runInSolver(augmentedProblem, t.formula, ie.env);
 }
 
-ModelFinderResult runInSolver(Problem originalProblem, Formula formula, Environment env) {
+ModelFinderResult runInSolver(Problem problem, Formula formula, Environment env) {
 	PID solverPid = startSolver();
 	void stop() {
 		stopSolver(solverPid);
 	}
 	
 	print("Translating to SMT-LIB...");
-  tuple[set[SMTVar] vars, int time] smtVarCollectResult = benchmark(collectSMTVars, env);
+  tuple[set[SMTVar] vars, int time] smtVarCollectResult = benchmark(collectSMTVars, problem.uni, env);
 	tuple[str smt, int time] smtVarDeclResult = benchmark(compileSMTVariableDeclarations, smtVarCollectResult.vars);
 	tuple[str smt, int time] smtCompileFormResult = benchmark(compileAssert, formula);
 	print("done, took: <(smtVarCollectResult.time + smtVarDeclResult.time + smtCompileFormResult.time) /1000000> ms in total (variable collection fase: <smtVarCollectResult.time / 1000000>, variable declaration fase: <smtVarDeclResult.time / 1000000>, formula compilation fase: <smtCompileFormResult.time / 1000000>\n");
 	println("Total nr of clauses in formula: <countClauses(formula)>, total nr of variables in formula: <countVars(smtVarCollectResult.vars)>"); 
 	
 	writeFile(|project://allealle/bin/latestSmt.smt2|, "<smtVarDeclResult.smt>\n<smtCompileFormResult.smt>");
-	
+	  
 	print("Solving by Z3...");
 	tuple[bool result, int time] solving = benchmark(isSatisfiable, solverPid, "<smtVarDeclResult.smt>\n<smtCompileFormResult.smt>"); 
 	print("done, took: <solving.time/1000000> ms\n");
 	println("Outcome is \'<solving.result>\'");
  
-	Model currentModel = ();
-	Environment next(Theory t) {
-		currentModel = nextModel(solverPid, currentModel, env, t);
+	SMTModel smtModel = ();
+	Model model = empty();
+	
+	Model next(Theory t) {
+		smtModel = nextSmtModel(solverPid, model, t, smtVarCollectResult.vars);
 	        
-		if (currentModel == ()) {
-			return ();
+		if (smtModel == ()) {
+			return empty();
 		} else {
-			return merge(currentModel, env);
+		  model = constructModel(smtModel, problem.uni, env);
+			return model;
 		}
 	}
 
 	if(solving.result) {
-		currentModel = firstModel(solverPid, smtVarCollectResult.vars);
+		smtModel = firstSmtModel(solverPid, smtVarCollectResult.vars);
+		model = constructModel(smtModel, problem.uni, env);
 		
-		return sat(merge(currentModel, env), originalProblem.uni, next, stop);
+		return sat(model, problem.uni, next, stop);
 	} else {
 		return unsat({});
 	}
 }
 
-Model getValues(SolverPID pid, set[SMTVar] vars) {
+SMTModel getValues(SolverPID pid, set[SMTVar] vars) {
   resp = runSolver(pid, "(get-value (<intercalate(" ", [v.name | v <- vars])>))");
   return getValues(resp, vars);
 }
  
-Model firstModel(SolverPID pid, set[SMTVar] vars) = getValues(pid, vars);
+SMTModel firstSmtModel(SolverPID pid, set[SMTVar] vars) = getValues(pid, vars);
 
-Model nextModel(SolverPID pid, Model currentModel, Environment origEnv, Theory t) { 
+SMTModel nextSmtModel(SolverPID pid, Model currentModel, Theory t, set[SMTVar] vars) { 
+  Formula findCurrentSmtVal(SMTVar v) = \true() when Relation r <- currentModel.relations, vectorAndVar(list[Atom] _, str smtVarName)  <- r.relation, smtVarName == v.name;
+  default Formula findCurrentSmtVal(SMTVar v) = \false();
+  
   str smt = "";
   
-  for (SMTVar var <- currentModel, var.theory == t) {
-    if (t == relTheory()) {
-      smt += " <negateVariable(var, currentModel[var], t)>";
-    } else {
-      // Look it up in the original environment and check whether or not (one of) the relation is part of the current model. If so, then negate the variable, otherwise skip
-      if (str relName <- origEnv, Index idx <- origEnv[relName], contains(origEnv[relName][idx].ext, var.name, t)) { 
-        if (var(str name) := origEnv[relName][idx].relForm, <name, relTheory()> in currentModel, \true() := currentModel[<name, relTheory()>]) {
-          smt += " <negateVariable(var, currentModel[var], t)>";
-        }
-        else if (\true() := origEnv[relName][idx].relForm) {
-          smt += " <negateVariable(var, currentModel[var], t)>";
-        }  
-      }
-    }
+  if (t == relTheory()) {
+    smt = ("" | it + " <negateVariable(v.name, findCurrentSmtVal(v), t)>" | SMTVar v <- vars, v.theory == relTheory());
+  } else {
+    smt = ""; 
   }
   
   println(smt); 
@@ -119,7 +121,7 @@ Model nextModel(SolverPID pid, Model currentModel, Environment origEnv, Theory t
   }   
   
   if (checkSat(pid)) {
-    return getValues(pid, domain(currentModel));
+    return getValues(pid, vars);
   } else {
     return ();
   }
