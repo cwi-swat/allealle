@@ -7,6 +7,7 @@ import theories::PreProcessor;
 import theories::Translator; 
 import theories::SMTInterface; 
 import theories::Binder;
+import theories::Unparser;
 
 import smt::solver::SolverRunner; 
 
@@ -28,13 +29,15 @@ data ModelFinderResult
 
 ModelFinderResult checkInitialSolution(Problem problem) {
 	println("Preprocessing problem (replacing constants with unary, singelton relations)");
-	Problem augmentedProblem = replaceConstants(problem);
+	Problem augmentedProblem = transform(problem);
+	
+	writeFile(|project://allealle/examples/last_transformed.alle|, unparse(augmentedProblem));
 	
 	print("Building initial environment...");
 	tuple[Environment env, int time] ie = benchmark(createInitialEnvironment, augmentedProblem); 
 	print("done, took: <(ie.time/1000000)> ms\n");
 	
-
+ 
 	print("Translating problem to SAT formula...");
 	tuple[Formula formula, int time] t = benchmark(translate, augmentedProblem, ie.env);
 	print("done, took: <(t.time/1000000)> ms\n");
@@ -55,19 +58,20 @@ ModelFinderResult runInSolver(Problem problem, Formula formula, Environment env)
 	PID solverPid = startSolver();
 	void stop() {
 		stopSolver(solverPid);
-	}
+	} 
 	
 	print("Translating to SMT-LIB...");
   tuple[set[SMTVar] vars, int time] smtVarCollectResult = benchmark(collectSMTVars, problem.uni, env);
 	tuple[str smt, int time] smtVarDeclResult = benchmark(compileSMTVariableDeclarations, smtVarCollectResult.vars);
+	tuple[str smt, int time] smtAtomDeclExprs = benchmark(compileAtomExpressions, problem.uni.atoms);
 	tuple[str smt, int time] smtCompileFormResult = benchmark(compileAssert, formula);
-	print("done, took: <(smtVarCollectResult.time + smtVarDeclResult.time + smtCompileFormResult.time) /1000000> ms in total (variable collection fase: <smtVarCollectResult.time / 1000000>, variable declaration fase: <smtVarDeclResult.time / 1000000>, formula compilation fase: <smtCompileFormResult.time / 1000000>\n");
+	print("done, took: <(smtVarCollectResult.time + smtVarDeclResult.time + smtAtomDeclExprs.time + smtCompileFormResult.time) /1000000> ms in total (variable collection fase: <smtVarCollectResult.time / 1000000>, variable declaration fase: <smtVarDeclResult.time / 1000000>, atom expression translation fase: <smtAtomDeclExprs.time / 1000000>, formula compilation fase: <smtCompileFormResult.time / 1000000>\n");
 	println("Total nr of clauses in formula: <countClauses(formula)>, total nr of variables in formula: <countVars(smtVarCollectResult.vars)>"); 
 	
-	writeFile(|project://allealle/bin/latestSmt.smt2|, "<smtVarDeclResult.smt>\n<smtCompileFormResult.smt>");
+	writeFile(|project://allealle/bin/latestSmt.smt2|, "<smtVarDeclResult.smt>\n<smtAtomDeclExprs.smt>\n<smtCompileFormResult.smt>");
 	  
 	print("Solving by Z3...");
-	tuple[bool result, int time] solving = benchmark(isSatisfiable, solverPid, "<smtVarDeclResult.smt>\n<smtCompileFormResult.smt>"); 
+	tuple[bool result, int time] solving = benchmark(isSatisfiable, solverPid, "<smtVarDeclResult.smt>\n<smtAtomDeclExprs.smt>\n<smtCompileFormResult.smt>"); 
 	print("done, took: <solving.time/1000000> ms\n");
 	println("Outcome is \'<solving.result>\'");
  
@@ -96,7 +100,7 @@ ModelFinderResult runInSolver(Problem problem, Formula formula, Environment env)
 }
 
 SMTModel getValues(SolverPID pid, set[SMTVar] vars) {
-  resp = runSolver(pid, "(get-value (<intercalate(" ", [v.name | v <- vars])>))");
+  resp = runSolver(pid, "(get-value (<intercalate(" ", [v.name | v <- vars])>))", wait=50);
   return getValues(resp, vars);
 }
  
@@ -107,12 +111,12 @@ SMTModel nextSmtModel(SolverPID pid, Model currentModel, Theory t, set[SMTVar] v
   default Formula findCurrentSmtVal(SMTVar v) = \false();
   
   str smt = "";
-  
+   
   if (t == relTheory()) {
-    smt = ("" | it + " <negateVariable(v.name, findCurrentSmtVal(v), t)>" | SMTVar v <- vars, v.theory == relTheory());
+    smt = ("" | it + " <negateVariable(v.name, findCurrentSmtVal(v))>" | SMTVar v <- vars, v.theory == relTheory());
   } else {
-    smt = ""; 
-  }
+    smt = ("" | it + " <negateAtomVariable(v)>" | v:varAtom(str _, Theory _, AtomValue _) <- currentModel.visibleAtoms); 
+  } 
   
   println(smt); 
   

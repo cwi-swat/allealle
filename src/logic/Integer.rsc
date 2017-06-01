@@ -13,6 +13,7 @@ data Formula
 	| gt(Formula lhs, Formula rhs)
 	| gte(Formula lhs, Formula rhs)
 	| equal(Formula lhs, Formula rhs)
+	| inequal(Formula lhs, Formula rhs)
 	| addition(list[Formula] forms)
 	| multiplication(list[Formula] forms)
 	| division(Formula lhs, Formula rhs)

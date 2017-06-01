@@ -6,6 +6,7 @@ import logic::Integer;
 import ide::CombinedAST;
 
 import theories::Binder;
+import theories::SMTInterface;
 
 import vis::Figure;
 import vis::Render;
@@ -17,6 +18,7 @@ import Map;
 import List;  
 import Set;
 import Node;
+import String;
  
 import IO;
 
@@ -26,11 +28,11 @@ data DisplayModus = textual() | visual();
 
 FProperty myLeft() = halign(0.0);
 
-void renderModel(Universe universe, Environment model, Environment (Theory) nextModel, void () stop) {
+void renderModel(Universe universe, Model model, Model (Theory) nextModel, void () stop) {
 	DisplayOptions disOpt = options();
 	DisplayModus disModus = textual();
 	
-	Environment currentModel = model;
+	Model currentModel = model;
 
 	void switchDisplay() { 
     switch(disModus) {
@@ -45,7 +47,7 @@ void renderModel(Universe universe, Environment model, Environment (Theory) next
  
   str toStr(intTheory()) = "integer";
    
-	Figure showButtons() = currentModel != () ?
+	Figure showButtons() = currentModel != empty() ?
 		hcat(
 		  [button("Next relational model", void () { currentModel = nextModel(relTheory()); r();})] + 
 		  [button("Next <toStr(t)> model", void () { currentModel = nextModel(t); r();}) | Theory t <- theoriesInModel] +
@@ -112,24 +114,23 @@ void renderModel(Universe universe, Environment model, Environment (Theory) next
 
 }
 
-set[str] getNaryRelations(Environment model) = {relName | str relName <- model, RelationMatrix rm := model[relName], size(getOneFrom(rm)) > 1};
+set[str] getNaryRelations(Model model) = {name | r:nary(str name, set[VectorAndVar] _, bool _) <- model.relations};
 
-Figure visualizeModel(Universe universe, Environment model, DisplayOptions disOpt) {
-  
-
-	if (model == ()) {
+Figure visualizeModel(Universe universe, Model model, DisplayOptions disOpt) {
+	if (model == empty()) {
 		return text("No more models available", size(100));
 	}
 
-	rel[Atom, str] unaryRels = {<a, relName> | str relName <- model, RelationMatrix rm:= model[relName], Index idx:[Atom a] <- rm,  model[relName][idx].relForm == \true()};
-	rel[Atom, int] intValues = {<a, i> | str relName <- model, RelationMatrix rm:= model[relName], Index idx:[Atom a] <- rm,  model[relName][idx].relForm == \true(), /\int(int i) := model[relName][idx].ext};
-	
-	rel[list[Atom], str] naryRels = {<idx, relName> | str relName <- model, relName notin disOpt.filteredEdges, RelationMatrix rm := model[relName], size(getOneFrom(rm)) > 1, Index idx <- rm, model[relName][idx].relForm == \true()};
+  bool contains(Atom a, Relation r) = true when VectorAndVar vv <- r.relation, a in vv.vector;
+  default bool constains(Atom a, Relation r) = false; 
 
-	Figures nodes = [n | AtomDecl ad <- universe.atoms, just(Figure n) := buildAtomNode(ad.atom, unaryRels, intValues, disOpt)];
-	nodes += [buildEdgeLabel(a,b,i,relName) | <list[Atom] idx, str relName> <- naryRels, int i <- [0 .. size(idx)-1], Atom a := idx[i], Atom b := idx[i+1]];
+	rel[ModelAtom, Relation] unaryRels = {<ma, r> | ModelAtom ma <- model.visibleAtoms, r:unary(str relName, set[VectorAndVar] relation, bool inBase) <- model.relations, ma.name == relName, contains(ma.name, r)};
+	rel[list[Atom], Relation] naryRels = {<vv.vector, r> | r:nary(str name, set[VectorAndVar] relation, bool inBase) <- model.relations, VectorAndVar vv <- relation};
+
+	Figures nodes = [buildAtomNode(ma, unaryRels, disOpt) | ModelAtom ma <- model.visibleAtoms];
+	nodes += [buildEdgeLabel(a,b,i,r.name) | <list[Atom] idx, Relation r> <- naryRels, int i <- [0 .. size(idx)-1], Atom a := idx[i], Atom b := idx[i+1]];
   
-	Edges edges = [edge(a, labelId), edge(labelId, b, triangle(round(10 * disOpt.scale), fillColor("black"))) | <list[Atom] idx, str relName> <- naryRels, int i <- [0 .. size(idx)-1], Atom a := idx[i], Atom b := idx[i+1], str labelId := "<relName>_<a>_<b>_step<i>"];
+	Edges edges = [edge(a, labelId), edge(labelId, b, triangle(round(10 * disOpt.scale), fillColor("black"))) | <list[Atom] idx, Relation r> <- naryRels, int i <- [0 .. size(idx)-1], Atom a := idx[i], Atom b := idx[i+1], str labelId := "<r.name>_<a>_<b>_step<i>"];
 	
 	return graph(nodes, edges, gap(round(20 * disOpt.scale)), hint("layered"));
 } 
@@ -137,54 +138,42 @@ Figure visualizeModel(Universe universe, Environment model, DisplayOptions disOp
 Figure buildEdgeLabel(Atom from, Atom to, int index, str relName) =
 	box(text(relName), id("<relName>_<from>_<to>_step<index>"), lineWidth(0));
 
-Maybe[Figure] buildAtomNode(Atom a, rel[Atom, str] unaryRelations, rel[Atom, int] intValues, DisplayOptions disOpt) {
-	Figure getLabel() = vcat([text("\<<r>\>", center()) | str r <- unaryRelations[a]] + [text(a, [fontBold(true), center()])] + [text("<i>", [fontItalic(true), center()]) | int i <- intValues[a]]); 
+Figure buildAtomNode(ModelAtom ma, rel[ModelAtom, Relation] unaryRelations, DisplayOptions disOpt) {
+	Figure getLabel() = vcat([text("\<<r.name>\>", center()) | Relation r <- unaryRelations[ma]] + 
+	                         [text(ma.name, [fontBold(true), center()])] + 
+	                         [text("<i>", [fontItalic(true), center()]) | ma has val, intExpr(intLit(int i)) := ma.val]); 
 	
-	if (unaryRelations[a] == {}) { 
-		return nothing();
-	} else {
-		return just(ellipse(getLabel(), fillColor("white"), size(round(50 * disOpt.scale)), id(a), lineWidth(1.5)));
-	}			
+  return ellipse(getLabel(), fillColor("white"), size(round(50 * disOpt.scale)), id(ma.name), lineWidth(1.5));
 }
 
-Figures textualizeModel(Environment model) {
-  iprintln(model);
-
-  if (model == ()) {
+Figures textualizeModel(Model model) {
+  if (model == empty()) {
     return [text(""), text("No more models available", fontBold(true), myLeft())];
   }
   
-  bool indexSort(Index a, Index b ) {
-    for (int i <- [0..size(a)]) {
-      if (a[i] > b[i]) { return false; }
-      else if (a[i] < b[i]) { return true; }  
+  bool vectorSort(VectorAndVar a, VectorAndVar b ) {
+    for (int i <- [0..size(a.vector)]) {
+      if (a.vector[i] > b.vector[i]) { return false; }
+      else if (a.vector[i] < b.vector[i]) { return true; }  
     }
     
     return false;
   }
   
-  str intTheoryValue(str relName, list[Atom] vector, int idx) = " (<i>)"
-    when relName in model, vector in model[relName], ExtensionEncoding ee := model[relName][vector].ext, idx in ee, /\int(int i) := ee[idx];
-  default str intTheoryValue(str _, list[Atom] _, int _) = "";
+  str intTheoryValue(str atom) = " (<i>)" when ModelAtom a <- model.visibleAtoms, a.name == atom, a has theory, a.theory == intTheory(), intExpr(intLit(int i)) := a.val;
+  default str intTheoryValue(str atom) = "";
   
   Figures m = [text("")];
-  list[str] sortedRel = sort(toList(model<0>));
+  list[str] sortedRel = sort(toList({r.name | Relation r <- model.relations}));
   
-  for (str relName <- sortedRel) {
+  for (str relName <- sortedRel, !startsWith(relName, "_"), Relation r <- model.relations, r.name == relName) {
     m += text("<relName>:", fontBold(true), fontItalic(true), myLeft());
-    RelationMatrix rm = model[relName];
-    list[Index] sortedIndices = sort(toList(rm<0>), indexSort);
     
-    bool hasRelations = false;
-
-    for (Index idx <- sortedIndices, rm[idx].relForm == \true()) {
-      m += text("  <intercalate(" -\> ", ["<idx[i]><intTheoryValue(relName, idx, i)>" | int i <- [0..size(idx)]])>", myLeft());
-      hasRelations = true;
+    list[VectorAndVar] sortedIndices = sort(toList(r.relation), vectorSort);
+    
+    for (VectorAndVar idx <- sortedIndices) {
+      m += text("  <intercalate(" -\> ", ["<idx.vector[i]><intTheoryValue(idx.vector[i])>" | int i <- [0..size(idx.vector)]])>", myLeft());
     } 
-    
-    if (!hasRelations) {
-      m += text("  \<none\>", myLeft());
-    }
         
     m += text("");
   }

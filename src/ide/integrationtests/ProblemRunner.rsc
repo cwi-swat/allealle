@@ -50,7 +50,7 @@ void printModel(Model model) {
   
   str getAtomLabel(atomOnly(str name)) = name;
   str getAtomLabel(atomAndTheory(str name, Theory t)) = "<name> (no value. Bug?)";
-  str getAtomLabel(atomTheoryAndValue(str name, intTheory(), intVal(int i))) = "<name> (<i>)";
+  str getAtomLabel(atomTheoryAndValue(str name, intTheory(), intExpr(intLit(int i)))) = "<name> (<i>)";
 
   println("-----------");
   if (size(model.visibleAtoms) == 0) {

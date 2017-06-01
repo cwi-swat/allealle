@@ -53,6 +53,3 @@ data VarDeclaration = varDecl(str name, Expr binding);
 alias Atom = str;
 
 data Theory = relTheory();
-
-data AlleFormula;
-data Expr;

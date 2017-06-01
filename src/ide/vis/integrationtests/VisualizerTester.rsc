@@ -22,7 +22,7 @@ void testPigeonHoleProblem() {
 	Problem p = implodeProblem(problem);
 	ModelFinderResult result = checkInitialSolution(p);
 	
-	if (sat(Environment currentModel, Universe uni, Environment (Theory) nextModel, void () stop) := result) {
+	if (sat(Model currentModel, Universe uni, Model (Theory) nextModel, void () stop) := result) {
 		renderModel(uni, currentModel, nextModel, stop);
 	} else {
 		println("Not satisfiable, can not visualize");
@@ -35,7 +35,7 @@ void translateAndVis(loc problem) {
   Problem p = implodeProblem(problem);
   ModelFinderResult result = checkInitialSolution(p);
   
-  if (sat(Environment currentModel, Universe uni, Environment (Theory) nextModel, void () stop) := result) {
+  if (sat(Model currentModel, Universe uni, Model (Theory) nextModel, void () stop) := result) {
     renderModel(uni, currentModel, nextModel, stop);
   } else {
     println("Not satisfiable, can not visualize");

@@ -46,8 +46,8 @@ Formula \or(Formula a, \and({not(a), *Formula rest})) = \or({\and({not(a), *rest
 Formula \or(\and({not(Formula a), *Formula rest}), a) = \or({\and({not(a), *rest})});
 Formula \or(not(Formula a), \and({a, *Formula rest})) = \or({\and({a, *rest})});
 Formula \or(\and({Formula a, *Formula rest}), not(a)) = \or({\and({a, *rest})});
-Formula \or(Formula a, \and({a, *Formula rest}))      = \or(a, \and(rest));
-Formula \or(\and({Formula a, *Formula rest}), a)      = \or(\and(rest), a);
+//Formula \or(Formula a, \and({a, *Formula rest}))      = \or(a, \and(rest));
+//Formula \or(\and({Formula a, *Formula rest}), a)      = \or(\and(rest), a);
 default Formula \or(Formula a, Formula b)             = \or({a,b});
 
 Formula \and(\true(), Formula b)                      = b;
@@ -64,8 +64,8 @@ Formula \and(Formula a, \or({not(a), *Formula rest})) = \and({a, \or(rest)});
 Formula \and(\or({not(Formula a), *Formula rest}), a) = \and({a, \or(rest)});
 Formula \and(not(Formula a), \or({a, *Formula rest})) = \and({not(a), \or(rest)});
 Formula \and(\or({not(Formula a), *Formula rest}), a) = \and({not(a), \or(rest)});
-Formula \and(Formula a, \or({a, *Formula rest}))      = \or({a, *rest});
-Formula \and(\or({Formula a, *Formula rest}), a)      = \or({a, *rest});
+//Formula \and(Formula a, \or({a, *Formula rest}))      = \or({a, *rest});
+//Formula \and(\or({Formula a, *Formula rest}), a)      = \or({a, *rest});
 default Formula \and(Formula a, Formula b)            = \and({a,b});
 
 Formula \not(not(Formula g)) 					                = g;

@@ -5,11 +5,9 @@ extend theories::AST;
 // Integer theory extensions
 data Theory = intTheory();
 
-data AtomValue = intVal(int val);
-
-data Sort
-	= intSort()
-	;
+data AtomValue 
+  = intExpr(Expr expr)
+  ;
 	
 data AlleFormula
 	= lt(Expr lhsExpr, Expr rhsExpr)

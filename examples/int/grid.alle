@@ -1,22 +1,17 @@
-{a(int),b(int),c(int)}
+{n1,n2,ce1(int),ce2(int),ce3(int),ce4(int)}
 
-N:1[{},{<a>,<b>,<c>}]
-//grid:3[{},{<a,a,a>,<a,a,b>,<a,b,a>,<a,b,b>,<b,a,a>,<b,a,b>,<b,b,a>,<b,b,b>}]
+N:1[{},{<n1>,<n2>}]
+C:1[{},{<ce1>,<ce2>,<ce3>,<ce4>}]
+grid:3[{},{<n1,n1,ce1>,<n1,n2,ce2>,<n2,n1,ce3>,<n2,n2,ce4>}]
 
-//region:2[{<a,a>,<a,b>},{<a,a>,<a,b>}]
+grid in N->N->C
+forall c:C | some grid.c
+forall n1:N, n2:N | some grid[n1][n2]  
 
-//grid in N->N->N 
+C > 0 && C < 3
 
-N > 0
+//forall n1:N, n2:N | not (exists n3:N\n2 | grid[n1][n2] = grid[n1][n3]) // grid[n1][n2] != grid[n1][N\n2]
+//forall n1:N, n2:N, n3:N\n2 | grid[n1][n2] != grid[n1][n3]
 
-//sum(n:N | n+2) = 35
-
-forall n:N| n == N => n + 2 = 35
-forall n1:N, n2:N\n1 | n1++n2 == N => (n1 + 2) + (n2 + 2) = 35
-forall n1:N, n2:N\n1, n3:N\(n1++n2) | n1++n2++n3 == N => (n1 + 2) + ((n2 + 2) + (n3 + 2)) = 35  
-
-//exists n:N | n = 3
-
-//forall x:N, y:N | one grid[x][y]
-
-//forall x1:N, y1:N, x2: N, y2:N | ((x1->y1) ++ (x2->y2)) == region && (no (x1->y1)&(x2->y2)) => (grid[x1][y1]) + (grid[x2][y2]) = 35 
+forall n1:N, n2:N | grid[n1][n2] != grid[n1][N\n2]
+forall n1:N, n2:N | grid[n1][n2] != grid[N\n1][n2]

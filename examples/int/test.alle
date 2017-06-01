@@ -1,8 +1,18 @@
-{a(int),b(int),r1(int),r2(int),r3(int),r4(int),c10(int)=10}
+{a(int),b(int),c(int),d(int)}
 
-N:1[{},{<a>,<b>}]
-R:1[{},{<r1>,<r2>,<r3>,<r4>}]
-nnr:3[{},{<a,a,r1>,<a,b,r2>,<b,a,r3>,<b,b,r4>}]
-C10:1[{<c10>},{<c10>}]
+//N:1[{},{<a>,<b>}]
 
-forall r:{r1:R | (exists n1:N, n2:N | n1->n2->r1 in nnr && r1 = n1 + n2)}, c:C10 | r > c
+A:1[{},{<a>,<b>}]
+B:1[{},{<b>,<c>}]
+C:1[{},{<c>,<d>}]
+
+//(A+B)+C > 26
+
+//A++B++C < 10
+
+A = B
+
+some A
+some B
+
+//exists a:A| a < 0

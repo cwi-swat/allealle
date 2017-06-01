@@ -21,7 +21,7 @@ forall e: Elem | one ring[e]
 // The ring always contains at least two elements
 forall e: Elem | not (e->e in ring)
 
-sum(e: Elem | e) = 9
+//sum(e: Elem | e) = 9
 
 // All elements in the ring have incrementing values starting from the Start ring
 forall e1: Elem, e2: Elem\(e1++Start) | e1->e2 in ring => e2 = e1 + 1

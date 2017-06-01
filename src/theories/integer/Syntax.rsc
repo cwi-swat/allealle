@@ -4,10 +4,8 @@ extend theories::Syntax;
 
 syntax Theory = intTheory: "int";
 
-syntax AtomValue = intVal: IntLit intLit;
-
-syntax Sort
-  = intSort: "int"
+syntax AtomValue 
+  = intExpr: Expr expr
   ;
 
 syntax AlleFormula
