@@ -1,18 +1,21 @@
-{a(int),b(int),c(int),d(int)}
+{a(int),b(int),c(int)}
 
-//N:1[{},{<a>,<b>}]
+//N:1[{},{<a>,<b>,<c>}]
 
-A:1[{},{<a>,<b>}]
-B:1[{},{<b>,<c>}]
-C:1[{},{<c>,<d>}]
+A:1[{},{<a>,<b>,<c>}]
+B:1[{},{<a>,<b>,<c>}]
+//C:1[{},{<c>,<d>}]
+
+//forall a:A, b:B | a > b
+A > B
 
 //(A+B)+C > 26
 
 //A++B++C < 10
 
-A = B
-
-some A
-some B
+//A = B
+//
+//some A
+//some B
 
 //exists a:A| a < 0

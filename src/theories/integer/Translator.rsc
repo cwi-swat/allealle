@@ -65,21 +65,27 @@ Formula translateFormula(RelationMatrix lhs, RelationMatrix rhs, Formula (Formul
   
   Formula result = \true();
   
-  for(Index lhsIdx <- lhs, Index rhsIdx <- rhs) {
-    if (0 notin lhs[lhsIdx].ext || 0 notin rhs[rhsIdx].ext) {
-      throw "Can not perform an integer equation on relations that do not capture integer constraints";
-    }
-    
-    Formula tmpResult = \true();   
-       
-    for (l:form(Formula lhsRelForm, equal(lhsIntVar:intVar(str _), Formula _)) <- lhs[lhsIdx].ext[0], r:form(Formula rhsRelForm, equal(rhsIntVar:intVar(str _), Formula _)) <- rhs[rhsIdx].ext[0]) {
-      tmpResult = \and(tmpResult, operation(lhsIntVar, rhsIntVar));
+  for(Index lhsIdx <- lhs) {
+    set[Formula] ors = {};
+
+    for (Index rhsIdx <- rhs) {
+      if (0 notin lhs[lhsIdx].ext || 0 notin rhs[rhsIdx].ext) {
+        throw "Can not perform an integer equation on relations that do not capture integer constraints";
+      }
       
-      addTheoryConstraint({l});
-      addTheoryConstraint({r}); 
-    } 
-    
-    result = \and(result, \or(\not(lhs[lhsIdx].relForm), \or(\not(rhs[rhsIdx].relForm), tmpResult)));
+      Formula tmpResult = \true();   
+         
+      for (l:form(Formula lhsRelForm, equal(lhsIntVar:intVar(str _), Formula _)) <- lhs[lhsIdx].ext[0], r:form(Formula rhsRelForm, equal(rhsIntVar:intVar(str _), Formula _)) <- rhs[rhsIdx].ext[0]) {
+        tmpResult = \and(tmpResult, operation(lhsIntVar, rhsIntVar));
+        
+        addTheoryConstraint({l});
+        addTheoryConstraint({r}); 
+      }
+      
+      ors += \or(\not(rhs[rhsIdx].relForm), tmpResult); 
+    }
+
+    result = \and(result, \or(\not(lhs[lhsIdx].relForm), \and(ors)));
   }    
   
   return result; 
