@@ -1,6 +1,6 @@
-module theories::relational::tests::translatorTests::DifferenceTester
+module theories::tests::translatorTests::DifferenceTester
 
-extend theories::relational::tests::translatorTests::BaseTester;
+extend theories::tests::translatorTests::BaseTester;
 
 test bool testDifference() {
 	str testProblem = 

@@ -1,6 +1,6 @@
-module theories::relational::tests::translatorTests::SubsetTester
+module theories::tests::translatorTests::SubsetTester
 
-extend theories::relational::tests::translatorTests::BaseTester; 
+extend theories::tests::translatorTests::BaseTester; 
 
 test bool testSubset_inSubset_lowerBoundSet() {
 	str testProblem = 

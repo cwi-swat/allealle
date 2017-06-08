@@ -94,37 +94,37 @@ Formula translateFormula(RelationMatrix lhs, RelationMatrix rhs, Formula (Formul
 @memo
 RelationMatrix translateExpression(intLit(int i), Environment env, Universe uni, void (set[TheoryFormula]) addTheoryConstraint) { throw "Int literal should have been removed from constraints by pre processing"; } 
 
-RelationMatrix translateExpression(multiplication(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni, void (set[TheoryFormula]) addTheoryConstraint) = multiply(lhs, rhs)
-	when RelationMatrix lhs := translateExpression(lhsExpr, env, uni, addTheoryConstraint),
-		   RelationMatrix rhs := translateExpression(rhsExpr, env, uni, addTheoryConstraint);
-
-RelationMatrix translateExpression(division(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni, void (set[TheoryFormula]) addTheoryConstraint) = divide(lhs, rhs)
-  when RelationMatrix lhs := translateExpression(lhsExpr, env, uni, addTheoryConstraint),
-       RelationMatrix rhs := translateExpression(rhsExpr, env, uni, addTheoryConstraint);
-
-RelationMatrix translateExpression(modulo(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni, void (set[TheoryFormula]) addTheoryConstraint) = modd(lhs, rhs)
-  when RelationMatrix lhs := translateExpression(lhsExpr, env, uni, addTheoryConstraint),
-       RelationMatrix rhs := translateExpression(rhsExpr, env, uni, addTheoryConstraint);
-
-RelationMatrix translateExpression(addition(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni, void (set[TheoryFormula]) addTheoryConstraint) = add(lhs, rhs)
-  when RelationMatrix lhs := translateExpression(lhsExpr, env, uni, addTheoryConstraint),
-       RelationMatrix rhs := translateExpression(rhsExpr, env, uni, addTheoryConstraint);
-		 
-RelationMatrix translateExpression(subtraction(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni, void (set[TheoryFormula]) addTheoryConstraint) = substract(lhs, rhs)
-  when RelationMatrix lhs := translateExpression(lhsExpr, env, uni, addTheoryConstraint),
-       RelationMatrix rhs := translateExpression(rhsExpr, env, uni, addTheoryConstraint);
-       
-RelationMatrix translateExpression(sum(list[VarDeclaration] decls, Expr expr), Environment env, Universe uni, void (set[TheoryFormula]) addTheoryConstraint) {
-  
-  RelationMatrix m = translateExpression(decls[0].binding, env, uni, addTheoryConstraint);
-  
-  Formula sumExpr = \int(0);
-  
-  //for (Index idx <- m) {
-  //  if (intTheory() notin m[idx].ext) { throw "Relation does not uniformly refer to integer variables"; }
-  //  
-  //  sumExpr = addition(\ite(m[idx].relForm, m[idx].ext[intTheory()][0], \int(0)), sumExpr);
-  //} 
-  
-  return m; //translateIntConstant(sumExpr, env, uni);    
-}
+//RelationMatrix translateExpression(multiplication(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni, void (set[TheoryFormula]) addTheoryConstraint) = multiply(lhs, rhs)
+//	when RelationMatrix lhs := translateExpression(lhsExpr, env, uni, addTheoryConstraint),
+//		   RelationMatrix rhs := translateExpression(rhsExpr, env, uni, addTheoryConstraint);
+//
+//RelationMatrix translateExpression(division(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni, void (set[TheoryFormula]) addTheoryConstraint) = divide(lhs, rhs)
+//  when RelationMatrix lhs := translateExpression(lhsExpr, env, uni, addTheoryConstraint),
+//       RelationMatrix rhs := translateExpression(rhsExpr, env, uni, addTheoryConstraint);
+//
+//RelationMatrix translateExpression(modulo(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni, void (set[TheoryFormula]) addTheoryConstraint) = modd(lhs, rhs)
+//  when RelationMatrix lhs := translateExpression(lhsExpr, env, uni, addTheoryConstraint),
+//       RelationMatrix rhs := translateExpression(rhsExpr, env, uni, addTheoryConstraint);
+//
+//RelationMatrix translateExpression(addition(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni, void (set[TheoryFormula]) addTheoryConstraint) = add(lhs, rhs)
+//  when RelationMatrix lhs := translateExpression(lhsExpr, env, uni, addTheoryConstraint),
+//       RelationMatrix rhs := translateExpression(rhsExpr, env, uni, addTheoryConstraint);
+//		 
+//RelationMatrix translateExpression(subtraction(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni, void (set[TheoryFormula]) addTheoryConstraint) = substract(lhs, rhs)
+//  when RelationMatrix lhs := translateExpression(lhsExpr, env, uni, addTheoryConstraint),
+//       RelationMatrix rhs := translateExpression(rhsExpr, env, uni, addTheoryConstraint);
+//       
+//RelationMatrix translateExpression(sum(list[VarDeclaration] decls, Expr expr), Environment env, Universe uni, void (set[TheoryFormula]) addTheoryConstraint) {
+//  
+//  RelationMatrix m = translateExpression(decls[0].binding, env, uni, addTheoryConstraint);
+//  
+//  Formula sumExpr = \int(0);
+//  
+//  //for (Index idx <- m) {
+//  //  if (intTheory() notin m[idx].ext) { throw "Relation does not uniformly refer to integer variables"; }
+//  //  
+//  //  sumExpr = addition(\ite(m[idx].relForm, m[idx].ext[intTheory()][0], \int(0)), sumExpr);
+//  //} 
+//  
+//  return m; //translateIntConstant(sumExpr, env, uni);    
+//}

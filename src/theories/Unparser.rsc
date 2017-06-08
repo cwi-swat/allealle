@@ -60,8 +60,6 @@ str unparse(product(Expr lhs, Expr rhs))                                    = "(
 str unparse(ifThenElse(AlleFormula caseForm, Expr thenExpr, Expr elseExpr)) = "(<unparse(caseForm)> ? <unparse(thenExpr)> : <unparse(elseExpr)>)";
 str unparse(comprehension(list[VarDeclaration] decls, AlleFormula form))    = "{<intercalate(", ", [unparse(d) | VarDeclaration d <- decls])> | <unparse(form)>}";
 
-str unparse(emptyExpr()) = "empty??";
-
 default str unparse(Expr exp) { throw "No unparser implemented for \'<exp>\'"; }
 
 str unparse(varDecl(str name, Expr binding)) = "<name>:<unparse(binding)>";

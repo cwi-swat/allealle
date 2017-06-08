@@ -22,7 +22,7 @@ balance1[InitialState] = 100
 balance2[InitialState] = 100
 
 forall s1:State, s2:State | s1->s2 in ordering =>
-  (some balance1[s1] && some balance1[s2] && some balance2[s1] && some balance2[s2] && some amount[s2]) &&
+  //(some balance1[s1] && some balance1[s2] && some balance2[s1] && some balance2[s2] && some amount[s2]) &&
   amount[s2] > 0 &&
   (
     (balance1[s1] > amount[s2] &&
@@ -34,4 +34,4 @@ forall s1:State, s2:State | s1->s2 in ordering =>
      balance2[s2] = (balance2[s1]) - (amount[s2]))    
   )
 
-exists s:State | balance1[s] > 200
+//exists s:State | balance1[s] > 200

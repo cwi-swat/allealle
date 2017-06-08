@@ -6,6 +6,7 @@ import List;
 import IO;
 import Set;
 import util::Maybe;
+import Node;
 
 Problem replaceConstants(Problem problem) {
   list[AtomDecl] constantAtoms = [];
@@ -33,10 +34,11 @@ default Expr replaceConstants(Expr orig, void (str, AtomDecl) update, bool (str)
 
 private alias Env = map[str relName, tuple[list[list[Atom]] maxTuples, Expr domain] info];
 
-data Expr(list[list[Atom]] tuples = [], Expr domain = emptyExpr());
+anno list[list[Atom]] Expr@tuples;
+anno Expr Expr@domain;
 
-Problem transform(Problem problem) {
-  problem = replaceConstants(problem);
+Problem preprocess(Problem problem) {
+  problem = replaceConstantssssssss(problem); 
 
   int lastResult = 0;
   str newResultAtom() { 
@@ -80,41 +82,25 @@ Problem transform(Problem problem) {
   Env env = buildEnv(problem);
 
   list[AlleFormula] transformedForms = [transform(f, env, problem.uni, newResultAtom, addRelation, addConstraint, newRelNr) | AlleFormula f <- problem.constraints];
-  transformedForms = visit(transformedForms) {
-    case Expr expr => expr[tuples = []]
-  }
   
   problem.uni.atoms += newAtoms;
   problem.bounds += newRelations;
   problem.constraints = transformedForms + newConstraints;
   
+  problem = delAnnotations(problem);
+    
   return problem;
 }
 
 data Expr = emptyExpr(); 
 
 Env buildEnv(Problem p) {
-  Expr findDomainConstraint(str relName) {
-    if (subset(variable(relName), p:product(Expr lhs, Expr rhs)) <- p.constraints) {
-      return p;
-    }
-    
-    return emptyExpr();
-  }
-  
   Env env = ();
   
   for (RelationalBound rb <- p.bounds) {
     list[list[Atom]] tuples = [t.atoms | Tuple t <- rb.upperBounds];
     Expr domain = emptyExpr();
-    
-    if (rb.arity == 1) {
-      domain = variable(rb.relName);
-    } else {
-      domain = findDomainConstraint(rb.relName);
-    }
-    
-    env[rb.relName] = <tuples, domain>;
+    env[rb.relName] = <tuples, variable(rb.relName)>;
   }
 
   return env;
@@ -152,7 +138,7 @@ AlleFormula transform(universal(list[VarDeclaration] decls, AlleFormula form), E
   }
   
   decls = top-down visit(decls) {
-    case varDecl(str name, Expr binding) => varDecl(name, e) when Expr e := transform(binding, env, uni, newResultAtom, addRelation, addConstraint, newRelNr), addToEnv(name, e.tuples, e.domain)
+    case varDecl(str name, Expr binding) => varDecl(name, e) when Expr e := transform(binding, env, uni, newResultAtom, addRelation, addConstraint, newRelNr), addToEnv(name, e@tuples, e@domain)
   }
   
   return universal(decls, transform(form, env, uni, newResultAtom, addRelation, addConstraint, newRelNr));
@@ -165,7 +151,7 @@ AlleFormula transform(existential(list[VarDeclaration] decls, AlleFormula form),
   }
   
   decls = top-down visit(decls) {
-    case varDecl(str name, Expr binding) => varDecl(name, e) when Expr e := transform(binding, env, uni, newResultAtom, addRelation, addConstraint, newRelNr), addToEnv(name, e.tuples, e.domain)
+    case varDecl(str name, Expr binding) => varDecl(name, e) when Expr e := transform(binding, env, uni, newResultAtom, addRelation, addConstraint, newRelNr), addToEnv(name, e@tuples, e@domain)
   }
   
   return existential(decls, transform(form, env, uni, newResultAtom, addRelation, addConstraint, newRelNr));
@@ -173,47 +159,78 @@ AlleFormula transform(existential(list[VarDeclaration] decls, AlleFormula form),
 default AlleFormula transform(AlleFormula f, Env env, Universe uni, str () newResultAtom, void (str, list[AtomDecl], list[list[Atom]], list[list[Atom]]) addRelation, void (AlleFormula) addConstraint, str () newRelNr) { throw "transformer for formula \'<f>\' not supported"; }
 
 Expr transform(variable(str name), Env env, Universe uni, str () newResultAtom, void (str, list[AtomDecl], list[list[Atom]], list[list[Atom]]) addRelation, void (AlleFormula) addConstraint, str () newRelNr) 
-  = variable(name, tuples=env[name].maxTuples, domain=env[name].domain);
+  = variable(name)[@tuples=env[name].maxTuples][@domain=env[name].domain];
      
 Expr transform(transpose(Expr expr), Env env, Universe uni, str () newResultAtom, void (str, list[AtomDecl], list[list[Atom]], list[list[Atom]]) addRelation, void (AlleFormula) addConstraint, str () newRelNr) 
-  = transpose(e, tuples=[reverse(t) | list[list[Atom]] r := e.tuples, list[Atom] t <- r], domain = e.domain) 
+  = transpose(e)[@tuples=[reverse(t) | list[list[Atom]] r := e@tuples, list[Atom] t <- r]][@domain = e@domain] 
   when Expr e := transform(expr, env, uni, newResultAtom, addRelation, addConstraint, newRelNr); 
 
 private list[list[Atom]] square(list[list[Atom]] tuples, int i, int sizeOfUniverse, Env env) = tuples when i >= sizeOfUniverse;
-private list[list[Atom]] square(list[list[Atom]] tuples, int i, int sizeOfUniverse, Env env) = \join(n, n) when list[list[Atom]] n := square(tuples, i * 2, sizeOfUniverse, env); 
+private default list[list[Atom]] square(list[list[Atom]] tuples, int i, int sizeOfUniverse, Env env) = dup(\join(tuples, square(tuples, i*2, sizeOfUniverse, env))); 
 
 Expr transform(closure(Expr expr), Env env, Universe uni, str () newResultAtom, void (str, list[AtomDecl], list[list[Atom]], list[list[Atom]]) addRelation, void (AlleFormula) addConstraint, str () newRelNr)
-  = closure(e, tuples=square(e.tuples, size(uni.atoms), size(uni.atoms), env), domain=e.domain) 
+  = closure(e)[@tuples=dup(square(e@tuples, 1, size(uni.atoms), env))][@domain=e@domain] 
   when Expr e := transform(expr, env, uni, newResultAtom, addRelation, addConstraint, newRelNr); 
-//set[Tuple] transform(reflexClosure(Expr expr), Env env) = 
+
+private list[list[Atom]] identity(list[list[Atom]] orig) = [[a | Atom a <- vector, int i <- [0..arity]] | list[Atom] vector <- orig] when int arity := size(getOneFrom(orig));
+
+Expr transform(reflexClosure(Expr expr), Env env, Universe uni, str () newResultAtom, void (str, list[AtomDecl], list[list[Atom]], list[list[Atom]]) addRelation, void (AlleFormula) addConstraint, str () newRelNr)
+  = reflexClosure(e)[@tuples=dup(identity(e@tuples) + square(e@tuples, 1, size(uni.atoms), env))][@domain=e@domain] 
+  when Expr e := transform(expr, env, uni, newResultAtom, addRelation, addConstraint, newRelNr);
+  
 Expr transform(union(Expr lhsExpr, Expr rhsExpr), Env env, Universe uni, str () newResultAtom, void (str, list[AtomDecl], list[list[Atom]], list[list[Atom]]) addRelation, void (AlleFormula) addConstraint, str () newRelNr) 
-  = union(lhs,rhs, tuples = lhs.tuples + rhs.tuples, domain = union(lhs.domain, rhs.domain)) 
+  = union(lhs,rhs)[@tuples = dup(lhs@tuples + rhs@tuples)][@domain = union(lhs@domain, rhs@domain)] 
   when Expr lhs := transform(lhsExpr, env, uni, newResultAtom, addRelation, addConstraint, newRelNr), 
        Expr rhs := transform(rhsExpr, env, uni, newResultAtom, addRelation, addConstraint, newRelNr);  
 
 Expr transform(intersection(Expr lhsExpr, Expr rhsExpr), Env env, Universe uni, str () newResultAtom, void (str, list[AtomDecl], list[list[Atom]], list[list[Atom]]) addRelation, void (AlleFormula) addConstraint, str () newRelNr) 
-  = intersection(lhs, rhs, tuples = lhs.tuples & rhs.tuples, domain = intersection(lhs.domain, rhs.domain)) 
+  = intersection(lhs, rhs)[@tuples = lhs@tuples & rhs@tuples][@domain = intersection(lhs@domain, rhs@domain)] 
   when Expr lhs := transform(lhsExpr, env, uni, newResultAtom, addRelation, addConstraint, newRelNr), 
        Expr rhs := transform(rhsExpr, env, uni, newResultAtom, addRelation, addConstraint, newRelNr);
 
 Expr transform(difference(Expr lhsExpr, Expr rhsExpr), Env env, Universe uni, str () newResultAtom, void (str, list[AtomDecl], list[list[Atom]], list[list[Atom]]) addRelation, void (AlleFormula) addConstraint, str () newRelNr) 
-  = difference(lhs, rhs, tuples = lhs.tuples, domain = lhs.domain) 
+  = difference(lhs, rhs)[@tuples = lhs@tuples][@domain = lhs@domain] 
   when Expr lhs := transform(lhsExpr, env, uni, newResultAtom, addRelation, addConstraint, newRelNr), 
        Expr rhs := transform(rhsExpr, env, uni, newResultAtom, addRelation, addConstraint, newRelNr);
 
 Expr transform(\join(Expr lhsExpr, Expr rhsExpr), Env env, Universe uni, str () newResultAtom, void (str, list[AtomDecl], list[list[Atom]], list[list[Atom]]) addRelation, void (AlleFormula) addConstraint, str () newRelNr) 
-  = \join(lhs, rhs, tuples = \join(lhs.tuples, rhs.tuples), domain = \join(lhs.domain, rhs.domain)) 
+  = \join(lhs, rhs)[@tuples = \join(lhs@tuples, rhs@tuples)][@domain = \join(lhs@domain, rhs@domain)] 
   when Expr lhs := transform(lhsExpr, env, uni, newResultAtom, addRelation, addConstraint, newRelNr), 
        Expr rhs := transform(rhsExpr, env, uni, newResultAtom, addRelation, addConstraint, newRelNr);
 
-list[list[Atom]] \join(list[list[Atom]] lhs, list[list[Atom]] rhs) = [hd + tl | [*Atom hd, Atom last] <- lhs, [Atom first, *Atom tl] <- rhs, last == first];  
+list[list[Atom]] \join(list[list[Atom]] lhs, list[list[Atom]] rhs) = dup([hd + tl | [*Atom hd, Atom last] <- lhs, [Atom first, *Atom tl] <- rhs, last == first]);  
 
 Expr transform(accessorJoin(Expr lhsExpr, Expr rhsExpr), Env env, Universe uni, str () newResultAtom, void (str, list[AtomDecl], list[list[Atom]], list[list[Atom]]) addRelation, void (AlleFormula) addConstraint, str () newRelNr) 
   = transform(\join(rhsExpr, lhsExpr), env, uni, newResultAtom, addRelation, addConstraint, newRelNr);
 
 Expr transform(product(Expr lhsExpr, Expr rhsExpr), Env env, Universe uni, str () newResultAtom, void (str, list[AtomDecl], list[list[Atom]], list[list[Atom]]) addRelation, void (AlleFormula) addConstraint, str () newRelNr) 
-  = product(lhs, rhs, tuples = [l + r | list[Atom] l <- lhs.tuples, list[Atom] r <- rhs.tuples], domain = product(lhs.domain, rhs.domain))
+  = product(lhs, rhs)[@tuples = dup([l + r | list[Atom] l <- lhs@tuples, list[Atom] r <- rhs@tuples])][@domain = product(lhs@domain, rhs@domain)]
   when Expr lhs := transform(lhsExpr, env, uni, newResultAtom, addRelation, addConstraint, newRelNr),
        Expr rhs := transform(rhsExpr, env, uni, newResultAtom, addRelation, addConstraint, newRelNr);
+
+Expr transform(ifThenElse(AlleFormula caseForm, Expr thenExpr, Expr elseExpr), Env env, Universe uni, str () newResultAtom, void (str, list[AtomDecl], list[list[Atom]], list[list[Atom]]) addRelation, void (AlleFormula) addConstraint, str () newRelNr) 
+  = ifThenElse(transform(caseForm, env, uni, newResultAtom, addRelation, addConstraint, newRelNr), th, el)[@tuples=dup(th@tuples + el@tuples)][@domain=union(th@domain, el@domain)]
+  when Expr th := transform(thenExpr, env, uni, newResultAtom, addRelation, addConstraint, newRelNr),
+       Expr el := transform(elseExpr, env, uni, newResultAtom, addRelation, addConstraint, newRelNr); 
+
+Expr transform(comprehension(list[VarDeclaration] decls, AlleFormula form), Env env, Universe uni, str () newResultAtom, void (str, list[AtomDecl], list[list[Atom]], list[list[Atom]]) addRelation, void (AlleFormula) addConstraint, str () newRelNr) {
+  list[list[Atom]] compTuples = [];
+  Expr compDomain = emptyExpr();
+  
+  bool addToEnv(str name, list[list[Atom]] tuples, Expr domain) {
+    env += (name : <tuples, domain>);
+  
+    compTuples += tuples;
+    compDomain = (emptyExpr() := compDomain) ? domain : product(compDomain, domain);
+    return true;
+  }
+  
+  decls = top-down visit(decls) {
+    case varDecl(str name, Expr binding) => varDecl(name, e) when Expr e := transform(binding, env, uni, newResultAtom, addRelation, addConstraint, newRelNr), addToEnv(name, e@tuples, e@domain)
+  }
+  
+  return comprehension(decls, transform(form, env, uni, newResultAtom, addRelation, addConstraint, newRelNr))[@tuples=compTuples][@domain=compDomain];
+}
+
 
 default Expr transform(Expr expr, Env env, Universe uni, str () newResultAtom, void (str, list[AtomDecl], list[list[Atom]], list[list[Atom]]) addRelation, void (AlleFormula) addConstraint, str () newRelNr) { throw "Unable to transform expression \'<expr>\'"; }

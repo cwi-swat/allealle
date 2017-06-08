@@ -28,7 +28,7 @@ forall s:State | (some s.ordering || some ordering.s) && some s.accountInState &
 
 
 // Initial state
-balance[accountInState[InitialState]] = 20
+balance[accountInState[InitialState]] = 0
 
 // Transition function
 forall s1: State, s2:State | s1 -> s2 in ordering => 
@@ -40,4 +40,4 @@ forall s1: State, s2:State | s1 -> s2 in ordering =>
   )
  
 // Goal state 
-exists s:State | balance[accountInState[s]] = 0
+exists s:State | balance[accountInState[s]] = 20

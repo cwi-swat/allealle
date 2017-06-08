@@ -1,6 +1,6 @@
-module theories::relational::tests::translatorTests::ComprehensionTester
+module theories::tests::translatorTests::ComprehensionTester
 
-extend theories::relational::tests::translatorTests::BaseTester;
+extend theories::tests::translatorTests::BaseTester;
 
 test bool testSmallComprehension() {
 	str testProblem = 

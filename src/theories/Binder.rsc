@@ -60,7 +60,9 @@ RelationMatrix reflexiveTransitiveClosure(RelationMatrix m, Universe uni, void (
 default RelationMatrix reflexiveTransitiveClosure(RelationMatrix m, Universe uni, void (set[TheoryFormula]) addTheoryConstraint) { throw "Can not perform a reflexive transitive closure on a non-binary relation"; }
 
 RelationMatrix disjunction(RelationMatrix lhs, RelationMatrix rhs) = or(lhs, rhs) when sameArity(lhs, rhs);
+default RelationMatrix disjunction(RelationMatrix lhs, RelationMatrix rhs) { throw "Relations to disjunct must be of same arity"; }
 RelationMatrix conjunction(RelationMatrix lhs, RelationMatrix rhs) = and(lhs, rhs) when sameArity(lhs, rhs);
+default RelationMatrix conjunction(RelationMatrix lhs, RelationMatrix rhs) { throw "Relations to conjunct must be of same arity"; }
 
 RelationMatrix difference(RelationMatrix lhs, RelationMatrix rhs) = 
   (idx:<and(lhs[idx].relForm, rhsVal), lhs[idx].ext> | Index idx <- lhs, Formula rhsVal := ((idx in rhs) ? not(rhs[idx].relForm) : \true())) 

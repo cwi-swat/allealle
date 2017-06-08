@@ -1,8 +1,8 @@
-{p1,p2,p3,l1(int),l2(int),l3(int),l4(int),l5(int),l6(int)}
+{p1,p2,p3,l1(int),l2(int),l3(int)}
  
 Point:1       [{<p1>,<p2>,<p3>},{<p1>,<p2>,<p3>}]
 Length:1      [{},{<l1>,<l2>,<l3>,<l4>,<l5>,<l6>}]
-side:3        [{},{<p1,p2,l1>,<p1,p3,l2>,<p2,p3,l3>,<p2,p1,l4>,<p3,p1,l5>,<p3,p2,l6>}]
+side:3        [{},{<p1,p2,l1>,<p1,p3,l2>,<p2,p3,l3>,<p2,p1,l1>,<p3,p1,l2>,<p3,p2,l3>}]
 
 side in Point -> Point -> Length
 
@@ -15,8 +15,7 @@ Length > 2 && Length < 10
 
 forall l:Length | some side.l
 
-//exists p1:Point, p2:Point\p1, p3:Point\(p1++p2) | some side[p1][p2] && some side[p2][p3] && some side[p3][p1] && (side[p3][p1]) * (side[p3][p1]) = (side[p1][p2]) * (side[p1][p2]) + (side[p2][p3]) * (side[p2][p3])
+exists p1:Point, p2:Point\p1, p3:Point\(p1++p2) | some (side[p3][p1]) && some (side[p1][p2]) && some (side[p2][p3]) && (side[p3][p1]) * (side[p3][p1]) = (side[p1][p2]) * (side[p1][p2]) + (side[p2][p3]) * (side[p2][p3])
 
-exists a:Length,b:Length\a,c:Length\(a++b) | c*c = a*a + b*b
+//exists a:Length,b:Length\a,c:Length\(a++b) | c*c = a*a + b*b
 
-//exists a:Length, b:Length\a | (a+a = b) && (a != b)

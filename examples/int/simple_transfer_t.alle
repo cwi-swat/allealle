@@ -3,35 +3,39 @@
 State:1         [{<s0>},{<s0>,<s1>,<s2>}]
 InitialState:1  [{<s0>},{<s0>}]
 ordering:2      [{},{<s0,s1>,<s1,s2>}]
-Balance:1       [{<b1_1>,<b2_1>},{<b1_1>,<b1_2>,<b1_3>,<b2_1>,<b2_2>,<b2_3>}]
-balance1:2      [{<s0,b1_1>},{<s0,b1_1>,<s1,b1_2>,<s2,b1_3>}]
-balance2:2      [{<s0,b2_1>},{<s0,b2_1>,<s1,b2_2>,<s2,b2_3>}]
+Balance:1       [{},{<b1_1>,<b1_2>,<b1_3>,<b2_1>,<b2_2>,<b2_3>}]
+balance1:2      [{},{<s0,b1_1>,<s1,b1_2>,<s2,b1_3>}]
+balance2:2      [{},{<s0,b2_1>,<s1,b2_2>,<s2,b2_3>}]
 Amount:1        [{},{<a1>,<a2>}]
-amount:2        [{},{<s1,a1>,<s2,a2>}]
+am:2            [{},{<s1,a1>,<s2,a2>}]
 
 ordering in State->State
 balance1 in State->Balance
 balance2 in State->Balance
-amount   in State->Amount
+am       in State->Amount
+InitialState in State
 
-forall s:State\InitialState | some ordering.s
+forall s:State\InitialState | some ordering.s && some am[s] 
 forall b:Balance | some balance1.b || some balance2.b
-forall a:Amount | some amount.a
+forall a:Amount | some am.a
+
+forall s:State | some balance1[s] && some balance2[s]
 
 balance1[InitialState] = 100
 balance2[InitialState] = 100
 
 forall s1:State, s2:State | s1->s2 in ordering =>
-  (some balance1[s1] && some balance1[s2] && some balance2[s1] && some balance2[s2] && some amount[s2]) &&
-  amount[s2] > 0 &&
+  am[s2] > 0 &&
   (
-    (balance1[s1] > amount[s2] &&
-     balance1[s2] = (balance1[s1]) - (amount[s2]) &&
-     balance2[s2] = (balance2[s2]) + (amount[s2])) 
+    (balance1[s1] > am[s2] &&
+     balance1[s2] = (balance1[s1]) - 10 &&
+     balance2[s2] = (balance2[s2]) + (am[s2])) 
     ||
-    (balance2[s1] > amount[s2] &&
-     balance1[s2] = (balance1[s1]) + (amount[s2]) &&
-     balance2[s2] = (balance2[s1]) - (amount[s2]))    
+    (balance2[s1] > am[s2] &&
+     balance1[s2] = (balance1[s1]) + (am[s2]) &&
+     balance2[s2] = (balance2[s1]) - (am[s2]))    
   )
 
-exists s:State | balance1[s] > 200
+exists s:State | balance1[s] = 199
+
+//some am

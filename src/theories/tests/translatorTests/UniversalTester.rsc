@@ -1,6 +1,6 @@
-module theories::relational::tests::translatorTests::UniversalTester
+module theories::tests::translatorTests::UniversalTester
 
-extend theories::relational::tests::translatorTests::BaseTester;
+extend theories::tests::translatorTests::BaseTester;
 
 test bool testUniversal_onePigeonAndHole_pigeonIsAlwaysThere() {
 	str testProblem = 

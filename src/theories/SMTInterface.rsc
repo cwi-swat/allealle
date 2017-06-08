@@ -82,7 +82,6 @@ str compileAssert(Formula f) = "\n(assert
                                ')"; 
 
 SMTModel getValues(str smtResult, set[SMTVar] vars) {
-  println(smtResult);
   Values foundValues = [Values]"<smtResult>"; 
   map[str,Value] rawSmtVals = (() | it + ("<varAndVal.name>":varAndVal.val) | VarAndValue varAndVal <- foundValues.values);
 
@@ -139,8 +138,6 @@ Model constructModel(SMTModel smtModel, Universe uni, Environment env) {
     case atomAndTheory(Atom a, Theory t): atomsInModel += varAtom(a, t, findAtomValue(a, t, smtModel));
     case atomTheoryAndValue(Atom a, Theory t, AtomValue val): atomsInModel += fixedAtom(a, t, val);
   };   
-
-  iprintln(atomsInModel);
 
   return model(atomsInModel, relations);
 } 

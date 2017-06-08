@@ -28,8 +28,11 @@ data ModelFinderResult
 	;
 
 ModelFinderResult checkInitialSolution(Problem problem) {
-	println("Preprocessing problem (replacing constants with unary, singelton relations)");
-	Problem augmentedProblem = transform(problem);
+	print("Preprocessing problem (replacing constants, replacing arithmetic expressions)...");
+	tuple[Problem problem, int time] pp = benchmark(preprocess, problem);
+	print("done, took: <(pp.time/1000000)> ms\n");
+	
+	Problem augmentedProblem = pp.problem;	
 	
 	writeFile(|project://allealle/examples/last_transformed.alle|, unparse(augmentedProblem));
 	

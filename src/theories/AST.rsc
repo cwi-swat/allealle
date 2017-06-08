@@ -8,7 +8,7 @@ data AtomDecl
   = atomOnly(Atom atom)
   | atomAndTheory(Atom atom, Theory theory)
   | atomTheoryAndValue(Atom atom, Theory theory, AtomValue val)
-  ;
+  ; 
 
 data AtomValue = none();
 

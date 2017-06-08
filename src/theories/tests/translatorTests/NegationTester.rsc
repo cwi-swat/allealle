@@ -1,6 +1,6 @@
-module theories::relational::tests::translatorTests::NegationTester
+module theories::tests::translatorTests::NegationTester
 
-extend theories::relational::tests::translatorTests::BaseTester;
+extend theories::tests::translatorTests::BaseTester;
 
 test bool testNegation_noLowerBounds() {
 	str testProblem = 

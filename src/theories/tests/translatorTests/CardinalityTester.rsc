@@ -1,6 +1,6 @@
-module theories::relational::tests::translatorTests::CardinalityTester
+module theories::tests::translatorTests::CardinalityTester
 
-extend theories::relational::tests::translatorTests::BaseTester;
+extend theories::tests::translatorTests::BaseTester;
 
 test bool testCardinality_some_noLowerBounds() {
 	str testProblem = 

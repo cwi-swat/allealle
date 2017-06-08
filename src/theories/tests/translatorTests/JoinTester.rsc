@@ -1,6 +1,6 @@
-module theories::relational::tests::translatorTests::JoinTester
+module theories::tests::translatorTests::JoinTester
 
-extend theories::relational::tests::translatorTests::BaseTester;
+extend theories::tests::translatorTests::BaseTester;
 
 test bool testJoin_AlwaysOnePigeon_MustBeOneNest() {
 	str testProblem = 

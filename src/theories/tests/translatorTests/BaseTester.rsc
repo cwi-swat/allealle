@@ -1,7 +1,8 @@
-module theories::relational::tests::translatorTests::BaseTester
+module theories::tests::translatorTests::BaseTester
+
+extend theories::Translator;
 
 import ide::Imploder;
-extend theories::relational::Translator;
 
 import theories::AST;
 import theories::Binder;
@@ -18,4 +19,4 @@ Formula translate(str problem) {
   Formula result = translate(p, env);  
 
 	return result;
-}
+}   
