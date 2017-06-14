@@ -70,10 +70,10 @@ void renderModel(Universe universe, Model model, Model (Theory) nextModel, void 
 				vcat([
 					text("Visualization options:", fontBold(true)),
 					box(
-						hcat([checkbox(name, name notin disOpt.filteredEdges, void (bool checked) {
+						hcat([checkbox(edgeName, edgeName notin disOpt.filteredEdges, void (bool checked) {
 							disOpt = options(scale = disOpt.scale, filteredEdges = !checked ? disOpt.filteredEdges + edgeName : disOpt.filteredEdges - edgeName); 
 							r();
-							}) | str name <- getNaryRelations(model), str edgeName := name]),
+							}) | str edgeName <- getNaryRelations(model), !startsWith(edgeName, "_")]),
 						hshrink(0.98), center()),
 					text("Zoom: <precision(disOpt.scale, 2)>"),
 					scaleSlider(int () { return  0; }, int () { return 100; }, int () { return round(disOpt.scale * 50.); }, void (int cur) {
@@ -124,10 +124,10 @@ Figure visualizeModel(Universe universe, Model model, DisplayOptions disOpt) {
   bool contains(Atom a, Relation r) = true when VectorAndVar vv <- r.relation, a in vv.vector;
   default bool constains(Atom a, Relation r) = false; 
 
-	rel[ModelAtom, Relation] unaryRels = {<ma, r> | ModelAtom ma <- model.visibleAtoms, r:unary(str relName, set[VectorAndVar] relation, bool inBase) <- model.relations, ma.name == relName, contains(ma.name, r)};
-	rel[list[Atom], Relation] naryRels = {<vv.vector, r> | r:nary(str name, set[VectorAndVar] relation, bool inBase) <- model.relations, VectorAndVar vv <- relation};
+	rel[ModelAtom, Relation] unaryRels = {<ma, r> | ModelAtom ma <- model.visibleAtoms, !startsWith(ma.name, "_"), r:unary(str relName, set[VectorAndVar] relation, bool inBase) <- model.relations, ma.name == relName, contains(ma.name, r)};
+	rel[list[Atom], Relation] naryRels = {<vv.vector, r> | r:nary(str name, set[VectorAndVar] relation, bool inBase) <- model.relations, !startsWith(name, "_"), name notin disOpt.filteredEdges, VectorAndVar vv <- relation};
 
-	Figures nodes = [buildAtomNode(ma, unaryRels, disOpt) | ModelAtom ma <- model.visibleAtoms];
+	Figures nodes = [buildAtomNode(ma, unaryRels, disOpt) | ModelAtom ma <- model.visibleAtoms, !startsWith(ma.name, "_")];
 	nodes += [buildEdgeLabel(a,b,i,r.name) | <list[Atom] idx, Relation r> <- naryRels, int i <- [0 .. size(idx)-1], Atom a := idx[i], Atom b := idx[i+1]];
   
 	Edges edges = [edge(a, labelId), edge(labelId, b, triangle(round(10 * disOpt.scale), fillColor("black"))) | <list[Atom] idx, Relation r> <- naryRels, int i <- [0 .. size(idx)-1], Atom a := idx[i], Atom b := idx[i+1], str labelId := "<r.name>_<a>_<b>_step<i>"];

@@ -1,14 +1,14 @@
-{p1,p2,p3,n1(int),n2(int),n3(int)}
+{p1,p2,p3,p4,n1(int),n2(int),n3(int),n4(int)}
 
-Person:1	[{},{<p1>,<p2>,<p3>}]
-Adam:1		[{<p1>},{<p1>}]
-parent:2	[{},{<p1,p2>,<p1,p3>,<p2,p1>,<p2,p3>,<p3,p1>,<p3,p2>}]
-anchestor:2 [{},{<p1,p2>,<p1,p3>,<p2,p1>,<p2,p3>,<p3,p1>,<p3,p2>}]
+Person:1  [{},{<p1>,<p2>,<p3>,<p4>}]
+Adam:1    [{<p1>},{<p1>}]
+parent:2  [{},{<p1,p2>,<p1,p3>,<p1,p4>,<p2,p3>,<p2,p4>,<p3,p2>,<p3,p4>,<p4,p2>,<p4,p3>}]
+anchestor:2 [{},{<p1,p2>,<p1,p3>,<p1,p4>,<p2,p3>,<p2,p4>,<p3,p2>,<p3,p4>,<p4,p2>,<p4,p3>}]
 
-Num:1 [{},{<n1>,<n2>,<n3>}]
-age:2 [{},{<p1,n1>,<p2,n2>,<p3,n3>}]
+Num:1 [{},{<n1>,<n2>,<n3>,<n4>}]
+age:2 [{},{<p1,n1>,<p2,n2>,<p3,n3>,<p4,n4>}]
 
-twin:2 [{},{<p1,p2>,<p2,p1>,<p1,p3>,<p3,p1>,<p2,p3>,<p3,p2>}]
+twin:2 [{},{<p2,p3>,<p3,p2>,<p2,p4>,<p4,p2>,<p3,p4>,<p4,p3>}]
 
 Adam in Person
 parent in Person -> Person

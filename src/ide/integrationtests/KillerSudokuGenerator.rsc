@@ -3,7 +3,8 @@ module ide::integrationtests::KillerSudokuGenerator
 import IO;
 import List;
 
- 
+
+// http://www.killersudoku.nl/killer.php?ster=1&nr=1&grootte=2 
 void generateEasyKillerSudoku() { 
   list[Region] regions = [<[<1,1>,<1,2>], 10>,
                           <[<1,3>,<1,4>,<1,5>], 22>,
@@ -49,9 +50,20 @@ void generateEasyKillerSudoku() {
                           <[<9,5>,<9,6>], 11>
                           ];
   
-  // http://www.killersudoku.nl/killer.php?ster=1&nr=1&grootte=2
   generateKillerSudoku(regions, [], |project://allealle/examples/int|);
 }   
+
+//http://www.killersudoku.nl/killer.php?ster=4&nr=1&grootte=3
+void generateHardKillerSudoku() {
+  list[Region] regions = [<[<1,1>,<1,2>,<2,1>,<2,2>], 25>,
+                          <[<1,3>,<2,3>], 8>,
+                          <[<1,4>,<1,5>], 7>,
+                          <[<1,6>,<2,6>], 6>,
+                          <[<1,7>,<2,7>,<1,8>,<1,9>,<2,9>], 30>,
+                          <[<3,1>,<4,1>,<4,2>], 8>,
+                          <[<3,2>,<3,3>,<4,3>], 16>,
+                          <[<3,4>,<4,4>,<5,4>], 18>];
+}
 
 alias Region = tuple[lrel[int,int] cells, int total];
 

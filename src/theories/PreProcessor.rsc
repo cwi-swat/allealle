@@ -171,7 +171,7 @@ Expr transform(closure(Expr expr), Env env, Universe uni, str () newResultAtom, 
 private list[list[Atom]] identity(list[list[Atom]] orig) = [[a | Atom a <- vector, int i <- [0..arity]] | list[Atom] vector <- orig] when int arity := size(getOneFrom(orig));
 
 Expr transform(reflexClosure(Expr expr), Env env, Universe uni, str () newResultAtom, void (str, list[AtomDecl], list[list[Atom]], list[list[Atom]]) addRelation, void (AlleFormula) addConstraint, str () newRelNr)
-  = reflexClosure(e)[@minTuples=dup(identity(e@minTuples) + square(e@minTuples, 1, size(uni.atoms), env))][@maxTuples=dup(identity(e@maxTuples) + square(e@maxTuples, 1, size(uni.atoms), env))][@domain=e@domain] 
+  = reflexClosure(e)[@minTuples=dup(identity(e@maxTuples) + square(e@minTuples, 1, size(uni.atoms), env))][@maxTuples=dup(identity(e@maxTuples) + square(e@maxTuples, 1, size(uni.atoms), env))][@domain=e@domain] 
   when Expr e := transform(expr, env, uni, newResultAtom, addRelation, addConstraint, newRelNr);
   
 Expr transform(union(Expr lhsExpr, Expr rhsExpr), Env env, Universe uni, str () newResultAtom, void (str, list[AtomDecl], list[list[Atom]], list[list[Atom]]) addRelation, void (AlleFormula) addConstraint, str () newRelNr) 

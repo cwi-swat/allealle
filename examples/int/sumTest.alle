@@ -1,4 +1,4 @@
-{a(int),b(int),c(int), _sr(int)}
+{a(int),b(int),c(int)}
 
 A:1 [{<a>}, {<a>,<b>,<c>}]
 
@@ -6,4 +6,4 @@ A > 0
 
 sum(A) = 10
 
-#A = 3
+#A > 1

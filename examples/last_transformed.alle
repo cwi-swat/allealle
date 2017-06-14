@@ -1,34 +1,45 @@
-{a(int),b(int),c(int),_sr(int),_c0(int)=0,_r1(int),_c10(int)=10,_r2(int),_c3(int)=3,_r3(int)=(a + a),_r4(int)=(a + b),_r5(int)=(a + c),_r6(int)=(b + b),_r7(int)=(b + c),_r8(int)=(c + c),_r9(int)=(a + a),_r10(int)=(a + b),_r11(int)=(a + c),_r12(int)=(b + b),_r13(int)=(b + c),_r14(int)=(c + c),_r15(int)=(a + _r9),_r16(int)=(a + _r10),_r17(int)=(a + _r11),_r18(int)=(a + _r12),_r19(int)=(a + _r13),_r20(int)=(a + _r14),_r21(int)=(b + _r9),_r22(int)=(b + _r10),_r23(int)=(b + _r11),_r24(int)=(b + _r12),_r25(int)=(b + _r13),_r26(int)=(b + _r14),_r27(int)=(c + _r9),_r28(int)=(c + _r10),_r29(int)=(c + _r11),_r30(int)=(c + _r12),_r31(int)=(c + _r13),_r32(int)=(c + _r14),_c1(int)=1,_c2(int)=2}
+{s0,s1,s2,b1_1(int),b1_2(int),b1_3(int),b2_1(int),b2_2(int),b2_3(int),a1(int),a2(int),_c100(int)=100,_c0(int)=0,_r1(int)=(b1_1 + (-a1)),_r2(int)=(b1_1 + (-a2)),_r3(int)=(b1_2 + (-a1)),_r4(int)=(b1_2 + (-a2)),_r5(int)=(b1_3 + (-a1)),_r6(int)=(b1_3 + (-a2)),_r7(int)=(b2_1 + a1),_r8(int)=(b2_1 + a2),_r9(int)=(b2_2 + a1),_r10(int)=(b2_2 + a2),_r11(int)=(b2_3 + a1),_r12(int)=(b2_3 + a2),_r13(int)=(b1_1 + a1),_r14(int)=(b1_1 + a2),_r15(int)=(b1_2 + a1),_r16(int)=(b1_2 + a2),_r17(int)=(b1_3 + a1),_r18(int)=(b1_3 + a2),_r19(int)=(b2_1 + (-a1)),_r20(int)=(b2_1 + (-a2)),_r21(int)=(b2_2 + (-a1)),_r22(int)=(b2_2 + (-a2)),_r23(int)=(b2_3 + (-a1)),_r24(int)=(b2_3 + (-a2)),_c199(int)=199}
 
-A:1 [{<a>}, {<a>,<b>,<c>}]
+State:1 [{<s0>}, {<s0>,<s1>,<s2>}]
+InitialState:1 [{<s0>}, {<s0>}]
+ordering:2 [{}, {<s0,s1>,<s1,s2>}]
+Balance:1 [{}, {<b1_1>,<b1_2>,<b1_3>,<b2_1>,<b2_2>,<b2_3>}]
+balance1:2 [{}, {<s0,b1_1>,<s1,b1_2>,<s2,b1_3>}]
+balance2:2 [{}, {<s0,b2_1>,<s1,b2_2>,<s2,b2_3>}]
+Amount:1 [{}, {<a1>,<a2>}]
+am:2 [{}, {<s1,a1>,<s2,a2>}]
+_C100:1 [{<_c100>,<_c100>}, {<_c100>,<_c100>}]
 _C0:1 [{<_c0>}, {<_c0>}]
-_sum_1:1 [{<_r1>}, {<_r1>}]
-_C10:1 [{<_c10>}, {<_c10>}]
-_car_2:1 [{<_r2>}, {<_r2>}]
-_R_3:1 [{<_r3>,<_r4>,<_r5>,<_r6>,<_r7>,<_r8>}, {<_r3>,<_r4>,<_r5>,<_r6>,<_r7>,<_r8>}]
-_plus_3:3 [{}, {<a,a,_r3>,<a,b,_r4>,<a,c,_r5>,<b,b,_r6>,<b,c,_r7>,<c,c,_r8>}]
-_R_4:1 [{<_r9>,<_r10>,<_r11>,<_r12>,<_r13>,<_r14>}, {<_r9>,<_r10>,<_r11>,<_r12>,<_r13>,<_r14>}]
-_plus_4:3 [{}, {<a,a,_r9>,<a,b,_r10>,<a,c,_r11>,<b,b,_r12>,<b,c,_r13>,<c,c,_r14>}]
-_R_5:1 [{<_r15>,<_r16>,<_r17>,<_r18>,<_r19>,<_r20>,<_r21>,<_r22>,<_r23>,<_r24>,<_r25>,<_r26>,<_r27>,<_r28>,<_r29>,<_r30>,<_r31>,<_r32>}, {<_r15>,<_r16>,<_r17>,<_r18>,<_r19>,<_r20>,<_r21>,<_r22>,<_r23>,<_r24>,<_r25>,<_r26>,<_r27>,<_r28>,<_r29>,<_r30>,<_r31>,<_r32>}]
-_plus_5:3 [{}, {<a,_r9,_r15>,<a,_r10,_r16>,<a,_r11,_r17>,<a,_r12,_r18>,<a,_r13,_r19>,<a,_r14,_r20>,<b,_r9,_r21>,<b,_r10,_r22>,<b,_r11,_r23>,<b,_r12,_r24>,<b,_r13,_r25>,<b,_r14,_r26>,<c,_r9,_r27>,<c,_r10,_r28>,<c,_r11,_r29>,<c,_r12,_r30>,<c,_r13,_r31>,<c,_r14,_r32>}]
-_C1:1 [{<_c1>}, {<_c1>}]
-_C2:1 [{<_c2>}, {<_c2>}]
-_C3:1 [{<_c3>,<_c3>}, {<_c3>,<_c3>}]
+_R_1:1 [{<_r1>,<_r2>,<_r3>,<_r4>,<_r5>,<_r6>}, {<_r1>,<_r2>,<_r3>,<_r4>,<_r5>,<_r6>}]
+_min_1:3 [{}, {<b1_1,a1,_r1>,<b1_1,a2,_r2>,<b1_2,a1,_r3>,<b1_2,a2,_r4>,<b1_3,a1,_r5>,<b1_3,a2,_r6>}]
+_R_2:1 [{<_r7>,<_r8>,<_r9>,<_r10>,<_r11>,<_r12>}, {<_r7>,<_r8>,<_r9>,<_r10>,<_r11>,<_r12>}]
+_plus_2:3 [{}, {<b2_1,a1,_r7>,<b2_1,a2,_r8>,<b2_2,a1,_r9>,<b2_2,a2,_r10>,<b2_3,a1,_r11>,<b2_3,a2,_r12>}]
+_R_3:1 [{<_r13>,<_r14>,<_r15>,<_r16>,<_r17>,<_r18>}, {<_r13>,<_r14>,<_r15>,<_r16>,<_r17>,<_r18>}]
+_plus_3:3 [{}, {<b1_1,a1,_r13>,<b1_1,a2,_r14>,<b1_2,a1,_r15>,<b1_2,a2,_r16>,<b1_3,a1,_r17>,<b1_3,a2,_r18>}]
+_R_4:1 [{<_r19>,<_r20>,<_r21>,<_r22>,<_r23>,<_r24>}, {<_r19>,<_r20>,<_r21>,<_r22>,<_r23>,<_r24>}]
+_min_4:3 [{}, {<b2_1,a1,_r19>,<b2_1,a2,_r20>,<b2_2,a1,_r21>,<b2_2,a2,_r22>,<b2_3,a1,_r23>,<b2_3,a2,_r24>}]
+_C199:1 [{<_c199>}, {<_c199>}]
 
 
-(A > _C0)
-(_sum_1 = _C10)
-(_car_2 = _C3)
-(forall r0:A | ((no (A\r0)) => (r0 = _sum_1)))
-(forall r0:A, r1:(A\r0) | ((no (A\(r1++r0))) => ((r0.(r1._plus_3)) = _sum_1)))
-(forall r0:A, r1:(A\r0), r2:(A\(r1++r0)) | ((no (A\(r2++(r1++r0)))) => (((r0.(r1._plus_4)).(r2._plus_5)) = _sum_1)))
-(forall r0:A | ((no (A\r0)) => (_car_2 = _C1)))
-(forall r0:A, r1:(A\r0) | ((no (A\(r1++r0))) => (_car_2 = _C2)))
-(forall r0:A, r1:(A\r0), r2:(A\(r1++r0)) | ((no (A\(r2++(r1++r0)))) => (_car_2 = _C3)))
-(_plus_3 in ((A->A)->_R_3))
-(forall a:A, b:A | ((some (b.(a._plus_3))) || (some (a.(b._plus_3)))))
-(_plus_4 in ((A->A)->_R_4))
-(forall a:A, b:A | ((some (b.(a._plus_4))) || (some (a.(b._plus_4)))))
-(_plus_5 in ((A->_R_4)->_R_5))
-(forall a:A, b:_R_4 | ((some (b.(a._plus_5))) || (some (a.(b._plus_5)))))
+(ordering in (State->State))
+(balance1 in (State->Balance))
+(balance2 in (State->Balance))
+(am in (State->Amount))
+(InitialState in State)
+(forall s:(State\InitialState) | ((some (ordering.s)) && (some (s.am))))
+(forall b:Balance | ((some (balance1.b)) || (some (balance2.b))))
+(forall a:Amount | (some (am.a)))
+(forall s:State | ((some (s.balance1)) && (some (s.balance2))))
+((InitialState.balance1) = _C100)
+((InitialState.balance2) = _C100)
+(forall s1:State, s2:State | (((s1->s2) in ordering) => (((s2.am) > _C0) && (((((s1.balance1) > (s2.am)) && ((s2.balance1) = ((s2.am).((s1.balance1)._min_1)))) && ((s2.balance2) = ((s2.am).((s2.balance2)._plus_2)))) || ((((s1.balance2) > (s2.am)) && ((s2.balance1) = ((s2.am).((s1.balance1)._plus_3)))) && ((s2.balance2) = ((s2.am).((s1.balance2)._min_4))))))))
+(exists s:State | ((s.balance1) = _C199))
+(_min_1 in (((State.balance1)->(State.am))->_R_1))
+(forall a:(State.balance1), b:(State.am) | ((some (b.(a._min_1))) || (some (a.(b._min_1)))))
+(_plus_2 in (((State.balance2)->(State.am))->_R_2))
+(forall a:(State.balance2), b:(State.am) | ((some (b.(a._plus_2))) || (some (a.(b._plus_2)))))
+(_plus_3 in (((State.balance1)->(State.am))->_R_3))
+(forall a:(State.balance1), b:(State.am) | ((some (b.(a._plus_3))) || (some (a.(b._plus_3)))))
+(_min_4 in (((State.balance2)->(State.am))->_R_4))
+(forall a:(State.balance2), b:(State.am) | ((some (b.(a._min_4))) || (some (a.(b._min_4)))))
 

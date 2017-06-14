@@ -35,7 +35,7 @@ Expr transform(intLit(int i), Env env, Universe uni, str () newResultAtom, void 
   AtomDecl constantAtom = atomTheoryAndValue("_c<i>", intTheory(), intExpr(intLit(i)));
   addRelation(consRelName, [constantAtom], [[constantAtom.atom]], [[constantAtom.atom]]);
 
-  return variable(consRelName);
+  return variable(consRelName)[@minTuples=[[constantAtom.atom]]][@maxTuples=[[constantAtom.atom]]][@domain=variable(consRelName)];
 }
 
 Expr transform(subtraction(Expr lhsExpr, Expr rhsExpr), Env env, Universe uni, str () newResultAtom, void (str, list[AtomDecl], list[list[Atom]], list[list[Atom]]) addRelation, void (AlleFormula) addConstraint, str () newRelNr) 

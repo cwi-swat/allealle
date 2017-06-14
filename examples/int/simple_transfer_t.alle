@@ -28,7 +28,7 @@ forall s1:State, s2:State | s1->s2 in ordering =>
   am[s2] > 0 &&
   (
     (balance1[s1] > am[s2] &&
-     balance1[s2] = (balance1[s1]) - 10 &&
+     balance1[s2] = (balance1[s1]) - (am[s2]) &&
      balance2[s2] = (balance2[s2]) + (am[s2])) 
     ||
     (balance2[s1] > am[s2] &&

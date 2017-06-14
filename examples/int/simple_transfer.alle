@@ -14,9 +14,11 @@ balance1 in State->Balance
 balance2 in State->Balance
 amount   in State->Amount
 
-forall s:State\InitialState | some ordering.s
+forall s:State\InitialState | some ordering.s && some amount[s] 
 forall b:Balance | some balance1.b || some balance2.b
 forall a:Amount | some amount.a
+
+forall s:State | some balance1[s] && some balance2[s]
 
 balance1[InitialState] = 100
 balance2[InitialState] = 100
@@ -34,4 +36,4 @@ forall s1:State, s2:State | s1->s2 in ordering =>
      balance2[s2] = (balance2[s1]) - (amount[s2]))    
   )
 
-//exists s:State | balance1[s] > 200
+exists s:State | balance1[s] = 200
