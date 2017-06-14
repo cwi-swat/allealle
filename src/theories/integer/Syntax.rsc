@@ -19,12 +19,14 @@ syntax AlleFormula
   
 syntax Expr
   = intLit:         IntLit intLit
-  > multiplication: Expr lhs "*" Expr rhs
+  > neg:            "-" Expr e
+  > left multiplication: Expr lhs "*" Expr rhs
   | division:       Expr lhs "/" Expr rhs
   | modulo:         Expr lhs "%" Expr rhs
-  > addition:       Expr lhs "+" Expr rhs 
-  | subtraction:    Expr lhs "-" Expr rhs
-  > sum:            "sum" "(" {VarDeclaration ","}+ decls "|" Expr expr ")"
+  > left addition:       Expr lhs "+" Expr rhs 
+  | left subtraction:    Expr lhs "-" Expr rhs
+  > sum:            "sum" "(" Expr expr ")"
+  | car:            "#" Expr expr
   ; 
 
 lexical IntLit = [0-9]+;

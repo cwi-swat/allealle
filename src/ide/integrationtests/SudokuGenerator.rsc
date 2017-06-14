@@ -67,7 +67,19 @@ void generateIntSudoku(rel[int, int, int] filledInCells, loc locationToSave) {
                 'r3 in num
                 'grid in num-\>num-\>cell
                 '
-                'forall x: num, y: num | grid[x][y] != grid[x][num\\y]
+                'cell \> 0 && cell \< 10
+                '
+                'forall x:num, y:num  | grid[x][y] != grid[x][num\\y]
+                'forall x:num, y:num  | grid[x][y] != grid[num\\x][y]
+                'forall x: r1, y: r1  | grid[x][y] != grid[r1\\x][r1\\y]
+                'forall x: r1, y: r2  | grid[x][y] != grid[r1\\x][r2\\y]
+                'forall x: r1, y: r3  | grid[x][y] != grid[r1\\x][r3\\y]
+                'forall x: r2, y: r1  | grid[x][y] != grid[r2\\x][r1\\y]
+                'forall x: r2, y: r2  | grid[x][y] != grid[r2\\x][r2\\y]
+                'forall x: r2, y: r3  | grid[x][y] != grid[r2\\x][r3\\y]
+                'forall x: r3, y: r1  | grid[x][y] != grid[r3\\x][r1\\y]              
+                'forall x: r3, y: r2  | grid[x][y] != grid[r3\\x][r2\\y]               
+                'forall x: r3, y: r3  | grid[x][y] != grid[r3\\x][r3\\y]
                 ";
   
   writeFile(locationToSave + "sudoku.alle", problem);

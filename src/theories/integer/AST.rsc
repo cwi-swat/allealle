@@ -20,10 +20,12 @@ data AlleFormula
 	
 data Expr
 	= intLit(int i)
+	| neg(Expr expr)
 	| multiplication(Expr lhs, Expr rhs)
 	| division(Expr lhs, Expr rhs)
 	| modulo(Expr lhs, Expr rhs)
 	| addition(Expr lhs, Expr rhs)
 	| subtraction(Expr lhs, Expr rhs)
-  | sum(list[VarDeclaration] decls, Expr expr)
+  | sum(Expr expr)
+  | car(Expr expr)
 	;

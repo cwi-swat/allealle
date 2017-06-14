@@ -28,7 +28,7 @@ data ModelFinderResult
 	;
 
 ModelFinderResult checkInitialSolution(Problem problem) {
-	print("Preprocessing problem (replacing constants, replacing arithmetic expressions)...");
+	print("Preprocessing problem (replacing constants, replacing expressions in different theories)...");
 	tuple[Problem problem, int time] pp = benchmark(preprocess, problem);
 	print("done, took: <(pp.time/1000000)> ms\n");
 	

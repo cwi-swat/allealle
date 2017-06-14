@@ -24,6 +24,7 @@ TheoryFormula constructTheoryFormula(str relName, Formula relForm, atomTheoryAnd
   when \int(int _) !:= exprToForm(expr);
 
 Formula exprToForm(intLit(int i))                       = \int(i);
+Formula exprToForm(neg(Expr e))                         = neg(exprToForm(e));
 Formula exprToForm(variable(str v))                     = var(v);
 Formula exprToForm(multiplication(Expr lhs, Expr rhs))  = multiplication(exprToForm(lhs), exprToForm(rhs));
 Formula exprToForm(division(Expr lhs, Expr rhs))        = division(exprToForm(lhs), exprToForm(rhs));
