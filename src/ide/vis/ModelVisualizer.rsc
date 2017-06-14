@@ -70,10 +70,10 @@ void renderModel(Universe universe, Model model, Model (Theory) nextModel, void 
 				vcat([
 					text("Visualization options:", fontBold(true)),
 					box(
-						hcat([checkbox(edgeName, edgeName notin disOpt.filteredEdges, void (bool checked) {
+						hcat([checkbox(name, name notin disOpt.filteredEdges, void (bool checked) {
 							disOpt = options(scale = disOpt.scale, filteredEdges = !checked ? disOpt.filteredEdges + edgeName : disOpt.filteredEdges - edgeName); 
 							r();
-							}) | str edgeName <- getNaryRelations(model), !startsWith(edgeName, "_")]),
+							}) | str name <- getNaryRelations(model), !startsWith(name,"_"), str edgeName := name]),
 						hshrink(0.98), center()),
 					text("Zoom: <precision(disOpt.scale, 2)>"),
 					scaleSlider(int () { return  0; }, int () { return 100; }, int () { return round(disOpt.scale * 50.); }, void (int cur) {
