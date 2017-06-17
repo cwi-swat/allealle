@@ -3,6 +3,7 @@ module ide::integrationtests::KillerSudokuGenerator
 import IO;
 import List;
 
+alias Region = tuple[lrel[int,int] cells, int total];
 
 // http://www.killersudoku.nl/killer.php?ster=1&nr=1&grootte=2 
 void generateEasyKillerSudoku() { 
@@ -64,8 +65,6 @@ void generateHardKillerSudoku() {
                           <[<3,2>,<3,3>,<4,3>], 16>,
                           <[<3,4>,<4,4>,<5,4>], 18>];
 }
-
-alias Region = tuple[lrel[int,int] cells, int total];
 
 void generateKillerSudoku(list[Region] regions, lrel[int,int,int] fixedCellValues, loc locationToSave) {
   str gridBound = intercalate(",", ["\<n<c>,n<r>,c<c>_<r>\>" | int c <- [1..10], int r <- [1..10]]);

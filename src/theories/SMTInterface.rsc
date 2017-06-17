@@ -109,7 +109,7 @@ Model constructModel(SMTModel smtModel, Universe uni, Environment env) {
   set[AtomDecl] visibleAtoms = {};
   set[Relation] relations = {};
   
-  for (str relName <- env) {
+  for (str relName <- env, !startsWith(relName, "_")) {
     set[VectorAndVar] relTuples = {};
      
     for (Index idx <- env[relName]) {

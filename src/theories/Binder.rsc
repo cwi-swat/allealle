@@ -35,9 +35,9 @@ private list[Index] constructIdentityIndex(int arity, Universe uni) = [vector | 
 RelationMatrix identity(RelationMatrix orig, Universe uni) = identity(arity(orig), uni);
 RelationMatrix identity(int arity, Universe uni) = (idx:<\true(),()> | Index idx <- constructIdentityIndex(arity, uni));
 
-private ExtensionEncoding merge(ExtensionEncoding lhs, ExtensionEncoding rhs) = (idx : lhs[idx] | int idx <- lhs, idx notin rhs) +
-                                                                                (idx : lhs[idx] + rhs[idx] | int idx <- lhs, idx in rhs) +
-                                                                                (idx : rhs[idx] | int idx <- rhs, idx notin lhs);
+ExtensionEncoding merge(ExtensionEncoding lhs, ExtensionEncoding rhs) = (idx : lhs[idx] | int idx <- lhs, idx notin rhs) +
+                                                                        (idx : lhs[idx] + rhs[idx] | int idx <- lhs, idx in rhs) +
+                                                                        (idx : rhs[idx] | int idx <- rhs, idx notin lhs);
 
 RelationMatrix or(RelationMatrix lhs, RelationMatrix rhs) 
   = (x:<\or(lhsVal,rhsVal), merge(lhsExt, rhsExt)> | Index x <- (lhs + rhs), Formula lhsVal := ((x in lhs) ? lhs[x].relForm : \false()), Formula rhsVal := ((x in rhs) ? rhs[x].relForm : \false()), ExtensionEncoding lhsExt := ((x in lhs) ? lhs[x].ext : ()), ExtensionEncoding rhsExt := ((x in rhs) ? rhs[x].ext : ())) 
@@ -71,6 +71,7 @@ default RelationMatrix difference(RelationMatrix lhs, RelationMatrix rhs) { thro
 
 private Formula toRelForm(set[TheoryFormula] forms) = (\true() | \and(it, \if(f.relForm,f.theoryForm)) | TheoryFormula f <- forms);
 
+@memo
 RelationMatrix \join(RelationMatrix lhs, RelationMatrix rhs, void (set[TheoryFormula]) addTheoryConstraint) {
   int arityLhs = arity(lhs);
   int arityRhs = arity(rhs);

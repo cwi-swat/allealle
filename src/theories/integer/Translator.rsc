@@ -5,7 +5,6 @@ extend theories::Translator;
 import logic::Integer;
 import logic::Boolean;
 
-import theories::integer::Binder;
 import theories::integer::AST;
 
 import theories::AST; 
@@ -30,28 +29,35 @@ Formula exprToForm(multiplication(Expr lhs, Expr rhs))  = multiplication(exprToF
 Formula exprToForm(division(Expr lhs, Expr rhs))        = division(exprToForm(lhs), exprToForm(rhs));
 Formula exprToForm(modulo(Expr lhs, Expr rhs))          = modulo(exprToForm(lhs), exprToForm(rhs));
 Formula exprToForm(addition(Expr lhs, Expr rhs))        = addition(exprToForm(lhs), exprToForm(rhs));
+//Formula exprToForm(addition(list[Expr] terms))          = addition([exprToForm(t) | Expr t <- terms]);
 Formula exprToForm(subtraction(Expr lhs, Expr rhs))     = substraction(exprToForm(lhs), exprToForm(rhs));
 
+@memo
 Formula translateFormula(gt(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni, void (set[TheoryFormula]) addTheoryConstraint) = translateFormula(lhs, rhs, Formula (Formula l, Formula r) { return gt(l, r);}, addTheoryConstraint)
   when RelationMatrix lhs := translateExpression(lhsExpr, env, uni, addTheoryConstraint),
        RelationMatrix rhs := translateExpression(rhsExpr, env, uni, addTheoryConstraint);
 
+@memo
 Formula translateFormula(gte(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni, void (set[TheoryFormula]) addTheoryConstraint) = translateFormula(lhs, rhs, Formula (Formula l, Formula r) { return gte(l, r);}, addTheoryConstraint)
   when RelationMatrix lhs := translateExpression(lhsExpr, env, uni, addTheoryConstraint),
        RelationMatrix rhs := translateExpression(rhsExpr, env, uni, addTheoryConstraint);
 
+@memo
 Formula translateFormula(lt(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni, void (set[TheoryFormula]) addTheoryConstraint) = translateFormula(lhs, rhs, Formula (Formula l, Formula r) { return lt(l, r);}, addTheoryConstraint)
   when RelationMatrix lhs := translateExpression(lhsExpr, env, uni, addTheoryConstraint),
        RelationMatrix rhs := translateExpression(rhsExpr, env, uni, addTheoryConstraint);
-       
+
+@memo       
 Formula translateFormula(lte(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni, void (set[TheoryFormula]) addTheoryConstraint) = translateFormula(lhs, rhs, Formula (Formula l, Formula r) { return lte(l, r);}, addTheoryConstraint)
   when RelationMatrix lhs := translateExpression(lhsExpr, env, uni, addTheoryConstraint),
        RelationMatrix rhs := translateExpression(rhsExpr, env, uni, addTheoryConstraint);
-       
+
+@memo       
 Formula translateFormula(intEqual(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni, void (set[TheoryFormula]) addTheoryConstraint) = translateFormula(lhs, rhs, Formula (Formula l, Formula r) { return equal(l, r);}, addTheoryConstraint) 
   when RelationMatrix lhs := translateExpression(lhsExpr, env, uni, addTheoryConstraint),
        RelationMatrix rhs := translateExpression(rhsExpr, env, uni, addTheoryConstraint);
 
+@memo
 Formula translateFormula(intInequal(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni, void (set[TheoryFormula]) addTheoryConstraint) = translateFormula(lhs, rhs, Formula (Formula l, Formula r) { return inequal(l, r);}, addTheoryConstraint) 
   when RelationMatrix lhs := translateExpression(lhsExpr, env, uni, addTheoryConstraint),
        RelationMatrix rhs := translateExpression(rhsExpr, env, uni, addTheoryConstraint);
@@ -90,42 +96,4 @@ Formula translateFormula(RelationMatrix lhs, RelationMatrix rhs, Formula (Formul
   }    
   
   return result; 
-}
-       
-@memo
-RelationMatrix translateExpression(intLit(int i), Environment env, Universe uni, void (set[TheoryFormula]) addTheoryConstraint) { throw "Int literal should have been removed from constraints by pre processing"; } 
-
-//RelationMatrix translateExpression(multiplication(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni, void (set[TheoryFormula]) addTheoryConstraint) = multiply(lhs, rhs)
-//	when RelationMatrix lhs := translateExpression(lhsExpr, env, uni, addTheoryConstraint),
-//		   RelationMatrix rhs := translateExpression(rhsExpr, env, uni, addTheoryConstraint);
-//
-//RelationMatrix translateExpression(division(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni, void (set[TheoryFormula]) addTheoryConstraint) = divide(lhs, rhs)
-//  when RelationMatrix lhs := translateExpression(lhsExpr, env, uni, addTheoryConstraint),
-//       RelationMatrix rhs := translateExpression(rhsExpr, env, uni, addTheoryConstraint);
-//
-//RelationMatrix translateExpression(modulo(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni, void (set[TheoryFormula]) addTheoryConstraint) = modd(lhs, rhs)
-//  when RelationMatrix lhs := translateExpression(lhsExpr, env, uni, addTheoryConstraint),
-//       RelationMatrix rhs := translateExpression(rhsExpr, env, uni, addTheoryConstraint);
-//
-//RelationMatrix translateExpression(addition(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni, void (set[TheoryFormula]) addTheoryConstraint) = add(lhs, rhs)
-//  when RelationMatrix lhs := translateExpression(lhsExpr, env, uni, addTheoryConstraint),
-//       RelationMatrix rhs := translateExpression(rhsExpr, env, uni, addTheoryConstraint);
-//		 
-//RelationMatrix translateExpression(subtraction(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni, void (set[TheoryFormula]) addTheoryConstraint) = substract(lhs, rhs)
-//  when RelationMatrix lhs := translateExpression(lhsExpr, env, uni, addTheoryConstraint),
-//       RelationMatrix rhs := translateExpression(rhsExpr, env, uni, addTheoryConstraint);
-//       
-//RelationMatrix translateExpression(sum(list[VarDeclaration] decls, Expr expr), Environment env, Universe uni, void (set[TheoryFormula]) addTheoryConstraint) {
-//  
-//  RelationMatrix m = translateExpression(decls[0].binding, env, uni, addTheoryConstraint);
-//  
-//  Formula sumExpr = \int(0);
-//  
-//  //for (Index idx <- m) {
-//  //  if (intTheory() notin m[idx].ext) { throw "Relation does not uniformly refer to integer variables"; }
-//  //  
-//  //  sumExpr = addition(\ite(m[idx].relForm, m[idx].ext[intTheory()][0], \int(0)), sumExpr);
-//  //} 
-//  
-//  return m; //translateIntConstant(sumExpr, env, uni);    
-//}
+}       

@@ -1,0 +1,19 @@
+{vvd(int)=33, pvv(int)=20, cda(int)=19, d66(int)=19, groenlinks(int)=14, sp(int)=14, pvda(int)=9, christenunie(int)=5, pvdd(int)=5,vijftigplus(int)=4, sgp(int)=3,denk(int)=3,fvd(int)=2}
+
+Party:1 [{<vvd>,<pvv>,<cda>,<d66>,<groenlinks>,<sp>,<pvda>,<christenunie>,<pvdd>,<vijftigplus>,<sgp>,<denk>,<fvd>}, {<vvd>,<pvv>,<cda>,<d66>,<groenlinks>,<sp>,<pvda>,<christenunie>,<pvdd>,<vijftigplus>,<sgp>,<denk>,<fvd>}]
+Goverment:1 [{}, {<vvd>,<pvv>,<cda>,<d66>,<groenlinks>,<sp>,<pvda>,<christenunie>,<pvdd>,<vijftigplus>,<sgp>,<denk>,<fvd>}]
+Opposition:1 [{}, {<vvd>,<pvv>,<cda>,<d66>,<groenlinks>,<sp>,<pvda>,<christenunie>,<pvdd>,<vijftigplus>,<sgp>,<denk>,<fvd>}]
+
+exclusion:2 [{<vvd,pvv>,<cda,pvv>,<d66,pvv>,<groenlinks,pvv>,<sp,pvv>,<pvda,pvv>,<christenunie,pvv>,<pvdd,pvv>,<sp,vvd>}, {<vvd,pvv>,<cda,pvv>,<d66,pvv>,<groenlinks,pvv>,<sp,pvv>,<pvda,pvv>,<christenunie,pvv>,<pvdd,pvv>,<sp,vvd>}]
+
+exclusion in Party->Party
+
+Goverment ++ Opposition == Party
+no Goverment&Opposition
+
+forall p1:Party, p2:Party\p1 | p1->p2 in exclusion => not (p1 in Goverment && p2 in Goverment)
+
+sum(Goverment) > 75
+
+//#Goverment < 6
+ 

@@ -278,8 +278,15 @@ RelationMatrix translateExpression(product(Expr lhsExpr, Expr rhsExpr), Environm
 
 @memo
 RelationMatrix translateExpression(ifThenElse(AlleFormula caseForm, Expr thenExpr, Expr elseExpr), Environment env, Universe uni, void (set[TheoryFormula]) addTheoryConstraint) {
+  Formula \case = translateFormula(caseForm, env, uni, addTheoryConstraint);
   RelationMatrix then = translateExpression(thenExpr, env, uni, addTheoryConstraint);
   RelationMatrix \else = translateExpression(elseExpr, env, uni, addTheoryConstraint);
+
+  if (\case == \true()) {
+    return then;
+  } else if (\case == \false()) {
+    return \else;
+  } 
   
   int arityThen = arity(then);
   int arityElse = arity(\else);
@@ -287,6 +294,18 @@ RelationMatrix translateExpression(ifThenElse(AlleFormula caseForm, Expr thenExp
   if (arityThen != arityElse) {
     throw "Then and Else expressions must be of same arity";
   }
+  
+  RelationMatrix result = ();
+  for (Index idx <- (then + \else)) {
+    Formula thenVal = ((idx in then) ? then[idx].relForm : \false());
+    Formula elseVal = ((idx in \else) ? \else[idx].relForm : \false()); 
+    ExtensionEncoding thenExt = ((idx in then) ? then[idx].ext : ());
+    ExtensionEncoding elseExt = ((idx in \else) ? \else[idx].ext : ());
+     
+    result[idx] = <ite(\case, thenVal, elseVal), merge(thenExt, elseExt)>;
+  }
+  
+  return result;
 }
 
 //   = (idx:<ite(translatedCase, thenRm[idx].relForm, elseRm[idx].relForm), (t : {\or(\not(translatedCase), thenTe) | Formula thenTe <- thenRm[idx].ext[t]} + {\or(translatedCase, elseTe) | Formula elseTe <- elseRm[idx].ext[t]} | Theory t <- thenRm[idx].ext)> | Index idx <- thenRm)

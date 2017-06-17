@@ -6,7 +6,7 @@ data Formula
 	| \not(Formula f)
 	| \and(set[Formula] fs)
 	| \or(set[Formula] fs)
-	| ite(Formula c, Formula t, Formula e)
+	//| ite(Formula c, Formula t, Formula e)
 	;
 
 Formula \or({})									                      = \false();
@@ -80,4 +80,4 @@ Formula \if(Formula l, Formula r)           	        = \or(\not(l),r);
 Formula \fi(Formula l, Formula r)           	        = \if(r, l);
 Formula \iff(Formula l, Formula r)          	        = \and(\if(l,r),\fi(l,r));
 
-//Formula \ite(Formula c, Formula t, Formula e) 	      = \or(\iff(c,t),\iff(\not(c),e));
+Formula \ite(Formula c, Formula t, Formula e) 	      = \or(\iff(c,t),\iff(\not(c),e));

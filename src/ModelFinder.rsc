@@ -82,7 +82,9 @@ ModelFinderResult runInSolver(Problem problem, Formula formula, Environment env)
 	Model model = empty();
 	
 	Model next(Theory t) {
+	  print("Getting next model from SMT solver...");
 		smtModel = nextSmtModel(solverPid, model, t, smtVarCollectResult.vars);
+	  print("done!\n");
 	        
 		if (smtModel == ()) {
 			return empty();
@@ -90,7 +92,7 @@ ModelFinderResult runInSolver(Problem problem, Formula formula, Environment env)
 		  model = constructModel(smtModel, problem.uni, env);
 			return model;
 		}
-	}
+	}  
 
 	if(solving.result) {
 		smtModel = firstSmtModel(solverPid, smtVarCollectResult.vars);

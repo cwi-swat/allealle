@@ -21,6 +21,7 @@ str unparse(neg(Expr e))                                 = "(-<unparse(e)>)";
 str unparse(multiplication(Expr lhs, Expr rhs))          = "(<unparse(lhs)> * <unparse(rhs)>)";
 str unparse(division(Expr lhs, Expr rhs))                = "(<unparse(lhs)> / <unparse(rhs)>)";
 str unparse(modulo(Expr lhs, Expr rhs))                  = "(<unparse(lhs)> % <unparse(rhs)>)";
+//str unparse(addition(list[Expr] terms))                  = "(<intercalate(" + ", [unparse(t) | Expr t <- terms])>)";
 str unparse(addition(Expr lhs, Expr rhs))                = "(<unparse(lhs)> + <unparse(rhs)>)";
 str unparse(subtraction(Expr lhs, Expr rhs))             = "(<unparse(lhs)> - <unparse(rhs)>)";
 str unparse(sum(Expr expr))                              = "(sum(<unparse(expr)>))";

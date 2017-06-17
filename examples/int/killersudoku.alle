@@ -9,47 +9,6 @@ grid:3 [{<n1,n1,c1_1>,<n1,n2,c1_2>,<n1,n3,c1_3>,<n1,n4,c1_4>,<n1,n5,c1_5>,<n1,n6
 
 
 region0: 1 [{<c1_1>, <c1_2>},{<c1_1>, <c1_2>}]
-region1: 1 [{<c1_3>, <c1_4>, <c1_5>},{<c1_3>, <c1_4>, <c1_5>}]
-region2: 1 [{<c1_6>, <c1_7>},{<c1_6>, <c1_7>}]
-region3: 1 [{<c1_8>, <c2_8>},{<c1_8>, <c2_8>}]
-region4: 1 [{<c1_9>, <c2_9>},{<c1_9>, <c2_9>}]
-region5: 1 [{<c2_1>, <c2_2>},{<c2_1>, <c2_2>}]
-region6: 1 [{<c2_3>, <c2_4>, <c2_5>},{<c2_3>, <c2_4>, <c2_5>}]
-region7: 1 [{<c2_6>, <c2_7>, <c3_7>},{<c2_6>, <c2_7>, <c3_7>}]
-region8: 1 [{<c3_1>},{<c3_1>}]
-region9: 1 [{<c3_2>, <c3_3>},{<c3_2>, <c3_3>}]
-region10: 1 [{<c3_4>, <c3_5>},{<c3_4>, <c3_5>}]
-region11: 1 [{<c3_6>, <c4_6>},{<c3_6>, <c4_6>}]
-region12: 1 [{<c3_8>, <c3_9>},{<c3_8>, <c3_9>}]
-region13: 1 [{<c4_1>, <c4_2>},{<c4_1>, <c4_2>}]
-region14: 1 [{<c4_3>},{<c4_3>}]
-region15: 1 [{<c4_4>, <c5_4>, <c4_5>},{<c4_4>, <c5_4>, <c4_5>}]
-region16: 1 [{<c4_7>, <c5_7>},{<c4_7>, <c5_7>}]
-region17: 1 [{<c4_8>, <c4_8>},{<c4_8>, <c4_8>}]
-region18: 1 [{<c5_1>},{<c5_1>}]
-region19: 1 [{<c5_2>, <c5_3>},{<c5_2>, <c5_3>}]
-region20: 1 [{<c5_5>, <c6_5>},{<c5_5>, <c6_5>}]
-region21: 1 [{<c5_6>},{<c5_6>}]
-region22: 1 [{<c5_8>, <c5_9>},{<c5_8>, <c5_9>}]
-region23: 1 [{<c6_1>, <c7_1>},{<c6_1>, <c7_1>}]
-region24: 1 [{<c6_2>, <c7_2>, <c8_2>},{<c6_2>, <c7_2>, <c8_2>}]
-region25: 1 [{<c6_3>, <c6_4>},{<c6_3>, <c6_4>}]
-region26: 1 [{<c6_6>},{<c6_6>}]
-region27: 1 [{<c6_7>},{<c6_7>}]
-region28: 1 [{<c6_8>, <c6_9>},{<c6_8>, <c6_9>}]
-region29: 1 [{<c7_3>, <c8_3>},{<c7_3>, <c8_3>}]
-region30: 1 [{<c7_4>, <c8_4>},{<c7_4>, <c8_4>}]
-region31: 1 [{<c7_5>, <c8_5>},{<c7_5>, <c8_5>}]
-region32: 1 [{<c7_6>, <c8_6>},{<c7_6>, <c8_6>}]
-region33: 1 [{<c7_7>, <c7_8>},{<c7_7>, <c7_8>}]
-region34: 1 [{<c7_9>},{<c7_9>}]
-region35: 1 [{<c8_1>, <c9_1>},{<c8_1>, <c9_1>}]
-region36: 1 [{<c8_7>, <c9_7>},{<c8_7>, <c9_7>}]
-region37: 1 [{<c8_8>, <c9_8>},{<c8_8>, <c9_8>}]
-region38: 1 [{<c8_9>, <c9_9>},{<c8_9>, <c9_9>}]
-region39: 1 [{<c9_2>, <c9_3>},{<c9_2>, <c9_3>}]
-region40: 1 [{<c9_4>},{<c9_4>}]
-region41: 1 [{<c9_5>, <c9_6>},{<c9_5>, <c9_6>}]
                 
 r1 in num
 r2 in num
@@ -72,45 +31,3 @@ forall x: r3, y: r3  | grid[x][y] != grid[r3\x][r3\y]
 
 
 sum(region0) = 10
-sum(region1) = 22
-sum(region2) = 8
-sum(region3) = 10
-sum(region4) = 8
-sum(region5) = 10
-sum(region6) = 9
-sum(region7) = 19
-sum(region8) = 2
-sum(region9) = 13
-sum(region10) = 5
-sum(region11) = 7
-sum(region12) = 16
-sum(region13) = 10
-sum(region14) = 2
-sum(region15) = 13
-sum(region16) = 15
-sum(region17) = 9
-sum(region18) = 6
-sum(region19) = 8
-sum(region20) = 11
-sum(region21) = 2
-sum(region22) = 13
-sum(region23) = 13
-sum(region24) = 20
-sum(region25) = 16
-sum(region26) = 6
-sum(region27) = 2
-sum(region28) = 6
-sum(region29) = 14
-sum(region30) = 9
-sum(region31) = 13
-sum(region32) = 9
-sum(region33) = 4
-sum(region34) = 4
-sum(region35) = 4
-sum(region36) = 14
-sum(region37) = 13
-sum(region38) = 10
-sum(region39) = 6
-sum(region40) = 3
-sum(region41) = 11
-                
