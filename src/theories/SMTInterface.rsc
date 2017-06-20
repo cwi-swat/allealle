@@ -37,15 +37,34 @@ data Model
   | empty()
   ;
 
-set[SMTVar] collectSMTVars(Universe uni, Environment env) 
-  = {<name, relTheory()> | str varName <- env, RelationMatrix rm := env[varName], Index idx <- rm, var(str name) := rm[idx].relForm} +
-    {<r.var, r.t> | str varName <- env, RelationMatrix rm := env[varName], Index idx <- rm, int i <- rm[idx].ext, /just(tuple[str var, Theory t] r) := constructExtendedTheoryVar(rm[idx].ext[i])} +
-    {<r.var, r.t> | AtomDecl ad <- uni.atoms, ad has theory, /just(tuple[str var, Theory t] r) := constructExtendedTheoryVar(ad)}; 
+set[SMTVar] collectSMTVars(Universe uni, Environment env)  {
+  set[SMTVar] result = {};
+
+  for (AtomDecl ad <- uni.atoms, ad has theory, /just(tuple[str var, Theory t] r) := constructExtendedTheoryVar(ad)) {
+    result += <r.var, r.t>;
+  }
+  
+  for (str varName <- env, RelationMatrix rm := env[varName], Index idx <- rm) {
+    if (var(str name) := rm[idx].relForm) {
+      result += <name, relTheory()>;
+    }
+    
+    for (int i <- rm[idx].ext, /just(tuple[str var, Theory t] r) := constructExtendedTheoryVar(rm[idx].ext[i])) {
+      result += <r.var, r.t>;
+    }
+  }
+
+  return result;
+}
+  //= {<name, relTheory()> | str varName <- env, RelationMatrix rm := env[varName], Index idx <- rm, var(str name) := rm[idx].relForm} +
+  //  {<r.var, r.t> | str varName <- env, RelationMatrix rm := env[varName], Index idx <- rm, int i <- rm[idx].ext, /just(tuple[str var, Theory t] r) := constructExtendedTheoryVar(rm[idx].ext[i])} +
+  //  {<r.var, r.t> | AtomDecl ad <- uni.atoms, ad has theory, /just(tuple[str var, Theory t] r) := constructExtendedTheoryVar(ad)}; 
 
 default Maybe[tuple[str, Theory]] constructExtendedTheoryVar(AtomDecl ad) { throw "Unable to construct a variable for atom declaration \'<ad>\'"; }
 default Maybe[tuple[str, Theory]] constructExtendedTheoryVar(set[TheoryFormula] f) { throw "Unable to construct a variable for formula \'<f>\'"; } 
 
-str compileSMTVariableDeclarations(set[SMTVar] vars) = ("" | "<it>\n<compileVariableDeclaration(var)>" | SMTVar var <- vars);
+str compileSMTVariableDeclarations(set[SMTVar] vars) = "<for (SMTVar var <- vars) {>
+                                                       '<compileVariableDeclaration(var)><}>"; //("" | "<it>\n<compileVariableDeclaration(var)>" | SMTVar var <- vars);
 str compileVariableDeclaration(SMTVar var) = "(declare-const <var.name> Bool)" when var.theory == relTheory();
 default str compileVariableDeclaration(SMTVar var) { throw "Unable to compile variable <var> to SMT, no SMT compiler available"; }
 
@@ -66,11 +85,11 @@ str compile(\and(set[Formula] forms)) = "(and <for (f <- forms) {>
 str compile(\or(set[Formula] forms))  = "(or <for (f <- forms) {>
                                                    '  <compile(f)><}>)";
 str compile(\not(formula))            = "(not <compile(formula)>)";
-str compile(ite(Formula c, Formula t, Formula e)) = "(ite 
-                                                    '  <compile(c)>
-                                                    '  <compile(t)>
-                                                    '  <compile(e)>
-                                                    ')";                                                      
+//str compile(ite(Formula c, Formula t, Formula e)) = "(ite 
+//                                                    '  <compile(c)>
+//                                                    '  <compile(t)>
+//                                                    '  <compile(e)>
+//                                                    ')";                                                      
 str compile(\false())                 = "false"; 
 str compile(\true())                  = "true";
 str compile(\var(name))               = name; 

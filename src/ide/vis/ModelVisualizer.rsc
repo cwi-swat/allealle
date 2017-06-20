@@ -122,9 +122,9 @@ Figure visualizeModel(Universe universe, Model model, DisplayOptions disOpt) {
 	}
 
   bool contains(Atom a, Relation r) = true when VectorAndVar vv <- r.relation, a in vv.vector;
-  default bool constains(Atom a, Relation r) = false; 
+  default bool contains(Atom a, Relation r) = false; 
 
-	rel[ModelAtom, Relation] unaryRels = {<ma, r> | ModelAtom ma <- model.visibleAtoms, r:unary(str relName, set[VectorAndVar] relation, bool inBase) <- model.relations, ma.name == relName, contains(ma.name, r)};
+	rel[ModelAtom, Relation] unaryRels = {<ma, r> | ModelAtom ma <- model.visibleAtoms, r:unary(str relName, set[VectorAndVar] relation, bool inBase) <- model.relations, contains(ma.name, r)};
 	rel[list[Atom], Relation] naryRels = {<vv.vector, r> | r:nary(str name, set[VectorAndVar] relation, bool inBase) <- model.relations, name notin disOpt.filteredEdges, VectorAndVar vv <- relation};
 
 	Figures nodes = [buildAtomNode(ma, unaryRels, disOpt) | ModelAtom ma <- model.visibleAtoms];

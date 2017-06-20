@@ -27,7 +27,7 @@ data ModelFinderResult
 	| trivialUnsat()	
 	;
 
-ModelFinderResult checkInitialSolution(Problem problem) {
+ModelFinderResult checkInitialSolution(Problem problem) {	
 	print("Preprocessing problem (replacing constants, replacing expressions in different theories)...");
 	tuple[Problem problem, int time] pp = benchmark(preprocess, problem);
 	print("done, took: <(pp.time/1000000)> ms\n");
@@ -73,6 +73,8 @@ ModelFinderResult runInSolver(Problem problem, Formula formula, Environment env)
 	
 	writeFile(|project://allealle/bin/latestSmt.smt2|, "<smtVarDeclResult.smt>\n<smtAtomDeclExprs.smt>\n<smtCompileFormResult.smt>");
 	  
+	smtVarCollectResult.vars = removeAllAddedVars(smtVarCollectResult.vars);  
+	  
 	print("Solving by Z3...");
 	tuple[bool result, int time] solving = benchmark(isSatisfiable, solverPid, "<smtVarDeclResult.smt>\n<smtAtomDeclExprs.smt>\n<smtCompileFormResult.smt>"); 
 	print("done, took: <solving.time/1000000> ms\n");
@@ -103,6 +105,8 @@ ModelFinderResult runInSolver(Problem problem, Formula formula, Environment env)
 		return unsat({});
 	}
 }
+
+set[SMTVar] removeAllAddedVars(set[SMTVar] vars) = {v | SMTVar v <- vars, !startsWith(v.name, "_")};
 
 SMTModel getValues(SolverPID pid, set[SMTVar] vars) {
   resp = runSolver(pid, "(get-value (<intercalate(" ", [v.name | v <- vars])>))", wait=50);

@@ -1,5 +1,5 @@
 module theories::AST
-
+import IO;
 data Problem = problem(Universe uni, list[RelationalBound] bounds, list[AlleFormula] constraints);
 
 data Universe = universe(list[AtomDecl] atoms);
@@ -53,3 +53,5 @@ data VarDeclaration = varDecl(str name, Expr binding);
 alias Atom = str;
 
 data Theory = relTheory();
+
+default Expr rewrite(Expr e) = e;

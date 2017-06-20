@@ -1,9 +1,21 @@
 {a(int),b(int),c(int),d(int),e(int),f(int)}
 
 A:1 [{}, {<a>,<b>,<c>,<d>,<e>,<f>}]
+B:1 [{}, {<a>,<b>,<c>,<d>,<e>,<f>}]
 
-A > 0
+A++B > 0
 
-sum(A) = 10
+//forall a:A | a in A && not (a in B) => a = 5
+//forall a:B | a in B && not (a in A) => a = 3
+A\B = 5
 
-#A = 5
+((A\B) + (B\A)) = 8
+((A&B) + (A&B)) = 8
+
+//sum(A) = 10
+//
+//#A = 5
+
+some A&B
+some A\B
+some B\A

@@ -11,7 +11,7 @@ forall p1: Point | exists p2: Point | one p1.(side[p2])
 
 // all sides should be between 1 and 9
 //forall p1: Point, p2: Point | some side[p1][p2] => side[p1][p2] > 1 && side[p1][p2] < 10
-Length > 2 && Length < 10
+Length > 2 && Length < 20
 
 forall l:Length | some side.l
 

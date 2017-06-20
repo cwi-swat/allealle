@@ -29,7 +29,7 @@ Formula exprToForm(multiplication(Expr lhs, Expr rhs))  = multiplication(exprToF
 Formula exprToForm(division(Expr lhs, Expr rhs))        = division(exprToForm(lhs), exprToForm(rhs));
 Formula exprToForm(modulo(Expr lhs, Expr rhs))          = modulo(exprToForm(lhs), exprToForm(rhs));
 Formula exprToForm(addition(Expr lhs, Expr rhs))        = addition(exprToForm(lhs), exprToForm(rhs));
-//Formula exprToForm(addition(list[Expr] terms))          = addition([exprToForm(t) | Expr t <- terms]);
+Formula exprToForm(addition(list[Expr] terms))          = addition([exprToForm(t) | Expr t <- terms]);
 Formula exprToForm(subtraction(Expr lhs, Expr rhs))     = substraction(exprToForm(lhs), exprToForm(rhs));
 
 @memo

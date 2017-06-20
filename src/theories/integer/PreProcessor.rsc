@@ -52,12 +52,17 @@ Expr transform(subtraction(Expr lhsExpr, Expr rhsExpr), Env env, Universe uni, s
   when Expr lhs := transform(lhsExpr, env, uni, newResultAtom, addRelation, addConstraint, newRelNr),
        Expr rhs := transform(rhsExpr, env, uni, newResultAtom, addRelation, addConstraint, newRelNr);
 
-@memo
+//@memo
 Expr transform(addition(Expr lhsExpr, Expr rhsExpr), Env env, Universe uni, str () newResultAtom, void (str, set[AtomDecl], list[list[Atom]], list[list[Atom]]) addRelation, void (AlleFormula) addConstraint, str () newRelNr)
   = transform(lhs, rhs, Expr (Expr l,Expr r) {return addition(l,r);}, newResultAtom, addRelation, addConstraint, "plus", newRelNr, useCommutativity = true)
   when Expr lhs := transform(lhsExpr, env, uni, newResultAtom, addRelation, addConstraint, newRelNr),
        Expr rhs := transform(rhsExpr, env, uni, newResultAtom, addRelation, addConstraint, newRelNr);
-//  when list[Expr] transformedTerms := [transform(t, env, uni, newResultAtom, addRelation, addConstraint, newRelNr) | Expr t <- terms];
+
+@memo
+Expr transform(addition(list[Expr] terms), Env env, Universe uni, str () newResultAtom, void (str, set[AtomDecl], list[list[Atom]], list[list[Atom]]) addRelation, void (AlleFormula) addConstraint, str () newRelNr)
+  = transform(transformedTerms, Expr (list[Expr] exprs) {return addition(exprs);}, newResultAtom, addRelation, addConstraint, "plus", newRelNr)
+  when list[Expr] transformedTerms := [transform(t, env, uni, newResultAtom, addRelation, addConstraint, newRelNr) | Expr t <- terms];
+
 
 @memo
 Expr transform(multiplication(Expr lhsExpr, Expr rhsExpr), Env env, Universe uni, str () newResultAtom, void (str, set[AtomDecl], list[list[Atom]], list[list[Atom]]) addRelation, void (AlleFormula) addConstraint, str () newRelNr) 
@@ -83,58 +88,52 @@ private Expr transform(list[Expr] terms, Expr (list[Expr] operands) operation, s
     throw "Integer arithmetic expression can only be performed on unary relations";
   } 
    
-  map[Atom, int] pack(list[Atom] idx) {
-    map[Atom, int] result = ();
-    
-    for (Atom a <- idx) {
-      result[a] = a in result ? result[a] + 1 : 1;
-    }
-    
-    return result;
-  } 
+  //map[Atom, int] pack(list[Atom] idx) {
+  //  map[Atom, int] result = ();
+  //  
+  //  for (Atom a <- idx) {
+  //    result[a] = a in result ? result[a] + 1 : 1;
+  //  }
+  //  
+  //  return result;
+  //} 
+  //
+  //set[map[Atom,int]] packed = {};
   
-  set[map[Atom,int]] packed = {};
-  
-  list[list[Atom]] buildProductResult([], list[Atom] result) {
-    map[Atom,int] p = pack(result);
-    if (p notin packed) {
-      packed += p; 
-      return [result];
-    } else {
-      return [];
-    }
+  set[list[Atom]] buildProductResult([], list[Atom] result) {
+    return {result};
   }
     
-  default list[list[Atom]] buildProductResult([list[Atom] hd, *list[Atom] tl], list[Atom] resultSoFar) {
-    list[list[Atom]] result = [];
+  default set[list[Atom]] buildProductResult([list[Atom] hd, *list[Atom] tl], list[Atom] resultSoFar) {
+    set[list[Atom]] result = {};
     
     for (Atom a <- hd) {
-      list[list[Atom]] tmp = buildProductResult(tl, resultSoFar + a);
-      if (tmp != []) {
+      set[list[Atom]] tmp = buildProductResult(tl, resultSoFar + a);
+      //if (tmp != []) {
         result += tmp;
-      }
+      //}
     } 
     
     return result; 
   } 
 
-  list[list[Atom]] minProductResult = buildProductResult([r | Expr e <- terms, list[Atom] r := [a | [Atom a] <- e@minTuples]], []);
-  packed = {};
-  list[list[Atom]] maxProductResult = buildProductResult([r | Expr e <- terms, list[Atom] r := [a | [Atom a] <- e@maxTuples]], []);;
+  //list[list[Atom]] minProductResult = buildProductResult([r | Expr e <- terms, list[Atom] r := [a | [Atom a] <- e@minTuples]], []);
+  //packed = {};
+  set[list[Atom]] maxProductResult = buildProductResult([r | Expr e <- terms, list[Atom] r := [a | [Atom a] <- e@maxTuples]], []);;
   
-  set[AtomDecl] minResultAtoms = {};
+  //set[AtomDecl] minResultAtoms = {};
   set[AtomDecl] maxResultAtoms = {};
-  list[list[Atom]] lowerBound = [];
+  //list[list[Atom]] lowerBound = [];
   list[list[Atom]] upperBound = [];
   
   for (list[Atom] t <- maxProductResult) {
     AtomDecl resultAtom = atomTheoryAndValue("<newResultAtom()>", intTheory(), intExpr(operation([variable(a) | Atom a <- t])));
     list[Atom] newTuple = t + resultAtom.atom;
      
-    if (t in minProductResult) {
-      minResultAtoms += resultAtom;
-      lowerBound += [newTuple];
-    }
+    //if (t in minProductResult) {
+    //  minResultAtoms += resultAtom;
+    //  lowerBound += [newTuple];
+    //}
     maxResultAtoms += resultAtom;
     upperBound += [newTuple];
   } 
@@ -145,24 +144,25 @@ private Expr transform(list[Expr] terms, Expr (list[Expr] operands) operation, s
   str newRelName = "_<baseRelName>_<relNr>";
    
   addRelation(newResultRelName, maxResultAtoms, [[a.atom] | AtomDecl a <- maxResultAtoms],[[a.atom] | AtomDecl a <- maxResultAtoms]);
-  addRelation(newRelName, maxResultAtoms, lowerBound, upperBound);
+  //addRelation(newRelName, maxResultAtoms, lowerBound, upperBound);
+  addRelation(newRelName, maxResultAtoms, upperBound, upperBound);
        
-  Expr buildProductExpr([Expr e])                     = product(e@domain, variable(newResultRelName)); 
-  default Expr buildProductExpr([Expr hd, *Expr tl])  = product(hd@domain, buildProductExpr(tl));
+  //Expr buildProductExpr([Expr e])                     = product(e@domain, variable(newResultRelName)); 
+  //default Expr buildProductExpr([Expr hd, *Expr tl])  = product(hd@domain, buildProductExpr(tl));
    
   Expr buildJoinExpr([Expr e])                        = \join(e, variable(newRelName)); 
-  default Expr buildJoinExpr([*Expr hd, Expr tl])     = \join(buildJoinExpr(hd), tl); 
+  default Expr buildJoinExpr([Expr hd, *Expr tl])     = \join(hd, buildJoinExpr(tl)); 
    
    
-  AlleFormula buildDisjunctionFormula({list[Expr] lst})                        = nonEmpty(buildJoinExpr(lst)); 
-  default AlleFormula buildDisjunctionFormula({list[Expr] hd, *list[Expr] tl}) = disjunction(nonEmpty(buildJoinExpr(hd)), buildDisjunctionFormula(tl)); 
-  
-  AlleFormula buildDisjunctionFormulas(list[Expr] exprs) = buildDisjunctionFormula(permutations(exprs));
-   
-  addConstraint(subset(variable(newRelName), buildProductExpr(terms)));
-  addConstraint(universal([varDecl("e<i>", terms[i]@domain) | int i <- [0..size(terms)]], buildDisjunctionFormulas([variable("e<i>") | int i <- [0..size(terms)]]) ));
+  //AlleFormula buildDisjunctionFormula({list[Expr] lst})                        = nonEmpty(buildJoinExpr(lst)); 
+  //default AlleFormula buildDisjunctionFormula({list[Expr] hd, *list[Expr] tl}) = disjunction(nonEmpty(buildJoinExpr(hd)), buildDisjunctionFormula(tl)); 
+  //
+  //AlleFormula buildDisjunctionFormulas(list[Expr] exprs) = buildDisjunctionFormula(permutations(exprs));
+  // 
+  //addConstraint(subset(variable(newRelName), buildProductExpr(terms)));
+  //addConstraint(universal([varDecl("e<i>", terms[i]@domain) | int i <- [0..size(terms)]], buildDisjunctionFormulas([variable("e<i>") | int i <- [0..size(terms)]]) ));
     
-  return buildJoinExpr(terms)[@minTuples = [[r.atom] | AtomDecl r <- minResultAtoms]][@maxTuples = [[r.atom] | AtomDecl r <- maxResultAtoms]][@domain=variable(newResultRelName)]; 
+  return buildJoinExpr(reverse(terms))[@minTuples = [[r.atom] | AtomDecl r <- maxResultAtoms]][@maxTuples = [[r.atom] | AtomDecl r <- maxResultAtoms]][@domain=variable(newResultRelName)]; 
 }
 
 private Expr transform(Expr lhs, Expr rhs, Expr (Expr l, Expr r) operation, str () newResultAtom, void (str, set[AtomDecl], list[list[Atom]], list[list[Atom]]) addRelation, void (AlleFormula) addConstraint, str baseRelName, str () newRelNr, bool useCommutativity = false) {
@@ -199,17 +199,18 @@ private Expr transform(Expr lhs, Expr rhs, Expr (Expr l, Expr r) operation, str 
   str newRelName = "_<baseRelName>_<relNr>";
   
   addRelation(newResultRelName, maxResultAtoms, [[a.atom] | AtomDecl a <- maxResultAtoms],[[a.atom] | AtomDecl a <- maxResultAtoms]);
-  addRelation(newRelName, maxResultAtoms, lowerBound, upperBound);
+  //addRelation(newRelName, maxResultAtoms, lowerBound, upperBound);
+  addRelation(newRelName, maxResultAtoms, upperBound, upperBound);
   
   Expr domainLhs = lhs@domain;
   Expr domainRhs = rhs@domain;
        
-  addConstraint(subset(variable(newRelName), product(product(domainLhs, domainRhs), variable(newResultRelName))));
-  if (useCommutativity) { 
-    addConstraint(universal([varDecl("a", domainLhs), varDecl("b", domainRhs)], disjunction(nonEmpty(\join(variable("b"), \join(variable("a"), variable(newRelName)))), nonEmpty(\join(variable("a"), \join(variable("b"), variable(newRelName)))) )));
-  } else {
-    addConstraint(universal([varDecl("a", domainLhs), varDecl("b", domainRhs)], nonEmpty(\join(variable("b"), \join(variable("a"), variable(newRelName))))));
-  }
+  //addConstraint(subset(variable(newRelName), product(product(domainLhs, domainRhs), variable(newResultRelName))));
+  //if (useCommutativity) { 
+  //  addConstraint(universal([varDecl("a", domainLhs), varDecl("b", domainRhs)], disjunction(nonEmpty(\join(variable("b"), \join(variable("a"), variable(newRelName)))), nonEmpty(\join(variable("a"), \join(variable("b"), variable(newRelName)))) )));
+  //} else {
+  //  addConstraint(universal([varDecl("a", domainLhs), varDecl("b", domainRhs)], nonEmpty(\join(variable("b"), \join(variable("a"), variable(newRelName))))));
+  //}
     
   return \join(rhs, \join(lhs, variable(newRelName))[@domain=product(domainRhs, variable(newResultRelName))])[@minTuples = [[r.atom] | AtomDecl r <- minResultAtoms]][@maxTuples = [[r.atom] | AtomDecl r <- maxResultAtoms]][@domain=variable(newResultRelName)]; 
 }  

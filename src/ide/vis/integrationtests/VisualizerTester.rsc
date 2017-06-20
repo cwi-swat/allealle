@@ -31,15 +31,24 @@ void testPigeonHoleProblem() {
 
 void testRiverCrossingProblem() = translateAndVis(|project://allealle/examples/relational/rivercrossing.alle|);
 
+Problem rewriteCommutativeBinaryExpressions(Problem p) {
+  return bottom-up visit(p) {
+    case Expr e => rewrite(e)
+  } 
+}
+
+
 void translateAndVis(loc problem) { 
   Problem p = implodeProblem(problem);
+  //p = rewriteCommutativeBinaryExpressions(p);
+  
   ModelFinderResult result = checkInitialSolution(p);
   
   if (sat(Model currentModel, Universe uni, Model (Theory) nextModel, void () stop) := result) {
     renderModel(uni, currentModel, nextModel, stop);
   } else {
     println("Not satisfiable, can not visualize");
-  } 
+  }    
   
 }
 
