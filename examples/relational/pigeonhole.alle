@@ -1,13 +1,14 @@
 {p1, p2, p3, h1, h2}
 
-Pigeon:1	[{<p1>}, {<p1>,<p2>,<p3>}]
-Hole:1		[{}, {<h1>,<h2>}]
-nest:2		[{}, {<p1,h1>,<p1,h2>,<p2,h1>,<p2,h2>,<p3,h1>,<p3,h2>}]
+Pigeon:1	[{<p1>,<p2>}, {<p1>,<p2>,<p3>}]
+Hole:1		[{<h1>}, {<h1>,<h2>}]
+nest:2		[{<p1,h1>}, {<p1,h1>,<p1,h2>,<p2,h1>,<p2,h2>,<p3,h1>,<p3,h2>}]
 
 // the nest relation must lie in the product of Pigeon x Hole
 nest in Pigeon -> Hole
+
 // Every pigeon has a hole
 forall p: Pigeon | one p.nest
+
 // A hole can only contain 0 or 1 pigeon
 forall h: Hole | lone nest.h
-

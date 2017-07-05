@@ -1,5 +1,7 @@
 module theories::AST
+
 import IO;
+
 data Problem = problem(Universe uni, list[RelationalBound] bounds, list[AlleFormula] constraints);
 
 data Universe = universe(list[AtomDecl] atoms);

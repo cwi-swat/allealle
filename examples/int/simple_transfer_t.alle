@@ -36,6 +36,6 @@ forall s1:State, s2:State | s1->s2 in ordering =>
      balance2[s2] = (balance2[s1]) - (am[s2]))    
   )
 
-exists s:State | balance1[s] = 199
+exists s:State | balance1[s] = 200
 
 //some am

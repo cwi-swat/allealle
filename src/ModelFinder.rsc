@@ -44,10 +44,10 @@ ModelFinderResult checkInitialSolution(Problem problem) {
 	print("Translating problem to SAT formula...");
 	tuple[Formula formula, int time] t = benchmark(translate, augmentedProblem, ie.env);
 	print("done, took: <(t.time/1000000)> ms\n");
-	 
-	//print("Converting to CNF...");
-	//tuple[Formula formula, int time] cnf = <t.result.formula, t.time>; //benchmark(convertToCNF, t.result.formula);
-
+//	 
+//	//print("Converting to CNF...");
+//	//tuple[Formula formula, int time] cnf = <t.result.formula, t.time>; //benchmark(convertToCNF, t.result.formula);
+//
 	if (t.formula == \false()) {
 		return trivialUnsat();
 	} else if (t.formula == \true()) {

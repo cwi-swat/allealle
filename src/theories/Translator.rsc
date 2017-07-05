@@ -50,15 +50,15 @@ Formula translate(Problem p, Environment env) {
 
 Environment constructSingleton(str newVarName, list[Atom] vector, RelationMatrix origMatrix) = (newVarName : (vector : <\true(), origMatrix[vector].ext>));
 
-@memo
+//@memo
 Formula translateFormula(empty(Expr expr), Environment env, Universe uni, void (set[TheoryFormula]) addTheoryConstraint) 
   = \not(translateFormula(nonEmpty(expr), env, uni, addTheoryConstraint));
 
-@memo
+//@memo
 Formula translateFormula(atMostOne(Expr expr), Environment env, Universe uni, void (set[TheoryFormula]) addTheoryConstraint)   
   = \or(translateFormula(empty(expr), env, uni, addTheoryConstraint), translateFormula(exactlyOne(expr), env, uni, addTheoryConstraint));
 
-@memo
+//@memo
 Formula translateFormula(exactlyOne(Expr expr), Environment env, Universe uni, void (set[TheoryFormula]) addTheoryConstraint) 
   = (\false() | \or(it, \and(m[x].relForm, (\true() | \and(it, \not(m[y].relForm)) | Index y <- m, y != x))) | Index x <- m)    
     when RelationMatrix m := translateExpression(expr, env, uni, addTheoryConstraint);
@@ -91,7 +91,7 @@ Formula translateFormula(exactlyOne(Expr expr), Environment env, Universe uni, v
 //  return orClause;
 //}
 
-@memo
+//@memo
 Formula translateFormula(nonEmpty(Expr expr), Environment env, Universe uni, void (set[TheoryFormula]) addTheoryConstraint) = (\false() | \or(it,  m[x].relForm) | Index x <- m)
   when RelationMatrix m := translateExpression(expr, env, uni, addTheoryConstraint);
 //{
@@ -109,7 +109,7 @@ Formula translateFormula(nonEmpty(Expr expr), Environment env, Universe uni, voi
 //  return orClause;
 //}
 
-@memo
+//@memo
 Formula translateFormula(subset(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni, void (set[TheoryFormula]) addTheoryConstraint) 
   //= m == () ? \false() : (\true() | \and(it, m[x]) | Index x <- m, x.theory == relTheory())
   //when Binding lhs := translateExpression(lhsExpr, env, uni),
@@ -146,31 +146,31 @@ Formula translateFormula(subset(Expr lhsExpr, Expr rhsExpr), Environment env, Un
   return result;
 }
      
-@memo     
+//@memo     
 Formula translateFormula(equal(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni, void (set[TheoryFormula]) addTheoryConstraint)
   = \and(translateFormula(subset(lhsExpr, rhsExpr), env, uni, addTheoryConstraint), translateFormula(subset(rhsExpr, lhsExpr), env, uni, addTheoryConstraint));
 
-@memo
+//@memo
 Formula translateFormula(inequal(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni, void (set[TheoryFormula]) addTheoryConstraint) 
   = translateFormula(negation(equal(lhsExpr, rhsExpr)), env, uni, addTheoryConstraint);
   
-@memo  
+//@memo  
 Formula translateFormula(negation(AlleFormula form), Environment env, Universe uni, void (set[TheoryFormula]) addTheoryConstraint) 
   = \not(translateFormula(form, env, uni, addTheoryConstraint));
 
-@memo  
+//@memo  
 Formula translateFormula(conjunction(AlleFormula lhsForm, AlleFormula rhsForm), Environment env, Universe uni, void (set[TheoryFormula]) addTheoryConstraint)
   = \and(translateFormula(lhsForm, env, uni, addTheoryConstraint), translateFormula(rhsForm, env, uni, addTheoryConstraint));
 
-@memo  
+//@memo  
 Formula translateFormula(disjunction(AlleFormula lhsForm, AlleFormula rhsForm), Environment env, Universe uni, void (set[TheoryFormula]) addTheoryConstraint)
   = \or(translateFormula(lhsForm, env, uni, addTheoryConstraint), translateFormula(rhsForm, env, uni, addTheoryConstraint));
 
-@memo  
+//@memo  
 Formula translateFormula(implication(AlleFormula lhsForm, AlleFormula rhsForm), Environment env, Universe uni, void (set[TheoryFormula]) addTheoryConstraint)
   = \or(\not(translateFormula(lhsForm, env, uni, addTheoryConstraint)), translateFormula(rhsForm, env, uni, addTheoryConstraint));
 
-@memo  
+//@memo  
 Formula translateFormula(equality(AlleFormula lhsForm, AlleFormula rhsForm), Environment env, Universe uni, void (set[TheoryFormula]) addTheoryConstraint)
   = \or(\and(translateFormula(lhsForm, env, uni, addTheoryConstraint),  translateFormula(rhsForm, env, uni, addTheoryConstraint)), \and(\not(translateFormula(lhsForm, env, uni, addTheoryConstraint)), \not(translateFormula(rhsForm, env, uni, addTheoryConstraint))));
 
@@ -178,7 +178,7 @@ data Formula
   = substitutes(Environment subs)
   ; 
 
-@memo
+//@memo
 Formula translateFormula(universal(list[VarDeclaration] decls, AlleFormula form), Environment env, Universe uni, void (set[TheoryFormula]) addTheoryConstraint) 
 {
   Formula buildOr([], Environment extendedEnvironment) = substitutes(extendedEnvironment);
@@ -212,7 +212,7 @@ Formula translateFormula(universal(list[VarDeclaration] decls, AlleFormula form)
   //when [VarDeclaration hd, *t] := decls,
   //     Binding m := translateExpression(hd.binding, env, uni);
 
-@memo   
+//@memo   
 Formula translateFormula(existential(list[VarDeclaration] decls, AlleFormula form), Environment env, Universe uni, void (set[TheoryFormula]) addTheoryConstraint) {
   set[Formula] clauses = {};
     
@@ -240,43 +240,43 @@ Formula translateFormula(existential(list[VarDeclaration] decls, AlleFormula for
 
 default Formula translateFormula(AlleFormula f, Environment env, Universe uni, void (set[TheoryFormula]) addTheoryConstraint) { throw "Translation of formula \'<f>\' not supported"; }
 
-@memo
+//@memo
 RelationMatrix translateExpression(variable(str name), Environment env, Universe uni, void (set[TheoryFormula]) addTheoryConstraint) = env[name];
-@memo
+//@memo
 RelationMatrix translateExpression(transpose(Expr expr), Environment env, Universe uni, void (set[TheoryFormula]) addTheoryConstraint) = transpose(m)
   when RelationMatrix m := translateExpression(expr, env, uni, addTheoryConstraint); 
-@memo
+//@memo
 RelationMatrix translateExpression(closure(Expr expr), Environment env, Universe uni, void (set[TheoryFormula]) addTheoryConstraint) = transitiveClosure(m, uni, addTheoryConstraint)
   when RelationMatrix m := translateExpression(expr, env, uni, addTheoryConstraint);
-@memo     
+//@memo     
 RelationMatrix translateExpression(reflexClosure(Expr expr), Environment env, Universe uni, void (set[TheoryFormula]) addTheoryConstraint) = reflexiveTransitiveClosure(m, uni, addTheoryConstraint)
   when RelationMatrix m := translateExpression(expr, env, uni, addTheoryConstraint);
-@memo    
+//@memo    
 RelationMatrix translateExpression(union(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni, void (set[TheoryFormula]) addTheoryConstraint) = disjunction(lhs,rhs)  
   when RelationMatrix lhs := translateExpression(lhsExpr, env, uni, addTheoryConstraint),
        RelationMatrix rhs := translateExpression(rhsExpr, env, uni, addTheoryConstraint);
-@memo  
+//@memo  
 RelationMatrix translateExpression(intersection(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni, void (set[TheoryFormula]) addTheoryConstraint) = conjunction(lhs, rhs)
   when RelationMatrix lhs := translateExpression(lhsExpr, env, uni, addTheoryConstraint),
        RelationMatrix rhs := translateExpression(rhsExpr, env, uni, addTheoryConstraint);
-@memo
+//@memo
 RelationMatrix translateExpression(difference(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni, void (set[TheoryFormula]) addTheoryConstraint) = difference(lhs, rhs)
   when RelationMatrix lhs := translateExpression(lhsExpr, env, uni, addTheoryConstraint),
        RelationMatrix rhs := translateExpression(rhsExpr, env, uni, addTheoryConstraint);
 
-@memo
+//@memo
 RelationMatrix translateExpression(\join(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni, void (set[TheoryFormula]) addTheoryConstraint) = \join(lhs, rhs, addTheoryConstraint) 
   when RelationMatrix lhs := translateExpression(lhsExpr, env, uni, addTheoryConstraint), 
        RelationMatrix rhs := translateExpression(rhsExpr, env, uni, addTheoryConstraint);
 
 RelationMatrix translateExpression(accessorJoin(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni, void (set[TheoryFormula]) addTheoryConstraint) = translateExpression(\join(rhsExpr, lhsExpr), env, uni, addTheoryConstraint);
 
-@memo    
+//@memo    
 RelationMatrix translateExpression(product(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni, void (set[TheoryFormula]) addTheoryConstraint) = product(lhs, rhs)
   when RelationMatrix lhs := translateExpression(lhsExpr, env, uni, addTheoryConstraint), 
        RelationMatrix rhs := translateExpression(rhsExpr, env, uni, addTheoryConstraint);
 
-@memo
+//@memo
 RelationMatrix translateExpression(ifThenElse(AlleFormula caseForm, Expr thenExpr, Expr elseExpr), Environment env, Universe uni, void (set[TheoryFormula]) addTheoryConstraint) {
   Formula \case = translateFormula(caseForm, env, uni, addTheoryConstraint);
   RelationMatrix then = translateExpression(thenExpr, env, uni, addTheoryConstraint);
@@ -313,7 +313,7 @@ RelationMatrix translateExpression(ifThenElse(AlleFormula caseForm, Expr thenExp
 //       RelationMatrix elseRm := translateExpression(elseExpr, env, uni),
 //       Formula translatedCase := translateFormula(caseForm, env, uni);
 
-@memo     
+//@memo     
 RelationMatrix translateExpression(comprehension(list[VarDeclaration] decls, AlleFormula form), Environment env, Universe uni, void (set[TheoryFormula]) addTheoryConstraint) {
   RelationMatrix calculate(Index currentIdx, [], Environment extendedEnv, Formula partialForm, ExtensionEncoding extension) =
     (currentIdx : <\and(partialForm, translateFormula(form, extendedEnv, uni, addTheoryConstraint)), extension>);

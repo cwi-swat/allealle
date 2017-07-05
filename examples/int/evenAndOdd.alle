@@ -1,9 +1,9 @@
-{a(int),b(int),c(int),d(int),e(int)}
+{a(int),b(int),c(int),d(int)}
 
-Num:1   [{<a>,<b>,<c>,<d>,<e>},{<a>,<b>,<c>,<d>,<e>}]
-Even:1  [{},{<a>,<b>,<c>,<d>,<e>}]
-Odd:1   [{},{<a>,<b>,<c>,<d>,<e>}]
-twice:2 [{},{<a,b>,<a,c>,<a,d>,<a,e>,<b,a>,<b,c>,<b,d>,<b,e>,<c,a>,<c,b>,<c,e>,<d,a>,<d,b>,<d,c>,<d,e>,<e,a>,<e,b>,<e,c>,<e,d>}]
+Num:1   [{<a>,<b>,<c>,<d>},{<a>,<b>,<c>,<d>}]
+Even:1  [{},{<a>,<b>,<c>,<d>}]
+Odd:1   [{},{<a>,<b>,<c>,<d>}]
+//twice:2 [{},{<a,b>,<a,c>,<a,d>,<a,e>,<b,a>,<b,c>,<b,d>,<b,e>,<c,a>,<c,b>,<c,e>,<d,a>,<d,b>,<d,c>,<d,e>,<e,a>,<e,b>,<e,c>,<e,d>}]
 
 Even in Num
 Odd in Num
@@ -17,8 +17,8 @@ forall n1:Num, n2:Num\n1 | n1 != n2
 
 forall n:Num| ((n % 2) = 0) <=> n in Even
 
-twice == {n1: Num, n2:Num\n1 | n2 = n1 * 2}
+//twice == {n1: Num, n2:Num\n1 | n2 = n1 * 2}
 
-exists n1:Num, n2:Num\n1, n3:Num\(n1++n2) | n1->n2 in twice && n2->n3 in twice
+//exists n1:Num, n2:Num\n1, n3:Num\(n1++n2) | n1->n2 in twice && n2->n3 in twice
 
 //exists n1:Num, n2:Num\n1 | n1 in Odd && n1->n2 in twice

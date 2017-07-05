@@ -49,7 +49,7 @@ set[SMTVar] collectSMTVars(Universe uni, Environment env)  {
       result += <name, relTheory()>;
     }
     
-    for (int i <- rm[idx].ext, /just(tuple[str var, Theory t] r) := constructExtendedTheoryVar(rm[idx].ext[i])) {
+    for (int i <- rm[idx].ext, just(tuple[str var, Theory t] r) := constructExtendedTheoryVar(rm[idx].ext[i])) {
       result += <r.var, r.t>;
     }
   }

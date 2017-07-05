@@ -1,13 +1,16 @@
-{vvd(int)=33,pvv(int)=20,cda(int)=19,d66(int)=19,groenlinks(int)=14,sp(int)=14,pvda(int)=9,christenunie(int)=5,pvdd(int)=5,vijftigplus(int)=4,sgp(int)=3,denk(int)=3,fvd(int)=2,total(int),_c75(int)=75,_r1(int)}
+{vvd(int)=33,pvv(int)=20,cda(int)=19,d66(int)=19,groenlinks(int)=14,sp(int)=14,pvda(int)=9,christenunie(int)=5,pvdd(int)=5,vijftigplus(int)=4,sgp(int)=3,denk(int)=3,fvd(int)=2,total(int),_c75(int)=75,_c4(int)=4,_r2(int),_r1(int)}
 
 Party:1 [{<vvd>,<pvv>,<cda>,<d66>,<groenlinks>,<sp>,<pvda>,<christenunie>,<pvdd>,<vijftigplus>,<sgp>,<denk>,<fvd>}, {<vvd>,<pvv>,<cda>,<d66>,<groenlinks>,<sp>,<pvda>,<christenunie>,<pvdd>,<vijftigplus>,<sgp>,<denk>,<fvd>}]
-Goverment:1 [{}, {<vvd>,<pvv>,<d66>,<groenlinks>,<sp>,<pvda>,<christenunie>,<pvdd>,<vijftigplus>}]
+Goverment:1 [{<vvd>,<cda>,<d66>}, {<vvd>,<cda>,<pvv>,<d66>,<groenlinks>,<sp>,<pvda>,<christenunie>,<pvdd>,<vijftigplus>}]
 Opposition:1 [{}, {<vvd>,<pvv>,<cda>,<d66>,<groenlinks>,<sp>,<pvda>,<christenunie>,<pvdd>,<vijftigplus>,<sgp>,<denk>,<fvd>}]
 Total:1 [{<total>}, {<total>}]
 exclusion:2 [{<vvd,pvv>,<cda,pvv>,<d66,pvv>,<groenlinks,pvv>,<sp,pvv>,<pvda,pvv>,<christenunie,pvv>,<pvdd,pvv>,<sp,vvd>}, {<vvd,pvv>,<cda,pvv>,<d66,pvv>,<groenlinks,pvv>,<sp,pvv>,<pvda,pvv>,<christenunie,pvv>,<pvdd,pvv>,<sp,vvd>}]
 inclusion:2 [{<pvdd,groenlinks>,<pvdd,christenunie>}, {<pvdd,groenlinks>,<pvdd,christenunie>}]
 _sum_1:1 [{<_r1>}, {<_r1>}]
+_C75:1 [{<_c75>}, {<_c75>}]
+_car_2:1 [{<_r2>}, {<_r2>}]
 _SR_vvd:1 [{<vvd>}, {<vvd>}]
+_SR_cda:1 [{<cda>}, {<cda>}]
 _SR_pvv:1 [{<pvv>}, {<pvv>}]
 _SR_d66:1 [{<d66>}, {<d66>}]
 _SR_groenlinks:1 [{<groenlinks>}, {<groenlinks>}]
@@ -16,7 +19,7 @@ _SR_pvda:1 [{<pvda>}, {<pvda>}]
 _SR_christenunie:1 [{<christenunie>}, {<christenunie>}]
 _SR_pvdd:1 [{<pvdd>}, {<pvdd>}]
 _SR_vijftigplus:1 [{<vijftigplus>}, {<vijftigplus>}]
-_C75:1 [{<_c75>}, {<_c75>}]
+_C4:1 [{<_c4>}, {<_c4>}]
 
 
 ((Goverment++Opposition) == Party)
@@ -25,5 +28,7 @@ _C75:1 [{<_c75>}, {<_c75>}]
 (forall p1:Party, p2:(Party\p1) | (((p1->p2) in inclusion) => ((p1 in Goverment) => (p2 in Goverment))))
 (Total = _sum_1)
 (Total > _C75)
-(forall e0:_SR_vvd, e1:_SR_pvv, e2:_SR_d66, e3:_SR_groenlinks, e4:_SR_sp, e5:_SR_pvda, e6:_SR_christenunie, e7:_SR_pvdd, e8:_SR_vijftigplus | (_sum_1 = (((e0 in Goverment) ? e0 : 0) + ((e1 in Goverment) ? e1 : 0) + ((e2 in Goverment) ? e2 : 0) + ((e3 in Goverment) ? e3 : 0) + ((e4 in Goverment) ? e4 : 0) + ((e5 in Goverment) ? e5 : 0) + ((e6 in Goverment) ? e6 : 0) + ((e7 in Goverment) ? e7 : 0) + ((e8 in Goverment) ? e8 : 0))))
+(_car_2 = _C4)
+(forall e0:_SR_vvd, e1:_SR_cda, e2:_SR_pvv, e3:_SR_d66, e4:_SR_groenlinks, e5:_SR_sp, e6:_SR_pvda, e7:_SR_christenunie, e8:_SR_pvdd, e9:_SR_vijftigplus | (_sum_1 = (((e0 in Goverment) ? e0 : 0) + ((e1 in Goverment) ? e1 : 0) + ((e2 in Goverment) ? e2 : 0) + ((e3 in Goverment) ? e3 : 0) + ((e4 in Goverment) ? e4 : 0) + ((e5 in Goverment) ? e5 : 0) + ((e6 in Goverment) ? e6 : 0) + ((e7 in Goverment) ? e7 : 0) + ((e8 in Goverment) ? e8 : 0) + ((e9 in Goverment) ? e9 : 0))))
+(forall e0:_SR_vvd, e1:_SR_cda, e2:_SR_pvv, e3:_SR_d66, e4:_SR_groenlinks, e5:_SR_sp, e6:_SR_pvda, e7:_SR_christenunie, e8:_SR_pvdd, e9:_SR_vijftigplus | (_car_2 = (((e0 in Goverment) ? 1 : 0) + ((e1 in Goverment) ? 1 : 0) + ((e2 in Goverment) ? 1 : 0) + ((e3 in Goverment) ? 1 : 0) + ((e4 in Goverment) ? 1 : 0) + ((e5 in Goverment) ? 1 : 0) + ((e6 in Goverment) ? 1 : 0) + ((e7 in Goverment) ? 1 : 0) + ((e8 in Goverment) ? 1 : 0) + ((e9 in Goverment) ? 1 : 0))))
 

@@ -15,6 +15,7 @@ syntax AlleFormula
   | gte:        Expr lhs "\>=" Expr rhs
   | intEqual:   Expr lhs "="   Expr rhs
   | intInequal: Expr lhs "!="  Expr rhs
+  | minimize:   "minimize" Expr expr
   ; 
   
 syntax Expr
@@ -31,4 +32,4 @@ syntax Expr
 
 lexical IntLit = [0-9]+;
 
-keyword Keywords = "int" | "sum";
+keyword Keywords = "int" | "sum" | "minimize";

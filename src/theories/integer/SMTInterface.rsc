@@ -35,6 +35,7 @@ str compile(addition(list[Formula] forms))        = "(+ <for (f <- forms) {><com
 str compile(multiplication(list[Formula] forms))  = "(* <for (f <- forms) {><compile(f)> <}>)";
 str compile(modulo(Formula lhs, Formula rhs))     = "(mod <compile(lhs)> <compile(rhs)>)";  
 str compile(division(Formula lhs, Formula rhs))   = "(div <compile(lhs)> <compile(rhs)>)"; 
+str compile(minimize(Formula f))                  = "(minimize <compile(f)>)";
 
 Formula getValue(Value smtValue, SMTVar var) = toFormula(smtValue) when var.theory == intTheory();
  

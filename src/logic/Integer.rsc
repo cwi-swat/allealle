@@ -18,6 +18,7 @@ data Formula
 	| multiplication(list[Formula] forms)
 	| division(Formula lhs, Formula rhs)
 	| modulo(Formula lhs, Formula rhs) 
+	| minimize(Formula f)
 	;
 	
 Formula addition(\int(0), Formula rhs) = rhs;

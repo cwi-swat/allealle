@@ -26,7 +26,6 @@ triggeredEvent in State->(Withdraw++Deposit)
 // Entity constraints
 forall s:State | (some s.ordering || some ordering.s) && some s.accountInState && some (s.accountInState).balance
 
-
 // Initial state
 balance[accountInState[InitialState]] = 0
 

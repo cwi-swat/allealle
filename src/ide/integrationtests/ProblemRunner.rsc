@@ -48,15 +48,19 @@ void printModel(empty()) { println("no more models"); }
 void printModel(Model model) {
   str getVectorLabel(list[Atom] vector) = "\<<intercalate(",", [a | Atom a <- vector])>\>";
   
-  str getAtomLabel(atomOnly(str name)) = name;
-  str getAtomLabel(atomAndTheory(str name, Theory t)) = "<name> (no value. Bug?)";
-  str getAtomLabel(atomTheoryAndValue(str name, intTheory(), intExpr(intLit(int i)))) = "<name> (<i>)";
+  str getAtomLabel(atom(Atom name)) = name;
+  str getAtomLabel(varAtom(Atom name, Theory theory, AtomValue val)) = "<name> (<i>)" when intExpr(intLit(int i)) := val;
+  str getAtomLabel(fixedAtom(Atom name, Theory theory, AtomValue val)) = "<name> (<i>)" when intExpr(intLit(int i)) := val;
+
+  //str getAtomLabel(atomOnly(str name)) = name;
+  //str getAtomLabel(atomAndTheory(str name, Theory t)) = "<name> (no value. Bug?)";
+  //str getAtomLabel(atomTheoryAndValue(str name, intTheory(), intExpr(intLit(int i)))) = "<name> (<i>)";
 
   println("-----------");
   if (size(model.visibleAtoms) == 0) {
     println("No visible atoms");
   } else { 
-    println("Visible atoms: <intercalate(", ", [getAtomLabel(ad) | AtomDecl ad <- model.visibleAtoms])>");
+    println("Visible atoms: <intercalate(", ", [getAtomLabel(ma) | ModelAtom ma <- model.visibleAtoms])>");
   }
   println("");
   bool visibleRel = true;

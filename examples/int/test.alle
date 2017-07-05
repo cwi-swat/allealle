@@ -1,4 +1,4 @@
- {a(int),b(int),c(int)}
+{a(int),b(int),c(int)}
 
 A:1[{},{<a>,<b>,<c>}]
 B:1[{},{<a>,<b>,<c>}]
@@ -6,3 +6,7 @@ B:1[{},{<a>,<b>,<c>}]
 (A\B) = 15
 (A&B) = 10
 (B\A) = 5
+
+some A
+
+minimize sum(A)

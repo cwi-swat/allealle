@@ -1,10 +1,8 @@
-{vvd(int)=33, pvv(int)=20, cda(int)=19, d66(int)=19, groenlinks(int)=14, sp(int)=14, pvda(int)=9, christenunie(int)=5, pvdd(int)=5,vijftigplus(int)=4, sgp(int)=3,denk(int)=3,fvd(int)=2,total(int)}
+{vvd(int)=33, pvv(int)=20, cda(int)=19, d66(int)=19, groenlinks(int)=14, sp(int)=14, pvda(int)=9, christenunie(int)=5, pvdd(int)=5,vijftigplus(int)=4, sgp(int)=3,denk(int)=3,fvd(int)=2}
 
 Party:1 [{<vvd>,<pvv>,<cda>,<d66>,<groenlinks>,<sp>,<pvda>,<christenunie>,<pvdd>,<vijftigplus>,<sgp>,<denk>,<fvd>}, {<vvd>,<pvv>,<cda>,<d66>,<groenlinks>,<sp>,<pvda>,<christenunie>,<pvdd>,<vijftigplus>,<sgp>,<denk>,<fvd>}]
-Goverment:1 [{}, {<vvd>,<pvv>,<d66>,<groenlinks>,<sp>,<pvda>,<christenunie>,<pvdd>,<vijftigplus>}]
+Goverment:1 [{}, {<vvd>,<cda>,<pvv>,<d66>,<groenlinks>,<sp>,<pvda>,<christenunie>,<pvdd>}]
 Opposition:1 [{}, {<vvd>,<pvv>,<cda>,<d66>,<groenlinks>,<sp>,<pvda>,<christenunie>,<pvdd>,<vijftigplus>,<sgp>,<denk>,<fvd>}]
-
-Total:1[{<total>},{<total>}]
 
 exclusion:2 [{<vvd,pvv>,<cda,pvv>,<d66,pvv>,<groenlinks,pvv>,<sp,pvv>,<pvda,pvv>,<christenunie,pvv>,<pvdd,pvv>,<sp,vvd>}, {<vvd,pvv>,<cda,pvv>,<d66,pvv>,<groenlinks,pvv>,<sp,pvv>,<pvda,pvv>,<christenunie,pvv>,<pvdd,pvv>,<sp,vvd>}]
 inclusion:2 [{<pvdd,groenlinks>,<pvdd,christenunie>},{<pvdd,groenlinks>,<pvdd,christenunie>}]
@@ -15,6 +13,6 @@ no Goverment&Opposition
 forall p1:Party, p2:Party\p1 | p1->p2 in exclusion => (p1 in Goverment => not (p2 in Goverment))
 forall p1:Party, p2:Party\p1 | p1->p2 in inclusion => (p1 in Goverment => p2 in Goverment)
 
-//sum(Goverment) > 75
-Total = sum(Goverment)
-Total > 75
+sum(Goverment) > 75
+
+#Goverment < 5
