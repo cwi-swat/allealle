@@ -15,7 +15,6 @@ syntax AlleFormula
   | gte:        Expr lhs "\>=" Expr rhs
   | intEqual:   Expr lhs "="   Expr rhs
   | intInequal: Expr lhs "!="  Expr rhs
-  | minimize:   "minimize" Expr expr
   ; 
   
 syntax Expr

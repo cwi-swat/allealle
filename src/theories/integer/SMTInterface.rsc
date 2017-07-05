@@ -11,7 +11,6 @@ import List;
 import String; 
  
 Maybe[tuple[str,Theory]] constructExtendedTheoryVar({form(Formula _, equal(intVar(str name), Formula r))}) = just(<"<name>", intTheory()>); 
-//Maybe[tuple[str,Theory]] constructExtendedTheoryVar({form(Formula _, equal(Formula _, \int(int _)))}) = nothing();
 
 Maybe[tuple[str,Theory]] constructExtendedTheoryVar(atomAndTheory(str atom, intTheory())) = just(<"<atom>", intTheory()>); 
 Maybe[tuple[str,Theory]] constructExtendedTheoryVar(atomTheoryAndValue(str atom, intTheory(), intExpr(Expr expr))) = just(<"<atom>", intTheory()>) when \int(int i) := exprToForm(expr); 
@@ -35,7 +34,6 @@ str compile(addition(list[Formula] forms))        = "(+ <for (f <- forms) {><com
 str compile(multiplication(list[Formula] forms))  = "(* <for (f <- forms) {><compile(f)> <}>)";
 str compile(modulo(Formula lhs, Formula rhs))     = "(mod <compile(lhs)> <compile(rhs)>)";  
 str compile(division(Formula lhs, Formula rhs))   = "(div <compile(lhs)> <compile(rhs)>)"; 
-str compile(minimize(Formula f))                  = "(minimize <compile(f)>)";
 
 Formula getValue(Value smtValue, SMTVar var) = toFormula(smtValue) when var.theory == intTheory();
  

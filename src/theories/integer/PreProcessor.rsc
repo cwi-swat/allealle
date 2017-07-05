@@ -9,39 +9,27 @@ import List;
 import util::Maybe;
 import Node;
 
-//@memo
 AlleFormula transform(intEqual(Expr lhsExpr, Expr rhsExpr), Env env, Universe uni, str () newResultAtom, void (str, set[AtomDecl], list[list[Atom]], list[list[Atom]]) addRelation, void (AlleFormula) addConstraint, str () newRelNr)
   = intEqual(transform(lhsExpr, env, uni, newResultAtom, addRelation, addConstraint, newRelNr), transform(rhsExpr, env, uni, newResultAtom, addRelation, addConstraint, newRelNr));
 
-//@memo 
 AlleFormula transform(intEqual(Expr lhsExpr, Expr rhsExpr), Env env, Universe uni, str () newResultAtom, void (str, set[AtomDecl], list[list[Atom]], list[list[Atom]]) addRelation, void (AlleFormula) addConstraint, str () newRelNr)
   = intEqual(transform(lhsExpr, env, uni, newResultAtom, addRelation, addConstraint, newRelNr), transform(rhsExpr, env, uni, newResultAtom, addRelation, addConstraint, newRelNr));
 
-//@memo
 AlleFormula transform(intInequal(Expr lhsExpr, Expr rhsExpr), Env env, Universe uni, str () newResultAtom, void (str, set[AtomDecl], list[list[Atom]], list[list[Atom]]) addRelation, void (AlleFormula) addConstraint, str () newRelNr)
   = intInequal(transform(lhsExpr, env, uni, newResultAtom, addRelation, addConstraint, newRelNr), transform(rhsExpr, env, uni, newResultAtom, addRelation, addConstraint, newRelNr));
 
-//@memo
 AlleFormula transform(gt(Expr lhsExpr, Expr rhsExpr), Env env, Universe uni, str () newResultAtom, void (str, set[AtomDecl], list[list[Atom]], list[list[Atom]]) addRelation, void (AlleFormula) addConstraint, str () newRelNr)
   = gt(transform(lhsExpr, env, uni, newResultAtom, addRelation, addConstraint, newRelNr), transform(rhsExpr, env, uni, newResultAtom, addRelation, addConstraint, newRelNr));
 
-//@memo
 AlleFormula transform(gte(Expr lhsExpr, Expr rhsExpr), Env env, Universe uni, str () newResultAtom, void (str, set[AtomDecl], list[list[Atom]], list[list[Atom]]) addRelation, void (AlleFormula) addConstraint, str () newRelNr)
   = gte(transform(lhsExpr, env, uni, newResultAtom, addRelation, addConstraint, newRelNr), transform(rhsExpr, env, uni, newResultAtom, addRelation, addConstraint, newRelNr));
 
-//@memo
 AlleFormula transform(lt(Expr lhsExpr, Expr rhsExpr), Env env, Universe uni, str () newResultAtom, void (str, set[AtomDecl], list[list[Atom]], list[list[Atom]]) addRelation, void (AlleFormula) addConstraint, str () newRelNr)
   = lt(transform(lhsExpr, env, uni, newResultAtom, addRelation, addConstraint, newRelNr), transform(rhsExpr, env, uni, newResultAtom, addRelation, addConstraint, newRelNr));
 
-//@memo
 AlleFormula transform(lte(Expr lhsExpr, Expr rhsExpr), Env env, Universe uni, str () newResultAtom, void (str, set[AtomDecl], list[list[Atom]], list[list[Atom]]) addRelation, void (AlleFormula) addConstraint, str () newRelNr)
   = lte(transform(lhsExpr, env, uni, newResultAtom, addRelation, addConstraint, newRelNr), transform(rhsExpr, env, uni, newResultAtom, addRelation, addConstraint, newRelNr));
 
-AlleFormula transform(minimize(Expr expr), Env env, Universe uni, str () newResultAtom, void (str, set[AtomDecl], list[list[Atom]], list[list[Atom]]) addRelation, void (AlleFormula) addConstraint, str () newRelNr)
-  = minimize(transform(expr, env, uni, newResultAtom, addRelation, addConstraint, newRelNr));
-
-
-//@memo
 Expr transform(intLit(int i), Env env, Universe uni, str () newResultAtom, void (str, set[AtomDecl], list[list[Atom]], list[list[Atom]]) addRelation, void (AlleFormula) addConstraint, str () newRelNr) {
   str consRelName = "_C<i>";
   AtomDecl constantAtom = atomTheoryAndValue("_c<i>", intTheory(), intExpr(intLit(i)));
@@ -50,40 +38,28 @@ Expr transform(intLit(int i), Env env, Universe uni, str () newResultAtom, void 
   return variable(consRelName)[@minTuples=[[constantAtom.atom]]][@maxTuples=[[constantAtom.atom]]][@domain=variable(consRelName)];
 }
   
-//@memo 
 Expr transform(subtraction(Expr lhsExpr, Expr rhsExpr), Env env, Universe uni, str () newResultAtom, void (str, set[AtomDecl], list[list[Atom]], list[list[Atom]]) addRelation, void (AlleFormula) addConstraint, str () newRelNr) 
   = transform(lhs, rhs, Expr (Expr l, Expr r) {return addition(l,neg(r));}, newResultAtom, addRelation, addConstraint, "min", newRelNr)
   when Expr lhs := transform(lhsExpr, env, uni, newResultAtom, addRelation, addConstraint, newRelNr),
        Expr rhs := transform(rhsExpr, env, uni, newResultAtom, addRelation, addConstraint, newRelNr);
 
-////@memo
-//Expr transform(addition(Expr lhsExpr, Expr rhsExpr), Env env, Universe uni, str () newResultAtom, void (str, set[AtomDecl], list[list[Atom]], list[list[Atom]]) addRelation, void (AlleFormula) addConstraint, str () newRelNr)
-//  = transform(lhs, rhs, Expr (Expr l,Expr r) {return addition(l,r);}, newResultAtom, addRelation, addConstraint, "plus", newRelNr, useCommutativity = true)
-//  when Expr lhs := transform(lhsExpr, env, uni, newResultAtom, addRelation, addConstraint, newRelNr),
-//       Expr rhs := transform(rhsExpr, env, uni, newResultAtom, addRelation, addConstraint, newRelNr);
-
 Expr transform(neg(Expr expr), Env env, Universe uni, str () newResultAtom, void (str, set[AtomDecl], list[list[Atom]], list[list[Atom]]) addRelation, void (AlleFormula) addConstraint, str () newRelNr)
   = neg(transformedExpr)[@minTuples=transformedExpr@minTuples][@maxTuples=transformedExpr@maxTuples][@domain=transformedExpr@domain]
   when transformedExpr := transform(expr, env, uni, newResultAtom, addRelation, addConstraint, newRelNr);
 
-//@memo
 Expr transform(addition(list[Expr] terms), Env env, Universe uni, str () newResultAtom, void (str, set[AtomDecl], list[list[Atom]], list[list[Atom]]) addRelation, void (AlleFormula) addConstraint, str () newRelNr)
   = transform(transformedTerms, Expr (list[Expr] exprs) {return addition(exprs);}, newResultAtom, addRelation, addConstraint, "plus", newRelNr)
   when list[Expr] transformedTerms := [transform(t, env, uni, newResultAtom, addRelation, addConstraint, newRelNr) | Expr t <- terms];
 
-
-//@memo
 Expr transform(multiplication(list[Expr] terms), Env env, Universe uni, str () newResultAtom, void (str, set[AtomDecl], list[list[Atom]], list[list[Atom]]) addRelation, void (AlleFormula) addConstraint, str () newRelNr) 
   = transform(transformedTerms, Expr (list[Expr] exprs) {return multiplication(exprs);}, newResultAtom, addRelation, addConstraint, "mul", newRelNr)
   when list[Expr] transformedTerms := [transform(t, env, uni, newResultAtom, addRelation, addConstraint, newRelNr) | Expr t <- terms];
 
-//@memo
 Expr transform(division(Expr lhsExpr, Expr rhsExpr), Env env, Universe uni, str () newResultAtom, void (str, set[AtomDecl], list[list[Atom]], list[list[Atom]]) addRelation, void (AlleFormula) addConstraint, str () newRelNr) 
   = transform(lhs, rhs, Expr (Expr l, Expr r) {return division(l,r);}, newResultAtom, addRelation, addConstraint, "div", newRelNr)
   when Expr lhs := transform(lhsExpr, env, uni, newResultAtom, addRelation, addConstraint, newRelNr),
        Expr rhs := transform(rhsExpr, env, uni, newResultAtom, addRelation, addConstraint, newRelNr);
 
-//@memo
 Expr transform(modulo(Expr lhsExpr, Expr rhsExpr), Env env, Universe uni, str () newResultAtom, void (str, set[AtomDecl], list[list[Atom]], list[list[Atom]]) addRelation, void (AlleFormula) addConstraint, str () newRelNr) 
   = transform(lhs, rhs, Expr (Expr l, Expr r) {return modulo(l,r);}, newResultAtom, addRelation, addConstraint, "mod", newRelNr)
   when Expr lhs := transform(lhsExpr, env, uni, newResultAtom, addRelation, addConstraint, newRelNr),
@@ -163,7 +139,6 @@ private Expr transform(Expr lhs, Expr rhs, Expr (Expr l, Expr r) operation, str 
   return \join(rhs, \join(lhs, variable(newRelName)))[@minTuples = [[r.atom] | AtomDecl r <- maxResultAtoms]][@maxTuples = [[r.atom] | AtomDecl r <- maxResultAtoms]][@domain=variable(newResultRelName)]; 
 }  
 
-//@memo
 Expr transform(sum(Expr e), Env env, Universe uni, str () newResultAtom, void (str, set[AtomDecl], list[list[Atom]], list[list[Atom]]) addRelation, void (AlleFormula) addConstraint, str () newRelNr) {
   Expr expr = transform(e, env, uni, newResultAtom, addRelation, addConstraint, newRelNr);
    
@@ -192,7 +167,6 @@ Expr transform(sum(Expr e), Env env, Universe uni, str () newResultAtom, void (s
   return variable(sumRelName)[@minTuples=[[sumResultAtom]]][@maxTuples=[[sumResultAtom]]][@domain=variable(sumRelName)];
 }
 
-//@memo
 Expr transform(car(Expr e), Env env, Universe uni, str () newResultAtom, void (str, set[AtomDecl], list[list[Atom]], list[list[Atom]]) addRelation, void (AlleFormula) addConstraint, str () newRelNr) {
   Expr expr = transform(e, env, uni, newResultAtom, addRelation, addConstraint, newRelNr);
    

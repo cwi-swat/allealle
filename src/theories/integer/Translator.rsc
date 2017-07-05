@@ -36,32 +36,26 @@ Formula exprToForm(modulo(Expr lhs, Expr rhs))          = modulo(exprToForm(lhs)
 Formula exprToForm(addition(list[Expr] terms))          = addition([exprToForm(t) | Expr t <- terms]);
 Formula exprToForm(subtraction(Expr lhs, Expr rhs))     = substraction(exprToForm(lhs), exprToForm(rhs));
 
-//@memo
 Formula translateFormula(gt(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni, void (set[TheoryFormula]) addTheoryConstraint) = translateFormula(lhs, rhs, Formula (Formula l, Formula r) { return gt(l, r);}, addTheoryConstraint)
   when RelationMatrix lhs := translateExpression(lhsExpr, env, uni, addTheoryConstraint),
        RelationMatrix rhs := translateExpression(rhsExpr, env, uni, addTheoryConstraint);
 
-//@memo
 Formula translateFormula(gte(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni, void (set[TheoryFormula]) addTheoryConstraint) = translateFormula(lhs, rhs, Formula (Formula l, Formula r) { return gte(l, r);}, addTheoryConstraint)
   when RelationMatrix lhs := translateExpression(lhsExpr, env, uni, addTheoryConstraint),
        RelationMatrix rhs := translateExpression(rhsExpr, env, uni, addTheoryConstraint);
 
-//@memo
 Formula translateFormula(lt(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni, void (set[TheoryFormula]) addTheoryConstraint) = translateFormula(lhs, rhs, Formula (Formula l, Formula r) { return lt(l, r);}, addTheoryConstraint)
   when RelationMatrix lhs := translateExpression(lhsExpr, env, uni, addTheoryConstraint),
        RelationMatrix rhs := translateExpression(rhsExpr, env, uni, addTheoryConstraint);
 
-//@memo       
 Formula translateFormula(lte(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni, void (set[TheoryFormula]) addTheoryConstraint) = translateFormula(lhs, rhs, Formula (Formula l, Formula r) { return lte(l, r);}, addTheoryConstraint)
   when RelationMatrix lhs := translateExpression(lhsExpr, env, uni, addTheoryConstraint),
        RelationMatrix rhs := translateExpression(rhsExpr, env, uni, addTheoryConstraint);
 
-//@memo       
 Formula translateFormula(intEqual(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni, void (set[TheoryFormula]) addTheoryConstraint) = translateFormula(lhs, rhs, Formula (Formula l, Formula r) { return equal(l, r);}, addTheoryConstraint) 
   when RelationMatrix lhs := translateExpression(lhsExpr, env, uni, addTheoryConstraint),
        RelationMatrix rhs := translateExpression(rhsExpr, env, uni, addTheoryConstraint);
 
-//@memo
 Formula translateFormula(intInequal(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni, void (set[TheoryFormula]) addTheoryConstraint) = translateFormula(lhs, rhs, Formula (Formula l, Formula r) { return inequal(l, r);}, addTheoryConstraint) 
   when RelationMatrix lhs := translateExpression(lhsExpr, env, uni, addTheoryConstraint),
        RelationMatrix rhs := translateExpression(rhsExpr, env, uni, addTheoryConstraint);

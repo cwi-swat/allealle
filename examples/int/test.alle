@@ -8,5 +8,3 @@ B:1[{},{<a>,<b>,<c>}]
 (B\A) = 5
 
 some A
-
-minimize sum(A)

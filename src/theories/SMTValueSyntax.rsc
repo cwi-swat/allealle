@@ -1,12 +1,12 @@
 module theories::SMTValueSyntax
 
-extend theories::Layout;
+extend lang::std::Layout;
 
 start syntax Values = "(" VarAndValue+ values")";
 
 syntax VarAndValue = "(" VarName name Value val ")"; 
   
-syntax Value
+syntax Value 
   = Val
   | Val Val
   | "(" Value ")"

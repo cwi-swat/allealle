@@ -17,7 +17,6 @@ data AlleFormula
 	| gte(Expr lhsExpr, Expr rhsExpr)
 	| intEqual(Expr lhsExpr, Expr rhsExpr)
 	| intInequal(Expr lhsExpr, Expr rhsExpr)
-	| minimize(Expr expr)
 	;	
 	
 data Expr

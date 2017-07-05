@@ -71,7 +71,6 @@ default RelationMatrix difference(RelationMatrix lhs, RelationMatrix rhs) { thro
 
 private Formula toRelForm(set[TheoryFormula] forms) = (\true() | \and(it, \if(f.relForm,f.theoryForm)) | TheoryFormula f <- forms);
 
-@memo
 RelationMatrix \join(RelationMatrix lhs, RelationMatrix rhs, void (set[TheoryFormula]) addTheoryConstraint) {
   int arityLhs = arity(lhs);
   int arityRhs = arity(rhs);
