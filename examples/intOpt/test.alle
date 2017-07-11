@@ -7,4 +7,7 @@ B:1[{},{<a>,<b>,<c>}]
 (A&B) = 10
 (B\A) = 5
 
-some A
+//some A
+
+//minimize sum(A)
+maximize sum(B)

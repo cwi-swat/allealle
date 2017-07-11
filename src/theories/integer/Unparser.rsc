@@ -15,7 +15,6 @@ str unparse(gt(Expr lhsExpr, Expr rhsExpr))         = "(<unparse(lhsExpr)> \> <u
 str unparse(gte(Expr lhsExpr, Expr rhsExpr))        = "(<unparse(lhsExpr)> \>= <unparse(rhsExpr)>)";
 str unparse(intEqual(Expr lhsExpr, Expr rhsExpr))   = "(<unparse(lhsExpr)> = <unparse(rhsExpr)>)";
 str unparse(intInequal(Expr lhsExpr, Expr rhsExpr)) = "(<unparse(lhsExpr)> != <unparse(rhsExpr)>)";
-str unparse(minimize(Expr expr))                    = "(minimize <unparse(expr)>)";
   
 str unparse(intLit(int i))                               = "<i>";
 str unparse(neg(Expr e))                                 = "(-<unparse(e)>)";

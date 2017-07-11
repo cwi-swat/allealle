@@ -37,10 +37,6 @@ AlleFormula transform(lt(Expr lhsExpr, Expr rhsExpr), Env env, Universe uni, str
 AlleFormula transform(lte(Expr lhsExpr, Expr rhsExpr), Env env, Universe uni, str () newResultAtom, void (str, set[AtomDecl], list[list[Atom]], list[list[Atom]]) addRelation, void (AlleFormula) addConstraint, str () newRelNr)
   = lte(transform(lhsExpr, env, uni, newResultAtom, addRelation, addConstraint, newRelNr), transform(rhsExpr, env, uni, newResultAtom, addRelation, addConstraint, newRelNr));
 
-AlleFormula transform(minimize(Expr expr), Env env, Universe uni, str () newResultAtom, void (str, set[AtomDecl], list[list[Atom]], list[list[Atom]]) addRelation, void (AlleFormula) addConstraint, str () newRelNr)
-  = minimize(transform(expr, env, uni, newResultAtom, addRelation, addConstraint, newRelNr));
-
-
 //@memo
 Expr transform(intLit(int i), Env env, Universe uni, str () newResultAtom, void (str, set[AtomDecl], list[list[Atom]], list[list[Atom]]) addRelation, void (AlleFormula) addConstraint, str () newRelNr) {
   str consRelName = "_C<i>";

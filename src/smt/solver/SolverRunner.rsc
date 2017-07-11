@@ -34,10 +34,12 @@ bool isSatisfiable(SolverPID pid, str smtFormula) {
 }
 
 bool checkSat(SolverPID pid) {
-	switch(runSolver(pid, "(check-sat)", wait = 5)) {
-		case "sat" : return true;
-		case "unsat": return false;
-		case "unknown": throw "Could not compute satisfiability";		
+	str result = runSolver(pid, "(check-sat)", wait = 5);
+	
+	switch(result) {
+		case /unsat.*/: return false;
+    case /sat.*/ : return true;
+		case /unknown.*/: throw "Could not compute satisfiability";		
 		default: throw "unable to get result from smt solver";
 	}
 }

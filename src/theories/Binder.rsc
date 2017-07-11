@@ -53,11 +53,11 @@ private ExtensionEncoding transpose(ExtensionEncoding ext, int arity) = ((arity 
   
 RelationMatrix transpose(RelationMatrix m) = (() | it + (reversedIndex : <m[key].relForm, transpose(m[key].ext, arity(m))>) | Index key <- m, Index reversedIndex := reverse(key));
 
-RelationMatrix transitiveClosure(RelationMatrix m, Universe uni, void (set[TheoryFormula]) addTheoryConstraint) = square(m, 1, sizeOfUniverse(uni), addTheoryConstraint) when arity(m) == 2;
-default RelationMatrix transitiveClosure(RelationMatrix m, Universe uni, void (set[TheoryFormula]) addTheoryConstraint) { throw "Can not perform a transitive closure on a non-binary relation"; }
+RelationMatrix transitiveClosure(RelationMatrix m, Universe uni, void (set[TheoryFormula]) addTheoryConstraint, void (Formula) addAdditionalConstraint) = square(m, 1, sizeOfUniverse(uni), addTheoryConstraint) when arity(m) == 2;
+default RelationMatrix transitiveClosure(RelationMatrix m, Universe uni, void (set[TheoryFormula]) addTheoryConstraint, void (Formula) addAdditionalConstraint) { throw "Can not perform a transitive closure on a non-binary relation"; }
 
-RelationMatrix reflexiveTransitiveClosure(RelationMatrix m, Universe uni, void (set[TheoryFormula]) addTheoryConstraint) = or(transitiveClosure(m, uni, addTheoryConstraint), identity(m, uni)) when arity(m) == 2; 
-default RelationMatrix reflexiveTransitiveClosure(RelationMatrix m, Universe uni, void (set[TheoryFormula]) addTheoryConstraint) { throw "Can not perform a reflexive transitive closure on a non-binary relation"; }
+RelationMatrix reflexiveTransitiveClosure(RelationMatrix m, Universe uni, void (set[TheoryFormula]) addTheoryConstraint, void (Formula) addAdditionalConstraint) = or(transitiveClosure(m, uni, addTheoryConstraint, addAdditionalConstraint), identity(m, uni)) when arity(m) == 2; 
+default RelationMatrix reflexiveTransitiveClosure(RelationMatrix m, Universe uni, void (set[TheoryFormula]) addTheoryConstraint, void (Formula) addAdditionalConstraint) { throw "Can not perform a reflexive transitive closure on a non-binary relation"; }
 
 RelationMatrix disjunction(RelationMatrix lhs, RelationMatrix rhs) = or(lhs, rhs) when sameArity(lhs, rhs);
 default RelationMatrix disjunction(RelationMatrix lhs, RelationMatrix rhs) { throw "Relations to disjunct must be of same arity"; }

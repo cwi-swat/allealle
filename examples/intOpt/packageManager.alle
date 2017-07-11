@@ -1,0 +1,40 @@
+{a(int)=1,b(int)=1,c(int)=0,d(int)=1,e(int)=0,f(int)=0,g(int)=1,z(int)=0,y(int)=0,h(int)=0}
+
+Package:1 [{<a>,<b>,<c>,<d>,<e>,<f>,<g>,<h>,<y>,<z>},{<a>,<b>,<c>,<d>,<e>,<f>,<g>,<h>,<y>,<z>}]
+
+InstallProfile:1 [{},{<a>,<b>,<c>,<d>,<e>,<f>,<g>,<h>,<y>,<z>}]
+
+Installed:1 [{<z>,<c>,<e>,<y>,<f>,<h>},{<z>,<c>,<e>,<y>,<f>,<h>}]
+UninstallProfile:1 [{},{<z>,<c>,<e>,<y>,<f>,<h>}]
+InstallPackage:1 [{<a>},{<a>}]
+
+depends:2 [{<a,b>,<a,c>,<a,z>,<b,d>,<c,d>,<c,e>,<c,f>,<c,g>,<y,z>,<f,h>},{<a,b>,<a,c>,<a,z>,<b,d>,<c,d>,<c,e>,<c,f>,<c,g>,<y,z>,<f,h>}]
+dependChoice:3 [{<c,d,e>,<c,e,d>,<c,f,g>,<c,g,f>}, {<c,d,e>,<c,e,d>,<c,f,g>,<c,g,f>}]
+
+conflicts:2 [{<d,e>,<d,f>},{<d,e>,<d,f>}]
+
+// If the package to install is not yet installed then it should be in the installation profile
+no (InstallPackage & Installed) => InstallPackage in InstallProfile
+
+// If Package p' depends on package p and p' is reachable from a dependency from the package to install and p' is not yet installed 
+forall p:Package, p':Package\p | (p->p') in depends && p' in InstallPackage.*depends && no p' & Installed && not ((p.dependChoice).p' in Installed) =>
+  (exists p'':Package\(p++p') | (p->p'->p'' in dependChoice) && (p' in InstallProfile || p'' in InstallProfile)) ||
+  (no (p.dependChoice).p' && p' in InstallProfile)
+
+forall p:InstallProfile, p':Package\p | p->p' in depends && no p' & Installed  => p' in InstallProfile 
+no InstallProfile & Installed
+
+forall p:Package, p':Package\p | p->p' in conflicts => not (p++p' in InstallProfile)
+
+forall p:Package, p':Package\p | (p->p' in conflicts && p in InstallProfile && p' in Installed) => p' in UninstallProfile
+
+no InstallProfile & UninstallProfile
+forall p:UninstallProfile | some p.conflicts || some conflicts.p || (exists p':Package\p | p in p'.^depends)
+
+//forall p:Installed, p':UninstallProfile\p | p in p'.^depends => p in UninstallProfile       
+forall p:Installed, p':UninstallProfile\p | p in p'.^depends && (not (p in ((Installed\UninstallProfile)++InstallProfile).depends)) => p in UninstallProfile       
+
+forall p:Installed | p in UninstallProfile && (some depends.p) && (depends.p in Installed) && (some ((depends.p).dependChoice).p) =>
+    ( ((depends.p).dependChoice).p in InstallProfile ) 
+    
+minimize sum(InstallProfile)

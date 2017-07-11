@@ -99,6 +99,9 @@ default str compile(Formula f) { throw "Unable to compile <f> to SMT, no SMT com
 str compileAssert(Formula f) = "\n(assert 
                                '  <compile(f)>
                                ')"; 
+                               
+str compileAdditionalConstraints(set[Formula] constraints) = "<for (Formula f <- constraints) {>
+                                                             '<compile(f)><}>";                               
 
 SMTModel getValues(str smtResult, set[SMTVar] vars) {
   Values foundValues = [Values]"<smtResult>"; 

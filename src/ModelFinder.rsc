@@ -29,54 +29,57 @@ data ModelFinderResult
 
 ModelFinderResult checkInitialSolution(Problem problem) {	
 	print("Preprocessing problem (replacing constants, replacing expressions in different theories)...");
-	tuple[Problem problem, int time] pp = benchmark(preprocess, problem);
+	tuple[Problem problem, int time] pp = bm(preprocess, problem);
 	print("done, took: <(pp.time/1000000)> ms\n");
 	
-	Problem augmentedProblem = pp.problem;	
+	Problem augmentedProblem = pp.problem;	 
 	
 	writeFile(|project://allealle/examples/last_transformed.alle|, unparse(augmentedProblem));
 	
 	print("Building initial environment...");
-	tuple[Environment env, int time] ie = benchmark(createInitialEnvironment, augmentedProblem); 
+	tuple[Environment env, int time] ie = bm(createInitialEnvironment, augmentedProblem); 
 	print("done, took: <(ie.time/1000000)> ms\n");
 	
  
 	print("Translating problem to SAT formula...");
-	tuple[Formula formula, int time] t = benchmark(translate, augmentedProblem, ie.env);
+	tuple[TranslationResult r, int time] t = bm(translateProblem, augmentedProblem, ie.env);
 	print("done, took: <(t.time/1000000)> ms\n");
+	
 //	 
 //	//print("Converting to CNF...");
-//	//tuple[Formula formula, int time] cnf = <t.result.formula, t.time>; //benchmark(convertToCNF, t.result.formula);
+//	//tuple[Formula formula, int time] cnf = <t.result.formula, t.time>; //bm(convertToCNF, t.result.formula);
 //
-	if (t.formula == \false()) {
+	if (t.r.formula == \false()) {
 		return trivialUnsat();
-	} else if (t.formula == \true()) {
+	} else if (t.r.formula == \true()) {
 		return trivialSat(empty(), problem.uni);
 	}
 
-	return runInSolver(augmentedProblem, t.formula, ie.env);
+	return runInSolver(augmentedProblem, t.r, ie.env); 
 }
 
-ModelFinderResult runInSolver(Problem problem, Formula formula, Environment env) {
-	PID solverPid = startSolver();
+ModelFinderResult runInSolver(Problem problem, TranslationResult tr, Environment env) {
+	PID solverPid = startSolver(); 
 	void stop() {
 		stopSolver(solverPid);
 	} 
 	
 	print("Translating to SMT-LIB...");
-  tuple[set[SMTVar] vars, int time] smtVarCollectResult = benchmark(collectSMTVars, problem.uni, env);
-	tuple[str smt, int time] smtVarDeclResult = benchmark(compileSMTVariableDeclarations, smtVarCollectResult.vars);
-	tuple[str smt, int time] smtAtomDeclExprs = benchmark(compileAtomExpressions, problem.uni.atoms);
-	tuple[str smt, int time] smtCompileFormResult = benchmark(compileAssert, formula);
-	print("done, took: <(smtVarCollectResult.time + smtVarDeclResult.time + smtAtomDeclExprs.time + smtCompileFormResult.time) /1000000> ms in total (variable collection fase: <smtVarCollectResult.time / 1000000>, variable declaration fase: <smtVarDeclResult.time / 1000000>, atom expression translation fase: <smtAtomDeclExprs.time / 1000000>, formula compilation fase: <smtCompileFormResult.time / 1000000>\n");
-	println("Total nr of clauses in formula: <countClauses(formula)>, total nr of variables in formula: <countVars(smtVarCollectResult.vars)>"); 
+  tuple[set[SMTVar] vars, int time] smtVarCollectResult = bm(collectSMTVars, problem.uni, env);
+	tuple[str smt, int time] smtVarDeclResult = bm(compileSMTVariableDeclarations, smtVarCollectResult.vars);
+	tuple[str smt, int time] smtAtomDeclExprs = bm(compileAtomExpressions, problem.uni.atoms);
+	tuple[str smt, int time] smtCompileFormResult = bm(compileAssert, tr.formula);
+	tuple[str smt, int time] smtCompileAddCons = bm(compileAdditionalConstraints, tr.additionalConstraints);
 	
-	writeFile(|project://allealle/bin/latestSmt.smt2|, "<smtVarDeclResult.smt>\n<smtAtomDeclExprs.smt>\n<smtCompileFormResult.smt>");
+	print("done, took: <(smtVarCollectResult.time + smtVarDeclResult.time + smtAtomDeclExprs.time + smtCompileFormResult.time + smtCompileAddCons.time) /1000000> ms in total (variable collection fase: <smtVarCollectResult.time / 1000000>, variable declaration fase: <smtVarDeclResult.time / 1000000>, atom expression translation fase: <smtAtomDeclExprs.time / 1000000>, formula compilation fase: <smtCompileFormResult.time / 1000000>, additional constraints compilation phase: <smtCompileAddCons.time / 1000000>\n");
+	println("Total nr of clauses in formula: <countClauses(tr.formula)>, total nr of variables in formula: <countVars(smtVarCollectResult.vars)>"); 
+	
+	writeFile(|project://allealle/bin/latestSmt.smt2|, "<smtVarDeclResult.smt>\n<smtAtomDeclExprs.smt>\n<smtCompileFormResult.smt>\n<smtCompileAddCons.smt>");
 	  
-	smtVarCollectResult.vars = removeAllAddedVars(smtVarCollectResult.vars);  
+	smtVarCollectResult.vars = removeAllAddedVars(smtVarCollectResult.vars);   
 	  
 	print("Solving by Z3...");
-	tuple[bool result, int time] solving = benchmark(isSatisfiable, solverPid, "<smtVarDeclResult.smt>\n<smtAtomDeclExprs.smt>\n<smtCompileFormResult.smt>"); 
+	tuple[bool result, int time] solving = bm(isSatisfiable, solverPid, "<smtVarDeclResult.smt>\n<smtAtomDeclExprs.smt>\n<smtCompileFormResult.smt>\n<smtCompileAddCons.smt>"); 
 	print("done, took: <solving.time/1000000> ms\n");
 	println("Outcome is \'<solving.result>\'");
  
@@ -151,25 +154,25 @@ private int countClauses(Formula f) {
 
 private int countVars(set[SMTVar] vars) = size(vars);
 
-private tuple[&T, int] benchmark(&T () methodToBenchmark) {
+private tuple[&T, int] bm(&T () methodToBenchmark) {
 	int startTime = userTime();
 	&T result = methodToBenchmark();
 	return <result, userTime() - startTime>;
 }
 
-private tuple[&T, int] benchmark(&T (&R) methodToBenchmark, &R p) {
+private tuple[&T, int] bm(&T (&R) methodToBenchmark, &R p) {
 	int startTime = userTime();
 	&T result = methodToBenchmark(p);
 	return <result, userTime() - startTime>;
 }
 
-private tuple[&T, int] benchmark(&T (&R,&Q) methodToBenchmark, &R p1, &Q p2) {
+private tuple[&T, int] bm(&T (&R,&Q) methodToBenchmark, &R p1, &Q p2) {
 	int startTime = userTime();
 	&T result = methodToBenchmark(p1,p2);
 	return <result, userTime() - startTime>;
 }
 
-private tuple[&T, int] benchmark(&T (&R,&Q,&S) methodToBenchmark, &R p1, &Q p2, &S p3) {
+private tuple[&T, int] bm(&T (&R,&Q,&S) methodToBenchmark, &R p1, &Q p2, &S p3) {
 	int startTime = userTime();
 	&T result = methodToBenchmark(p1,p2,p3);
 	return <result, userTime() - startTime>;
