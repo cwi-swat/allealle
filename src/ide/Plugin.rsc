@@ -30,7 +30,7 @@ void main(){
 	};
 	
 	registerContributions(lang, contribs);
-}
+} 
  
 void checkAndVisualize(ide::CombinedSyntax::Problem p) {
 	ModelFinderResult result = checkInitialSolution(implodeProblem(p));

@@ -6,7 +6,7 @@ import IO;
 // Integer theory extensions
 data Theory = intTheory();
 
-data AtomValue 
+data Value 
   = intExpr(Expr expr)
   ;
 	

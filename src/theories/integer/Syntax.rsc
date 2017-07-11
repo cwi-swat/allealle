@@ -4,7 +4,7 @@ extend theories::Syntax;
 
 syntax Theory = intTheory: "int";
 
-syntax AtomValue 
+syntax Value 
   = intExpr: Expr expr
   ;
 
@@ -18,7 +18,9 @@ syntax AlleFormula
   ; 
   
 syntax Expr
-  = intLit:         IntLit intLit
+  = variable:           Variable v
+  | attributeLookup:    Expr expr "::" Variable name
+  > intLit:         IntLit intLit
   > neg:            "-" Expr e
   > left multiplication: Expr lhs "*" Expr rhs
   | division:       Expr lhs "/" Expr rhs

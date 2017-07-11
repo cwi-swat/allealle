@@ -23,8 +23,8 @@ data VectorAndVar
 
 data ModelAtom
   = atom(Atom name)
-  | varAtom(Atom name, Theory theory, AtomValue val)
-  | fixedAtom(Atom name, Theory theory, AtomValue val)
+  | varAtom(Atom name, Theory theory, Value val)
+  | fixedAtom(Atom name, Theory theory, Value val)
   ;
 
 data Relation 
@@ -158,10 +158,10 @@ Model constructModel(SMTModel smtModel, Universe uni, Environment env) {
   visit (visibleAtoms) {
     case atomOnly(Atom a): atomsInModel += atom(a);
     case atomAndTheory(Atom a, Theory t): atomsInModel += varAtom(a, t, findAtomValue(a, t, smtModel));
-    case atomTheoryAndValue(Atom a, Theory t, AtomValue val): atomsInModel += fixedAtom(a, t, val);
+    case atomTheoryAndValue(Atom a, Theory t, Value val): atomsInModel += fixedAtom(a, t, val);
   };   
 
   return model(atomsInModel, relations);
 } 
 
-default AtomValue findAtomValue(Atom a, Theory t, SMTModel smtModel) { throw "Unable to find atom value for atom <a> with theory \'<t>\'";}
+default Value findAtomValue(Atom a, Theory t, SMTModel smtModel) { throw "Unable to find atom value for atom <a> with theory \'<t>\'";}

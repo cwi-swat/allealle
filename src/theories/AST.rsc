@@ -8,11 +8,15 @@ data Universe = universe(list[AtomDecl] atoms);
 
 data AtomDecl 
   = atomOnly(Atom atom)
-  | atomAndTheory(Atom atom, Theory theory)
-  | atomTheoryAndValue(Atom atom, Theory theory, AtomValue val)
-  ; 
+  | atomWithAttributes(Atom atom, list[Attribute] attributes)
+  ;
 
-data AtomValue = none();
+data Attribute
+  = attribute(str name, Theory theory)
+  | attributeAndValue(str name, Theory theory, Value val)
+  ;
+
+data Value = none();
 
 data RelationalBound = relationalBound(str relName, int arity, list[Tuple] lowerBounds, list[Tuple] upperBounds);
 
@@ -37,6 +41,7 @@ data AlleFormula
  
 data Expr
   = variable(str name)
+  | attributeLookup(Expr expr, str name)
   | transpose(Expr expr)
   | closure(Expr expr)
   | reflexClosure(Expr expr)

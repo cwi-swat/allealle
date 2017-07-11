@@ -1,19 +1,15 @@
-{p1,p2,p3,p4,n1(int),n2(int),n3(int),n4(int)}
-
+{p1{age(int)},p2{age(int)},p3{age(int)},p4{age(int)}}
+ 
 Person:1  [{<p1>},{<p1>,<p2>,<p3>,<p4>}]
 Adam:1    [{<p1>},{<p1>}]
 parent:2  [{},{<p1,p2>,<p1,p3>,<p1,p4>,<p2,p1>,<p2,p3>,<p2,p4>,<p3,p1>,<p3,p2>,<p3,p4>,<p4,p1>,<p4,p2>,<p4,p3>}]
 anchestor:2 [{},{<p1,p2>,<p1,p3>,<p1,p4>,<p2,p1>,<p2,p3>,<p2,p4>,<p3,p1>,<p3,p2>,<p3,p4>,<p4,p1>,<p4,p2>,<p4,p3>}]
 
-Num:1 [{},{<n1>,<n2>,<n3>,<n4>}]
-age:2 [{},{<p1,n1>,<p2,n2>,<p3,n3>,<p4,n4>}]
-
 twin:2 [{},{<p2,p3>,<p3,p2>,<p2,p4>,<p4,p2>,<p3,p4>,<p4,p3>}]
-
+ 
 Adam in Person
 parent in Person -> Person
 anchestor in Person -> Person
-age in Person -> Num
 twin in Person -> Person
 
 // Everybody has a parent except Adam
@@ -33,20 +29,13 @@ Person in Adam.(*parent)
 anchestor == ~(^parent) 
 
 // Nobody, even Adam, is older then 149
-age[Person] >= 0 && age[Person] < 150
-
-// Everybody has an age
-forall p: Person | one age[p]
+Person::age >= 0 && Person::age < 150
 
 // Nobody is older than Adam
-//forall p: Person\Adam | (exists n1: Num, n2:Num | (age[p] == n1 && age[Adam] == n2 && n1 < n2))
-forall p: Person\Adam | age[p] < age[Adam]
+forall p: Person\Adam | p::age < Adam::age
 
 // If p is c's parent then p must have been an adult when c was born 
-forall p: Person, c: Person\p | p -> c in parent => (age[p]) - (age[c]) > 17
-
-// Every number is connected to at least one age
-forall n:Num | some age.n
+forall p: Person, c: Person\p | p -> c in parent => p::age - c::age > 17
 
 // If two persons have the same parent and the same age, they must be twins
-twin == {p1: Person, p2: Person\p1 | parent.p1 == parent.p2 && age[p1] = age[p2]}
+twin == {p1: Person, p2: Person\p1 | parent.p1 == parent.p2 && p1::age = p2::age}

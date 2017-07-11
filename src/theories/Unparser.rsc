@@ -17,8 +17,10 @@ str unparse(universe(list[AtomDecl] atoms)) =
   "{<intercalate(",",[unparse(ad) | AtomDecl ad <- atoms])>}";
 
 str unparse(atomOnly(Atom atom)) = atom;
-str unparse(atomAndTheory(Atom atom, Theory theory)) = "<atom>(<unparse(theory)>)";
-str unparse(atomTheoryAndValue(Atom atom, Theory theory, AtomValue val)) = "<atom>(<unparse(theory)>)=<unparse(val)>";
+str unparse(atomWithAttributes(Atom atom, list[Attribute] attributes)) = "<atom>{<intercalate(", ", [unparse(a) | Attribute a <- attributes])>}";
+
+str unparse(attribute(str name, Theory theory)) = "<name>(<unparse(theory)>)";
+str unparse(attributeAndValue(str name, Theory theory, Value val)) = "<name>(<unparse(theory)>)=<unparse(val)>"; 
 
 str unparse(relTheory()) = "";
 default str unparse(Theory t) { throw "No unparse function for \'<t>\'"; }
@@ -48,6 +50,7 @@ str unparse(existential(list[VarDeclaration] decls, AlleFormula form)) = "(exist
 default str unparse(AlleFormula f) { throw "No unparse function for formula \'<f>\'"; }
 
 str unparse(variable(str name))                                             = name;
+str unparse(attributeLookup(Expr expr, str name))                           = "<unparse(expr)>::<name>";
 str unparse(transpose(Expr expr))                                           = "(~<unparse(expr)>)";
 str unparse(closure(Expr expr))                                             = "(^<unparse(expr)>)";
 str unparse(reflexClosure(Expr expr))                                       = "(*<unparse(expr)>)";

@@ -8,11 +8,15 @@ syntax Universe = universe: "{" {AtomDecl ","}+ atoms "}";
 
 syntax AtomDecl 
   = atomOnly:           Atom atom
-  | atomAndTheory:      Atom atom "(" Theory theory ")"
-  | atomTheoryAndValue: Atom atom "(" Theory theory ")" "=" AtomValue val
+  | atomWithAttributes: Atom atom "{" {Attribute ","}+ attributes "}"
   ;
 
-syntax AtomValue = none: "none"; 
+syntax Attribute
+  = attribute:          Variable "(" Theory theory ")"
+  | attributeAndValue:  Variable "(" Theory theory ")" "=" Value val
+  ;
+
+syntax Value = none: "none"; 
 
 syntax RelationalBound 
   = relationalBound: Variable v ":" Arity a "[" "{" {Tuple ","}* lower "}" "," "{" {Tuple ","}* upper "}" "]"
@@ -44,10 +48,11 @@ syntax AlleFormula
 
 syntax Expr
   = bracket "(" Expr expr ")"
-  > \join:              Expr lhs "." Expr rhs
-  | accessorJoin:       Expr col "[" Expr select "]"
   > variable:           Variable v
-  | transpose:          "~" Expr expr
+  | attributeLookup:    Expr expr "::" Variable name
+  > left \join:              Expr lhs "." Expr rhs
+  | accessorJoin:       Expr col "[" Expr select "]"
+  > transpose:          "~" Expr expr
   | closure:            "^" Expr expr
   | reflexClosure:      "*" Expr expr
   | left union:         Expr lhs "++" Expr rhs 
