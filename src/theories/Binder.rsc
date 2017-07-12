@@ -8,132 +8,179 @@ import Map;
 import Set;
 import IO;
 
-data TheoryFormula = form(Formula relForm, Formula theoryForm); 
-
-alias ExtensionEncoding = map[int, set[TheoryFormula]];
-alias Content = tuple[Formula relForm,  ExtensionEncoding ext];
 alias Index = list[Atom]; 
-alias RelationMatrix = map[Index, Content];
 
-alias Environment = map[str, RelationMatrix]; 
+alias RelationMatrix = map[Index, Formula];
+
+data AttributeFormula = implies(Formula relForm, Formula attributeForm); 
+alias Attributes = map[str, set[AttributeFormula]];
+alias AttributeMatrix = map[Index, map[int, Attributes]];
+
+alias RelationAndAttributes = tuple[RelationMatrix relation, AttributeMatrix att];
+alias Environment = map[str, RelationAndAttributes]; 
 
 @memo
 int sizeOfUniverse(Universe u) = size(u.atoms);
 
-@memo int arity(RelationMatrix rm) = 0 when rm == ();
-@memo int arity(RelationMatrix rm) = size(getOneFrom(rm)) when rm != ();
+int arity(RelationAndAttributes rm) = 0 when rm.relation == ();
+int arity(RelationAndAttributes rm) = size(getOneFrom(rm.relation)) when rm.relatin != ();
 
 @memo
-private bool sameArity(RelationMatrix lhs, RelationMatrix rhs) = arity(lhs) == arity(rhs); 
+private bool sameArity(RelationAndAttributes lhs, RelationAndAttributes rhs) = arity(lhs) == arity(rhs); 
 
-private RelationMatrix square(RelationMatrix m, int i, int sizeOfUniverse, void (set[TheoryFormula]) addTheoryConstraint) = m when i >= sizeOfUniverse;
-private RelationMatrix square(RelationMatrix m, int i, int sizeOfUniverse, void (set[TheoryFormula]) addTheoryConstraint) = or(n, \join(n, n, addTheoryConstraint)) when RelationMatrix n := square(m, i * 2, sizeOfUniverse, addTheoryConstraint); 
+private RelationAndAttributes square(RelationAndAttributes m, int i, int sizeOfUniverse) = m when i >= sizeOfUniverse;
+private RelationAndAttributes square(RelationAndAttributes m, int i, int sizeOfUniverse) = or(n, \join(n, n)) when RelationAndAttributes n := square(m, i * 2, sizeOfUniverse); 
 
 private list[Index] constructIdentityIndex(int arity, Universe uni) = [vector | AtomDecl ad <- uni.atoms, list[Atom] vector := [ad.atom | int _ <- [0..arity]]];
 
 @memo
-RelationMatrix identity(RelationMatrix orig, Universe uni) = identity(arity(orig), uni);
-RelationMatrix identity(int arity, Universe uni) = (idx:<\true(),()> | Index idx <- constructIdentityIndex(arity, uni));
+RelationAndAttributes identity(RelationAndAttributes orig, Universe uni) = identity(arity(orig), uni);
+RelationAndAttributes identity(int arity, Universe uni) = (idx:<\true(),()> | Index idx <- constructIdentityIndex(arity, uni));
 
-ExtensionEncoding merge(ExtensionEncoding lhs, ExtensionEncoding rhs) = (idx : lhs[idx] | int idx <- lhs, idx notin rhs) +
-                                                                        (idx : lhs[idx] + rhs[idx] | int idx <- lhs, idx in rhs) +
-                                                                        (idx : rhs[idx] | int idx <- rhs, idx notin lhs);
+map[int, Attributes] merge(map[int, Attributes] lhs, map[int, Attributes] rhs) = (idx : lhs[idx] | int idx <- lhs, idx notin rhs) +
+                                                                                 (idx : lhs[idx] + rhs[idx] | int idx <- lhs, idx in rhs) +
+                                                                                 (idx : rhs[idx] | int idx <- rhs, idx notin lhs);
 
-RelationMatrix or(RelationMatrix lhs, RelationMatrix rhs) 
-  = (x:<\or(lhsVal,rhsVal), merge(lhsExt, rhsExt)> | Index x <- (lhs + rhs), Formula lhsVal := ((x in lhs) ? lhs[x].relForm : \false()), Formula rhsVal := ((x in rhs) ? rhs[x].relForm : \false()), ExtensionEncoding lhsExt := ((x in lhs) ? lhs[x].ext : ()), ExtensionEncoding rhsExt := ((x in rhs) ? rhs[x].ext : ())) 
-  when sameArity(lhs, rhs);
-default RelationMatrix or(RelationMatrix _, RelationMatrix _) { throw "Unable to perform disjunction of bindings with different arity"; }
-
-RelationMatrix and(RelationMatrix lhs, RelationMatrix rhs) = (x:<\and(lhs[x].relForm, rhs[x].relForm), merge(lhs[x].ext, rhs[x].ext)> | Index x <- lhs, x in rhs) when sameArity(lhs, rhs);
-default RelationMatrix and(RelationMatrix _, RelationMatrix _) { throw "Unable to perform conjunction of bindings with different arity"; }
- 
-
-private ExtensionEncoding transpose(ExtensionEncoding ext, 1) = ext;
-private ExtensionEncoding transpose(ExtensionEncoding ext, int arity) = ((arity - 1) - idx : ext[idx] | int idx <- ext);
+RelationAndAttributes or(RelationAndAttributes lhs, RelationAndAttributes rhs) {
+  if (!sameArity(lhs,rhs)) {
+    throw "Unable to perform disjunction of relations with different arity";
+  }
   
-RelationMatrix transpose(RelationMatrix m) = (() | it + (reversedIndex : <m[key].relForm, transpose(m[key].ext, arity(m))>) | Index key <- m, Index reversedIndex := reverse(key));
+  RelationMatrix relResult = ();
+  AttributeMatrix attResult = ();
+  
+  for (Index idx <- (lhs.relation + rhs.relation)) {
+    Formula lhsVal = idx in lhs.relation ? lhs.relation[idx] : \false();
+    Formula rhsVal = idx in rhs.relation ? rhs.rleation[idx] : \false();
+    relResult[idx] = \or(lhsVal, rhsVal);
+    
+    map[int, Attributes] lhsAtt = idx in lhs.att ? lhs.att[idx] : ();
+    map[int, Attributes] rhsAtt = idx in rhs.att ? rhs.att[idx] : ();
+    attResult[idx] = merge(lhsAtt, rhsAtt);    
+  }
+  
+  return <relResult, attResult>;
+}
 
-RelationMatrix transitiveClosure(RelationMatrix m, Universe uni, void (set[TheoryFormula]) addTheoryConstraint, void (Formula) addAdditionalConstraint) = square(m, 1, sizeOfUniverse(uni), addTheoryConstraint) when arity(m) == 2;
-default RelationMatrix transitiveClosure(RelationMatrix m, Universe uni, void (set[TheoryFormula]) addTheoryConstraint, void (Formula) addAdditionalConstraint) { throw "Can not perform a transitive closure on a non-binary relation"; }
+RelationAndAttributes and(RelationAndAttributes lhs, RelationAndAttributes rhs) {
+  if (!sameArity(lhs,rhs)) {
+    throw "Unable to perform conjunction of relations with different arity";
+  }
 
-RelationMatrix reflexiveTransitiveClosure(RelationMatrix m, Universe uni, void (set[TheoryFormula]) addTheoryConstraint, void (Formula) addAdditionalConstraint) = or(transitiveClosure(m, uni, addTheoryConstraint, addAdditionalConstraint), identity(m, uni)) when arity(m) == 2; 
-default RelationMatrix reflexiveTransitiveClosure(RelationMatrix m, Universe uni, void (set[TheoryFormula]) addTheoryConstraint, void (Formula) addAdditionalConstraint) { throw "Can not perform a reflexive transitive closure on a non-binary relation"; }
+  RelationMatrix relResult = ();
+  AttributeMatrix attResult = ();
+  
+  for (Index idx <- lhs.relation, idx in rhs.relation) {
+    relResult[idx] = \and(lhs.relation[idx], rhs.relation[idx]);
+    attResult[idx] = merge(lhs.attResult[idx], lhs.attResult[idx]);    
+  }
+  
+  return <relResult, attResult>;
+}
 
-RelationMatrix disjunction(RelationMatrix lhs, RelationMatrix rhs) = or(lhs, rhs) when sameArity(lhs, rhs);
-default RelationMatrix disjunction(RelationMatrix lhs, RelationMatrix rhs) { throw "Relations to disjunct must be of same arity"; }
-RelationMatrix conjunction(RelationMatrix lhs, RelationMatrix rhs) = and(lhs, rhs) when sameArity(lhs, rhs);
-default RelationMatrix conjunction(RelationMatrix lhs, RelationMatrix rhs) { throw "Relations to conjunct must be of same arity"; }
+RelationAndAttributes transpose(RelationAndAttributes m) {
+  int arity = arity(m);
+  
+  RelationMatrix relResult = ();
+  AttributeMatrix attResult = ();
+  
+  for (Index idx <- m.relation) {
+    Index reversedIdx = reverse(idx);
+    
+    relResult[reversedIdx] = m.relation[idx];
+    attResult[reversedIdx] = ((arity - 1) - i : m.att[idx][i] | int i <- m.att[idx]);  
+  }
 
-RelationMatrix difference(RelationMatrix lhs, RelationMatrix rhs) = 
-  (idx:<and(lhs[idx].relForm, rhsVal), lhs[idx].ext> | Index idx <- lhs, Formula rhsVal := ((idx in rhs) ? not(rhs[idx].relForm) : \true())) 
-  when sameArity(lhs, rhs);
-default RelationMatrix difference(RelationMatrix lhs, RelationMatrix rhs) { throw "Can not perform a difference on two relations with different arities"; }  
+  return <relResult, attResult>;
+} 
 
-private Formula toRelForm(set[TheoryFormula] forms) = (\true() | \and(it, \if(f.relForm,f.theoryForm)) | TheoryFormula f <- forms);
+RelationAndAttributes transitiveClosure(RelationAndAttributes m, Universe uni) {
+  if (artiy(m) != 2) {
+    throw "Can not perform a transitive closure on a non-binary relation";
+  }
+  
+  return square(m, 1, sizeOfUniverse(uni));
+}
 
-@memo
-RelationMatrix \join(RelationMatrix lhs, RelationMatrix rhs, void (set[TheoryFormula]) addTheoryConstraint) {
+
+RelationAndAttributes reflexiveTransitiveClosure(RelationAndAttributes m, Universe uni) {
+  if (artiy(m) != 2) {
+    throw "Can not perform a reflexive transitive closure on a non-binary relation";
+  }
+  
+  return or(transitiveClosure(m, uni), identity(m, uni));
+} 
+
+RelationAndAttributes difference(RelationAndAttributes lhs, RelationAndAttributes rhs) {
+  if (!sameArity(lhs,rhs)) {
+    throw "Can not perform a difference on two relations with different arities";
+  }
+  
+  RelationMatrix relResult = ();
+  AttributeMatrix attResult = ();
+  
+  for (Index idx <- lhs) {
+    Formula rhsVal = idx in rhs.relation ? not(rhs.relation[idx]) : \true();
+    
+    relResult[idx] = \and(lhs.relation[idx], rhsVal);
+    attResult[idx] = lhs.att[idx];
+  }
+  
+  return <relResult, attResult>;
+} 
+
+RelationAndAttributes \join(RelationAndAttributes lhs, RelationAndAttributes rhs) {
   int arityLhs = arity(lhs);
   int arityRhs = arity(rhs);
     
-  if (arityLhs == 1 && arityRhs == 1) { throw "Unable to join two unary relations"; }
+  if (arityLhs == 1 && arityRhs == 1) { 
+    throw "Unable to join two unary relations"; 
+  }
       
   set[Index] indicesEndingWith(Atom a, RelationMatrix b) = {idx | Index idx <- b, idx[-1] == a};
   set[Index] indicesStartingWith(Atom a, RelationMatrix b) = {idx | Index idx <- b, idx[0] == a};
 
-  // join by joining the right-most atom from the index of the lhs with the left-most atom from the index of the rhs. It is much like a database join
-  set[Atom] mostRightAtomInLhs = {idx[-1] | Index idx <- lhs};
+  set[Atom] mostRightAtomInLhs = {idx[-1] | Index idx <- lhs.relation};
     
-  ExtensionEncoding joinExt(ExtensionEncoding lhsExt, ExtensionEncoding rhsExt) {
-    ExtensionEncoding resultExt = (idx : lhsExt[idx]     | int idx <- lhsExt, idx < (arityLhs - 1)) +
-                                  (idx - 1 : rhsExt[idx] | int idx <- rhsExt, idx > 0);
-                               
-    if (arityLhs - 1 in lhsExt) { addTheoryConstraint(lhsExt[arityLhs-1]); }
-    if (0 in rhsExt) { addTheoryConstraint(rhsExt[0]); }
-    
-    return resultExt;
-  }  
-    
-  RelationMatrix joinResult = ();
+  RelationMatrix relResult = ();
+  AttributeMatrix attResult = ();
+  
   for (Atom current <- mostRightAtomInLhs) {
     set[Index] lhsIndices = indicesEndingWith(current, lhs);
     set[Index] rhsIndices = indicesStartingWith(current, rhs);
     
     if (lhsIndices != {} && rhsIndices != {}) {  
-
-      for (Index currentLhs <- lhsIndices, Formula lhsVal := lhs[currentLhs].relForm, lhsVal != \false(), Index currentRhs <- rhsIndices, Formula rhsVal := rhs[currentRhs].relForm, rhsVal != \false()) {
-        Formula val = and(lhsVal, rhsVal);
+      for (Index lhsIdx <- lhsIndices, lhs.relation[lhsIdx] != \false(), Index rhsIdx <- rhsIndices, rhs.relation[rhsIdx] != \false()) {
+        Formula val = and(lhs.relation[lhsIdx], rhs.relation[rhsIdx]);
         
-        if (val != \false()) {
-          Index jointIndex = (currentLhs - currentLhs[-1]) + (currentRhs - currentRhs[0]);
-          ExtensionEncoding joinExtResult = joinExt(lhs[currentLhs].ext, rhs[currentRhs].ext); 
+        Index joinIdx = (lhsIdx - lhsIdx[-1]) + (rhsIdx - rhsIdx[0]);
+        map[int, Attributes] attJoin = (lhs.att[lhsIdx] - lhs.att[lhsIdx][arityLhs-1]) + (rhs.att[rhsIdx] - rhs.att[rhsIdx][0]);
 
-          if (jointIndex notin joinResult) {
-            joinResult[jointIndex] = <val, joinExtResult>;
-          }else {
-            joinResult[jointIndex] = <or(joinResult[jointIndex].relForm, val), merge(joinResult[jointIndex].ext, joinExtResult)>;
-          }
+        if (joinIdx notin relResult) {
+          relResult[joinIdx] = val;
+          attResult[joinIdx] = attJoin;
+        } else {
+          relResult[joinIdx] = \or(relResult[joinIdx], val); 
+          attResult[joinIdx] = merge(attResult[joinIdx], attJoin);
         }
       }
     }
   }
   
-  return joinResult;
+  return <relResult, attResult>;
 }
 
-ExtensionEncoding productExt(int arityLhs, ExtensionEncoding lhs, ExtensionEncoding rhs) =
-  lhs + (i + arityLhs : rhs[i] | int i <- rhs);
-
-RelationMatrix product(RelationMatrix lhs, RelationMatrix rhs) 
-  = (currentLhs + currentRhs : <val, productExt(arityLhs, lhs[currentLhs].ext, rhs[currentRhs].ext)> | 
-      Index currentLhs <- lhs, 
-      lhs[currentLhs].relForm != \false(),
-      int arityLhs := arity(lhs),
-      Index currentRhs <- rhs, 
-      rhs[currentRhs].relForm != \false(),
-      Formula val := and(lhs[currentLhs].relForm, rhs[currentRhs].relForm), 
-      val !:= \false()); 
-
-
- 
-
+RelationAndAttributes product(RelationAndAttributes lhs, RelationAndAttributes rhs) {
+  RelationMatrix relResult = ();
+  AttributeMatrix attResult = ();
+  int arityLhs = arity(lhs);
+  
+  for (Indx lhsIdx <- lhs.relation, lhs.relation[lhsIdx] != \false(), Index rhsIdx <- rhs.relation, rhs.relation[rhsIdx] != \false()) {
+    Index productIdx = lhsIdx + rhsIdx;
+   
+    relResult[productIdx] = \and(lhs.relation[lhsIdx], rhs.relation[rhsIdx]);
+    attResult[productIdx] = lhs.att[lhsIdx] + (i + arityLhs : rhs.att[rhsIdx][i] | int i <- rhs.att[rhsIdx]); 
+  }
+  
+  return <relResult, attResult>;
+}
