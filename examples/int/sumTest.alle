@@ -1,15 +1,22 @@
-{a(int),b(int),c(int),d(int),e(int),f(int)}
+{a{val(int)},b{val(int)},c{val(int)},d{val(int)},e{val(int)},f{val(int)}}
 
 A:1 [{}, {<a>,<b>,<c>,<d>,<e>,<f>}]
-B:1 [{}, {<a>,<b>,<c>,<d>,<e>,<f>}]
+//B:1 [{}, {<a>,<b>,<c>,<d>,<e>,<f>}]
 
-A++B > 0
+//A::val + 10 = 24
 
-A\B = 5
+sum(A::val) = 24
 
-((A\B) + (B\A)) = 8
-((A&B) + (A&B)) = 8
 
-some A&B
-some A\B
-some B\A
+#A = 3
+
+//(A++B)::val > 0
+//
+//(A\B)::val = 5
+//
+//(A\B)::val + (B\A)::val = 8
+//(A&B)::val + (A&B)::val = 8
+//
+//some A&B
+//some A\B
+//some B\A
