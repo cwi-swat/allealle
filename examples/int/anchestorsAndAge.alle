@@ -3,17 +3,18 @@
 Person:1  [{<p1>},{<p1>,<p2>,<p3>,<p4>}]
 Adam:1    [{<p1>},{<p1>}]
 parent:2  [{},{<p1,p2>,<p1,p3>,<p1,p4>,<p2,p3>,<p2,p4>,<p3,p2>,<p3,p4>,<p4,p2>,<p4,p3>}]
-anchestor:2 [{},{<p2,p1>,<p2,p3>,<p2,p4>,<p3,p1>,<p3,p2>,<p3,p4>,<p4,p1>,<p4,p2>,<p4,p3>}]
+//anchestor:2 [{},{<p2,p1>,<p2,p3>,<p2,p4>,<p3,p1>,<p3,p2>,<p3,p4>,<p4,p1>,<p4,p2>,<p4,p3>}]
 
 twin:2 [{},{<p2,p3>,<p3,p2>,<p2,p4>,<p4,p2>,<p3,p4>,<p4,p3>}]
  
 Adam in Person
 parent in Person -> Person
-anchestor in Person -> Person
-twin in Person -> Person
+//anchestor in Person -> Person
+//twin in Person -> Person
 
 // Everybody has a parent except Adam
-forall p:Person | ((not p == Adam) => one parent.p)
+forall p:Person\Adam | one parent.p
+ 
 no parent.Adam
 
 // Nobody is its own parent
@@ -26,8 +27,8 @@ forall p:Person | not (p in (^parent).p)
 Person in Adam.(*parent)
 
 // Anchestor is the transposed transitive closure of the parent relation (if you are somebodies parent, grandparent, etc you are an anchestor)
-anchestor == ~(^parent) 
-
+//anchestor == ~(^parent) 
+//
 // Nobody, even Adam, is older then 149
 Person::age >= 0 && Person::age < 150
 
@@ -37,5 +38,9 @@ forall p: Person\Adam | p::age < Adam::age
 // If p is c's parent then p must have been an adult when c was born 
 forall p: Person, c: Person\p | p -> c in parent => p::age - c::age > 17
 
-// If two persons have the same parent and the same age, they must be twins
+exists p:Person | p::age = 37
+
+//// If two persons have the same parent and the same age, they must be twins
 twin == {p1: Person, p2: Person\p1 | parent.p1 == parent.p2 && p1::age = p2::age}
+
+some twin

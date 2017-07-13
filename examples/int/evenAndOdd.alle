@@ -1,4 +1,4 @@
-{a(int),b(int),c(int),d(int)}
+{a{v(int)},b{v(int)},c{v(int)},d{v(int)}}
 
 Num:1   [{<a>,<b>,<c>,<d>},{<a>,<b>,<c>,<d>}]
 Even:1  [{},{<a>,<b>,<c>,<d>}]
@@ -8,14 +8,14 @@ Odd:1   [{},{<a>,<b>,<c>,<d>}]
 Even in Num
 Odd in Num
 
-Num > 0 && Num < 50
+Num::v > 0 && Num::v < 50
 
 no Even&Odd
 Even++Odd == Num
 
-forall n1:Num, n2:Num\n1 | n1 != n2
+forall n1:Num, n2:Num\n1 | n1::v != n2::v
 
-forall n:Num| ((n % 2) = 0) <=> n in Even
+forall n:Num | ((n::v % 2) = 0) <=> n in Even
 
 //twice == {n1: Num, n2:Num\n1 | n2 = n1 * 2}
 

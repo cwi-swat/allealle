@@ -11,19 +11,21 @@ import IO;
 alias Index = list[Atom]; 
 
 alias RelationMatrix = map[Index, Formula];
-
-data AttributeFormula = implies(Formula relForm, Formula attributeForm); 
+ 
+alias AttributeFormula = tuple[Formula relForm, Formula attForm]; 
 alias Attributes = map[str, set[AttributeFormula]];
 alias AttributeMatrix = map[Index, map[int, Attributes]];
 
 alias RelationAndAttributes = tuple[RelationMatrix relation, AttributeMatrix att];
 alias Environment = map[str, RelationAndAttributes]; 
 
+data Command;
+
 @memo
 int sizeOfUniverse(Universe u) = size(u.atoms);
 
 int arity(RelationAndAttributes rm) = 0 when rm.relation == ();
-int arity(RelationAndAttributes rm) = size(getOneFrom(rm.relation)) when rm.relatin != ();
+int arity(RelationAndAttributes rm) = size(getOneFrom(rm.relation)) when rm.relation != ();
 
 @memo
 private bool sameArity(RelationAndAttributes lhs, RelationAndAttributes rhs) = arity(lhs) == arity(rhs); 
@@ -35,8 +37,18 @@ private list[Index] constructIdentityIndex(int arity, Universe uni) = [vector | 
 
 @memo
 RelationAndAttributes identity(RelationAndAttributes orig, Universe uni) = identity(arity(orig), uni);
-RelationAndAttributes identity(int arity, Universe uni) = (idx:<\true(),()> | Index idx <- constructIdentityIndex(arity, uni));
+RelationAndAttributes identity(int arity, Universe uni) {
+  RelationMatrix relIden = ();
+  AttributeMatrix attIden = ();
+  
+  for (Index idx <- constructIdentityIndex(arity, uni)) {
+    relIden[idx] = \true();
+    attIden[idx] = ();
+  }
 
+  return <relIden,attIden>;
+}
+  
 map[int, Attributes] merge(map[int, Attributes] lhs, map[int, Attributes] rhs) = (idx : lhs[idx] | int idx <- lhs, idx notin rhs) +
                                                                                  (idx : lhs[idx] + rhs[idx] | int idx <- lhs, idx in rhs) +
                                                                                  (idx : rhs[idx] | int idx <- rhs, idx notin lhs);
@@ -51,7 +63,7 @@ RelationAndAttributes or(RelationAndAttributes lhs, RelationAndAttributes rhs) {
   
   for (Index idx <- (lhs.relation + rhs.relation)) {
     Formula lhsVal = idx in lhs.relation ? lhs.relation[idx] : \false();
-    Formula rhsVal = idx in rhs.relation ? rhs.rleation[idx] : \false();
+    Formula rhsVal = idx in rhs.relation ? rhs.relation[idx] : \false();
     relResult[idx] = \or(lhsVal, rhsVal);
     
     map[int, Attributes] lhsAtt = idx in lhs.att ? lhs.att[idx] : ();
@@ -72,7 +84,7 @@ RelationAndAttributes and(RelationAndAttributes lhs, RelationAndAttributes rhs) 
   
   for (Index idx <- lhs.relation, idx in rhs.relation) {
     relResult[idx] = \and(lhs.relation[idx], rhs.relation[idx]);
-    attResult[idx] = merge(lhs.attResult[idx], lhs.attResult[idx]);    
+    attResult[idx] = merge(lhs.att[idx], rhs.att[idx]);    
   }
   
   return <relResult, attResult>;
@@ -95,7 +107,7 @@ RelationAndAttributes transpose(RelationAndAttributes m) {
 } 
 
 RelationAndAttributes transitiveClosure(RelationAndAttributes m, Universe uni) {
-  if (artiy(m) != 2) {
+  if (arity(m) != 2) {
     throw "Can not perform a transitive closure on a non-binary relation";
   }
   
@@ -104,7 +116,7 @@ RelationAndAttributes transitiveClosure(RelationAndAttributes m, Universe uni) {
 
 
 RelationAndAttributes reflexiveTransitiveClosure(RelationAndAttributes m, Universe uni) {
-  if (artiy(m) != 2) {
+  if (arity(m) != 2) {
     throw "Can not perform a reflexive transitive closure on a non-binary relation";
   }
   
@@ -119,7 +131,7 @@ RelationAndAttributes difference(RelationAndAttributes lhs, RelationAndAttribute
   RelationMatrix relResult = ();
   AttributeMatrix attResult = ();
   
-  for (Index idx <- lhs) {
+  for (Index idx <- lhs.relation) {
     Formula rhsVal = idx in rhs.relation ? not(rhs.relation[idx]) : \true();
     
     relResult[idx] = \and(lhs.relation[idx], rhsVal);
@@ -145,16 +157,19 @@ RelationAndAttributes \join(RelationAndAttributes lhs, RelationAndAttributes rhs
   RelationMatrix relResult = ();
   AttributeMatrix attResult = ();
   
+  map[int, Attributes] attributeJoin(map[int, Attributes] lhsAtt, map[int, Attributes] rhsAtt) = (i  :lhsAtt[i] | int i <- lhsAtt, i < (arityLhs - 1)) +
+                                                                                                 (i-1:rhsAtt[i] | int i <- rhsAtt, i > 0);
+  
   for (Atom current <- mostRightAtomInLhs) {
-    set[Index] lhsIndices = indicesEndingWith(current, lhs);
-    set[Index] rhsIndices = indicesStartingWith(current, rhs);
+    set[Index] lhsIndices = indicesEndingWith(current, lhs.relation);
+    set[Index] rhsIndices = indicesStartingWith(current, rhs.relation);
     
     if (lhsIndices != {} && rhsIndices != {}) {  
       for (Index lhsIdx <- lhsIndices, lhs.relation[lhsIdx] != \false(), Index rhsIdx <- rhsIndices, rhs.relation[rhsIdx] != \false()) {
         Formula val = and(lhs.relation[lhsIdx], rhs.relation[rhsIdx]);
         
         Index joinIdx = (lhsIdx - lhsIdx[-1]) + (rhsIdx - rhsIdx[0]);
-        map[int, Attributes] attJoin = (lhs.att[lhsIdx] - lhs.att[lhsIdx][arityLhs-1]) + (rhs.att[rhsIdx] - rhs.att[rhsIdx][0]);
+        map[int, Attributes] attJoin = attributeJoin(lhs.att[lhsIdx], rhs.att[rhsIdx]);
 
         if (joinIdx notin relResult) {
           relResult[joinIdx] = val;
@@ -175,7 +190,7 @@ RelationAndAttributes product(RelationAndAttributes lhs, RelationAndAttributes r
   AttributeMatrix attResult = ();
   int arityLhs = arity(lhs);
   
-  for (Indx lhsIdx <- lhs.relation, lhs.relation[lhsIdx] != \false(), Index rhsIdx <- rhs.relation, rhs.relation[rhsIdx] != \false()) {
+  for (Index lhsIdx <- lhs.relation, lhs.relation[lhsIdx] != \false(), Index rhsIdx <- rhs.relation, rhs.relation[rhsIdx] != \false()) {
     Index productIdx = lhsIdx + rhsIdx;
    
     relResult[productIdx] = \and(lhs.relation[lhsIdx], rhs.relation[rhsIdx]);

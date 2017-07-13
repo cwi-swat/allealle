@@ -23,8 +23,12 @@ data VectorAndVar
 
 data ModelAtom
   = atom(Atom name)
-  | varAtom(Atom name, Theory theory, Value val)
-  | fixedAtom(Atom name, Theory theory, Value val)
+  | atomWithAttributes(Atom name, list[ModelAttribute] attributes)
+  ;
+
+data ModelAttribute
+  = fixedAttribute(str name, Theory theory, Value val)
+  | varAttribute(str name, Theory theory, Value val)
   ;
 
 data Relation 
@@ -40,28 +44,25 @@ data Model
 set[SMTVar] collectSMTVars(Universe uni, Environment env)  {
   set[SMTVar] result = {};
 
-  for (AtomDecl ad <- uni.atoms, ad has theory, /just(tuple[str var, Theory t] r) := constructExtendedTheoryVar(ad)) {
-    result += <r.var, r.t>;
-  }
+  //for (AtomDecl ad <- uni.atoms, ad has theory, /just(tuple[str var, Theory t] r) := constructExtendedTheoryVar(ad)) {
+  //  result += <r.var, r.t>;
+  //}
   
-  for (str varName <- env, RelationMatrix rm := env[varName], Index idx <- rm) {
-    if (var(str name) := rm[idx].relForm) {
+  for (str varName <- env, RelationAndAttributes raa := env[varName], Index idx <- raa.relation) {
+    if (var(str name) := raa.relation[idx]) {
       result += <name, relTheory()>;
     }
     
-    for (int i <- rm[idx].ext, just(tuple[str var, Theory t] r) := constructExtendedTheoryVar(rm[idx].ext[i])) {
-      result += <r.var, r.t>;
+    for (int i <- raa.att[idx], str name <- raa.att[idx][i], AttributeFormula attForm <- raa.att[idx][i][name]) {
+      result += constructAttributeVar(attForm);
     }
   }
-
+  
   return result;
 }
-  //= {<name, relTheory()> | str varName <- env, RelationMatrix rm := env[varName], Index idx <- rm, var(str name) := rm[idx].relForm} +
-  //  {<r.var, r.t> | str varName <- env, RelationMatrix rm := env[varName], Index idx <- rm, int i <- rm[idx].ext, /just(tuple[str var, Theory t] r) := constructExtendedTheoryVar(rm[idx].ext[i])} +
-  //  {<r.var, r.t> | AtomDecl ad <- uni.atoms, ad has theory, /just(tuple[str var, Theory t] r) := constructExtendedTheoryVar(ad)}; 
 
-default Maybe[tuple[str, Theory]] constructExtendedTheoryVar(AtomDecl ad) { throw "Unable to construct a variable for atom declaration \'<ad>\'"; }
-default Maybe[tuple[str, Theory]] constructExtendedTheoryVar(set[TheoryFormula] f) { throw "Unable to construct a variable for formula \'<f>\'"; } 
+//default Maybe[tuple[str, Theory]] constructExtendedTheoryVar(AtomDecl ad) { throw "Unable to construct a variable for atom declaration \'<ad>\'"; }
+default tuple[str, Theory] constructAttributeVar(AttributeFormula f) { throw "Unable to construct a variable for formula \'<f>\'"; } 
 
 str compileSMTVariableDeclarations(set[SMTVar] vars) = "<for (SMTVar var <- vars) {>
                                                        '<compileVariableDeclaration(var)><}>"; //("" | "<it>\n<compileVariableDeclaration(var)>" | SMTVar var <- vars);
@@ -104,26 +105,26 @@ str compileAdditionalConstraints(set[Formula] constraints) = "<for (Formula f <-
                                                              '<compile(f)><}>";                               
 
 SMTModel getValues(str smtResult, set[SMTVar] vars) {
-  Values foundValues = [Values]"<smtResult>"; 
-  map[str,Value] rawSmtVals = (() | it + ("<varAndVal.name>":varAndVal.val) | VarAndValue varAndVal <- foundValues.values);
+  SmtValues foundValues = [SmtValues]"<smtResult>"; 
+  map[str,SmtValue] rawSmtVals = (() | it + ("<varAndVal.name>":varAndVal.val) | VarAndValue varAndVal <- foundValues.values);
 
   SMTModel m = (var : form | str varName <- rawSmtVals, SMTVar var:<varName, Theory _> <- vars, Formula form := getValue(rawSmtVals[varName], var));
   
   return m;
 }   
 
-Formula toFormula((Value)`true`) = \true();
-Formula toFormula((Value)`false`) = \false();
-default Formula toFormula(Value someVal) { throw "Unable to construct Boolean formula with value \'<someVal>\'"; }
+Formula toFormula((SmtValue)`true`) = \true();
+Formula toFormula((SmtValue)`false`) = \false();
+default Formula toFormula(SmtValue someVal) { throw "Unable to construct Boolean formula with value \'<someVal>\'"; }
 
-Formula getValue(Value smtValue, SMTVar var) = toFormula(smtValue) when var.theory == relTheory();
-default Formula getValue(Value smtValue, SMTVar var) { throw "Unable to get the value for SMT value <smtValue>"; }
+Formula getValue(SmtValue smtValue, SMTVar var) = toFormula(smtValue) when var.theory == relTheory();
+default Formula getValue(SmtValue smtValue, SMTVar var) { throw "Unable to get the value for SMT value \'<smtValue>\', for variable <var>"; }
 
 str negateVariable(str var, \true()) = "(not <var>)";
 str negateVariable(str var, \false()) = var;
-default str negateVariable(str v, Formula f) { throw "Unable to negate variable <v> with current value <f>"; }
 
-default str negateAtomVariable(ModelAtom ad) { throw "Unable to negate atom variable \'<ad.name>\', no negation function found"; } 
+default str negateVariable(str v, Formula f) { throw "Unable to negate variable <v> with current value <f>"; }
+default str negateAttribute(Atom a, ModelAttribute at) { throw "Unable to negate atom\'s \'<a>\' attribute \'<at.name>\', no negation function found"; } 
 
 Model constructModel(SMTModel smtModel, Universe uni, Environment env) { 
   AtomDecl findAtomDecl(Atom a) = ad when AtomDecl ad <- uni.atoms, ad.atom == a;
@@ -134,34 +135,44 @@ Model constructModel(SMTModel smtModel, Universe uni, Environment env) {
   for (str relName <- env, !startsWith(relName, "_")) {
     set[VectorAndVar] relTuples = {};
      
-    for (Index idx <- env[relName]) {
+    for (Index idx <- env[relName].relation) {
       // all the atoms referenced in the vector should be visible
-      if (<var(str name), ExtensionEncoding _> := env[relName][idx], smtModel[<name, relTheory()>] == \true() ) {
+      if (var(str name) := env[relName].relation[idx], smtModel[<name, relTheory()>] == \true() ) {
         visibleAtoms += {findAtomDecl(a) | Atom a <- idx};
         relTuples += {vectorAndVar(idx,  name)};
       }
-      else if (<\true(), ExtensionEncoding _> := env[relName][idx]) {
+      else if (\true() := env[relName].relation[idx]) {
         visibleAtoms += {findAtomDecl(a) | Atom a <- idx};
         relTuples += {vectorOnly(idx)};        
       } 
     }
     
-    if (size(getOneFrom(env[relName])) == 1) {
+    if (size(getOneFrom(env[relName].relation)) == 1) {
       relations += {unary(relName, relTuples, relName in env)};
     } else {
       relations += {nary(relName, relTuples, relName in env)};
     } 
   }
   
+  list[ModelAttribute] convertAttributes(Atom a, list[Attribute] origAtt) {
+    list[ModelAttribute] atts = [];
+    
+    visit(origAtt) {
+      case attribute(str name, Theory t): atts += varAttribute(name, t, findAttributeValue(a, name, t, smtModel));
+      case attributeAndValue(str name, Theory t, Value v): atts += fixedAttribute(name, t, v);
+    }
+    
+    return atts;
+  }
+  
   // Now make sure that visible atoms which hold variables in other theories get their values set
   set[ModelAtom] atomsInModel = {};
   visit (visibleAtoms) {
     case atomOnly(Atom a): atomsInModel += atom(a);
-    case atomAndTheory(Atom a, Theory t): atomsInModel += varAtom(a, t, findAtomValue(a, t, smtModel));
-    case atomTheoryAndValue(Atom a, Theory t, Value val): atomsInModel += fixedAtom(a, t, val);
+    case atomWithAttributes(Atom a, list[Attribute] attributes): atomsInModel += atomWithAttributes(a, convertAttributes(a, attributes));
   };   
 
   return model(atomsInModel, relations);
 } 
 
-default Value findAtomValue(Atom a, Theory t, SMTModel smtModel) { throw "Unable to find atom value for atom <a> with theory \'<t>\'";}
+default Value findAttributeValue(Atom a, str name, Theory t, SMTModel smtModel) { throw "Unable to find attribute value for attribute \'<name>\' on atom <a> with theory \'<t>\'";}

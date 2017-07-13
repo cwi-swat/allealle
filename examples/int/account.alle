@@ -1,42 +1,36 @@
-{ac1, ac2, ac3, b1(int), b2(int), b3(int), am1(int),am2(int),am3(int),s1, s2, s3, withdraw, deposit}
+{ac1{balance(int)}, ac2{balance(int)}, ac3{balance(int)}, p1{amount(int)},p2{amount(int)},s1, s2, s3, withdraw, deposit}
 
-State: 1 [{<s1>},{<s1>,<s2>,<s3>}]
-InitialState: 1 [{<s1>},{<s1>}]
-ordering: 2[{}, {<s1,s2>,<s2,s3>}]
-Account:1 [{<ac1>},{<ac1>,<ac2>,<ac3>}]
-accountInState:2 [{<s1,ac1>},{<s1,ac1>,<s2,ac2>,<s3,ac3>}]
+State: 1          [{<s1>},{<s1>,<s2>,<s3>}]
+InitialState: 1   [{<s1>},{<s1>}]
+ordering: 2       [{}, {<s1,s2>,<s2,s3>}]
+Account:1         [{<ac1>},{<ac1>,<ac2>,<ac3>}]
+accountInState:2  [{<s1,ac1>},{<s1,ac1>,<s2,ac2>,<s3,ac3>}]
+params:2          [{},{<s2,p1>,<s3,p2>}]
 
 Withdraw:1[{<withdraw>},{<withdraw>}]
 Deposit:1[{<deposit>},{<deposit>}]
 triggeredEvent:2 [{},{<s2,withdraw>,<s2,deposit>,<s3,withdraw>,<s3,deposit>}]
 
-Balance:1 [{<b1>}, {<b1>,<b2>,<b3>}]
-balance:2 [{<ac1,b1>}, {<ac1,b1>,<ac2,b2>,<ac3,b3>}]
-
-Amount:1[{},{<am1>,<am2>,<am3>}]
-amount:2[{},{<s2,am2>,<s3,am3>}]
-
 ordering in State -> State
 accountInState in State -> Account 
-balance in Account -> Balance
-amount in State -> Amount
 
 triggeredEvent in State->(Withdraw++Deposit)
 
 // Entity constraints
-forall s:State | (some s.ordering || some ordering.s) && some s.accountInState && some (s.accountInState).balance
+forall s:State | (some s.ordering || some ordering.s) && some s.accountInState
+forall s:State\InitialState | some params[s]
+
+params[State]::amount > 0 && params[State]::amount < 11
 
 // Initial state
-balance[accountInState[InitialState]] = 0
+accountInState[InitialState]::balance = 0
 
 // Transition function
 forall s1: State, s2:State | s1 -> s2 in ordering => 
-  (some amount[s2]) && 
-  (amount[s2]) > 0 && (amount[s2]) < 11 &&
   (
-    (balance[accountInState[s2]] = balance[accountInState[s1]] + (amount[s2]) && triggeredEvent[s2] == Deposit) ||
-    (balance[accountInState[s2]] = balance[accountInState[s1]] - (amount[s2]) && triggeredEvent[s2] == Withdraw)
+    (accountInState[s2]::balance = accountInState[s1]::balance + (params[s2]::amount) && triggeredEvent[s2] == Deposit) ||
+    (accountInState[s2]::balance = accountInState[s1]::balance - (params[s2]::amount) && triggeredEvent[s2] == Withdraw)
   )
  
 // Goal state 
-exists s:State | balance[accountInState[s]] = 20
+exists s:State | (accountInState[s])::balance = 20

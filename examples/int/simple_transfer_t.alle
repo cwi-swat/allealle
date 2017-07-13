@@ -1,41 +1,36 @@
-{s0,s1,s2,b1_1(int),b1_2(int),b1_3(int),b2_1(int),b2_2(int),b2_3(int),a1(int),a2(int)}
+{s0,s1,s2,b1_1{balance(int)},b1_2{balance(int)},b1_3{balance(int)},b2_1{balance(int)},b2_2{balance(int)},b2_3{balance(int)},a1{val(int)},a2{val(int)}}
 
 State:1         [{<s0>},{<s0>,<s1>,<s2>}]
 InitialState:1  [{<s0>},{<s0>}]
 ordering:2      [{},{<s0,s1>,<s1,s2>}]
-Balance:1       [{},{<b1_1>,<b1_2>,<b1_3>,<b2_1>,<b2_2>,<b2_3>}]
-balance1:2      [{},{<s0,b1_1>,<s1,b1_2>,<s2,b1_3>}]
-balance2:2      [{},{<s0,b2_1>,<s1,b2_2>,<s2,b2_3>}]
-Amount:1        [{},{<a1>,<a2>}]
-am:2            [{},{<s1,a1>,<s2,a2>}]
+
+account1:2      [{},{<s0,b1_1>,<s1,b1_2>,<s2,b1_3>}]
+account2:2      [{},{<s0,b2_1>,<s1,b2_2>,<s2,b2_3>}]
+amount:2        [{},{<s1,a1>,<s2,a2>}]
 
 ordering in State->State
-balance1 in State->Balance
-balance2 in State->Balance
-am       in State->Amount
 InitialState in State
 
-forall s:State\InitialState | some ordering.s && some am[s] 
-forall b:Balance | some balance1.b || some balance2.b
-forall a:Amount | some am.a
+forall s:State\InitialState | some ordering.s 
 
-forall s:State | some balance1[s] && some balance2[s]
+forall s:State | some account1[s] && some account2[s]
+forall s:State\InitialState | some amount[s]
+forall s:State\InitialState | no ordering.s => (no s.account1 && no s.account2)
 
-balance1[InitialState] = 100
-balance2[InitialState] = 100
+account1[InitialState]::balance = 100
+account2[InitialState]::balance = 100
 
 forall s1:State, s2:State | s1->s2 in ordering =>
-  am[s2] > 0 &&
-  (
-    (balance1[s1] > am[s2] &&
-     balance1[s2] = (balance1[s1]) - (am[s2]) &&
-     balance2[s2] = (balance2[s2]) + (am[s2])) 
-    ||
-    (balance2[s1] > am[s2] &&
-     balance1[s2] = (balance1[s1]) + (am[s2]) &&
-     balance2[s2] = (balance2[s1]) - (am[s2]))    
-  )
+  amount[s2]::val > 0 &&
 
-exists s:State | balance1[s] = 200
+  ((account1[s1]::balance > amount[s2]::val &&
+   account1[s2]::balance = (account1[s1]::balance) - (amount[s2]::val) &&
+   account2[s2]::balance = (account2[s2]::balance) + (amount[s2]::val)) ||
+
+  (account2[s1]::balance > amount[s2]::val &&
+   account1[s2]::balance = (account1[s1]::balance) + (amount[s2]::val) &&
+   account2[s2]::balance = (account2[s1]::balance) - (amount[s2]::val)))    
+
+exists s:State | account1[s]::balance = 199
 
 //some am

@@ -67,6 +67,9 @@ Expr transform(modulo(Expr lhsExpr, Expr rhsExpr), Env env, Universe uni, str ()
   when Expr lhs := transform(lhsExpr, env, uni, newResultAtom, addRelation, addConstraint, newRelNr),
        Expr rhs := transform(rhsExpr, env, uni, newResultAtom, addRelation, addConstraint, newRelNr);
 
+private Expr getAttributeExpr(Atom a, attributeAndValue(str name, Theory _, intExpr(i:intLit(_)))) = i;
+private default Expr getAttributeExpr(Atom a, Attribute at) = attributeLookup(variable(a), at.name);
+
 private Expr transform(list[Expr] terms, Expr (list[Expr] operands) operation, str () newResultAtom, void (str, set[AtomDecl], set[list[AtomDecl]]) addRelation, void (AlleFormula) addConstraint, str baseRelName, str () newRelNr) {
   // check arity
   if (Expr t <- terms, list[AtomDecl] l <- t@maxTuples, size(l) != 1) {
@@ -94,7 +97,7 @@ private Expr transform(list[Expr] terms, Expr (list[Expr] operands) operation, s
   set[list[AtomDecl]] upperBound = {};
   
   for (list[AtomDecl] t <- maxProductResult) {
-    AtomDecl resultAtom = atomWithAttributes("<newResultAtom()>", [attributeAndValue("val", intTheory(), intExpr(operation([attributeLookup(variable(a), at.name) | atomWithAttributes(Atom a, [Attribute at]) <- t])))]);
+    AtomDecl resultAtom = atomWithAttributes("<newResultAtom()>", [attributeAndValue("val", intTheory(), intExpr(operation([getAttributeExpr(a, at) | atomWithAttributes(Atom a, [Attribute at]) <- t])))]);
     list[AtomDecl] newTuple = t + resultAtom;
      
     resultAtoms += resultAtom;
@@ -110,18 +113,11 @@ private Expr transform(list[Expr] terms, Expr (list[Expr] operands) operation, s
   Expr buildJoinExpr([Expr e])                        = \join(e, variable(newRelName)); 
   default Expr buildJoinExpr([Expr hd, *Expr tl])     = \join(hd, buildJoinExpr(tl)); 
   
-  list[Expr] strip(list[Expr] t) = visit(t) {
-    case attributeLookup(Expr e, str _) => e 
-  };
-  
-  return attributeLookup(buildJoinExpr(reverse(strip(terms))), "val")[@maxTuples = {[r | AtomDecl r <- resultAtoms]}]; 
+  return attributeLookup(buildJoinExpr(reverse(terms)), "val")[@maxTuples = {[r | AtomDecl r <- resultAtoms]}]; 
 }
 
 private Expr transform(Expr lhs, Expr rhs, Expr (Expr l, Expr r) operation, str () newResultAtom, void (str, set[AtomDecl], set[list[AtomDecl]]) addRelation, void (AlleFormula) addConstraint, str baseRelName, str () newRelNr) {
   if (list[AtomDecl] l <- lhs@maxTuples + rhs@maxTuples, size(l) != 1) {
-    println("Printing list of decls");
-    iprintln(l);
-
     throw "Integer arithmetic expression can only be performed on unary relations with an integer attribute selected";
   } 
    
@@ -131,7 +127,7 @@ private Expr transform(Expr lhs, Expr rhs, Expr (Expr l, Expr r) operation, str 
   set[list[AtomDecl]] upperBound = {};
   
   for (t:[atomWithAttributes(Atom l,[Attribute atLhs]), atomWithAttributes(Atom r,[Attribute atRhs])] <- maxProductResult) {
-    AtomDecl resultAtom = atomWithAttributes("<newResultAtom()>", [attributeAndValue("val", intTheory(), intExpr(operation(attributeLookup(variable(l), atLhs.name), attributeLookup(variable(r), atRhs.name))))]);
+    AtomDecl resultAtom = atomWithAttributes("<newResultAtom()>", [attributeAndValue("val", intTheory(), intExpr(operation(getAttributeExpr(l, atLhs), getAttributeExpr(r, atRhs))))]);
     list[AtomDecl] newTuple = t + resultAtom;
 
     resultAtoms += resultAtom;
@@ -142,12 +138,8 @@ private Expr transform(Expr lhs, Expr rhs, Expr (Expr l, Expr r) operation, str 
   str newRelName = "_<baseRelName>_<relNr>";
   
   addRelation(newRelName, resultAtoms, upperBound);
-
-  Expr strip(Expr t) = visit(t) {
-    case attributeLookup(Expr e, str _) => e 
-  };
        
-  return attributeLookup(\join(strip(rhs), \join(strip(lhs), variable(newRelName))), "val")[@maxTuples = {[r | AtomDecl r <- resultAtoms]}]; 
+  return attributeLookup(\join(rhs, \join(lhs, variable(newRelName))), "val")[@maxTuples = {[r | AtomDecl r <- resultAtoms]}]; 
 }  
 
 Expr transform(sum(attributeLookup(Expr e, str name)), Env env, Universe uni, str () newResultAtom, void (str, set[AtomDecl], set[list[AtomDecl]]) addRelation, void (AlleFormula) addConstraint, str () newRelNr) {

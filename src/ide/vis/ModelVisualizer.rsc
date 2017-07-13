@@ -24,7 +24,7 @@ import IO;
 
 data DisplayOptions = options(real scale = 1.0, set[str] filteredEdges = {});
 
-data DisplayModus = textual() | visual();
+data DisplayModus = textual() | visual(); 
 
 FProperty myLeft() = halign(0.0);
 
@@ -141,10 +141,27 @@ Figure buildEdgeLabel(Atom from, Atom to, int index, str relName) =
 Figure buildAtomNode(ModelAtom ma, rel[ModelAtom, Relation] unaryRelations, DisplayOptions disOpt) {
 	Figure getLabel() = vcat([text("\<<r.name>\>", center()) | Relation r <- unaryRelations[ma]] + 
 	                         [text(ma.name, [fontBold(true), center()])] + 
-	                         [text("<i>", [fontItalic(true), center()]) | ma has val, intExpr(intLit(int i)) := ma.val]); 
+	                         [text("<displayAttributeValues(ma)>", [fontItalic(true), center()])]); 
 	
   return ellipse(getLabel(), fillColor("white"), size(round(50 * disOpt.scale)), id(ma.name), lineWidth(1.5));
 }
+
+str displayAttributeValue(intExpr(intLit(int i))) = "<i>";
+
+str displayAttributeValues(Model model, str atom) {
+  if (ModelAtom a <- model.visibleAtoms, a.name == atom) {
+    return displayAttributeValues(a);
+  }
+}
+
+str displayAttributeValues(ModelAtom a) {
+  if (!(a has attributes)) {
+    return "";
+  }
+    
+  return "{<intercalate(",", ["<at.name>:<displayAttributeValue(at.val)>" | ModelAttribute at <- a.attributes])>}"; 
+}
+
 
 Figures textualizeModel(Model model) {
   if (model == empty()) {
@@ -160,9 +177,6 @@ Figures textualizeModel(Model model) {
     return false;
   }
   
-  str intTheoryValue(str atom) = " (<i>)" when ModelAtom a <- model.visibleAtoms, a.name == atom, a has theory, a.theory == intTheory(), intExpr(intLit(int i)) := a.val;
-  default str intTheoryValue(str atom) = "";
-  
   Figures m = [text("")];
   list[str] sortedRel = sort(toList({r.name | Relation r <- model.relations}));
   
@@ -172,7 +186,7 @@ Figures textualizeModel(Model model) {
     list[VectorAndVar] sortedIndices = sort(toList(r.relation), vectorSort);
     
     for (VectorAndVar idx <- sortedIndices) {
-      m += text("  <intercalate(" -\> ", ["<idx.vector[i]><intTheoryValue(idx.vector[i])>" | int i <- [0..size(idx.vector)]])>", myLeft());
+      m += text("  <intercalate(" -\> ", ["<idx.vector[i]><displayAttributeValues(model, idx.vector[i])>" | int i <- [0..size(idx.vector)]])>", myLeft());
     } 
         
     m += text("");

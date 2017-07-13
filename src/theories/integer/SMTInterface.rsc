@@ -10,12 +10,7 @@ import theories::integer::Translator;
 import List;
 import String; 
  
-Maybe[tuple[str,Theory]] constructExtendedTheoryVar({form(Formula _, equal(intVar(str name), Formula r))}) = just(<"<name>", intTheory()>); 
-//Maybe[tuple[str,Theory]] constructExtendedTheoryVar({form(Formula _, equal(Formula _, \int(int _)))}) = nothing();
-
-Maybe[tuple[str,Theory]] constructExtendedTheoryVar(atomAndTheory(str atom, intTheory())) = just(<"<atom>", intTheory()>); 
-Maybe[tuple[str,Theory]] constructExtendedTheoryVar(atomTheoryAndValue(str atom, intTheory(), intExpr(Expr expr))) = just(<"<atom>", intTheory()>) when \int(int i) := exprToForm(expr); 
-default Maybe[tuple[str,Theory]] constructExtendedTheoryVar(atomTheoryAndValue(str atom, intTheory(), intExpr(Expr expr))) = just(<atom, intTheory()>); 
+tuple[str, Theory] constructAttributeVar(<Formula _, equal(intVar(str name), Formula _)>) = <name, intTheory()>;
 
 str compileVariableDeclaration(SMTVar var) = "(declare-const <var.name> Int)" when var.theory == intTheory();
 
@@ -36,12 +31,11 @@ str compile(multiplication(list[Formula] forms))  = "(* <for (f <- forms) {><com
 str compile(modulo(Formula lhs, Formula rhs))     = "(mod <compile(lhs)> <compile(rhs)>)";  
 str compile(division(Formula lhs, Formula rhs))   = "(div <compile(lhs)> <compile(rhs)>)"; 
 
-Formula getValue(Value smtValue, SMTVar var) = toFormula(smtValue) when var.theory == intTheory();
+Formula getValue(SmtValue smtValue, SMTVar var) = toFormula(smtValue) when var.theory == intTheory();
  
-Formula toFormula((Value)`<Val v>`) = \int(toInt("<v>")); 
-Formula toFormula((Value)`(- <Val v>)`) = \int(-toInt("<v>")); 
-default Formula toFormula(Value v) { throw "Unable to convert found value <v> to an Integer formula"; } 
+Formula toFormula((SmtValue)`<Val v>`) = \int(toInt("<v>")); 
+Formula toFormula((SmtValue)`(- <Val v>)`) = \int(-toInt("<v>")); 
 
-AtomValue findAtomValue(Atom a, intTheory(), SMTModel smtModel) = intExpr(intLit(val)) when <a, intTheory()> in smtModel, \int(int val) := smtModel[<a, intTheory()>];
+Value findAttributeValue(Atom a, str name, intTheory(), SMTModel smtModel) = intExpr(intLit(val)) when <"<a>!<name>", intTheory()> in smtModel, \int(int val) := smtModel[<"<a>!<name>", intTheory()>];
  
-str negateAtomVariable(varAtom(Atom a, intTheory(), intExpr(intLit(int i)))) = "(not (= <a> <i>))";
+str negateAttribute(Atom a, varAttribute(str name, intTheory(), intExpr(intLit(int i)))) = "(not (= <a>!<name> <i>))";

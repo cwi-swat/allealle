@@ -44,14 +44,10 @@ ModelFinderResult checkInitialSolution(Problem problem) {
 	print("Translating problem to SAT formula...");
 	tuple[TranslationResult r, int time] t = bm(translateProblem, augmentedProblem, ie.env);
 	print("done, took: <(t.time/1000000)> ms\n");
-	
-//	 
-//	//print("Converting to CNF...");
-//	//tuple[Formula formula, int time] cnf = <t.result.formula, t.time>; //bm(convertToCNF, t.result.formula);
-//
-	if (t.r.formula == \false()) {
+	 
+	if (t.r.relationalFormula == \false()) {
 		return trivialUnsat();
-	} else if (t.r.formula == \true()) {
+	} else if (t.r.relationalFormula == \true()) {
 		return trivialSat(empty(), problem.uni);
 	}
 
@@ -67,19 +63,20 @@ ModelFinderResult runInSolver(Problem problem, TranslationResult tr, Environment
 	print("Translating to SMT-LIB...");
   tuple[set[SMTVar] vars, int time] smtVarCollectResult = bm(collectSMTVars, problem.uni, env);
 	tuple[str smt, int time] smtVarDeclResult = bm(compileSMTVariableDeclarations, smtVarCollectResult.vars);
-	tuple[str smt, int time] smtAtomDeclExprs = bm(compileAtomExpressions, problem.uni.atoms);
-	tuple[str smt, int time] smtCompileFormResult = bm(compileAssert, tr.formula);
-	tuple[str smt, int time] smtCompileAddCons = bm(compileAdditionalConstraints, tr.additionalConstraints);
+	//tuple[str smt, int time] smtAtomDeclExprs = bm(compileAtomExpressions, problem.uni.atoms);
+	tuple[str smt, int time] smtCompileRelFormResult = bm(compileAssert, tr.relationalFormula);
+	tuple[str smt, int time] smtCompileAttFormResult = bm(compileAssert, tr.attributeFormula);
+	//tuple[str smt, int time] smtCompileAddCons = bm(compileAdditionalConstraints, tr.additionalConstraints);
 	
-	print("done, took: <(smtVarCollectResult.time + smtVarDeclResult.time + smtAtomDeclExprs.time + smtCompileFormResult.time + smtCompileAddCons.time) /1000000> ms in total (variable collection fase: <smtVarCollectResult.time / 1000000>, variable declaration fase: <smtVarDeclResult.time / 1000000>, atom expression translation fase: <smtAtomDeclExprs.time / 1000000>, formula compilation fase: <smtCompileFormResult.time / 1000000>, additional constraints compilation phase: <smtCompileAddCons.time / 1000000>\n");
-	println("Total nr of clauses in formula: <countClauses(tr.formula)>, total nr of variables in formula: <countVars(smtVarCollectResult.vars)>"); 
+	print("done, took: <(smtVarCollectResult.time + smtVarDeclResult.time + smtCompileRelFormResult.time + smtCompileAttFormResult.time) /1000000> ms in total (variable collection fase: <smtVarCollectResult.time / 1000000>, variable declaration fase: <smtVarDeclResult.time / 1000000>, relational formula compilation fase: <smtCompileRelFormResult.time / 1000000>, attribute formula compilation phase: <smtCompileAttFormResult.time / 1000000>\n");
+	println("Total nr of clauses in formula: <countClauses(\and(tr.relationalFormula, tr.attributeFormula))>, total nr of variables in formula: <countVars(smtVarCollectResult.vars)>"); 
 	
-	writeFile(|project://allealle/bin/latestSmt.smt2|, "<smtVarDeclResult.smt>\n<smtAtomDeclExprs.smt>\n<smtCompileFormResult.smt>\n<smtCompileAddCons.smt>");
+	writeFile(|project://allealle/bin/latestSmt.smt2|, "<smtVarDeclResult.smt>\n<smtCompileRelFormResult.smt>\n<smtCompileAttFormResult.smt>");
 	  
 	smtVarCollectResult.vars = removeAllAddedVars(smtVarCollectResult.vars);   
 	  
 	print("Solving by Z3...");
-	tuple[bool result, int time] solving = bm(isSatisfiable, solverPid, "<smtVarDeclResult.smt>\n<smtAtomDeclExprs.smt>\n<smtCompileFormResult.smt>\n<smtCompileAddCons.smt>"); 
+	tuple[bool result, int time] solving = bm(isSatisfiable, solverPid, "<smtVarDeclResult.smt>\n<smtCompileRelFormResult.smt>\n<smtCompileAttFormResult.smt>"); 
 	print("done, took: <solving.time/1000000> ms\n");
 	println("Outcome is \'<solving.result>\'");
  
@@ -127,8 +124,8 @@ SMTModel nextSmtModel(SolverPID pid, Model currentModel, Theory t, set[SMTVar] v
   if (t == relTheory()) {
     smt = ("" | it + " <negateVariable(v.name, findCurrentSmtVal(v))>" | SMTVar v <- vars, v.theory == relTheory());
   } else {
-    smt = ("" | it + " <negateAtomVariable(v)>" | v:varAtom(str _, Theory _, AtomValue _) <- currentModel.visibleAtoms); 
-  } 
+    smt = ("" | it + " <negateAttribute(a,v)>" | atomWithAttributes(Atom a, list[ModelAttribute] attributes) <- currentModel.visibleAtoms, v:varAttribute(str _, Theory _, Value _) <- attributes); 
+  }  
   
   println(smt); 
   

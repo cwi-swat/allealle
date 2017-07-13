@@ -85,12 +85,13 @@ Problem preprocess(Problem problem) {
 data Expr = emptyExpr(); 
 
 Env buildEnv(Problem p) {
-  AtomDecl findAtomDecl(Atom a) = ad when AtomDecl ad <- p.uni.atoms, ad.atom == a;  
-
+  AtomDecl findAtomDecl(Atom a, str _) = ad when AtomDecl ad <- p.uni.atoms, ad.atom == a;  
+  default AtomDecl findAtomDecl(Atom a, str relName) { throw "Unable to locate atom declaration \'<a>\' referenced in relation \'<relName>\'"; }
+  
   Env env = ();
   
   for (RelationalBound rb <- p.bounds) {
-    env[rb.relName] = {[findAtomDecl(a) | Atom a <- t.atoms] | Tuple t <- rb.upperBounds};
+    env[rb.relName] = {[findAtomDecl(a, rb.relName) | Atom a <- t.atoms] | Tuple t <- rb.upperBounds};
   }
 
   return env;
