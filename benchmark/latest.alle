@@ -1,0 +1,40 @@
+{s0,s1,s2,s3,s4,s5,s6,s7,s8,s9,s10,s11,s12,s13,s14,s15,s16,s17,s18,s19,
+ ac1_0{balance(int)},ac1_1{balance(int)},ac1_2{balance(int)},ac1_3{balance(int)},ac1_4{balance(int)},ac1_5{balance(int)},ac1_6{balance(int)},ac1_7{balance(int)},ac1_8{balance(int)},ac1_9{balance(int)},ac1_10{balance(int)},ac1_11{balance(int)},ac1_12{balance(int)},ac1_13{balance(int)},ac1_14{balance(int)},ac1_15{balance(int)},ac1_16{balance(int)},ac1_17{balance(int)},ac1_18{balance(int)},ac1_19{balance(int)},
+ ac2_0{balance(int)},ac2_1{balance(int)},ac2_2{balance(int)},ac2_3{balance(int)},ac2_4{balance(int)},ac2_5{balance(int)},ac2_6{balance(int)},ac2_7{balance(int)},ac2_8{balance(int)},ac2_9{balance(int)},ac2_10{balance(int)},ac2_11{balance(int)},ac2_12{balance(int)},ac2_13{balance(int)},ac2_14{balance(int)},ac2_15{balance(int)},ac2_16{balance(int)},ac2_17{balance(int)},ac2_18{balance(int)},ac2_19{balance(int)},
+ am1{val(int)},am2{val(int)},am3{val(int)},am4{val(int)},am5{val(int)},am6{val(int)},am7{val(int)},am8{val(int)},am9{val(int)},am10{val(int)},am11{val(int)},am12{val(int)},am13{val(int)},am14{val(int)},am15{val(int)},am16{val(int)},am17{val(int)},am18{val(int)},am19{val(int)}}
+
+State:1          [{<s0>},{<s0>,<s1>,<s2>,<s3>,<s4>,<s5>,<s6>,<s7>,<s8>,<s9>,<s10>,<s11>,<s12>,<s13>,<s14>,<s15>,<s16>,<s17>,<s18>,<s19>}]
+InitialState:1   [{<s0>},{<s0>}]
+ordering:2       [{}, {<s0,s1>,<s1,s2>,<s2,s3>,<s3,s4>,<s4,s5>,<s5,s6>,<s6,s7>,<s7,s8>,<s8,s9>,<s9,s10>,<s10,s11>,<s11,s12>,<s12,s13>,<s13,s14>,<s14,s15>,<s15,s16>,<s16,s17>,<s17,s18>,<s18,s19>}]
+
+account1:2       [{},{<s0,ac1_0>,<s1,ac1_1>,<s2,ac1_2>,<s3,ac1_3>,<s4,ac1_4>,<s5,ac1_5>,<s6,ac1_6>,<s7,ac1_7>,<s8,ac1_8>,<s9,ac1_9>,<s10,ac1_10>,<s11,ac1_11>,<s12,ac1_12>,<s13,ac1_13>,<s14,ac1_14>,<s15,ac1_15>,<s16,ac1_16>,<s17,ac1_17>,<s18,ac1_18>,<s19,ac1_19>}]
+account2:2       [{},{<s0,ac2_0>,<s1,ac2_1>,<s2,ac2_2>,<s3,ac2_3>,<s4,ac2_4>,<s5,ac2_5>,<s6,ac2_6>,<s7,ac2_7>,<s8,ac2_8>,<s9,ac2_9>,<s10,ac2_10>,<s11,ac2_11>,<s12,ac2_12>,<s13,ac2_13>,<s14,ac2_14>,<s15,ac2_15>,<s16,ac2_16>,<s17,ac2_17>,<s18,ac2_18>,<s19,ac2_19>}]
+amount:2         [{},{<s1,am1>,<s2,am2>,<s3,am3>,<s4,am4>,<s5,am5>,<s6,am6>,<s7,am7>,<s8,am8>,<s9,am9>,<s10,am10>,<s11,am11>,<s12,am12>,<s13,am13>,<s14,am14>,<s15,am15>,<s16,am16>,<s17,am17>,<s18,am18>,<s19,am19>}]
+ordering in State->State
+InitialState in State
+
+forall s:State\InitialState | some ordering.s 
+
+forall s:State | some account1[s] && some account2[s]
+forall s:State | some ordering.s => some amount[s]
+
+forall am:amount | some State.am
+forall a:account1 | some State.a
+forall a:account2 | some State.a
+
+account1[InitialState]::balance = 100
+account2[InitialState]::balance = 100
+
+forall s1:State, s2:State | s1->s2 in ordering =>
+  amount[s2]::val > 0 &&
+
+  ((account1[s1]::balance > amount[s2]::val &&
+   account1[s2]::balance = (account1[s1]::balance) - (amount[s2]::val) &&
+   account2[s2]::balance = (account2[s1]::balance) + (amount[s2]::val)) ||
+
+  (account2[s1]::balance > amount[s2]::val &&
+   account1[s2]::balance = (account1[s1]::balance) + (amount[s2]::val) &&
+   account2[s2]::balance = (account2[s1]::balance) - (amount[s2]::val)))    
+
+exists s:State | account1[s]::balance = 200
+  

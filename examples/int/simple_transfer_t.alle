@@ -14,8 +14,11 @@ InitialState in State
 forall s:State\InitialState | some ordering.s 
 
 forall s:State | some account1[s] && some account2[s]
-forall s:State\InitialState | some amount[s]
-forall s:State\InitialState | no ordering.s => (no s.account1 && no s.account2)
+forall s:State | some ordering.s => some amount[s]
+
+forall am:amount | some State.am
+forall a:account1 | some State.a
+forall a:account2 | some State.a
 
 account1[InitialState]::balance = 100
 account2[InitialState]::balance = 100
@@ -25,12 +28,10 @@ forall s1:State, s2:State | s1->s2 in ordering =>
 
   ((account1[s1]::balance > amount[s2]::val &&
    account1[s2]::balance = (account1[s1]::balance) - (amount[s2]::val) &&
-   account2[s2]::balance = (account2[s2]::balance) + (amount[s2]::val)) ||
+   account2[s2]::balance = (account2[s1]::balance) + (amount[s2]::val)) ||
 
   (account2[s1]::balance > amount[s2]::val &&
    account1[s2]::balance = (account1[s1]::balance) + (amount[s2]::val) &&
    account2[s2]::balance = (account2[s1]::balance) - (amount[s2]::val)))    
 
 exists s:State | account1[s]::balance = 199
-
-//some am
