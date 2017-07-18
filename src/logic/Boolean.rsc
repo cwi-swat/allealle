@@ -6,8 +6,10 @@ data Formula
 	| \not(Formula f)
 	| \and(set[Formula] fs)
 	| \or(set[Formula] fs)
-	//| ite(Formula c, Formula t, Formula e)
+	| ite(Formula c, Formula t, Formula e)
 	;
+
+data Command;
 
 Formula \or({})									                      = \false();
 Formula \or({Formula x}) 						                  = x;
@@ -75,7 +77,7 @@ Formula \not(\false())       					                = \true();
 Formula \ite(\true(), Formula t, Formula _)           = t;
 Formula \ite(\false(), Formula _, Formula e)          = e;
 Formula \ite(Formula _, Formula t, t)                 = t;
-default Formula \ite(Formula c, Formula t, Formula e) = \or(\iff(c,t),\iff(\not(c),e));
+//default Formula \ite(Formula c, Formula t, Formula e) = \or(\iff(c,t),\iff(\not(c),e));
 
 Formula \if(Formula l, Formula r)           	        = \or(\not(l),r);
 Formula \fi(Formula l, Formula r)           	        = \if(r, l);

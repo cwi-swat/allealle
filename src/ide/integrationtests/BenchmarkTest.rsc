@@ -7,51 +7,13 @@ import ide::CombinedModelFinder;
 import IO;
 import List;
 
-//{s0,s1,s2,b1_1{balance(int)},b1_2{balance(int)},b1_3{balance(int)},b2_1{balance(int)},b2_2{balance(int)},b2_3{balance(int)},a1{val(int)},a2{val(int)}}
-//
-//State:1         [{<s0>},{<s0>,<s1>,<s2>}]
-//InitialState:1  [{<s0>},{<s0>}]
-//ordering:2      [{},{<s0,s1>,<s1,s2>}]
-//
-//account1:2      [{},{<s0,b1_1>,<s1,b1_2>,<s2,b1_3>}]
-//account2:2      [{},{<s0,b2_1>,<s1,b2_2>,<s2,b2_3>}]
-//amount:2        [{},{<s1,a1>,<s2,a2>}]
-//
-//ordering in State->State
-//InitialState in State
-//
-//forall s:State\InitialState | some ordering.s 
-//
-//forall s:State | some account1[s] && some account2[s]
-//forall s:State | some ordering.s => some amount[s]
-//
-//forall am:amount | some State.am
-//forall a:account1 | some State.a
-//forall a:account2 | some State.a
-//
-//account1[InitialState]::balance = 100
-//account2[InitialState]::balance = 100
-//
-//forall s1:State, s2:State | s1->s2 in ordering =>
-//  amount[s2]::val > 0 &&
-//
-//  ((account1[s1]::balance > amount[s2]::val &&
-//   account1[s2]::balance = (account1[s1]::balance) - (amount[s2]::val) &&
-//   account2[s2]::balance = (account2[s1]::balance) + (amount[s2]::val)) ||
-//
-//  (account2[s1]::balance > amount[s2]::val &&
-//   account1[s2]::balance = (account1[s1]::balance) + (amount[s2]::val) &&
-//   account2[s2]::balance = (account2[s1]::balance) - (amount[s2]::val)))    
-//
-//exists s:State | account1[s]::balance = 199
-
 void runBenchmark() {
-  str problem = generateUnsatTransferProblem(20);
+  str problem = generateUnsatAlleAlleTransferProblem(20);
   
   writeFile(|project://allealle/benchmark/latest.alle|, problem);
 }
 
-str generateUnsatTransferProblem(int maxDepth) =
+str generateUnsatAlleAlleTransferProblem(int maxDepth) =
   "{<intercalate(",", ["s<i>" | int i <- [0..maxDepth]])>,
   ' <intercalate(",", ["ac1_<i>{balance(int)}" | int i <- [0..maxDepth]])>,
   ' <intercalate(",", ["ac2_<i>{balance(int)}" | int i <- [0..maxDepth]])>,
@@ -61,34 +23,90 @@ str generateUnsatTransferProblem(int maxDepth) =
   'InitialState:1   [{\<s0\>},{\<s0\>}]
   'ordering:2       [{}, {<intercalate(",", ["\<s<i>,s<i+1>\>" | int i <- [0..maxDepth-1]])>}]
   '
-  'account1:2       [{},{<intercalate(",", ["\<s<i>,ac1_<i>\>" | int i <- [0..maxDepth]])>}]
-  'account2:2       [{},{<intercalate(",", ["\<s<i>,ac2_<i>\>" | int i <- [0..maxDepth]])>}]
-  'amount:2         [{},{<intercalate(",", ["\<s<i>,am<i>\>"   | int i <- [1..maxDepth]])>}]
+  'account1InState:2  [{},{<intercalate(",", ["\<s<i>,ac1_<i>\>" | int i <- [0..maxDepth]])>}]
+  'account2InState:2  [{},{<intercalate(",", ["\<s<i>,ac2_<i>\>" | int i <- [0..maxDepth]])>}]
+  'paramsInState:2    [{},{<intercalate(",", ["\<s<i>,am<i>\>"   | int i <- [1..maxDepth]])>}]
+  '
   'ordering in State-\>State
   'InitialState in State
   '
   'forall s:State\\InitialState | some ordering.s 
   '
-  'forall s:State | some account1[s] && some account2[s]
-  'forall s:State | some ordering.s =\> some amount[s]
+  'forall s:State | some account1InState[s] && some account2InState[s]
+  'forall s:State | some ordering.s =\> some paramsInState[s]
   '
-  'forall am:amount | some State.am
-  'forall a:account1 | some State.a
-  'forall a:account2 | some State.a
+  'forall p:paramsInState | some State.p
+  'forall a:account1InState | some State.a
+  'forall a:account2InState | some State.a
   '
-  'account1[InitialState]::balance = 100
-  'account2[InitialState]::balance = 100
+  'account1InState[InitialState]::balance = 100
+  'account2InState[InitialState]::balance = 100
   '
   'forall s1:State, s2:State | s1-\>s2 in ordering =\>
-  '  amount[s2]::val \> 0 &&
+  '  paramsInState[s2]::val \> 0 &&
   '
-  '  ((account1[s1]::balance \> amount[s2]::val &&
-  '   account1[s2]::balance = (account1[s1]::balance) - (amount[s2]::val) &&
-  '   account2[s2]::balance = (account2[s1]::balance) + (amount[s2]::val)) ||
+  '  ((account1InState[s1]::balance \> paramsInState[s2]::val &&
+  '   account1InState[s2]::balance = (account1InState[s1]::balance) - (paramsInState[s2]::val) &&
+  '   account2InState[s2]::balance = (account2InState[s1]::balance) + (paramsInState[s2]::val)) ||
   '
-  '  (account2[s1]::balance \> amount[s2]::val &&
-  '   account1[s2]::balance = (account1[s1]::balance) + (amount[s2]::val) &&
-  '   account2[s2]::balance = (account2[s1]::balance) - (amount[s2]::val)))    
+  '  (account2InState[s1]::balance \> paramsInState[s2]::val &&
+  '   account1InState[s2]::balance = (account1InState[s1]::balance) + (paramsInState[s2]::val) &&
+  '   account2InState[s2]::balance = (account2InState[s1]::balance) - (paramsInState[s2]::val)))    
   '
-  'exists s:State | account1[s]::balance = 200
+  'exists s:State | account1InState[s]::balance = 200
   ";
+  
+ str generateUnsatSMTTransferProblem(int maxDepth) =
+  "(declare-sort State)
+  '(declare-fun balance1 (State) Int)
+  '(declare-fun balance2 (State) Int)
+  '(declare-fun amount (State) Int)
+  '
+  '(define-fun from1To2 ((current State) (next State)) Bool
+  '  (and
+  '    (\>= (balance1 current) (amount current)) ; guard
+  '    
+  '    
+  '    (= (- (balance1 current) (amount current)) (balance1 next))
+  '    (= (+ (balance2 current) (amount current)) (balance2 next))
+  '    (\> (amount next) 0)
+  '  )    
+  ') 
+  '(define-fun from2To1 ((current State) (next State)) Bool
+  '  (and
+  '    (\>= (balance2 current) (amount current)) ; guard
+  '        
+  '    (= (+ (balance1 current) (amount current)) (balance1 next))
+  '    (= (- (balance2 current) (amount current)) (balance2 next))
+  '    (\> (amount next) 0)
+  '  )    
+  ') 
+  '(define-fun transition ((current State) (next State)) Bool
+  '  (or 
+  '    (from1To2 current next) 
+  '    (from2To1 current next)
+  '  ) 
+  ')
+  '(define-fun initial ((state State)) Bool
+  '  (and
+  '    (= (balance1 state) 100)
+  '    (= (balance2 state) 100)
+  '    (\> (amount state) 0)
+  '  )  
+  ')
+  '(define-fun goal ((state State)) Bool
+  '  (\> (balance1 state) 200) 
+  ')
+  '<for (int i <- [0..maxDepth]) {>
+  '(declare-const S<i> State)<}>
+  '
+  '(assert 
+  '  (and
+  '    (initial S0)
+  '    (or <for (int i <- [1..maxDepth]) {>
+  '      (and <for (int j <- [0..i]) {> (transition S<j> S<j+1>) <}> (goal S<i>))<}>
+  '    )
+  '  )
+  ')
+  '
+  '(check-sat)"; 

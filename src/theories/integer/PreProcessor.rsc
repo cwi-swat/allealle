@@ -157,16 +157,17 @@ Expr transform(sum(attributeLookup(Expr e, str name)), Env env, Universe uni, st
   addRelation(sumRelName, {sumResultAtom}, {[sumResultAtom]});
 
   // add as many unary, singleton relations as there are possible elements in the relation
-  for ([AtomDecl ad] <- expr@maxTuples) {
-    addRelation("_SR_<ad.atom>", {}, {[ad]});
-  } 
-
-  Expr buildSummation(int i) = ifThenElse(subset(variable("e<i>"), expr), attributeLookup(variable("e<i>"), name), intLit(0)) when i == max-1;
-  Expr buildSummation(int i) = addition(ifThenElse(subset(variable("e<i>"), expr), attributeLookup(variable("e<i>"), name), intLit(0)), buildSummation(i+1)) when i < max-1;
-
-  addConstraint(universal([varDecl("e<i>", variable("_SR_<ad.atom>")) | int i <- [0..max], [AtomDecl ad] := toList(expr@maxTuples)[i]], intEqual(variable(sumRelName), buildSummation(0))));
+//  for ([AtomDecl ad] <- expr@maxTuples) {
+//    addRelation("_SR_<ad.atom>", {}, {[ad]});
+//  } 
+//
+//  Expr buildSummation(int i) = ifThenElse(subset(variable("e<i>"), expr), attributeLookup(variable("e<i>"), name), intLit(0)) when i == max-1;
+//  Expr buildSummation(int i) = addition(ifThenElse(subset(variable("e<i>"), expr), attributeLookup(variable("e<i>"), name), intLit(0)), buildSummation(i+1)) when i < max-1;
+//
+//  addConstraint(universal([varDecl("e<i>", variable("_SR_<ad.atom>")) | int i <- [0..max], [AtomDecl ad] := toList(expr@maxTuples)[i]], intEqual(variable(sumRelName), buildSummation(0))));
+//  
   
-  return attributeLookup(variable(sumRelName), "val")[@maxTuples={[sumResultAtom]}];
+  return attributeLookup(sumBind(variable(sumRelName), e), "val")[@maxTuples={[sumResultAtom]}];
 }
 
 //@memo
@@ -181,14 +182,14 @@ Expr transform(car(Expr e), Env env, Universe uni, str () newResultAtom, void (s
   addRelation(carRelName, {carResultAtom}, {[carResultAtom]});
 
   // add as many unary, singleton relations as there are possible elements in the relation
-  for ([AtomDecl ad] <- expr@maxTuples) {
-    addRelation("_CR_<ad.atom>", {}, {[ad]});
-  } 
+//  for ([AtomDecl ad] <- expr@maxTuples) {
+//    addRelation("_CR_<ad.atom>", {}, {[ad]});
+//  } 
+//
+//  Expr buildSummation(int i) = ifThenElse(subset(variable("e<i>"), expr), intLit(1), intLit(0)) when i == max-1;
+//  Expr buildSummation(int i) = addition(ifThenElse(subset(variable("e<i>"), expr), intLit(1), intLit(0)), buildSummation(i+1)) when i < max-1;
+//
+//  addConstraint(universal([varDecl("e<i>", variable("_CR_<ad.atom>")) | int i <- [0..max], [AtomDecl ad] := toList(expr@maxTuples)[i]], intEqual(variable(carRelName), buildSummation(0))));
 
-  Expr buildSummation(int i) = ifThenElse(subset(variable("e<i>"), expr), intLit(1), intLit(0)) when i == max-1;
-  Expr buildSummation(int i) = addition(ifThenElse(subset(variable("e<i>"), expr), intLit(1), intLit(0)), buildSummation(i+1)) when i < max-1;
-
-  addConstraint(universal([varDecl("e<i>", variable("_CR_<ad.atom>")) | int i <- [0..max], [AtomDecl ad] := toList(expr@maxTuples)[i]], intEqual(variable(carRelName), buildSummation(0))));
-
-  return attributeLookup(variable(carRelName), "val")[@maxTuples={[carResultAtom]}];
+  return attributeLookup(carBind(variable(carRelName), e), "val")[@maxTuples={[carResultAtom]}];
 }

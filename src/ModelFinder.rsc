@@ -63,20 +63,22 @@ ModelFinderResult runInSolver(Problem problem, TranslationResult tr, Environment
 	print("Translating to SMT-LIB...");
   tuple[set[SMTVar] vars, int time] smtVarCollectResult = bm(collectSMTVars, problem.uni, env);
 	tuple[str smt, int time] smtVarDeclResult = bm(compileSMTVariableDeclarations, smtVarCollectResult.vars);
-	//tuple[str smt, int time] smtAtomDeclExprs = bm(compileAtomExpressions, problem.uni.atoms);
+	tuple[str smt, int time] smtAttributeValues = bm(compileAttributeValues, problem.uni.atoms);
 	tuple[str smt, int time] smtCompileRelFormResult = bm(compileAssert, tr.relationalFormula);
 	tuple[str smt, int time] smtCompileAttFormResult = bm(compileAssert, tr.attributeFormula);
-	//tuple[str smt, int time] smtCompileAddCons = bm(compileAdditionalConstraints, tr.additionalConstraints);
+	tuple[str smt, int time] smtCompileAdditionalComands = bm(compileAdditionalCommands, tr.additionalCommands);
 	
-	print("done, took: <(smtVarCollectResult.time + smtVarDeclResult.time + smtCompileRelFormResult.time + smtCompileAttFormResult.time) /1000000> ms in total (variable collection fase: <smtVarCollectResult.time / 1000000>, variable declaration fase: <smtVarDeclResult.time / 1000000>, relational formula compilation fase: <smtCompileRelFormResult.time / 1000000>, attribute formula compilation phase: <smtCompileAttFormResult.time / 1000000>\n");
-	println("Total nr of clauses in formula: <countClauses(\and(tr.relationalFormula, tr.attributeFormula))>, total nr of variables in formula: <countVars(smtVarCollectResult.vars)>"); 
+	print("done, took: <(smtVarCollectResult.time + smtVarDeclResult.time + smtAttributeValues.time + smtCompileRelFormResult.time + smtCompileAttFormResult.time + smtCompileAdditionalComands.time) /1000000> ms in total (variable collection fase: <smtVarCollectResult.time / 1000000>, variable declaration fase: <smtVarDeclResult.time / 1000000>, attribute value compilation fase: <smtAttributeValues.time / 1000000>, relational formula compilation fase: <smtCompileRelFormResult.time / 1000000>, attribute formula compilation phase: <smtCompileAttFormResult.time / 1000000>, additional command compilation phase: <smtCompileAdditionalComands.time / 1000000>\n");
+  println("Total nr of clauses in formula: <countClauses(\and(tr.relationalFormula, tr.attributeFormula))>, total nr of variables in formula: <countVars(smtVarCollectResult.vars)>"); 
 	
-	writeFile(|project://allealle/bin/latestSmt.smt2|, "<smtVarDeclResult.smt>\n<smtCompileRelFormResult.smt>\n<smtCompileAttFormResult.smt>");
+	str fullSmtProblem = "<smtVarDeclResult.smt>\n<smtAttributeValues.smt>\n<smtCompileRelFormResult.smt>\n<smtCompileAttFormResult.smt>\n<smtCompileAdditionalComands.smt>";
+	
+	writeFile(|project://allealle/bin/latestSmt.smt2|, fullSmtProblem);
 	  
 	smtVarCollectResult.vars = removeAllAddedVars(smtVarCollectResult.vars);   
 	  
 	print("Solving by Z3...");
-	tuple[bool result, int time] solving = bm(isSatisfiable, solverPid, "<smtVarDeclResult.smt>\n<smtCompileRelFormResult.smt>\n<smtCompileAttFormResult.smt>"); 
+	tuple[bool result, int time] solving = bm(isSatisfiable, solverPid, fullSmtProblem); 
 	print("done, took: <solving.time/1000000> ms\n");
 	println("Outcome is \'<solving.result>\'");
  

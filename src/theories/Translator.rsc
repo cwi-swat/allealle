@@ -25,25 +25,25 @@ RelationAndAttributes createRelationalMapping(relationalBound(str relName, int a
   
   for (\tuple(list[Atom] idx) <- lb) {
     relResult += (idx : \true());
-    attResult += (idx : constructAttributesMap(\true(), idx, atomsWithAttributes));  
+    attResult += (idx : constructAttributesMap(relName, \true(), idx, atomsWithAttributes));  
   }
 
   for (\tuple(list[Atom] idx) <- ub, idx notin relResult) {
     relResult += (idx : var("<relName>_<idxToStr(idx)>"));
-    attResult += (idx : constructAttributesMap(var("<relName>_<idxToStr(idx)>"), idx, atomsWithAttributes));
+    attResult += (idx : constructAttributesMap(relName, var("<relName>_<idxToStr(idx)>"), idx, atomsWithAttributes));
   }
 
   return <relResult,attResult>;
 } 
                                            
-map[int, Attributes] constructAttributesMap(Formula relForm, Index idx, map[Atom, AtomDecl] atomsWithAttributes) {
+map[int, Attributes] constructAttributesMap(str relName, Formula relForm, Index idx, map[Atom, AtomDecl] atomsWithAttributes) {
   map[int, Attributes] result = ();
   
   for (int i <- [0..size(idx)], Atom a := idx[i], a in atomsWithAttributes) {
     Attributes attributes = ();
     
     for (Attribute at <- atomsWithAttributes[a].attributes) {
-      attributes[at.name] = {constructAttribute(a, relForm, at)};
+      attributes[at.name] = {constructAttribute(relName, a, relForm, at)};
     }
     
     result[i] = attributes;
@@ -52,9 +52,9 @@ map[int, Attributes] constructAttributesMap(Formula relForm, Index idx, map[Atom
   return result;
 }
 
-default AttributeFormula constructAttribute(Atom a, Formula relForm, Attribute attr) { throw "No attribute builder found for theory \'<attr.theory>\' for atom \'<a>\'"; } 
+default AttributeFormula constructAttribute(str relName, Atom a, Formula relForm, Attribute attr) { throw "No attribute builder found for theory \'<attr.theory>\' for atom \'<a>\'"; } 
 
-alias TranslationResult = tuple[Formula relationalFormula, Formula attributeFormula, set[Command] additionalCommands];
+alias TranslationResult = tuple[Formula relationalFormula, Formula attributeFormula, list[Command] additionalCommands];
                                                                                             
 TranslationResult translateProblem(Problem p, Environment env) {
   set[AttributeFormula] attributeConstraints = {};
@@ -63,7 +63,7 @@ TranslationResult translateProblem(Problem p, Environment env) {
     attributeConstraints += constraints;
   }
   
-  set[Command] additionalCommands = {};
+  list[Command] additionalCommands = [];
   void addAdditionalCommand(Command command) {
     additionalCommands += command;  
   }

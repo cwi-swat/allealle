@@ -16,8 +16,8 @@ import Map;
  
 import IO;
  
-AttributeFormula constructAttribute(Atom a, Formula relForm, attribute(str name, intTheory())) = <relForm, equal(intVar("<a>!<name>"),intVar("<a>!<name>"))>;
-AttributeFormula constructAttribute(Atom a, Formula relForm, attributeAndValue(str name, intTheory(), intExpr(Expr expr))) = <relForm, equal(intVar("<a>!<name>"), exprToForm(expr))>;
+AttributeFormula constructAttribute(str relName, Atom a, Formula relForm, attribute(str name, intTheory())) = <relForm, equal(intVar("<a>!<name>"),intVar("<a>!<name>"))>;
+AttributeFormula constructAttribute(str relName, Atom a, Formula relForm, attributeAndValue(str name, intTheory(), intExpr(Expr expr))) = <relForm, equal(intVar("<a>!<name>"), exprToForm(expr))>; //intVar("<a>!<name>"))>;
 
 Formula exprToForm(intLit(int i))                              = \int(i);
 Formula exprToForm(neg(Expr e))                                = neg(exprToForm(e));
@@ -93,3 +93,55 @@ Formula translateFormula(RelationAndAttributes lhs, RelationAndAttributes rhs, F
   
   return result; 
 }       
+
+RelationAndAttributes translateExpression(sumBind(Expr bind, Expr e), Environment env, Universe uni, AdditionalConstraintFunctions acf) {
+  RelationAndAttributes bm = translateExpression(bind, env, uni, acf);
+  RelationAndAttributes em = translateExpression(e, env, uni, acf);
+  
+  if (size(bm.relation) != 1 || size(bm.att) != 1) {
+    throw "Relation to bind sum to should be an unary, singleton relationship with a single integer attribute";
+  }
+
+  if (size(getOneFrom(em.relation)) != 1) {
+    throw "Relation to bind sum to should be an unary, singleton relationship with a single integer attribute";
+  }
+
+  Formula attResult = \int(0);
+  for (Index idx <- em.relation, str attName <- em.att[idx][0], <Formula _, equal(i:intVar(str _), Formula _)> <- em.att[idx][0][attName]) {
+    attResult = addition(attResult, ite(em.relation[idx], i, \int(0))); 
+  }
+    
+  for (Index idx <- bm.att, str attName <- bm.att[idx][0]) {
+    bm.att[idx][0][attName] = visit(bm.att[idx][0][attName]) {
+      case <Formula relForm, equal(i:intVar(str _), Formula _)> => <relForm, equal(i, attResult)>
+    }
+  }
+
+  return bm;  
+}
+
+RelationAndAttributes translateExpression(carBind(Expr bind, Expr e), Environment env, Universe uni, AdditionalConstraintFunctions acf) {
+  RelationAndAttributes bm = translateExpression(bind, env, uni, acf);
+  RelationAndAttributes em = translateExpression(e, env, uni, acf);
+  
+  if (size(bm.relation) != 1 || size(bm.att) != 1) {
+    throw "Relation to bind sum to should be an unary, singleton relationship with a single integer attribute";
+  }
+
+  if (size(getOneFrom(em.relation)) != 1) {
+    throw "Relation to bind sum to should be an unary, singleton relationship with a single integer attribute";
+  }
+
+  Formula attResult = \int(0);
+  for (Index idx <- em.relation) {
+    attResult = addition(attResult, ite(em.relation[idx], \int(1), \int(0))); 
+  }
+   
+  for (Index idx <- bm.att, str attName <- bm.att[idx][0]) {
+    bm.att[idx][0][attName] = visit(bm.att[idx][0][attName]) {
+      case <Formula relForm, equal(i:intVar(str _), Formula _)> => <relForm, equal(i, attResult)>
+    }
+  }
+
+  return bm;  
+}

@@ -9,13 +9,13 @@ import theories::integer::Translator;
 
 import List;
 import String; 
- 
+
+tuple[str, Theory] constructAtomVar(Atom a, Attribute at) = <"<a>!<at.name>", intTheory()> when at.theory == intTheory();
 tuple[str, Theory] constructAttributeVar(<Formula _, equal(intVar(str name), Formula _)>) = <name, intTheory()>;
 
 str compileVariableDeclaration(SMTVar var) = "(declare-const <var.name> Int)" when var.theory == intTheory();
 
-str compileAtomValueExpr(atomTheoryAndValue(str atom, intTheory(), intExpr(Expr expr))) = "(= <atom> <compile(f)>)" 
-  when Formula f := exprToForm(expr); 
+str compileAttributeValue(Atom a, attributeAndValue(str name, intTheory(), intExpr(Expr expr))) = "(= <a>!<name> <compile(exprToForm(expr))>)"; 
 
 str compile(\int(int i))                          = "<i>"; 
 str compile(intVar(str name))                     = "<name>";

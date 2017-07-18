@@ -28,7 +28,9 @@ syntax Expr
   > left addition:       Expr lhs "+" Expr rhs 
   | left subtraction:    Expr lhs "-" Expr rhs
   > sum:            "sum" "(" Expr expr ")"
+  | sumBind:        "sum" "(" Expr bind "," Expr expr ")"
   | car:            "#" Expr expr
+  | carBind:        "#" "(" Expr bind "," Expr expr ")"
   ; 
 
 lexical IntLit = [0-9]+;

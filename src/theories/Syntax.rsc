@@ -70,4 +70,4 @@ lexical Variable = ([a-zA-Z_] !<< [a-zA-Z_][a-zA-Z0-9_\']* !>> [a-zA-Z0-9_]) \ K
 lexical Arity = [0-9]+;
 
 keyword Keywords = "none";
-keyword Keywords = "no" | "lone" | "one" | "some" | "not" | "forall" | "exists";
+keyword Keywords = "no" | "lone" | "one" | "some" | "not" | "forall" | "exists" | "bind";

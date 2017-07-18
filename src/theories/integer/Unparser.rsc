@@ -26,4 +26,6 @@ str unparse(addition(list[Expr] terms))                  = "(<intercalate(" + ",
 //str unparse(addition(Expr lhs, Expr rhs))                = "(<unparse(lhs)> + <unparse(rhs)>)";
 str unparse(subtraction(Expr lhs, Expr rhs))             = "(<unparse(lhs)> - <unparse(rhs)>)";
 str unparse(sum(Expr expr))                              = "(sum(<unparse(expr)>))";
+str unparse(sumBind(Expr bind, Expr e))                  = "(sumBind(<unparse(bind)>,<unparse(e)>))";
 str unparse(car(Expr expr))                              = "(#<unparse(expr)>)";
+str unparse(carBind(Expr bind, Expr e))                  = "(#(<unparse(bind)>,<unparse(e)>))";

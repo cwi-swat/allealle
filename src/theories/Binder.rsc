@@ -19,8 +19,6 @@ alias AttributeMatrix = map[Index, map[int, Attributes]];
 alias RelationAndAttributes = tuple[RelationMatrix relation, AttributeMatrix att];
 alias Environment = map[str, RelationAndAttributes]; 
 
-data Command;
-
 @memo
 int sizeOfUniverse(Universe u) = size(u.atoms);
 

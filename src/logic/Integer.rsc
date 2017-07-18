@@ -18,12 +18,17 @@ data Formula
 	| multiplication(list[Formula] forms)
 	| division(Formula lhs, Formula rhs)
 	| modulo(Formula lhs, Formula rhs) 
-	| minimize(Formula f)
-  | maximize(Formula f)
 	;
+
+data Command
+  = minimize(Formula f)
+  | maximize(Formula f)
+  ;
 	
 Formula addition(\int(0), Formula rhs) = rhs;
 Formula addition(Formula lhs, \int(0)) = lhs;	
+Formula addition(addition(list[Formula] l), Formula r) = addition([*l, r]);
+Formula addition(Formula l, addition(list[Formula] r)) = addition([l, *r]);
 default Formula addition(Formula lhs, Formula rhs) = addition([lhs,rhs]);
 
 Formula substraction(\int(0), Formula rhs) = rhs;

@@ -44,8 +44,8 @@ data Model
 set[SMTVar] collectSMTVars(Universe uni, Environment env)  {
   set[SMTVar] result = {};
 
-  //for (AtomDecl ad <- uni.atoms, ad has theory, /just(tuple[str var, Theory t] r) := constructExtendedTheoryVar(ad)) {
-  //  result += <r.var, r.t>;
+  //for (atomWithAttributes(Atom a, list[Attribute] attributes) <- uni.atoms, Attribute at <- attributes) {
+  //  result += constructAtomVar(a, at);
   //}
   
   for (str varName <- env, RelationAndAttributes raa := env[varName], Index idx <- raa.relation) {
@@ -61,7 +61,7 @@ set[SMTVar] collectSMTVars(Universe uni, Environment env)  {
   return result;
 }
 
-//default Maybe[tuple[str, Theory]] constructExtendedTheoryVar(AtomDecl ad) { throw "Unable to construct a variable for atom declaration \'<ad>\'"; }
+default tuple[str, Theory] constructAtomVar(Atom a, Attribute at) { throw "Unable to construct a variable for atom \'<a>\' and attribute \'<at.name>\'"; } 
 default tuple[str, Theory] constructAttributeVar(AttributeFormula f) { throw "Unable to construct a variable for formula \'<f>\'"; } 
 
 str compileSMTVariableDeclarations(set[SMTVar] vars) = "<for (SMTVar var <- vars) {>
@@ -69,28 +69,27 @@ str compileSMTVariableDeclarations(set[SMTVar] vars) = "<for (SMTVar var <- vars
 str compileVariableDeclaration(SMTVar var) = "(declare-const <var.name> Bool)" when var.theory == relTheory();
 default str compileVariableDeclaration(SMTVar var) { throw "Unable to compile variable <var> to SMT, no SMT compiler available"; }
 
-str compileAtomExpressions(list[AtomDecl] atomDecls) = "\n(assert
+str compileAttributeValues(list[AtomDecl] atomDecls) = "\n(assert
                                                        '  (and <for (str s <- smt) {>
                                                        '    <s><}>
                                                        '  )
                                                        ')"
-  when list[str] smt := [s | AtomDecl ad <- atomDecls, str s := compileAtomValueExpr(ad), s != ""],
+  when list[str] smt := [compileAttributeValue(a, at) | atomWithAttributes(Atom a, list[Attribute] atts) <- atomDecls, Attribute at <- atts],
        smt != [];                                      
+default str compileAttributeValues(list[AtomDecl] atomDecls) = "";
 
-default str compileAtomExpressions(list[AtomDecl] atomDecls) = "";
-
-default str compileAtomValueExpr(AtomDecl _) = "";                                                       
+default str compileAttributeValue(Atom a, Attribute at) = "";
 
 str compile(\and(set[Formula] forms)) = "(and <for (f <- forms) {> 
                                                     '  <compile(f)><}>)";
 str compile(\or(set[Formula] forms))  = "(or <for (f <- forms) {>
                                                    '  <compile(f)><}>)";
 str compile(\not(formula))            = "(not <compile(formula)>)";
-//str compile(ite(Formula c, Formula t, Formula e)) = "(ite 
-//                                                    '  <compile(c)>
-//                                                    '  <compile(t)>
-//                                                    '  <compile(e)>
-//                                                    ')";                                                      
+str compile(ite(Formula c, Formula t, Formula e)) = "(ite 
+                                                    '  <compile(c)>
+                                                    '  <compile(t)>
+                                                    '  <compile(e)>
+                                                    ')";                                                      
 str compile(\false())                 = "false"; 
 str compile(\true())                  = "true";
 str compile(\var(name))               = name; 
@@ -101,8 +100,10 @@ str compileAssert(Formula f) = "\n(assert
                                '  <compile(f)>
                                ')"; 
                                
-str compileAdditionalConstraints(set[Formula] constraints) = "<for (Formula f <- constraints) {>
-                                                             '<compile(f)><}>";                               
+str compileAdditionalCommands(list[Command] commands) = "<for (Command c <- commands) {>
+                                                             '<compileCommand(c)><}>";                               
+
+default str compileCommand(Command c) { throw "Unable to compile command \'<c>\'. No compile function defined.";}
 
 SMTModel getValues(str smtResult, set[SMTVar] vars) {
   SmtValues foundValues = [SmtValues]"<smtResult>"; 

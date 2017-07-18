@@ -50,7 +50,7 @@ void generateAccountProblem(int goalBalance, int amountLowerBound, int amountUpp
 }
 
 void generateTransferProblem(int maxDepth, loc output) {
-  str problem = "{<intercalate(",", ["s<i>" | int i <- [0..maxDepth]])>,<intercalate(",", ["b1_<i>(int)" | int i <- [0..maxDepth]])>,<intercalate(",", ["b2_<i>(int)" | int i <- [0..maxDepth]])>,<intercalate(",", ["a<i>(int)" | int i <- [1..maxDepth]])>}
+  str problem = "{<intercalate(",", ["s<i>" | int i <- [0..maxDepth]])>,<intercalate(",", ["b1_<i>{v(int)}" | int i <- [0..maxDepth]])>,<intercalate(",", ["b2_<i>{v(int)}" | int i <- [0..maxDepth]])>,<intercalate(",", ["a<i>{v(int)}" | int i <- [1..maxDepth]])>}
                 '
                 'State:1          [{\<s0\>},{<intercalate(",", ["\<s<i>\>" | int i <- [0..maxDepth]])>}]
                 'InitialState:1   [{\<s0\>},{\<s0\>}]
@@ -70,23 +70,23 @@ void generateTransferProblem(int maxDepth, loc output) {
                 'forall b:Balance | some balance1.b || some balance2.b
                 'forall a:Amount | some amount.a
                 '
-                'balance1[InitialState] = 100
-                'balance2[InitialState] = 100
+                'balance1[InitialState]::v = 100
+                'balance2[InitialState]::v = 100
                 '
                 'forall s1:State, s2:State | s1-\>s2 in ordering =\>
                 '  (some balance1[s1] && some balance1[s2] && some balance2[s1] && some balance2[s2] && some amount[s2]) &&
-                '  amount[s2] \> 0 &&
+                '  amount[s2]::v \> 0 &&
                 '  (
-                '    (balance1[s1] \> amount[s2] &&
-                '     balance1[s2] = (balance1[s1]) - (amount[s2]) &&
-                '     balance2[s2] = (balance2[s2]) + (amount[s2])) 
+                '    (balance1[s1]::v \> amount[s2]::v &&
+                '     balance1[s2]::v = (balance1[s1]::v) - (amount[s2]::v) &&
+                '     balance2[s2]::v = (balance2[s1]::v) + (amount[s2]::v)) 
                 '    ||
-                '    (balance2[s1] \> amount[s2] &&
-                '     balance1[s2] = (balance1[s1]) + (amount[s2]) &&
-                '     balance2[s2] = (balance2[s1]) - (amount[s2]))    
+                '    (balance2[s1]::v \> amount[s2]::v &&
+                '     balance1[s2]::v = (balance1[s1]::v) + (amount[s2]::v) &&
+                '     balance2[s2]::v = (balance2[s1]::v) - (amount[s2]::v))    
                 '  )
                 '
-                'exists s:State | balance1[s] \> 200";
+                'exists s:State | balance1[s] = 200";
                 
   writeFile(output, problem);
 }

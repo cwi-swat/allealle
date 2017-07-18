@@ -31,7 +31,9 @@ data Expr
   | addition(list[Expr] terms)
 	| subtraction(Expr lhs, Expr rhs)
   | sum(Expr expr)
+  | sumBind(Expr bind, Expr expr)
   | car(Expr expr)
+  | carBind(Expr bind, Expr expr)
 	;
 	
 	
