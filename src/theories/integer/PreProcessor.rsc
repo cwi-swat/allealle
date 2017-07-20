@@ -73,9 +73,7 @@ private default Expr getAttributeExpr(Atom a, Attribute at) = attributeLookup(va
 private Expr transform(list[Expr] terms, Expr (list[Expr] operands) operation, str () newResultAtom, void (str, set[AtomDecl], set[list[AtomDecl]]) addRelation, void (AlleFormula) addConstraint, str baseRelName, str () newRelNr) {
   // check arity
   if (Expr t <- terms, list[AtomDecl] l <- t@maxTuples, size(l) != 1) {
-    println(t);
     iprintln(l);
-
     throw "Integer arithmetic expression can only be performed on unary relations with an integer attribute selected";
   }
   
@@ -113,7 +111,7 @@ private Expr transform(list[Expr] terms, Expr (list[Expr] operands) operation, s
   Expr buildJoinExpr([Expr e])                        = \join(e, variable(newRelName)); 
   default Expr buildJoinExpr([Expr hd, *Expr tl])     = \join(hd, buildJoinExpr(tl)); 
   
-  return attributeLookup(buildJoinExpr(reverse(terms)), "val")[@maxTuples = {[r | AtomDecl r <- resultAtoms]}]; 
+  return attributeLookup(buildJoinExpr(reverse(terms)), "val")[@maxTuples = {[r] | AtomDecl r <- resultAtoms}]; 
 }
 
 private Expr transform(Expr lhs, Expr rhs, Expr (Expr l, Expr r) operation, str () newResultAtom, void (str, set[AtomDecl], set[list[AtomDecl]]) addRelation, void (AlleFormula) addConstraint, str baseRelName, str () newRelNr) {
@@ -139,7 +137,7 @@ private Expr transform(Expr lhs, Expr rhs, Expr (Expr l, Expr r) operation, str 
   
   addRelation(newRelName, resultAtoms, upperBound);
        
-  return attributeLookup(\join(rhs, \join(lhs, variable(newRelName))), "val")[@maxTuples = {[r | AtomDecl r <- resultAtoms]}]; 
+  return attributeLookup(\join(rhs, \join(lhs, variable(newRelName))), "val")[@maxTuples = {[r] | AtomDecl r <- resultAtoms}]; 
 }  
 
 Expr transform(sum(attributeLookup(Expr e, str name)), Env env, Universe uni, str () newResultAtom, void (str, set[AtomDecl], set[list[AtomDecl]]) addRelation, void (AlleFormula) addConstraint, str () newRelNr) {

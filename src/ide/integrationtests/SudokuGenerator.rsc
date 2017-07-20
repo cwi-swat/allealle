@@ -53,7 +53,7 @@ void generateRelSudoku(rel[int, int, int] filledInCells, loc locationToSave) {
 void generateIntSudoku(rel[int, int, int] filledInCells, loc locationToSave) {
   str gridBound = intercalate(",", ["\<n<c>,n<r>,c<c>_<r>\>" | int c <- [1..10], int r <- [1..10]]);
   
-  str problem = "{n1,n2,n3,n4,n5,n6,n7,n8,n9,<intercalate(",",[val | int c <- [1..10], int r <- [1..10], str val := ((/<c,r, int v> := filledInCells) ? "c<c>_<r>(int)=<v>" : "c<c>_<r>(int)")])>}
+  str problem = "{n1,n2,n3,n4,n5,n6,n7,n8,n9,<intercalate(",",[val | int c <- [1..10], int r <- [1..10], str val := ((/<c,r, int v> := filledInCells) ? "c<c>_<r>{val(int)=<v>}" : "c<c>_<r>{val(int)}")])>}
                 '
                 'num: 1 [{\<n1\>,\<n2\>,\<n3\>,\<n4\>,\<n5\>,\<n6\>,\<n7\>,\<n8\>,\<n9\>},{\<n1\>,\<n2\>,\<n3\>,\<n4\>,\<n5\>,\<n6\>,\<n7\>,\<n8\>,\<n9\>}]
                 'cell:1 [{<intercalate(",", ["\<c<c>_<r>\>" | int c <- [1..10], int r <- [1..10]])>},{<intercalate(",", ["\<c<c>_<r>\>" | int c <- [1..10], int r <- [1..10]])>}]
@@ -69,17 +69,17 @@ void generateIntSudoku(rel[int, int, int] filledInCells, loc locationToSave) {
                 '
                 'cell \> 0 && cell \< 10
                 '
-                'forall x:num, y:num  | grid[x][y] != grid[x][num\\y]
-                'forall x:num, y:num  | grid[x][y] != grid[num\\x][y]
-                'forall x: r1, y: r1  | grid[x][y] != grid[r1\\x][r1\\y]
-                'forall x: r1, y: r2  | grid[x][y] != grid[r1\\x][r2\\y]
-                'forall x: r1, y: r3  | grid[x][y] != grid[r1\\x][r3\\y]
-                'forall x: r2, y: r1  | grid[x][y] != grid[r2\\x][r1\\y]
-                'forall x: r2, y: r2  | grid[x][y] != grid[r2\\x][r2\\y]
-                'forall x: r2, y: r3  | grid[x][y] != grid[r2\\x][r3\\y]
-                'forall x: r3, y: r1  | grid[x][y] != grid[r3\\x][r1\\y]              
-                'forall x: r3, y: r2  | grid[x][y] != grid[r3\\x][r2\\y]               
-                'forall x: r3, y: r3  | grid[x][y] != grid[r3\\x][r3\\y]
+                'forall x:num, y:num  | grid[x][y]::val != grid[x][num\\y]::val
+                'forall x:num, y:num  | grid[x][y]::val != grid[num\\x][y]::val
+                'forall x: r1, y: r1  | grid[x][y]::val != grid[r1\\x][r1\\y]::val
+                'forall x: r1, y: r2  | grid[x][y]::val != grid[r1\\x][r2\\y]::val
+                'forall x: r1, y: r3  | grid[x][y]::val != grid[r1\\x][r3\\y]::val
+                'forall x: r2, y: r1  | grid[x][y]::val != grid[r2\\x][r1\\y]::val
+                'forall x: r2, y: r2  | grid[x][y]::val != grid[r2\\x][r2\\y]::val
+                'forall x: r2, y: r3  | grid[x][y]::val != grid[r2\\x][r3\\y]::val
+                'forall x: r3, y: r1  | grid[x][y]::val != grid[r3\\x][r1\\y]::val         
+                'forall x: r3, y: r2  | grid[x][y]::val != grid[r3\\x][r2\\y]::val          
+                'forall x: r3, y: r3  | grid[x][y]::val != grid[r3\\x][r3\\y]::val
                 ";
   
   writeFile(locationToSave + "sudoku.alle", problem);

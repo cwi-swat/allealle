@@ -28,9 +28,10 @@ int arity(RelationAndAttributes rm) = size(getOneFrom(rm.relation)) when rm.rela
 @memo
 private bool sameArity(RelationAndAttributes lhs, RelationAndAttributes rhs) = arity(lhs) == arity(rhs); 
 
-private RelationAndAttributes square(RelationAndAttributes m, int i, int sizeOfUniverse) = m when i >= sizeOfUniverse;
-private RelationAndAttributes square(RelationAndAttributes m, int i, int sizeOfUniverse) = or(n, \join(n, n)) when RelationAndAttributes n := square(m, i * 2, sizeOfUniverse); 
+private RelationAndAttributes square(RelationAndAttributes m, int i, int size) = m when i >= size;
+private RelationAndAttributes square(RelationAndAttributes m, int i, int size) = or(n, \join(n, n)) when RelationAndAttributes n := square(m, i * 2, size); 
 
+@memo
 private list[Index] constructIdentityIndex(int arity, Universe uni) = [vector | AtomDecl ad <- uni.atoms, list[Atom] vector := [ad.atom | int _ <- [0..arity]]];
 
 @memo
@@ -104,12 +105,14 @@ RelationAndAttributes transpose(RelationAndAttributes m) {
   return <relResult, attResult>;
 } 
 
-RelationAndAttributes transitiveClosure(RelationAndAttributes m, Universe uni) {
+RelationAndAttributes transitiveClosure(RelationAndAttributes m) {
   if (arity(m) != 2) {
     throw "Can not perform a transitive closure on a non-binary relation";
   }
   
-  return square(m, 1, sizeOfUniverse(uni));
+  set[Atom] rows = {a | [Atom a, Atom _] <- m.relation}; 
+
+  return square(m, 1, size(rows));
 }
 
 
@@ -118,7 +121,7 @@ RelationAndAttributes reflexiveTransitiveClosure(RelationAndAttributes m, Univer
     throw "Can not perform a reflexive transitive closure on a non-binary relation";
   }
   
-  return or(transitiveClosure(m, uni), identity(m, uni));
+  return or(transitiveClosure(m), identity(m, uni));
 } 
 
 RelationAndAttributes difference(RelationAndAttributes lhs, RelationAndAttributes rhs) {
@@ -139,6 +142,7 @@ RelationAndAttributes difference(RelationAndAttributes lhs, RelationAndAttribute
   return <relResult, attResult>;
 } 
 
+@memo
 RelationAndAttributes \join(RelationAndAttributes lhs, RelationAndAttributes rhs) {
   int arityLhs = arity(lhs);
   int arityRhs = arity(rhs);

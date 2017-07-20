@@ -1,4 +1,4 @@
-{n1,n2,n3,n4,n5,n6,n7,n8,n9,c1_1(int)=6,c1_2(int),c1_3(int),c1_4(int)=2,c1_5(int),c1_6(int),c1_7(int),c1_8(int)=5,c1_9(int),c2_1(int),c2_2(int)=1,c2_3(int)=8,c2_4(int),c2_5(int)=6,c2_6(int),c2_7(int),c2_8(int)=2,c2_9(int),c3_1(int),c3_2(int),c3_3(int)=3,c3_4(int),c3_5(int),c3_6(int),c3_7(int)=4,c3_8(int),c3_9(int),c4_1(int),c4_2(int),c4_3(int),c4_4(int)=6,c4_5(int),c4_6(int)=7,c4_7(int)=8,c4_8(int),c4_9(int),c5_1(int)=4,c5_2(int),c5_3(int)=2,c5_4(int),c5_5(int)=5,c5_6(int),c5_7(int),c5_8(int),c5_9(int),c6_1(int),c6_2(int),c6_3(int),c6_4(int)=9,c6_5(int),c6_6(int)=8,c6_7(int),c6_8(int),c6_9(int),c7_1(int)=5,c7_2(int),c7_3(int)=4,c7_4(int),c7_5(int)=9,c7_6(int),c7_7(int)=3,c7_8(int),c7_9(int),c8_1(int),c8_2(int)=2,c8_3(int),c8_4(int),c8_5(int),c8_6(int),c8_7(int),c8_8(int)=1,c8_9(int)=4,c9_1(int)=3,c9_2(int),c9_3(int),c9_4(int),c9_5(int),c9_6(int)=5,c9_7(int),c9_8(int),c9_9(int)=7}
+{n1,n2,n3,n4,n5,n6,n7,n8,n9,c1_1{val(int)=6},c1_2{val(int)},c1_3{val(int)},c1_4{val(int)=2},c1_5{val(int)},c1_6{val(int)},c1_7{val(int)},c1_8{val(int)=5},c1_9{val(int)},c2_1{val(int)},c2_2{val(int)=1},c2_3{val(int)=8},c2_4{val(int)},c2_5{val(int)=6},c2_6{val(int)},c2_7{val(int)},c2_8{val(int)=2},c2_9{val(int)},c3_1{val(int)},c3_2{val(int)},c3_3{val(int)=3},c3_4{val(int)},c3_5{val(int)},c3_6{val(int)},c3_7{val(int)=4},c3_8{val(int)},c3_9{val(int)},c4_1{val(int)},c4_2{val(int)},c4_3{val(int)},c4_4{val(int)=6},c4_5{val(int)},c4_6{val(int)=7},c4_7{val(int)=8},c4_8{val(int)},c4_9{val(int)},c5_1{val(int)=4},c5_2{val(int)},c5_3{val(int)=2},c5_4{val(int)},c5_5{val(int)=5},c5_6{val(int)},c5_7{val(int)},c5_8{val(int)},c5_9{val(int)},c6_1{val(int)},c6_2{val(int)},c6_3{val(int)},c6_4{val(int)=9},c6_5{val(int)},c6_6{val(int)=8},c6_7{val(int)},c6_8{val(int)},c6_9{val(int)},c7_1{val(int)=5},c7_2{val(int)},c7_3{val(int)=4},c7_4{val(int)},c7_5{val(int)=9},c7_6{val(int)},c7_7{val(int)=3},c7_8{val(int)},c7_9{val(int)},c8_1{val(int)},c8_2{val(int)=2},c8_3{val(int)},c8_4{val(int)},c8_5{val(int)},c8_6{val(int)},c8_7{val(int)},c8_8{val(int)=1},c8_9{val(int)=4},c9_1{val(int)=3},c9_2{val(int)},c9_3{val(int)},c9_4{val(int)},c9_5{val(int)},c9_6{val(int)=5},c9_7{val(int)},c9_8{val(int)},c9_9{val(int)=7}}
 
 num: 1 [{<n1>,<n2>,<n3>,<n4>,<n5>,<n6>,<n7>,<n8>,<n9>},{<n1>,<n2>,<n3>,<n4>,<n5>,<n6>,<n7>,<n8>,<n9>}]
 cell:1 [{<c1_1>,<c1_2>,<c1_3>,<c1_4>,<c1_5>,<c1_6>,<c1_7>,<c1_8>,<c1_9>,<c2_1>,<c2_2>,<c2_3>,<c2_4>,<c2_5>,<c2_6>,<c2_7>,<c2_8>,<c2_9>,<c3_1>,<c3_2>,<c3_3>,<c3_4>,<c3_5>,<c3_6>,<c3_7>,<c3_8>,<c3_9>,<c4_1>,<c4_2>,<c4_3>,<c4_4>,<c4_5>,<c4_6>,<c4_7>,<c4_8>,<c4_9>,<c5_1>,<c5_2>,<c5_3>,<c5_4>,<c5_5>,<c5_6>,<c5_7>,<c5_8>,<c5_9>,<c6_1>,<c6_2>,<c6_3>,<c6_4>,<c6_5>,<c6_6>,<c6_7>,<c6_8>,<c6_9>,<c7_1>,<c7_2>,<c7_3>,<c7_4>,<c7_5>,<c7_6>,<c7_7>,<c7_8>,<c7_9>,<c8_1>,<c8_2>,<c8_3>,<c8_4>,<c8_5>,<c8_6>,<c8_7>,<c8_8>,<c8_9>,<c9_1>,<c9_2>,<c9_3>,<c9_4>,<c9_5>,<c9_6>,<c9_7>,<c9_8>,<c9_9>},{<c1_1>,<c1_2>,<c1_3>,<c1_4>,<c1_5>,<c1_6>,<c1_7>,<c1_8>,<c1_9>,<c2_1>,<c2_2>,<c2_3>,<c2_4>,<c2_5>,<c2_6>,<c2_7>,<c2_8>,<c2_9>,<c3_1>,<c3_2>,<c3_3>,<c3_4>,<c3_5>,<c3_6>,<c3_7>,<c3_8>,<c3_9>,<c4_1>,<c4_2>,<c4_3>,<c4_4>,<c4_5>,<c4_6>,<c4_7>,<c4_8>,<c4_9>,<c5_1>,<c5_2>,<c5_3>,<c5_4>,<c5_5>,<c5_6>,<c5_7>,<c5_8>,<c5_9>,<c6_1>,<c6_2>,<c6_3>,<c6_4>,<c6_5>,<c6_6>,<c6_7>,<c6_8>,<c6_9>,<c7_1>,<c7_2>,<c7_3>,<c7_4>,<c7_5>,<c7_6>,<c7_7>,<c7_8>,<c7_9>,<c8_1>,<c8_2>,<c8_3>,<c8_4>,<c8_5>,<c8_6>,<c8_7>,<c8_8>,<c8_9>,<c9_1>,<c9_2>,<c9_3>,<c9_4>,<c9_5>,<c9_6>,<c9_7>,<c9_8>,<c9_9>}]
@@ -12,16 +12,17 @@ r2 in num
 r3 in num
 grid in num->num->cell
 
-cell >= 1 && cell <= 9
+cell > 0 && cell < 10
 
-forall x:num, y:num  | grid[x][y] != grid[x][num\y]
-forall x:num, y:num  | grid[x][y] != grid[num\x][y]
-forall x: r1, y: r1  | grid[x][y] != grid[r1\x][r1\y]
-forall x: r1, y: r2  | grid[x][y] != grid[r1\x][r2\y]
-forall x: r1, y: r3  | grid[x][y] != grid[r1\x][r3\y]
-forall x: r2, y: r1  | grid[x][y] != grid[r2\x][r1\y]
-forall x: r2, y: r2  | grid[x][y] != grid[r2\x][r2\y]
-forall x: r2, y: r3  | grid[x][y] != grid[r2\x][r3\y]
-forall x: r3, y: r1  | grid[x][y] != grid[r3\x][r1\y]              
-forall x: r3, y: r2  | grid[x][y] != grid[r3\x][r2\y]               
-forall x: r3, y: r3  | grid[x][y] != grid[r3\x][r3\y]
+forall x:num, y:num  | grid[x][y]::val != grid[x][num\y]::val
+forall x:num, y:num  | grid[x][y]::val != grid[num\x][y]::val
+forall x: r1, y: r1  | grid[x][y]::val != grid[r1\x][r1\y]::val
+forall x: r1, y: r2  | grid[x][y]::val != grid[r1\x][r2\y]::val
+forall x: r1, y: r3  | grid[x][y]::val != grid[r1\x][r3\y]::val
+forall x: r2, y: r1  | grid[x][y]::val != grid[r2\x][r1\y]::val
+forall x: r2, y: r2  | grid[x][y]::val != grid[r2\x][r2\y]::val
+forall x: r2, y: r3  | grid[x][y]::val != grid[r2\x][r3\y]::val
+forall x: r3, y: r1  | grid[x][y]::val != grid[r3\x][r1\y]::val         
+forall x: r3, y: r2  | grid[x][y]::val != grid[r3\x][r2\y]::val          
+forall x: r3, y: r3  | grid[x][y]::val != grid[r3\x][r3\y]::val
+                

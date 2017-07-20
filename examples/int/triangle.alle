@@ -1,4 +1,4 @@
-{p1,p2,p3,l1(int),l2(int),l3(int)}
+{p1,p2,p3,l1{length(int)},l2{length(int)},l3{length(int)}}
  
 Point:1       [{<p1>,<p2>,<p3>},{<p1>,<p2>,<p3>}]
 Length:1      [{},{<l1>,<l2>,<l3>}]
@@ -11,11 +11,12 @@ forall p1: Point | exists p2: Point | one p1.(side[p2])
 
 // all sides should be between 1 and 9
 //forall p1: Point, p2: Point | some side[p1][p2] => side[p1][p2] > 1 && side[p1][p2] < 10
-Length > 2 && Length < 30
+Length::length > 2 && Length::length < 30
 
 forall l:Length | some side.l
 
-exists p1:Point, p2:Point\p1, p3:Point\(p1++p2) | some (side[p3][p1]) && some (side[p1][p2]) && some (side[p2][p3]) && ((side[p3][p1]) * (side[p3][p1]) = ((side[p1][p2]) * (side[p1][p2]) + (side[p2][p3]) * (side[p2][p3])))
+exists p1:Point, p2:Point\p1, p3:Point\(p1++p2) | some (side[p3][p1]) && some (side[p1][p2]) && some (side[p2][p3]) && 
+  ( (side[p3][p1])::length * (side[p3][p1])::length = (side[p1][p2])::length * (side[p1][p2])::length + (side[p2][p3])::length * (side[p2][p3])::length)
 
 //exists a:Length,b:Length\a,c:Length\(a++b) | c*c = a*a + b*b
 

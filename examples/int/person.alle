@@ -1,0 +1,19 @@
+{p1{age(int)},p2{age(int)},p3{age(int)}}
+
+Person:1 [{<p1>},{<p1>,<p2>,<p3>}]
+Eve:1 [{<p1>},{<p1>}]
+parent:2 [{},{<p1,p2>,<p1,p3>,<p2,p1>,<p2,p3>,<p3,p1>,<p3,p2>}]
+
+parent in Person->Person
+Eve in Person
+
+// Everybody, except Eve, has a parent
+forall p:Person\Eve | one parent.p
+// Nobody is it's own parent
+forall p:Person | not (p in p.(^parent))
+
+// Age is a positive number 
+Person::age >= 0
+
+// Conservative view, when you are a parent you are at least 18 years old
+forall p:Person, c:Person\p | p->c in parent => p::age - c::age > 17

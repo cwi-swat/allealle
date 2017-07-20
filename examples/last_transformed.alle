@@ -1,25 +1,17 @@
-{a{size(int)=1},b{size(int)=1},c{size(int)=0},d{size(int)=1},e{size(int)=0},f{size(int)=0},g{size(int)=1},z{size(int)=0},y{size(int)=0},h{size(int)=0},_r1{val(int)}}
+{p1{age(int)},p2{age(int)},p3{age(int)},_c0{cons(int)=0},_r7{val(int)=(p2::age + (-p3::age))},_c17{cons(int)=17},_r5{val(int)=(p3::age + (-p2::age))},_r1{val(int)=(p1::age + (-p1::age))},_r2{val(int)=(p1::age + (-p3::age))},_r9{val(int)=(p2::age + (-p1::age))},_r8{val(int)=(p3::age + (-p3::age))},_r6{val(int)=(p3::age + (-p1::age))},_r3{val(int)=(p1::age + (-p2::age))},_r4{val(int)=(p2::age + (-p2::age))}}
 
-Package:1 [{<a>,<b>,<c>,<d>,<e>,<f>,<g>,<h>,<y>,<z>}, {<a>,<b>,<c>,<d>,<e>,<f>,<g>,<h>,<y>,<z>}]
-InstallProfile:1 [{}, {<a>,<b>,<c>,<d>,<e>,<f>,<g>,<h>,<y>,<z>}]
-Installed:1 [{<z>,<c>,<e>,<y>,<f>,<h>}, {<z>,<c>,<e>,<y>,<f>,<h>}]
-UninstallProfile:1 [{}, {<z>,<c>,<e>,<y>,<f>,<h>}]
-InstallPackage:1 [{<a>}, {<a>}]
-depends:2 [{<a,b>,<a,c>,<a,z>,<b,d>,<c,d>,<c,e>,<c,f>,<c,g>,<y,z>,<f,h>}, {<a,b>,<a,c>,<a,z>,<b,d>,<c,d>,<c,e>,<c,f>,<c,g>,<y,z>,<f,h>}]
-dependChoice:3 [{<c,d,e>,<c,e,d>,<c,f,g>,<c,g,f>}, {<c,d,e>,<c,e,d>,<c,f,g>,<c,g,f>}]
-conflicts:2 [{<d,e>,<d,f>}, {<d,e>,<d,f>}]
-_sum_1:1 [{<_r1>}, {<_r1>}]
+Person:1 [{<p1>}, {<p1>,<p2>,<p3>}]
+Eve:1 [{<p1>}, {<p1>}]
+parent:2 [{}, {<p1,p2>,<p1,p3>,<p2,p1>,<p2,p3>,<p3,p1>,<p3,p2>}]
+_C0:1 [{<_c0>}, {<_c0>}]
+_min_1:3 [{<p1,p3,_r2>,<p1,p1,_r1>,<p3,p3,_r8>,<p2,p1,_r9>,<p1,p2,_r3>,<p3,p1,_r6>,<p2,p2,_r4>,<p2,p3,_r7>,<p3,p2,_r5>}, {<p1,p3,_r2>,<p1,p1,_r1>,<p3,p3,_r8>,<p2,p1,_r9>,<p1,p2,_r3>,<p3,p1,_r6>,<p2,p2,_r4>,<p2,p3,_r7>,<p3,p2,_r5>}]
+_C17:1 [{<_c17>}, {<_c17>}]
 
 
-((no (InstallPackage&Installed)) => (InstallPackage in InstallProfile))
-(forall p:Package, p':(Package\p) | ((((((p->p') in depends) && (p' in (InstallPackage.(*depends)))) && (no (p'&Installed))) && (not (((p.dependChoice).p') in Installed))) => ((exists p'':(Package\(p++p')) | ((((p->p')->p'') in dependChoice) && ((p' in InstallProfile) || (p'' in InstallProfile)))) || ((no ((p.dependChoice).p')) && (p' in InstallProfile)))))
-(forall p:InstallProfile, p':(Package\p) | ((((p->p') in depends) && (no (p'&Installed))) => (p' in InstallProfile)))
-(no (InstallProfile&Installed))
-(forall p:Package, p':(Package\p) | (((p->p') in conflicts) => (not ((p++p') in InstallProfile))))
-(forall p:Package, p':(Package\p) | (((((p->p') in conflicts) && (p in InstallProfile)) && (p' in Installed)) => (p' in UninstallProfile)))
-(no (InstallProfile&UninstallProfile))
-(forall p:UninstallProfile | (((some (p.conflicts)) || (some (conflicts.p))) || (exists p':(Package\p) | (p in (p'.(^depends))))))
-(forall p:Installed, p':(UninstallProfile\p) | (((p in (p'.(^depends))) && (not (p in (((Installed\UninstallProfile)++InstallProfile).depends)))) => (p in UninstallProfile)))
-(forall p:Installed | (((((p in UninstallProfile) && (some (depends.p))) && ((depends.p) in Installed)) && (some (((depends.p).dependChoice).p))) => ((((depends.p).dependChoice).p) in InstallProfile)))
-(minimize (sumBind(_sum_1,InstallProfile))::val)
+(parent in (Person->Person))
+(Eve in Person)
+(forall p:(Person\Eve) | (one (parent.p)))
+(forall p:Person | (not (p in (p.(^parent)))))
+(Person::age >= _C0::cons)
+(forall p:Person, c:(Person\p) | (((p->c) in parent) => ((c::age.(p::age._min_1))::val > _C17::cons)))
 

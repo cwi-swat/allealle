@@ -253,7 +253,7 @@ RelationAndAttributes translateExpression(attributeLookup(Expr e, str name), Env
 RelationAndAttributes translateExpression(transpose(Expr expr), Environment env, Universe uni, AdditionalConstraintFunctions acf) = transpose(m)
   when RelationAndAttributes m := translateExpression(expr, env, uni, acf); 
 
-RelationAndAttributes translateExpression(closure(Expr expr), Environment env, Universe uni, AdditionalConstraintFunctions acf) = transitiveClosure(m, uni)
+RelationAndAttributes translateExpression(closure(Expr expr), Environment env, Universe uni, AdditionalConstraintFunctions acf) = transitiveClosure(m)
   when RelationAndAttributes m := translateExpression(expr, env, uni, acf);
 
 RelationAndAttributes translateExpression(reflexClosure(Expr expr), Environment env, Universe uni, AdditionalConstraintFunctions acf) = reflexiveTransitiveClosure(m, uni)

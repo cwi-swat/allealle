@@ -70,12 +70,13 @@ str compileVariableDeclaration(SMTVar var) = "(declare-const <var.name> Bool)" w
 default str compileVariableDeclaration(SMTVar var) { throw "Unable to compile variable <var> to SMT, no SMT compiler available"; }
 
 str compileAttributeValues(list[AtomDecl] atomDecls) = "\n(assert
-                                                       '  (and <for (str s <- smt) {>
+                                                       '  (and <for (str s <- smt, s != "") {>
                                                        '    <s><}>
                                                        '  )
                                                        ')"
-  when list[str] smt := [compileAttributeValue(a, at) | atomWithAttributes(Atom a, list[Attribute] atts) <- atomDecls, Attribute at <- atts],
-       smt != [];                                      
+  when list[str] smt := [av | atomWithAttributes(Atom a, list[Attribute] atts) <- atomDecls, Attribute at <- atts, str av := compileAttributeValue(a, at), av != ""],
+       smt != [];
+                                        
 default str compileAttributeValues(list[AtomDecl] atomDecls) = "";
 
 default str compileAttributeValue(Atom a, Attribute at) = "";

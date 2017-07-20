@@ -38,3 +38,4 @@ forall p:Installed | p in UninstallProfile && (some depends.p) && (depends.p in 
     ( ((depends.p).dependChoice).p in InstallProfile ) 
     
 minimize sum(InstallProfile::size)
+minimize #UninstallProfile

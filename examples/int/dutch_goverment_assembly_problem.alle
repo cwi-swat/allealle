@@ -16,5 +16,7 @@ forall p1:Party, p2:Party\p1 | p1->p2 in inclusion => (p1 in Goverment => p2 in 
 Total::val = sum(Goverment::seats)
 Total::val > 75
 
+#Goverment <= 5
+
 minimize #Goverment
 maximize Total::val
