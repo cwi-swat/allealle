@@ -17,8 +17,8 @@ accountInState in State -> Account
 triggeredEvent in State->(Withdraw++Deposit)
 
 // Entity constraints
-forall s:State | (some s.ordering || some ordering.s) && some s.accountInState
-forall s:State\InitialState | some params[s]
+forall s:State | some s.accountInState
+forall s:State\InitialState | s in InitialState.^ordering && some params[s]
 
 params[State]::amount > 0 && params[State]::amount < 11
 
@@ -33,4 +33,4 @@ forall s1: State, s2:State | s1 -> s2 in ordering =>
   )
  
 // Goal state 
-exists s:State | (accountInState[s])::balance = 30
+exists s:State | (accountInState[s])::balance = 29

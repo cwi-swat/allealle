@@ -1,14 +1,14 @@
 {s0,s1,s2,b1_1{balance(int)},b1_2{balance(int)},b1_3{balance(int)},b2_1{balance(int)},b2_2{balance(int)},b2_3{balance(int)},a1{val(int)},a2{val(int)}}
 
-State:1         [{<s0>},{<s0>,<s1>,<s2>}]
-InitialState:1  [{<s0>},{<s0>}]
-ordering:2      [{},{<s0,s1>,<s1,s2>}]
+State:1             [{<s0>},{<s0>,<s1>,<s2>}]
+InitialState:1      [{<s0>},{<s0>}]
+ordering:2          [{},{<s0,s1>,<s1,s2>}]
 
-Account:1       [{<b1_1>,<b2_1>},{<b1_1>,<b1_2>,<b1_3>,<b2_1>,<b2_2>,<b2_3>}]
-account1InState:2      [{<s0,b1_1>},{<s0,b1_1>,<s1,b1_2>,<s2,b1_3>}]
-account2InState:2      [{<s0,b2_1>},{<s0,b2_1>,<s1,b2_2>,<s2,b2_3>}]
-Params:1    [{},{<a1>,<a2>}]
-paramsInState:2        [{},{<s1,a1>,<s2,a2>}]
+Account:1           [{<b1_1>,<b2_1>},{<b1_1>,<b1_2>,<b1_3>,<b2_1>,<b2_2>,<b2_3>}]
+account1InState:2   [{<s0,b1_1>},{<s0,b1_1>,<s1,b1_2>,<s2,b1_3>}]
+account2InState:2   [{<s0,b2_1>},{<s0,b2_1>,<s1,b2_2>,<s2,b2_3>}]
+Params:1            [{},{<a1>,<a2>}]
+paramsInState:2     [{},{<s1,a1>,<s2,a2>}]
 
 ordering in State->State
 InitialState in State
@@ -39,4 +39,4 @@ forall s1:State, s2:State | s1->s2 in ordering =>
    account1InState[s2]::balance = (account1InState[s1]::balance) + (paramsInState[s2]::val) &&
    account2InState[s2]::balance = (account2InState[s1]::balance) - (paramsInState[s2]::val)))    
 
-exists s:State | account1InState[s]::balance = 199
+exists s:State | account1InState[s]::balance = 200

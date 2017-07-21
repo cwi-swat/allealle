@@ -2,12 +2,12 @@ module theories::Translator
 
 import logic::Propositional;
 import theories::AST;
-import theories::Binder;
+import theories::Binder; 
 
 import IO;
 import List;
 
-alias AdditionalConstraintFunctions = tuple[void (AttributeFormula) addAttributeConstraint, void (Command) addAdditionalCommand]; 
+alias AdditionalConstraintFunctions = tuple[void (AttributeFormula) addAttributeConstraint, void (Command) addAdditionalCommand, void (AtomDecl) addAtomToUniverse, int () nextResultNr]; 
 
 Environment createInitialEnvironment(Problem p) {
   map[Atom, AtomDecl] atomsWithAttributes = (a : ad | ad:atomWithAttributes(Atom a, list[Attribute] _) <- p.uni.atoms);
@@ -54,7 +54,7 @@ map[int, Attributes] constructAttributesMap(str relName, Formula relForm, Index 
 
 default AttributeFormula constructAttribute(str relName, Atom a, Formula relForm, Attribute attr) { throw "No attribute builder found for theory \'<attr.theory>\' for atom \'<a>\'"; } 
 
-alias TranslationResult = tuple[Formula relationalFormula, Formula attributeFormula, list[Command] additionalCommands];
+alias TranslationResult = tuple[Formula relationalFormula, Formula attributeFormula, set[AtomDecl] newAtoms, list[Command] additionalCommands];
                                                                                             
 TranslationResult translateProblem(Problem p, Environment env) {
   set[AttributeFormula] attributeConstraints = {};
@@ -67,11 +67,22 @@ TranslationResult translateProblem(Problem p, Environment env) {
   void addAdditionalCommand(Command command) {
     additionalCommands += command;  
   }
+  
+  set[AtomDecl] newAtoms = {};
+  void addAtomToUniverse(AtomDecl ad) {
+    newAtoms += ad;
+  }
+  
+  int resultNr = 0;
+  int getNextResultNr() {
+     resultNr += 1;
+     return resultNr;
+  }
 
-  Formula relForm = (\true() | and(it, r) | AlleFormula f <- p.constraints, Formula r := translateFormula(f, env, p.uni, <addAttributeConstraint, addAdditionalCommand>));
+  Formula relForm = (\true() | and(it, r) | AlleFormula f <- p.constraints, Formula r := translateFormula(f, env, p.uni, <addAttributeConstraint, addAdditionalCommand, addAtomToUniverse, getNextResultNr>));
   Formula attForm = (\true() | and(it, r) | AttributeFormula f <- attributeConstraints, Formula r := \if(f.relForm, f.attForm));
   
-  return <relForm, attForm, additionalCommands>; 
+  return <relForm, attForm, newAtoms, additionalCommands>; 
 }
 
 Environment constructSingleton(str newVarName, list[Atom] vector, RelationAndAttributes orig) = (newVarName : <(vector : \true()), (vector: orig.att[vector])>);

@@ -3,7 +3,6 @@ module ModelFinder
 import logic::Propositional;
  
 import theories::AST;
-import theories::PreProcessor;
 import theories::Translator; 
 import theories::SMTInterface; 
 import theories::Binder;
@@ -28,21 +27,13 @@ data ModelFinderResult
 	;
 
 ModelFinderResult checkInitialSolution(Problem problem) {	
-	print("Preprocessing problem (replacing constants, replacing expressions in different theories)...");
-	tuple[Problem problem, int time] pp = bm(preprocess, problem);
-	print("done, took: <(pp.time/1000000)> ms\n");
-	
-	Problem augmentedProblem = pp.problem;	 
-	
-	writeFile(|project://allealle/examples/last_transformed.alle|, unparse(augmentedProblem));
-	
 	print("Building initial environment...");
-	tuple[Environment env, int time] ie = bm(createInitialEnvironment, augmentedProblem); 
+	tuple[Environment env, int time] ie = bm(createInitialEnvironment, problem); 
 	print("done, took: <(ie.time/1000000)> ms\n");
 	
  
 	print("Translating problem to SAT formula...");
-	tuple[TranslationResult r, int time] t = bm(translateProblem, augmentedProblem, ie.env);
+	tuple[TranslationResult r, int time] t = bm(translateProblem, problem, ie.env);
 	print("done, took: <(t.time/1000000)> ms\n");
 	 
 	if (t.r.relationalFormula == \false()) {
@@ -51,7 +42,7 @@ ModelFinderResult checkInitialSolution(Problem problem) {
 		return trivialSat(empty(), problem.uni);
 	}
 
-	return runInSolver(augmentedProblem, t.r, ie.env); 
+	return runInSolver(problem, t.r, ie.env); 
 }
 
 ModelFinderResult runInSolver(Problem problem, TranslationResult tr, Environment env) {
@@ -61,7 +52,7 @@ ModelFinderResult runInSolver(Problem problem, TranslationResult tr, Environment
 	} 
 	
 	print("Translating to SMT-LIB...");
-  tuple[set[SMTVar] vars, int time] smtVarCollectResult = bm(collectSMTVars, problem.uni, env);
+  tuple[set[SMTVar] vars, int time] smtVarCollectResult = bm(collectSMTVars, toSet(problem.uni.atoms) + tr.newAtoms, env);
 	tuple[str smt, int time] smtVarDeclResult = bm(compileSMTVariableDeclarations, smtVarCollectResult.vars);
 	tuple[str smt, int time] smtAttributeValues = bm(compileAttributeValues, problem.uni.atoms);
 	tuple[str smt, int time] smtCompileRelFormResult = bm(compileAssert, tr.relationalFormula);

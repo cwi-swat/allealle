@@ -11,8 +11,9 @@ nest in Pigeon -> Hole
 //forall p: Pigeon | lone p.nest
 
 // A hole always contains 2 pigeons
-#(nest.Hole) = 2
-//forall p: Pigeon | some p.nest =>
+forall h:Hole | #(nest.h) = 2
 one Hole
+
+#Pigeon = 3
 
 //(nest.Hole)::nrOfEggs > 0 

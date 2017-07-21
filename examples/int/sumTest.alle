@@ -5,7 +5,12 @@ A:1 [{}, {<a>,<b>,<c>,<d>,<e>,<f>}]
 
 //A::val + 10 = 24
 
-sum(A::val) = 24
+sum(A::val) = 20
+
+forall a:A | a::val != (A\a)::val
+exists a:A | a::val = 17
+
+A::val > 0
 
 #A = 3
 

@@ -41,12 +41,12 @@ data Model
   | empty()
   ;
 
-set[SMTVar] collectSMTVars(Universe uni, Environment env)  {
+set[SMTVar] collectSMTVars(set[AtomDecl] atoms, Environment env)  {
   set[SMTVar] result = {};
 
-  //for (atomWithAttributes(Atom a, list[Attribute] attributes) <- uni.atoms, Attribute at <- attributes) {
-  //  result += constructAtomVar(a, at);
-  //}
+  for (atomWithAttributes(Atom a, list[Attribute] attributes) <- atoms, Attribute at <- attributes) {
+    result += constructAtomVar(a, at);
+  }
   
   for (str varName <- env, RelationAndAttributes raa := env[varName], Index idx <- raa.relation) {
     if (var(str name) := raa.relation[idx]) {

@@ -37,7 +37,7 @@ data Expr
 	;
 	
 	
-Expr addition(list[Expr] terms, Expr rhs) = addition([*terms, rhs]);
+Expr addition(addition(list[Expr] terms), Expr rhs) = addition([*terms, rhs]);
 Expr addition(Expr lhs, addition(list[Expr] terms)) = addition([lhs, *terms]);
 Expr addition(Expr lhs, Expr rhs) = addition([lhs,rhs]) when addition(_) !:= lhs && addition(_) !:= rhs;
 
