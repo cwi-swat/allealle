@@ -292,36 +292,10 @@ RelationAndAttributes translateExpression(product(Expr lhsExpr, Expr rhsExpr), E
   when RelationAndAttributes lhs := translateExpression(lhsExpr, env, uni, acf), 
        RelationAndAttributes rhs := translateExpression(rhsExpr, env, uni, acf);
 
-RelationAndAttributes translateExpression(ifThenElse(AlleFormula caseForm, Expr thenExpr, Expr elseExpr), Environment env, Universe uni, AdditionalConstraintFunctions acf) {
-  Formula \case = translateFormula(caseForm, env, uni, acf);
-  RelationAndAttributes then = translateExpression(thenExpr, env, uni, acf);
-  RelationAndAttributes \else = translateExpression(elseExpr, env, uni, acf);
-
-  if (arity(then) != arity(\else)) {
-    throw "Then and Else expressions must be of same arity";
-  }
-
-  if (\case == \true()) {
-    return then;
-  } else if (\case == \false()) {
-    return \else;
-  } 
-  
-  RelationMatrix relResult = ();
-  AttributeMatrix attResult = ();
-  
-  for (Index idx <- (then.relation + \else.relation)) {
-    Formula thenRel = ((idx in then.relation) ? then.relation[idx] : \false());
-    Formula elseRel = ((idx in \else.relation) ? \else.relation[idx] : \false()); 
-    map[int, Attributes] thenAtt = ((idx in then.att) ? then.att[idx] : ());
-    map[int, Attributes] elseAtt = ((idx in \else.att) ? \else.att[idx] : ());
-    
-    relResult[idx] = ite(\case, thenRel, elseRel);
-    attResult[idx] = merge(thenAtt,elseAtt); 
-  } 
-  
-  return <relResult,attResult>;
-}
+RelationAndAttributes translateExpression(ifThenElse(AlleFormula caseForm, Expr thenExpr, Expr elseExpr), Environment env, Universe uni, AdditionalConstraintFunctions acf) = ite(\case, then, \else)
+  when Formula \case := translateFormula(caseForm, env, uni, acf),
+       RelationAndAttributes then := translateExpression(thenExpr, env, uni, acf),
+       RelationAndAttributes \else := translateExpression(elseExpr, env, uni, acf);
 
 RelationAndAttributes translateExpression(comprehension(list[VarDeclaration] decls, AlleFormula form), Environment env, Universe uni, AdditionalConstraintFunctions acf) {
   RelationAndAttributes calculate(Index idx, [], Environment extendedEnv, Formula partialRelForm, map[int, Attributes] attributes) {
@@ -329,10 +303,10 @@ RelationAndAttributes translateExpression(comprehension(list[VarDeclaration] dec
       return <(idx:\false()), (idx:attributes)>;
     }
     
-    return <(idx : and(partialRelForm, translateFormula(form, extendedEnv, uni,acf))), (idx:attributes)>;
+    return <(idx : and(partialRelForm, translateFormula(form, extendedEnv, uni,acf))), ()>;
   }
   
-  RelationAndAttributes calculate(Index currentIdx, [VarDeclaration hd, *VarDeclaration tl], Environment extendedEnv, Formula partialRelForm, map[int, Attributes] attributes) {
+  RelationAndAttributes calculate(Index currentIdx, [VarDeclaration hd, *VarDeclaration tl], Environment extendedEnv, Formula partialRelForm) {
     RelationMatrix relResult = ();
     AttributeMatrix attResult = ();
     
@@ -340,15 +314,13 @@ RelationAndAttributes translateExpression(comprehension(list[VarDeclaration] dec
     if (arity(decl) > 1) { throw "Higher order comprehensions are not allowed"; }
     
     for (Index idx <- decl.relation) {
-      RelationAndAttributes tmp = calculate(currentIdx + idx, tl, extendedEnv + constructSingleton(hd.name, idx, decl), \and(partialRelForm, decl.relation[idx]), attributes + (i + size(idx) : decl.att[idx][i] | int i <- decl.att[idx]));
-      relResult += tmp.relation;
-      attResult += tmp.att;
+      relResult += calculate(currentIdx + idx, tl, extendedEnv + constructSingleton(hd.name, idx, decl), \and(partialRelForm, decl.relation[idx]));
     } 
     
-    return <relResult, attResult>;
+    return <relResult, ()>;
   }
   
-  return calculate([], decls, env, \true(), ());
+  return calculate([], decls, env, \true());
 }
 
 default RelationAndAttributes translateExpression(Expr expr, Environment env, Universe uni, AdditionalConstraintFunctions acf) { throw "Translation of expression \'<expr>\' not supported"; }

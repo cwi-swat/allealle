@@ -11,10 +11,7 @@ import IO;
 alias Index = list[Atom]; 
 
 alias RelationMatrix = map[Index, Formula];
- 
-alias AttributeFormula = tuple[Formula relForm, Formula attForm]; 
-alias Attributes = map[str, set[AttributeFormula]];
-alias AttributeMatrix = map[Index, map[int, Attributes]];
+alias AttributeMatrix = map[Index, Formula];
 
 alias RelationAndAttributes = tuple[RelationMatrix relation, AttributeMatrix att];
 alias Environment = map[str, RelationAndAttributes]; 
@@ -38,76 +35,52 @@ private list[Index] constructIdentityIndex(int arity, Universe uni) = [vector | 
 RelationAndAttributes identity(RelationAndAttributes orig, Universe uni) = identity(arity(orig), uni);
 RelationAndAttributes identity(int arity, Universe uni) {
   RelationMatrix relIden = ();
-  AttributeMatrix attIden = ();
   
   for (Index idx <- constructIdentityIndex(arity, uni)) {
     relIden[idx] = \true();
-    attIden[idx] = ();
   }
 
-  return <relIden,attIden>;
+  return <relIden,()>;
 }
-  
-map[int, Attributes] merge(map[int, Attributes] lhs, map[int, Attributes] rhs) = (idx : lhs[idx] | int idx <- lhs, idx notin rhs) +
-                                                                                 (idx : lhs[idx] + rhs[idx] | int idx <- lhs, idx in rhs) +
-                                                                                 (idx : rhs[idx] | int idx <- rhs, idx notin lhs);
+
+private bool hasSelectedAttributes(RelationAndAttributes raa) = raa.att != ();
 
 RelationAndAttributes or(RelationAndAttributes lhs, RelationAndAttributes rhs) {
   if (!sameArity(lhs,rhs)) {
-    throw "Unable to perform disjunction of relations with different arity";
+    throw "OR only works on relations of same arity";
+  }
+  if (hasSelectedAttributes(lhs) || hasSelectedAttributes(rhs)) {
+    throw "OR only works on base relations";
   }
   
-  RelationMatrix relResult = ();
-  AttributeMatrix attResult = ();
-  
-  for (Index idx <- (lhs.relation + rhs.relation)) {
-    Formula lhsVal = idx in lhs.relation ? lhs.relation[idx] : \false();
-    Formula rhsVal = idx in rhs.relation ? rhs.relation[idx] : \false();
-    relResult[idx] = \or(lhsVal, rhsVal);
-    
-    map[int, Attributes] lhsAtt = idx in lhs.att ? lhs.att[idx] : ();
-    map[int, Attributes] rhsAtt = idx in rhs.att ? rhs.att[idx] : ();
-    attResult[idx] = merge(lhsAtt, rhsAtt);    
-  }
-  
-  return <relResult, attResult>;
+  return <(idx : \or(lhsVal, rhsVal) | Index idx <- (lhs.relation + rhs.relation), Formula lhsVal := ((idx in lhs.relation) ? lhs.relation[idx] : \false()), Formula rhsVal := ((idx in rhs.relation) ? rhs.relation[idx] : \false())), ()>;
 }
 
 RelationAndAttributes and(RelationAndAttributes lhs, RelationAndAttributes rhs) {
   if (!sameArity(lhs,rhs)) {
-    throw "Unable to perform conjunction of relations with different arity";
+    throw "AND only works on relations of same arity";
   }
-
-  RelationMatrix relResult = ();
-  AttributeMatrix attResult = ();
-  
-  for (Index idx <- lhs.relation, idx in rhs.relation) {
-    relResult[idx] = \and(lhs.relation[idx], rhs.relation[idx]);
-    attResult[idx] = merge(lhs.att[idx], rhs.att[idx]);    
+  if (hasSelectedAttributes(lhs) || hasSelectedAttributes(rhs)) {
+    throw "AND only works on base relations";
   }
   
-  return <relResult, attResult>;
+  return <(idx : \and(lhs.relation[idx], rhs.relation[idx]) | Index idx <- lhs.relation, idx in rhs.relation), ()>;
 }
 
 RelationAndAttributes transpose(RelationAndAttributes m) {
-  int arity = arity(m);
-  
-  RelationMatrix relResult = ();
-  AttributeMatrix attResult = ();
-  
-  for (Index idx <- m.relation) {
-    Index reversedIdx = reverse(idx);
-    
-    relResult[reversedIdx] = m.relation[idx];
-    attResult[reversedIdx] = ((arity - 1) - i : m.att[idx][i] | int i <- m.att[idx]);  
+  if (hasSelectedAttributes(m)) {
+    throw "TRANSPOSE only works on base relations";
   }
-
-  return <relResult, attResult>;
+  
+  return <(reverse(idx) : m.relation[idx] | Index idx <- m.relation), ()>;
 } 
 
 RelationAndAttributes transitiveClosure(RelationAndAttributes m) {
   if (arity(m) != 2) {
-    throw "Can not perform a transitive closure on a non-binary relation";
+    throw "TRANSITIVE CLOSURE only works on binary relations";
+  }
+  if (hasSelectedAttributes(m)) {
+    throw "TRANSITIVE CLOSURE only works on base relations";
   }
   
   set[Atom] rows = {a | [Atom a, Atom _] <- m.relation}; 
@@ -118,7 +91,10 @@ RelationAndAttributes transitiveClosure(RelationAndAttributes m) {
 
 RelationAndAttributes reflexiveTransitiveClosure(RelationAndAttributes m, Universe uni) {
   if (arity(m) != 2) {
-    throw "Can not perform a reflexive transitive closure on a non-binary relation";
+    throw "REFLEXIVE TRANSITIVE CLOSURE only works on binary relations";
+  }
+  if (hasSelectedAttributes(m)) {
+    throw "REFLEXIVE TRANSITIVE CLOSURE only works on base relations";
   }
   
   return or(transitiveClosure(m), identity(m, uni));
@@ -126,20 +102,13 @@ RelationAndAttributes reflexiveTransitiveClosure(RelationAndAttributes m, Univer
 
 RelationAndAttributes difference(RelationAndAttributes lhs, RelationAndAttributes rhs) {
   if (!sameArity(lhs,rhs)) {
-    throw "Can not perform a difference on two relations with different arities";
+    throw "DIFFERENCE only works on relations of same arity";
   }
+  if (hasSelectedAttributes(lhs) || hasSelectedAttributes(rhs)) {
+    throw "DIFFERENCE only works on base relations";
+  }  
   
-  RelationMatrix relResult = ();
-  AttributeMatrix attResult = ();
-  
-  for (Index idx <- lhs.relation) {
-    Formula rhsVal = idx in rhs.relation ? not(rhs.relation[idx]) : \true();
-    
-    relResult[idx] = \and(lhs.relation[idx], rhsVal);
-    attResult[idx] = lhs.att[idx];
-  }
-  
-  return <relResult, attResult>;
+  return <(idx : \and(lhs.relation[idx], rhsVal) | Index idx <- lhs.relation, Formula rhsVal := ((idx in rhs.relation) ? not(rhs.relation[idx]) : \true())), ()>;
 } 
 
 @memo
@@ -148,20 +117,18 @@ RelationAndAttributes \join(RelationAndAttributes lhs, RelationAndAttributes rhs
   int arityRhs = arity(rhs);
     
   if (arityLhs == 1 && arityRhs == 1) { 
-    throw "Unable to join two unary relations"; 
+    throw "JOIN only works on two non-unary relations"; 
   }
-      
+  if (hasSelectedAttributes(lhs) || hasSelectedAttributes(rhs)) {
+    throw "JOIN only works on base relations";
+  }
+        
   set[Index] indicesEndingWith(Atom a, RelationMatrix b) = {idx | Index idx <- b, idx[-1] == a};
   set[Index] indicesStartingWith(Atom a, RelationMatrix b) = {idx | Index idx <- b, idx[0] == a};
 
   set[Atom] mostRightAtomInLhs = {idx[-1] | Index idx <- lhs.relation};
     
   RelationMatrix relResult = ();
-  AttributeMatrix attResult = ();
-  
-  map[int, Attributes] attributeJoin(map[int, Attributes] lhsAtt, map[int, Attributes] rhsAtt) = (i  :lhsAtt[i] | int i <- lhsAtt, i < (arityLhs - 1)) +
-                                                                                                 (i-1:rhsAtt[i] | int i <- rhsAtt, i > 0);
-  
   for (Atom current <- mostRightAtomInLhs) {
     set[Index] lhsIndices = indicesEndingWith(current, lhs.relation);
     set[Index] rhsIndices = indicesStartingWith(current, rhs.relation);
@@ -171,33 +138,49 @@ RelationAndAttributes \join(RelationAndAttributes lhs, RelationAndAttributes rhs
         Formula val = and(lhs.relation[lhsIdx], rhs.relation[rhsIdx]);
         
         Index joinIdx = (lhsIdx - lhsIdx[-1]) + (rhsIdx - rhsIdx[0]);
-        map[int, Attributes] attJoin = attributeJoin(lhs.att[lhsIdx], rhs.att[rhsIdx]);
 
         if (joinIdx notin relResult) {
           relResult[joinIdx] = val;
-          attResult[joinIdx] = attJoin;
         } else {
           relResult[joinIdx] = \or(relResult[joinIdx], val); 
-          attResult[joinIdx] = merge(attResult[joinIdx], attJoin);
         }
       }
     }
   }
   
-  return <relResult, attResult>;
+  return <relResult, ()>;
 }
 
 RelationAndAttributes product(RelationAndAttributes lhs, RelationAndAttributes rhs) {
-  RelationMatrix relResult = ();
-  AttributeMatrix attResult = ();
-  int arityLhs = arity(lhs);
-  
-  for (Index lhsIdx <- lhs.relation, lhs.relation[lhsIdx] != \false(), Index rhsIdx <- rhs.relation, rhs.relation[rhsIdx] != \false()) {
-    Index productIdx = lhsIdx + rhsIdx;
-   
-    relResult[productIdx] = \and(lhs.relation[lhsIdx], rhs.relation[rhsIdx]);
-    attResult[productIdx] = lhs.att[lhsIdx] + (i + arityLhs : rhs.att[rhsIdx][i] | int i <- rhs.att[rhsIdx]); 
+  if (hasSelectedAttributes(lhs) || hasSelectedAttributes(rhs)) {
+    throw "PRODUCT only works on base relations";
   }
+
+  return <(lhsIdx + rhsIdx : \and(lhs.relation[lhsIdx], rhs.relation[rhsIdx]) | Index lhsIdx <- lhs.relation, lhs.relation[lhsIdx] != \false(), Index rhsIdx <- rhs.relation, rhs.relation[rhsIdx] != \false()), ()>;
+}
+
+RelationAndAttributes ite(Formula \case, RelationAndAttributes \then, RelationAndAttributes \else) {
+  if (arity(then) != arity(\else)) {
+    throw "Arity of relation in THEN must be equal to the arity of the relation in ELSE for the ITE to work";
+  }
+    if (hasSelectedAttributes(\then) || hasSelectedAttributes(\else)) {
+    throw "ITE only works on base relations";
+  }
+
+  if (\case == \true()) {
+    return then;
+  } else if (\case == \false()) {
+    return \else;
+  } 
   
-  return <relResult, attResult>;
+  RelationMatrix relResult = ();
+  
+  for (Index idx <- (then.relation + \else.relation)) {
+    Formula thenRel = ((idx in then.relation) ? then.relation[idx] : \false());
+    Formula elseRel = ((idx in \else.relation) ? \else.relation[idx] : \false()); 
+    
+    relResult[idx] = ite(\case, thenRel, elseRel);
+  } 
+  
+  return <relResult,()>;
 }
