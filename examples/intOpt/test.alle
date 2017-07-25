@@ -1,13 +1,13 @@
-{a(int),b(int),c(int)}
+{a{v(int)},b{v(int)},c{v(int)}}
 
 A:1[{},{<a>,<b>,<c>}]
 B:1[{},{<a>,<b>,<c>}]
 
-(A\B) = 15
-(A&B) = 10
-(B\A) = 5
+(A\B)::v = 15
+(A&B)::v = -1
+(B\A)::v = 10
 
 //some A
 
-//minimize sum(A)
-maximize sum(B)
+maximize sum(A::v)
+maximize sum(B::v)
