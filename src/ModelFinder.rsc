@@ -40,7 +40,7 @@ ModelFinderResult checkInitialSolution(Problem problem) {
 		return trivialUnsat();
 	} else if (t.r.relationalFormula == \true()) {
 		return trivialSat(empty(), problem.uni);
-	}
+	} 
 
 	return runInSolver(problem, t.r, ie.env); 
 }

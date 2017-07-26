@@ -10,8 +10,7 @@ import theories::integer::Translator;
 import List;
 import String; 
 
-tuple[str, Theory] constructAtomVar(Atom a, Attribute at) = <"<a>!<at.name>", intTheory()> when at.theory == intTheory();
-tuple[str, Theory] constructAttributeVar(<Formula _, equal(intVar(str name), Formula _)>) = <name, intTheory()>;
+tuple[str, Theory] constructAtomVar(Atom a, Attribute at) = <toIntVarName(a, at.name), intTheory()> when at.theory == intTheory();
 
 str compileVariableDeclaration(SMTVar var) = "(declare-const <var.name> Int)" when var.theory == intTheory();
 
@@ -36,6 +35,6 @@ Formula getValue(SmtValue smtValue, SMTVar var) = toFormula(smtValue) when var.t
 Formula toFormula((SmtValue)`<Val v>`) = \int(toInt("<v>")); 
 Formula toFormula((SmtValue)`(- <Val v>)`) = \int(-toInt("<v>")); 
 
-Value findAttributeValue(Atom a, str name, intTheory(), SMTModel smtModel) = intExpr(intLit(val)) when <"<a>!<name>", intTheory()> in smtModel, \int(int val) := smtModel[<"<a>!<name>", intTheory()>];
+Value findAttributeValue(Atom a, str name, intTheory(), SMTModel smtModel) = intExpr(intLit(val)) when <toIntVarName(a, name), intTheory()> in smtModel, \int(int val) := smtModel[<"<a>!<name>", intTheory()>];
  
 str negateAttribute(Atom a, varAttribute(str name, intTheory(), intExpr(intLit(int i)))) = "(not (= <a>!<name> <i>))";

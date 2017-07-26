@@ -46,23 +46,23 @@ set[SMTVar] collectSMTVars(set[AtomDecl] atoms, Environment env)  {
 
   for (atomWithAttributes(Atom a, list[Attribute] attributes) <- atoms, Attribute at <- attributes) {
     result += constructAtomVar(a, at);
-  }
+  } 
   
-  for (str varName <- env, RelationAndAttributes raa := env[varName], Index idx <- raa.relation) {
-    if (var(str name) := raa.relation[idx]) {
+  for (str varName <- env.relations, RelationMatrix m := env.relations[varName], Index idx <- m) {
+    if (var(str name) := m[idx].relForm) {
       result += <name, relTheory()>;
     }
     
-    for (int i <- raa.att[idx], str name <- raa.att[idx][i], AttributeFormula attForm <- raa.att[idx][i][name]) {
-      result += constructAttributeVar(attForm);
-    }
+    //for (int i <- m[idx], str name <- raa.att[idx][i], AttributeFormula attForm <- raa.att[idx][i][name]) {
+    //  result += constructAttributeVar(attForm);
+    //}
   }
   
   return result;
 }
 
 default tuple[str, Theory] constructAtomVar(Atom a, Attribute at) { throw "Unable to construct a variable for atom \'<a>\' and attribute \'<at.name>\'"; } 
-default tuple[str, Theory] constructAttributeVar(AttributeFormula f) { throw "Unable to construct a variable for formula \'<f>\'"; } 
+//default tuple[str, Theory] constructAttributeVar(AttributeFormula f) { throw "Unable to construct a variable for formula \'<f>\'"; } 
 
 str compileSMTVariableDeclarations(set[SMTVar] vars) = "<for (SMTVar var <- vars) {>
                                                        '<compileVariableDeclaration(var)><}>"; //("" | "<it>\n<compileVariableDeclaration(var)>" | SMTVar var <- vars);
@@ -134,25 +134,26 @@ Model constructModel(SMTModel smtModel, Universe uni, Environment env) {
   set[AtomDecl] visibleAtoms = {};
   set[Relation] relations = {};
   
-  for (str relName <- env, !startsWith(relName, "_")) {
+  for (str relName <- env.relations, !startsWith(relName, "_")) {
     set[VectorAndVar] relTuples = {};
+    RelationMatrix m = env.relations[relName];
      
-    for (Index idx <- env[relName].relation) {
+    for (Index idx <- m) {
       // all the atoms referenced in the vector should be visible
-      if (var(str name) := env[relName].relation[idx], smtModel[<name, relTheory()>] == \true() ) {
+      if (var(str name) := m[idx].relForm, smtModel[<name, relTheory()>] == \true() ) {
         visibleAtoms += {findAtomDecl(a) | Atom a <- idx};
         relTuples += {vectorAndVar(idx,  name)};
       }
-      else if (\true() := env[relName].relation[idx]) {
+      else if (\true() := m[idx].relForm) {
         visibleAtoms += {findAtomDecl(a) | Atom a <- idx};
         relTuples += {vectorOnly(idx)};        
       } 
     }
     
-    if (size(getOneFrom(env[relName].relation)) == 1) {
-      relations += {unary(relName, relTuples, relName in env)};
+    if (size(getOneFrom(m)) == 1) {
+      relations += {unary(relName, relTuples, relName in env.relations)};
     } else {
-      relations += {nary(relName, relTuples, relName in env)};
+      relations += {nary(relName, relTuples, relName in env.relations)};
     } 
   }
   

@@ -7,60 +7,42 @@ import theories::Binder;
 import IO;
 import List;
 
-alias AdditionalConstraintFunctions = tuple[void (AttributeFormula) addAttributeConstraint, void (Command) addAdditionalCommand, void (AtomDecl) addAtomToUniverse, int () nextResultNr]; 
+alias AdditionalConstraintFunctions = tuple[void (Formula) addAttributeConstraint, void (Command) addAdditionalCommand, void (AtomDecl) addAtomToUniverse, Atom () freshAtom]; 
 
 Environment createInitialEnvironment(Problem p) {
-  map[Atom, AtomDecl] atomsWithAttributes = (a : ad | ad:atomWithAttributes(Atom a, list[Attribute] _) <- p.uni.atoms);
-
-  Environment env = (rb.relName:createRelationalMapping(rb, atomsWithAttributes) | RelationalBound rb <- p.bounds);
+  map[str, RelationMatrix] relations = (rb.relName:createRelationalMapping(rb) | RelationalBound rb <- p.bounds);
+  map[Atom, map[str, Formula]] attributes = (a : createAttributeMap(ad) | ad:atomWithAttributes(Atom a, list[Attribute] attributes) <- p.uni.atoms); 
   
-  return env;
-}
+  return <relations, attributes>;
+} 
                                                                                                                                                     
-RelationAndAttributes createRelationalMapping(relationalBound(str relName, int arity, list[Tuple] lb, list[Tuple] ub), map[Atom, AtomDecl] atomsWithAttributes) {
+RelationMatrix createRelationalMapping(relationalBound(str relName, int arity, list[Tuple] lb, list[Tuple] ub)) {
   str idxToStr(list[Atom] idx) = intercalate("_", idx);
   
   RelationMatrix relResult = ();
-  AttributeMatrix attResult = ();
   
   for (\tuple(list[Atom] idx) <- lb) {
-    relResult += (idx : \true());
-    attResult += (idx : constructAttributesMap(relName, \true(), idx, atomsWithAttributes));  
+    relResult += (idx : relOnly(\true()));
   }
 
   for (\tuple(list[Atom] idx) <- ub, idx notin relResult) {
-    relResult += (idx : var("<relName>_<idxToStr(idx)>"));
-    attResult += (idx : constructAttributesMap(relName, var("<relName>_<idxToStr(idx)>"), idx, atomsWithAttributes));
+    relResult += (idx : relOnly(var("<relName>_<idxToStr(idx)>")));
   }
 
-  return <relResult,attResult>;
+  return relResult;
 } 
                                            
-map[int, Attributes] constructAttributesMap(str relName, Formula relForm, Index idx, map[Atom, AtomDecl] atomsWithAttributes) {
-  map[int, Attributes] result = ();
-  
-  for (int i <- [0..size(idx)], Atom a := idx[i], a in atomsWithAttributes) {
-    Attributes attributes = ();
-    
-    for (Attribute at <- atomsWithAttributes[a].attributes) {
-      attributes[at.name] = {constructAttribute(relName, a, relForm, at)};
-    }
-    
-    result[i] = attributes;
-  }
-  
-  return result;
-}
+map[str, Formula] createAttributeMap(AtomDecl ad) = (at.name : constructAttribute(ad.atom, at) | Attribute at <- ad.attributes);  
 
-default AttributeFormula constructAttribute(str relName, Atom a, Formula relForm, Attribute attr) { throw "No attribute builder found for theory \'<attr.theory>\' for atom \'<a>\'"; } 
+default Formula constructAttribute(Atom a, Attribute attr) { throw "No attribute builder found for theory \'<attr.theory>\' for atom \'<a>\'"; } 
 
 alias TranslationResult = tuple[Formula relationalFormula, Formula attributeFormula, set[AtomDecl] newAtoms, list[Command] additionalCommands];
                                                                                             
 TranslationResult translateProblem(Problem p, Environment env) {
-  set[AttributeFormula] attributeConstraints = {};
+  set[Formula] attributeConstraints = {};
   
-  void addAttributeConstraint(AttributeFormula constraints) {
-    attributeConstraints += constraints;
+  void addAttributeConstraint(Formula constraint) {
+    attributeConstraints += constraint;
   }
   
   list[Command] additionalCommands = [];
@@ -74,18 +56,18 @@ TranslationResult translateProblem(Problem p, Environment env) {
   }
   
   int resultNr = 0;
-  int getNextResultNr() {
+  Atom freshAtom() {
      resultNr += 1;
-     return resultNr;
+     return "_tmp<resultNr>";
   }
 
-  Formula relForm = (\true() | and(it, r) | AlleFormula f <- p.constraints, Formula r := translateFormula(f, env, p.uni, <addAttributeConstraint, addAdditionalCommand, addAtomToUniverse, getNextResultNr>));
-  Formula attForm = (\true() | and(it, r) | AttributeFormula f <- attributeConstraints, Formula r := \if(f.relForm, f.attForm));
+  Formula relForm = (\true() | and(it, r) | AlleFormula f <- p.constraints, Formula r := translateFormula(f, env, p.uni, <addAttributeConstraint, addAdditionalCommand, addAtomToUniverse, freshAtom>));
+  Formula attForm = (\true() | and(it, f) | Formula f <- attributeConstraints);
   
   return <relForm, attForm, newAtoms, additionalCommands>; 
 }
 
-Environment constructSingleton(str newVarName, list[Atom] vector, RelationAndAttributes orig) = (newVarName : <(vector : \true()), (vector: orig.att[vector])>);
+map[str, RelationMatrix] constructSingleton(str newVarName, list[Atom] vector) = (newVarName : (vector : relOnly(\true())));
 
 Formula translateFormula(empty(Expr expr), Environment env, Universe uni, AdditionalConstraintFunctions acf) 
   = \not(translateFormula(nonEmpty(expr), env, uni, acf));
@@ -94,36 +76,36 @@ Formula translateFormula(atMostOne(Expr expr), Environment env, Universe uni, Ad
   = \or(translateFormula(empty(expr), env, uni, acf), translateFormula(exactlyOne(expr), env, uni, acf));
 
 Formula translateFormula(exactlyOne(Expr expr), Environment env, Universe uni, AdditionalConstraintFunctions acf) 
-  = (\false() | \or(it, \and(m[x], (\true() | \and(it, \not(m[y])) | Index y <- m, y != x))) | Index x <- m)    
-    when RelationMatrix m := translateExpression(expr, env, uni, acf).relation;
+  = (\false() | \or(it, \and(m[x].relForm, (\true() | \and(it, \not(m[y].relForm)) | Index y <- m, y != x))) | Index x <- m)    
+    when RelationMatrix m := translateExpression(expr, env, uni, acf);
 
 Formula translateFormula(nonEmpty(Expr expr), Environment env, Universe uni, AdditionalConstraintFunctions acf) {
-  RelationMatrix m = translateExpression(expr, env, uni, acf).relation;
+  RelationMatrix m = translateExpression(expr, env, uni, acf);
   
   Formula result = \false();
   
   for (Index idx <- m) {
-    if (m[idx] == \true()) {
+    if (m[idx].relForm == \true()) {
       return \true();
     }
     
-    result = \or(result, m[idx]);
-  }
+    result = \or(result, m[idx].relForm);
+  } 
   
   return result;
 }
 
 Formula translateFormula(subset(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni, AdditionalConstraintFunctions acf) {
-  RelationMatrix lhs = translateExpression(lhsExpr, env, uni, acf).relation;
-  RelationMatrix rhs = translateExpression(rhsExpr, env, uni, acf).relation;
+  RelationMatrix lhs = translateExpression(lhsExpr, env, uni, acf);
+  RelationMatrix rhs = translateExpression(rhsExpr, env, uni, acf);
   
   RelationMatrix m = ();
   for (Index idx <- (lhs + rhs)) {
-    Formula lhsVal = (idx in lhs) ? lhs[idx] : \false();
-    Formula rhsVal = (idx in rhs) ? rhs[idx] : \false();
+    Formula lhsVal = (idx in lhs) ? lhs[idx].relForm : \false();
+    Formula rhsVal = (idx in rhs) ? rhs[idx].relForm : \false();
  
-    m[idx] = \or(\not(lhsVal), rhsVal);
-    if (m[idx] == \false()) {
+    m[idx] = relOnly(\or(\not(lhsVal), rhsVal));
+    if (m[idx].relForm == \false()) {
       return \false();
     }
   } 
@@ -134,7 +116,7 @@ Formula translateFormula(subset(Expr lhsExpr, Expr rhsExpr), Environment env, Un
 
   Formula result = \true();
   for (Index idx <- m) {  
-    result = \and(result, m[idx]);
+    result = \and(result, m[idx].relForm);
   }
   
   return result;
@@ -183,27 +165,29 @@ Formula translateFormula(equality(AlleFormula lhsForm, AlleFormula rhsForm), Env
   return \or(\and(l,r), \and(\not(l), \not(r)));
 }
 
+private Environment extEnv(Environment orig, map[str, RelationMatrix] newRelations) = <orig.relations + newRelations, orig.attributes>; 
+
 data Formula 
   = substitutes(Environment subs)
   ; 
 
 Formula translateFormula(universal(list[VarDeclaration] decls, AlleFormula form), Environment env, Universe uni, AdditionalConstraintFunctions acf) {
-  Formula buildOr([], Environment extendedEnvironment) = substitutes(extendedEnvironment);
+  
+  Formula buildOr([], map[str,RelationMatrix] extraBindings) = substitutes(extEnv(env, extraBindings));
 
-  Formula buildOr([VarDeclaration hd, *VarDeclaration tl], Environment extendedEnvironment) {
+  Formula buildOr([VarDeclaration hd, *VarDeclaration tl], map[str,RelationMatrix] extraBindings) {
     set[Formula] result = {};
     
-    RelationAndAttributes raa = translateExpression(hd.binding, env+ extendedEnvironment, uni, acf);
-    RelationMatrix m = raa.relation;
+    RelationMatrix m = translateExpression(hd.binding, extEnv(env, extraBindings), uni, acf);
 
     for (Index idx <- m) {
-      Formula clause = buildOr(tl, extendedEnvironment + constructSingleton(hd.name, idx, raa));
+      Formula clause = buildOr(tl, extraBindings + constructSingleton(hd.name, idx));
     
-      if (clause == \false() && m[idx] == \true()) {
+      if (clause == \false() && m[idx].relForm == \true()) {
         return \false();
       }
       
-      result += \or(\not(m[idx]), clause);   
+      result += \or(\not(m[idx].relForm), clause);   
     }    
     
     return \and(result);
@@ -212,7 +196,7 @@ Formula translateFormula(universal(list[VarDeclaration] decls, AlleFormula form)
   Formula result = buildOr(decls, ());
   
   result = visit(result) {
-    case substitutes(Environment subs) => translateFormula(form, env + subs, uni, acf)
+    case substitutes(Environment subs) => translateFormula(form, subs, uni, acf)
   }
   
   return result;
@@ -224,13 +208,12 @@ Formula translateFormula(existential(list[VarDeclaration] decls, AlleFormula for
   VarDeclaration hd = decls[0];
   list[VarDeclaration] tl = (size(decls) > 1) ? decls[1..] : [];
   
-  RelationAndAttributes raa = translateExpression(hd.binding, env, uni, acf);
-  RelationMatrix m = raa.relation;
+  RelationMatrix m = translateExpression(hd.binding, env, uni, acf);
   
-  for (Index x <- m, m[x] != \false()) {
+  for (Index x <- m, m[x].relForm != \false()) {
     AlleFormula f = tl != [] ? existential(tl, form) : form;
 
-    Formula clause = \and(m[x], translateFormula(f, env + constructSingleton(hd.name, x, raa), uni, acf));
+    Formula clause = \and(m[x].relForm, translateFormula(f, extEnv(env, constructSingleton(hd.name, x)), uni, acf));
     
     if (clause == \true()) { return \true(); }
     clauses += clause;
@@ -241,86 +224,84 @@ Formula translateFormula(existential(list[VarDeclaration] decls, AlleFormula for
 
 default Formula translateFormula(AlleFormula f, Environment env, Universe uni, AdditionalConstraintFunctions acf) { throw "Translation of formula \'<f>\' not supported"; }
 
-RelationAndAttributes translateExpression(variable(str name), Environment env, Universe uni, AdditionalConstraintFunctions acf) = env[name];
-RelationAndAttributes translateExpression(attributeLookup(Expr e, str name), Environment env, Universe uni, AdditionalConstraintFunctions acf) {
-  RelationAndAttributes m = translateExpression(e, env, uni, acf);
+RelationMatrix translateExpression(variable(str name), Environment env, Universe uni, AdditionalConstraintFunctions acf) = env.relations[name];
+RelationMatrix translateExpression(attributeLookup(Expr e, str name), Environment env, Universe uni, AdditionalConstraintFunctions acf) {
+  RelationMatrix m = translateExpression(e, env, uni, acf);
   
   if (arity(m) != 1) {
     throw "Can only lookup attributes on an unary relation";
   }
   
-  AttributeMatrix attResult = ();
-  for (Index idx <- m.att) {
-    if (name notin m.att[idx][0]) {
-      throw "Attribute \'<name>\' not present on relation";
+  for (idx:[Atom a] <- m) {
+    if (a notin env.attributes || name notin env.attributes[a]) {
+      throw "Attribute \'<name>\' not defined on \'<a>\' ";
     }
     
-    attResult[idx] = (0: (name : m.att[idx][0][name]));
+    m[idx] = relAndAtt(m[idx].relForm, env.attributes[a][name]);
   }
   
-  return <m.relation, attResult>;   
+  return m;   
 }
 
-RelationAndAttributes translateExpression(transpose(Expr expr), Environment env, Universe uni, AdditionalConstraintFunctions acf) = transpose(m)
-  when RelationAndAttributes m := translateExpression(expr, env, uni, acf); 
+RelationMatrix translateExpression(transpose(Expr expr), Environment env, Universe uni, AdditionalConstraintFunctions acf) = transpose(m)
+  when RelationMatrix m := translateExpression(expr, env, uni, acf); 
 
-RelationAndAttributes translateExpression(closure(Expr expr), Environment env, Universe uni, AdditionalConstraintFunctions acf) = transitiveClosure(m)
-  when RelationAndAttributes m := translateExpression(expr, env, uni, acf);
+RelationMatrix translateExpression(closure(Expr expr), Environment env, Universe uni, AdditionalConstraintFunctions acf) = transitiveClosure(m)
+  when RelationMatrix m := translateExpression(expr, env, uni, acf);
 
-RelationAndAttributes translateExpression(reflexClosure(Expr expr), Environment env, Universe uni, AdditionalConstraintFunctions acf) = reflexiveTransitiveClosure(m, uni)
-  when RelationAndAttributes m := translateExpression(expr, env, uni, acf);
+RelationMatrix translateExpression(reflexClosure(Expr expr), Environment env, Universe uni, AdditionalConstraintFunctions acf) = reflexiveTransitiveClosure(m, uni)
+  when RelationMatrix m := translateExpression(expr, env, uni, acf);
 
-RelationAndAttributes translateExpression(union(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni, AdditionalConstraintFunctions acf) = or(lhs,rhs)  
-  when RelationAndAttributes lhs := translateExpression(lhsExpr, env, uni, acf),
-       RelationAndAttributes rhs := translateExpression(rhsExpr, env, uni, acf);
+RelationMatrix translateExpression(union(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni, AdditionalConstraintFunctions acf) = or(lhs,rhs)  
+  when RelationMatrix lhs := translateExpression(lhsExpr, env, uni, acf),
+       RelationMatrix rhs := translateExpression(rhsExpr, env, uni, acf);
 
-RelationAndAttributes translateExpression(intersection(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni, AdditionalConstraintFunctions acf) = and(lhs, rhs)
-  when RelationAndAttributes lhs := translateExpression(lhsExpr, env, uni, acf),
-       RelationAndAttributes rhs := translateExpression(rhsExpr, env, uni, acf);
+RelationMatrix translateExpression(intersection(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni, AdditionalConstraintFunctions acf) = and(lhs, rhs)
+  when RelationMatrix lhs := translateExpression(lhsExpr, env, uni, acf),
+       RelationMatrix rhs := translateExpression(rhsExpr, env, uni, acf);
 
-RelationAndAttributes translateExpression(difference(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni, AdditionalConstraintFunctions acf) = difference(lhs, rhs)
-  when RelationAndAttributes lhs := translateExpression(lhsExpr, env, uni, acf),
-       RelationAndAttributes rhs := translateExpression(rhsExpr, env, uni, acf);
+RelationMatrix translateExpression(difference(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni, AdditionalConstraintFunctions acf) = difference(lhs, rhs)
+  when RelationMatrix lhs := translateExpression(lhsExpr, env, uni, acf),
+       RelationMatrix rhs := translateExpression(rhsExpr, env, uni, acf);
 
-RelationAndAttributes translateExpression(\join(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni, AdditionalConstraintFunctions acf) = \join(lhs, rhs) 
-  when RelationAndAttributes lhs := translateExpression(lhsExpr, env, uni, acf), 
-       RelationAndAttributes rhs := translateExpression(rhsExpr, env, uni, acf);
+RelationMatrix translateExpression(\join(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni, AdditionalConstraintFunctions acf) = \join(lhs, rhs) 
+  when RelationMatrix lhs := translateExpression(lhsExpr, env, uni, acf), 
+       RelationMatrix rhs := translateExpression(rhsExpr, env, uni, acf);
 
-RelationAndAttributes translateExpression(accessorJoin(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni, AdditionalConstraintFunctions acf) = translateExpression(\join(rhsExpr, lhsExpr), env, uni, acf);
+RelationMatrix translateExpression(accessorJoin(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni, AdditionalConstraintFunctions acf) = translateExpression(\join(rhsExpr, lhsExpr), env, uni, acf);
 
-RelationAndAttributes translateExpression(product(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni, AdditionalConstraintFunctions acf) = product(lhs, rhs)
-  when RelationAndAttributes lhs := translateExpression(lhsExpr, env, uni, acf), 
-       RelationAndAttributes rhs := translateExpression(rhsExpr, env, uni, acf);
+RelationMatrix translateExpression(product(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni, AdditionalConstraintFunctions acf) = product(lhs, rhs)
+  when RelationMatrix lhs := translateExpression(lhsExpr, env, uni, acf), 
+       RelationMatrix rhs := translateExpression(rhsExpr, env, uni, acf);
 
-RelationAndAttributes translateExpression(ifThenElse(AlleFormula caseForm, Expr thenExpr, Expr elseExpr), Environment env, Universe uni, AdditionalConstraintFunctions acf) = ite(\case, then, \else)
+RelationMatrix translateExpression(ifThenElse(AlleFormula caseForm, Expr thenExpr, Expr elseExpr), Environment env, Universe uni, AdditionalConstraintFunctions acf) = ite(\case, then, \else)
   when Formula \case := translateFormula(caseForm, env, uni, acf),
-       RelationAndAttributes then := translateExpression(thenExpr, env, uni, acf),
-       RelationAndAttributes \else := translateExpression(elseExpr, env, uni, acf);
+       RelationMatrix then := translateExpression(thenExpr, env, uni, acf),
+       RelationMatrix \else := translateExpression(elseExpr, env, uni, acf);
 
-RelationAndAttributes translateExpression(comprehension(list[VarDeclaration] decls, AlleFormula form), Environment env, Universe uni, AdditionalConstraintFunctions acf) {
-  RelationAndAttributes calculate(Index idx, [], Environment extendedEnv, Formula partialRelForm, map[int, Attributes] attributes) {
+RelationMatrix translateExpression(comprehension(list[VarDeclaration] decls, AlleFormula form), Environment env, Universe uni, AdditionalConstraintFunctions acf) {
+  RelationMatrix calculate(Index idx, [], Environment extendedEnv, Formula partialRelForm) {
     if (partialRelForm == \false()) {
-      return <(idx:\false()), (idx:attributes)>;
+      return (idx:relOnly(\false()));
     }
     
-    return <(idx : and(partialRelForm, translateFormula(form, extendedEnv, uni,acf))), ()>;
+    return (idx : relOnly(and(partialRelForm, translateFormula(form, extendedEnv, uni,acf))));
   }
   
-  RelationAndAttributes calculate(Index currentIdx, [VarDeclaration hd, *VarDeclaration tl], Environment extendedEnv, Formula partialRelForm) {
+  RelationMatrix calculate(Index currentIdx, [VarDeclaration hd, *VarDeclaration tl], Environment extendedEnv, Formula partialRelForm) {
     RelationMatrix relResult = ();
-    AttributeMatrix attResult = ();
     
-    RelationAndAttributes decl = translateExpression(hd.binding, extendedEnv, uni, acf);
+    RelationMatrix decl = translateExpression(hd.binding, extendedEnv, uni, acf);
     if (arity(decl) > 1) { throw "Higher order comprehensions are not allowed"; }
     
-    for (Index idx <- decl.relation) {
-      relResult += calculate(currentIdx + idx, tl, extendedEnv + constructSingleton(hd.name, idx, decl), \and(partialRelForm, decl.relation[idx]));
+    for (Index idx <- decl) {
+      relResult += calculate(currentIdx + idx, tl, extEnv(extendedEnv, constructSingleton(hd.name, idx)), \and(partialRelForm, decl[idx].relForm));
     } 
     
-    return <relResult, ()>;
+    return relResult;
   }
   
   return calculate([], decls, env, \true());
 }
 
-default RelationAndAttributes translateExpression(Expr expr, Environment env, Universe uni, AdditionalConstraintFunctions acf) { throw "Translation of expression \'<expr>\' not supported"; }
+default RelationMatrix translateExpression(Expr expr, Environment env, Universe uni, AdditionalConstraintFunctions acf) { throw "Translation of expression \'<expr>\' not supported"; }
