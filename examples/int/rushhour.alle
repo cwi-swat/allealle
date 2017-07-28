@@ -1,0 +1,76 @@
+{bc{length(int)=2},pt{length(int)=3},gt{length(int)=3},rc{length(int)=2},bt{length(int)=3},oc{length(int)=2},yt{length(int)=3},gc{length(int)=2},
+ s1,s2,s3,  
+ bc_ps1{row(int)=4,col(int)=4},bc_ps2{row(int)=4,col(int)},bc_ps3{row(int)=4,col(int)},
+ pt_ps1{row(int)=1,col(int)=0},pt_ps2{row(int),col(int)=0},pt_ps3{row(int),col(int)=0},
+ gt_ps1{row(int)=5,col(int)=2},gt_ps2{row(int)=5,col(int)},gt_ps3{row(int)=5,col(int)},
+ rc_ps1{row(int)=2,col(int)=1},rc_ps2{row(int)=2,col(int)},rc_ps3{row(int)=2,col(int)},
+ bt_ps1{row(int)=1,col(int)=3},bt_ps2{row(int),col(int)=3},bt_ps3{row(int),col(int)=3},
+ oc_ps1{row(int)=4,col(int)=0},oc_ps2{row(int),col(int)=0},oc_ps3{row(int),col(int)=0},
+ yt_ps1{row(int)=0,col(int)=5},yt_ps2{row(int),col(int)=5},yt_ps3{row(int),col(int)=5},
+ gc_ps1{row(int)=0,col(int)=0},gc_ps2{row(int)=0,col(int)},gc_ps3{row(int)=0,col(int)}}
+
+Vehicle:1     [{<bc>,<pt>,<gt>,<rc>,<bt>,<oc>,<yt>,<gc>},{<bc>,<pt>,<gt>,<rc>,<bt>,<oc>,<yt>,<gc>}]
+RedCar:1      [{<rc>},{<rc>}]
+Horizontal:1  [{<bc>,<gt>,<rc>,<gc>},{<bc>,<gt>,<rc>,<gc>}]
+Vertical:1    [{<pt>,<bt>,<oc>,<yt>},{<pt>,<bt>,<oc>,<yt>}]
+
+State:1       [{<s1>},{<s1>,<s2>,<s3>}]
+InitialState:1[{<s1>},{<s1>}]
+ordening:2    [{},{<s1,s2>,<s2,s3>}]
+
+Position:1    [{<bc_ps1>,<pt_ps1>,<gt_ps1>,<rc_ps1>,<bt_ps1>,<oc_ps1>,<yt_ps1>,<gc_ps1>},{<bc_ps1>,<bc_ps2>,<bc_ps3>,<pt_ps1>,<pt_ps2>,<pt_ps3>,<gt_ps1>,<gt_ps2>,<gt_ps3>,<rc_ps1>,<rc_ps2>,<rc_ps3>,<bt_ps1>,<bt_ps2>,<bt_ps3>,<oc_ps1>,<oc_ps2>,<oc_ps3>,<yt_ps1>,<yt_ps2>,<yt_ps3>,<gc_ps1>,<gc_ps2>,<gc_ps3>}]
+posInState:3  [{<s1,bc,bc_ps1>,<s1,pt,pt_ps1>,<s1,gt,gt_ps1>,<s1,rc,rc_ps1>,<s1,bt,bt_ps1>,<s1,oc,oc_ps1>,<s1,yt,yt_ps1>,<s1,gc,gc_ps1>},{<s1,bc,bc_ps1>,<s2,bc,bc_ps2>,<s3,bc,bc_ps3>,<s1,pt,pt_ps1>,<s2,pt,pt_ps2>,<s3,pt,pt_ps3>,<s1,gt,gt_ps1>,<s2,gt,gt_ps2>,<s3,gt,gt_ps3>,<s1,rc,rc_ps1>,<s2,rc,rc_ps2>,<s3,rc,rc_ps3>,<s1,bt,bt_ps1>,<s2,bt,bt_ps2>,<s3,bt,bt_ps3>,<s1,oc,oc_ps1>,<s2,oc,oc_ps2>,<s3,oc,oc_ps3>,<s1,yt,yt_ps1>,<s2,yt,yt_ps2>,<s3,yt,yt_ps3>,<s1,gc,gc_ps1>,<s2,gc,gc_ps2>,<s3,gc,gc_ps3>}]
+
+ordening in State->State
+posInState in State->Vehicle->Position
+
+// all states should be reachable from the initial state
+forall s:State | s in InitialState.*ordening
+
+// All vehicles have a position in every state
+forall s:State, v:Vehicle | some v.(s.posInState)
+// There are not more positions then there are vehicles in states
+Position in Vehicle.(State.posInState) 
+
+forall v:Horizontal | let p:v.(State.posInState) | p::col >= 0 && p::col <= (6 - v::length)
+forall v:Vertical   | let p:v.(State.posInState) | p::row >= 0 && p::row <= (6 - v::length)
+
+// goal is to get the red car out
+exists s:State |  (RedCar.(s.posInState))::col = 4
+
+// some vehicle should move between two states
+forall s1:State, s2:State\s1 | s1->s2 in ordening =>
+  (exists v:Vehicle | let pOld:v.(s1.posInState), pNew:v.(s2.posInState) | pOld::col != pNew::col || pOld::row != pNew::row)
+ 
+// two horizontal cars on the same row should never overlap
+forall s:State, v1:Horizontal, v2:Horizontal\v1 | let p1:v1.(s.posInState), p2:v2.(s.posInState) | 
+  p1::row = p2::row =>  
+    (p1::col <= p2::col => (p2::col - p1::col >= v1::length)) &&
+    (p1::col >  p2::col => (p1::col - p2::col >= v2::length))
+ 
+// two vertical cars in the same column should never overlap
+forall s:State, v1:Vertical, v2:Vertical\v1 | let p1:v1.(s.posInState), p2:v2.(s.posInState) | 
+  p1::col = p2::col =>  
+    (p1::row <= p2::row => (p2::row - p1::row >= v1::length)) &&
+    (p1::row >  p2::row => (p1::row - p2::row >= v2::length))
+   
+// two cars with orthogonal directions should never overlap
+forall s:State, v1:Horizontal, v2:Vertical | let p1:v1.(s.posInState), p2:v2.(s.posInState) | 
+  (p1::col <= p2::col && ((p2::col - p1::col) < v1::length) => (p1::row < p2::row || (p1::row - p2::row) >= v2::length)) 
+
+// two horizontal cars on the same row can not bunny hop over eachother
+forall s1:State, s2:State, v1:Horizontal, v2:Horizontal\v1 | let p1Old:v1.(s1.posInState), p1New:v1.(s2.posInState), p2Old:v2.(s1.posInState), p2New:v2.(s2.posInState) |
+  p1Old::row == p2Old::row => ((p1Old::col < p2Old::col => p1New::col < p2New::col) && 
+                               (p1Old::col > p2Old::col => p1New::col > p2New::col))
+
+// two vertical cars on the same column can not bunny hop over eachother
+forall s1:State, s2:State, v1:Vertical, v2:Vertical\v1 | let p1Old:v1.(s1.posInState), p1New:v1.(s2.posInState), p2Old:v2.(s1.posInState), p2New:v2.(s2.posInState) |
+  p1Old::col == p2Old::col => ((p1Old::row < p2Old::row => p1New::row < p2New::row) && 
+                               (p1Old::row > p2Old::row => p1New::row > p2New::row))
+
+// two orthogonal vehicles can not bunny hop over eachother
+forall s1:State, s2:State, v1:Horizontal, v2:Vertical | let p1Old:v1.(s1.posInState), p1New:v1.(s2.posInState), p2Old:v2.(s1.posInState), p2New:v2.(s2.posInState) |
+  ((p1Old::col < p2Old::col && p1New::col > p2New::col) => (p1New::row < p2New::row || p1New::row >= (p2New::row + v2::length))) &&
+  ((p1Old::col > p2Old::col && p1New::col < p2New::col) => (p1New::row < p2New::row || p1New::row >= (p2New::row + v2::length))) 
+
+minimize #State

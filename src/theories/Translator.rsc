@@ -167,6 +167,17 @@ Formula translateFormula(equality(AlleFormula lhsForm, AlleFormula rhsForm), Env
 
 private Environment extEnv(Environment orig, map[str, RelationMatrix] newRelations) = <orig.relations + newRelations, orig.attributes>; 
 
+Formula translateFormula(let(list[VarDeclaration] decls, AlleFormula form), Environment env, Universe uni, AdditionalConstraintFunctions acf) {
+  Environment extendedEnv = env;
+  
+  for (VarDeclaration decl <- decls) {
+    RelationMatrix b = translateExpression(decl.binding, extendedEnv, uni, acf);
+    extendedEnv = extEnv(extendedEnv, (decl.name : b));
+  }
+  
+  return translateFormula(form, extendedEnv, uni, acf);
+}
+
 data Formula 
   = substitutes(Environment subs)
   ; 
@@ -227,6 +238,9 @@ default Formula translateFormula(AlleFormula f, Environment env, Universe uni, A
 RelationMatrix translateExpression(variable(str name), Environment env, Universe uni, AdditionalConstraintFunctions acf) = env.relations[name];
 RelationMatrix translateExpression(attributeLookup(Expr e, str name), Environment env, Universe uni, AdditionalConstraintFunctions acf) {
   RelationMatrix m = translateExpression(e, env, uni, acf);
+  if (m == ()) {
+    return ();
+  }
   
   if (arity(m) != 1) {
     throw "Can only lookup attributes on an unary relation";

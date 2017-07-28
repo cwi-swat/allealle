@@ -65,7 +65,7 @@ Formula translateFormula(intInequal(Expr lhsExpr, Expr rhsExpr), Environment env
        RelationMatrix rhs := translateExpression(rhsExpr, env, uni, acf);
 
 Formula translateFormula(RelationMatrix lhs, RelationMatrix rhs, Formula (Formula lhsElement, Formula rhsElement) operation, AdditionalConstraintFunctions acf) {
-  if (arity(lhs) == 0 || arity(rhs) == 0) { return \true(); }
+  if (arity(lhs) == 0 || arity(rhs) == 0) { return \false(); }
   
   if (arity(lhs) != 1 || arity(rhs) != 1) {
     throw "Unable to perform an integer equation on non-unary relations";
@@ -129,11 +129,12 @@ RelationMatrix translateExpression(multiplication(list[Expr] terms), Environment
 
 private RelationMatrix translateExpression(list[Expr] terms, Formula (Formula lhs, Formula rhs) operation, Formula startAttForm, Environment env, Universe uni, AdditionalConstraintFunctions acf) {
   RelationMatrix buildResult([], Formula relForm, Formula attForm) {
+    Atom resultAtom = acf.freshAtom();
+
     if (\int(_) := attForm) {
       return ([resultAtom]: relAndAtt(relForm, attForm));
     }
       
-    Atom resultAtom = acf.freshAtom();
     acf.addAtomToUniverse(atomWithAttributes(resultAtom, [attribute("val", intTheory())]));
     acf.addAttributeConstraint(equal(toIntVar(resultAtom, "val"), attForm));
 
@@ -171,6 +172,10 @@ RelationMatrix translateExpression(modulo(Expr lhsExpr, Expr rhsExpr), Environme
 private RelationMatrix translateExpression(Expr lhsExpr, Expr rhsExpr, Formula (Formula l, Formula r) operation, Environment env, Universe uni, AdditionalConstraintFunctions acf) {
   RelationMatrix lhs = translateExpression(lhsExpr, env, uni, acf);
   RelationMatrix rhs = translateExpression(rhsExpr, env, uni, acf);
+  
+  if (lhs == () || rhs == ()) { 
+    return ();
+  }
   
   if (size(getOneFrom(lhs)) != 1 || size(getOneFrom(rhs)) != 1) {
     throw "Can only perform binary integer arithmetic of unary base relations";

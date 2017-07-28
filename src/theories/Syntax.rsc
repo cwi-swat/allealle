@@ -42,6 +42,7 @@ syntax AlleFormula
   | left disjunction:  AlleFormula lhsForm "||" AlleFormula rhsForm  
   > implication:  AlleFormula lhsForm "=\>" AlleFormula rhsForm
   | equality:     AlleFormula lhsForm "\<=\>" AlleFormula rhsForm
+  > let:          "let" {VarDeclaration ","}+ decls "|" AlleFormula form
   > universal:    "forall" {VarDeclaration ","}+ decls "|" AlleFormula form
   | existential:  "exists" {VarDeclaration ","}+ decls "|" AlleFormula form 
   ; 
@@ -70,4 +71,4 @@ lexical Variable = ([a-zA-Z_] !<< [a-zA-Z_][a-zA-Z0-9_\']* !>> [a-zA-Z0-9_]) \ K
 lexical Arity = [0-9]+;
 
 keyword Keywords = "none";
-keyword Keywords = "no" | "lone" | "one" | "some" | "not" | "forall" | "exists" | "bind";
+keyword Keywords = "no" | "lone" | "one" | "some" | "not" | "forall" | "exists" | "let";

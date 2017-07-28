@@ -35,6 +35,7 @@ data AlleFormula
   | disjunction(AlleFormula lhsForm, AlleFormula rhsForm)
   | implication(AlleFormula lhsForm, AlleFormula rhsForm)
   | equality(AlleFormula lhsForm, AlleFormula rhsForm)
+  | let(list[VarDeclaration] decls, AlleFormula form)
   | universal(list[VarDeclaration] decls, AlleFormula form)
   | existential(list[VarDeclaration] decls, AlleFormula form) 
   ; 
