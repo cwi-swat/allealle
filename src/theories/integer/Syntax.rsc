@@ -22,15 +22,14 @@ syntax Expr
   | attributeLookup:    Expr expr "::" Variable name
   > intLit:         IntLit intLit
   > neg:            "-" Expr e
+  | abs:            "|" Expr e "|"
   > left multiplication: Expr lhs "*" Expr rhs
   | division:       Expr lhs "/" Expr rhs
   | modulo:         Expr lhs "%" Expr rhs
   > left addition:       Expr lhs "+" Expr rhs 
   | left subtraction:    Expr lhs "-" Expr rhs
   > sum:            "sum" "(" Expr expr ")"
-  | sumBind:        "sum" "(" Expr bind "," Expr expr ")"
   | car:            "#" Expr expr
-  | carBind:        "#" "(" Expr bind "," Expr expr ")"
   ; 
 
 lexical IntLit = [0-9]+;

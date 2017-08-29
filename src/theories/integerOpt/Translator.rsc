@@ -4,15 +4,15 @@ extend theories::integer::Translator;
 
 import theories::integerOpt::AST;
 
-Formula translateFormula(minimize(Expr expr), Environment env, Universe uni, AdditionalConstraintFunctions acf) 
-  = translate(expr, Command (Formula f) { return minimize(f);}, env, uni, acf);
+Formula translateFormula(minimize(Expr expr), Environment env, Universe uni, AdditionalConstraintFunctions acf, Cache cache) 
+  = translate(expr, Command (Formula f) { return minimize(f);}, env, uni, acf, cache);
 
-Formula translateFormula(maximize(Expr expr), Environment env, Universe uni, AdditionalConstraintFunctions acf) 
-  = translate(expr, Command (Formula f) { return maximize(f);}, env, uni, acf);
+Formula translateFormula(maximize(Expr expr), Environment env, Universe uni, AdditionalConstraintFunctions acf, Cache cache) 
+  = translate(expr, Command (Formula f) { return maximize(f);}, env, uni, acf, cache);
 
 
-private Formula translate(Expr expr, Command (Formula) operation, Environment env, Universe uni, AdditionalConstraintFunctions acf) {
-  RelationMatrix m = translateExpression(expr, env, uni, acf);
+private Formula translate(Expr expr, Command (Formula) operation, Environment env, Universe uni, AdditionalConstraintFunctions acf, Cache cache) {
+  RelationMatrix m = translateCachedExpression(expr, env, uni, acf, cache);
   
   if (size(m) != 1 && arity(m) != 1) {
     throw "Can only minimize or maximize singleton, unary expressions (results of sum)";

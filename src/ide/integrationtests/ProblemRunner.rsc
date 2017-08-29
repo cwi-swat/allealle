@@ -1,8 +1,5 @@
 module ide::integrationtests::ProblemRunner
 
-import theories::Binder;
-//import theories::Translator;
-
 import ide::Imploder;
 import ide::CombinedAST;
 import ide::CombinedModelFinder;
@@ -30,7 +27,7 @@ tuple[void () next, void () stop] translateAndSolve(loc problem) {
     printModel(model);
     
     return <next, stop>;
-  }  
+  } 
   else if (trivialSat(Model model, Universe uni) := r) {
     println("Trivially satisfiable");
   }
@@ -49,15 +46,13 @@ void printModel(Model model) {
   str getVectorLabel(list[Atom] vector) = "\<<intercalate(",", [a | Atom a <- vector])>\>";
   
   str getAtomLabel(atom(Atom name)) = name;
-  str getAtomLabel(varAtom(Atom name, Theory theory, AtomValue val)) = "<name> (<i>)" when intExpr(intLit(int i)) := val;
-  str getAtomLabel(fixedAtom(Atom name, Theory theory, AtomValue val)) = "<name> (<i>)" when intExpr(intLit(int i)) := val;
+  str getAtomLabel(atomWithAttributes(Atom name, list[ModelAttribute] attributes)) = "\<<name>, <intercalate(", ", [getAttributeLabel(att) | ModelAttribute att <- attributes])>\>";  
+  
+  str getAttributeLabel(fixedAttribute(str name, Theory theory, Value val)) = "<name> (int) = <i>" when intExpr(intLit(int i)) := val;
+  str getAttributeLabel(varAttribute(str name, Theory theory, Value val)) = "<name> (int) = <i>" when intExpr(intLit(int i)) := val;
 
-  //str getAtomLabel(atomOnly(str name)) = name;
-  //str getAtomLabel(atomAndTheory(str name, Theory t)) = "<name> (no value. Bug?)";
-  //str getAtomLabel(atomTheoryAndValue(str name, intTheory(), intExpr(intLit(int i)))) = "<name> (<i>)";
-
-  println("-----------");
-  if (size(model.visibleAtoms) == 0) {
+  println("-----------"); 
+  if (model.visibleAtoms == {}) {
     println("No visible atoms");
   } else { 
     println("Visible atoms: <intercalate(", ", [getAtomLabel(ma) | ModelAtom ma <- model.visibleAtoms])>");

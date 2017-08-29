@@ -1,8 +1,0 @@
-{h,i}
-
-unaryRel:1  [{<h>,<i>}, {<h>,<i>}] 
-binRel:2 [{<h,i>}, {<h,i>,<i,h>,<h,h>,<i,i>}]
-
-//forall r:binRel | (~r in binRel)
-
- 

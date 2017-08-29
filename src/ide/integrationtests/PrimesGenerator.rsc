@@ -15,7 +15,7 @@ void generatePrimes(int upperBound) {
                 'Primes in Num
                 'One in Num
                 '
-                'forall p:Num | (exists n:Num\\(p++One) | p::val % n::val = 0) \<=\> not (p in Primes)";
+                'forall p:Num | (exists n:Num\\(p++One) | p::val % n::valgit push --set-upstream origin no-preprocessing = 0) \<=\> not (p in Primes)";
   
   writeFile(|project://allealle/examples/int/primes.alle|, problem);
   println("Done generating primes example for <upperBound> numbers");  

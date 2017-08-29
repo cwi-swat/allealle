@@ -40,31 +40,31 @@ Formula exprToForm(subtraction(Expr lhs, Expr rhs))            = substraction(ex
 Formula toIntVar(str atom, str attName) = intVar(toIntVarName(atom, attName));
 str toIntVarName(str atom, str attName) = "<atom>!<attName>";
 
-Formula translateFormula(gt(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni, AdditionalConstraintFunctions acf) = translateFormula(lhs, rhs, Formula (Formula l, Formula r) { return gt(l, r);}, acf)
-  when RelationMatrix lhs := translateExpression(lhsExpr, env, uni, acf),
-       RelationMatrix rhs := translateExpression(rhsExpr, env, uni, acf);
+Formula translateFormula(gt(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni, AdditionalConstraintFunctions acf, Cache cache) = translateIntCompFormula(lhs, rhs, Formula (Formula l, Formula r) { return gt(l, r);}, acf, cache)
+  when RelationMatrix lhs := translateCachedExpression(lhsExpr, env, uni, acf, cache),
+       RelationMatrix rhs := translateCachedExpression(rhsExpr, env, uni, acf, cache);
 
-Formula translateFormula(gte(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni, AdditionalConstraintFunctions acf) = translateFormula(lhs, rhs, Formula (Formula l, Formula r) { return gte(l, r);}, acf)
-  when RelationMatrix lhs := translateExpression(lhsExpr, env, uni, acf),
-       RelationMatrix rhs := translateExpression(rhsExpr, env, uni, acf);
+Formula translateFormula(gte(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni, AdditionalConstraintFunctions acf, Cache cache) = translateIntCompFormula(lhs, rhs, Formula (Formula l, Formula r) { return gte(l, r);}, acf, cache)
+  when RelationMatrix lhs := translateCachedExpression(lhsExpr, env, uni, acf, cache),
+       RelationMatrix rhs := translateCachedExpression(rhsExpr, env, uni, acf, cache);
 
-Formula translateFormula(lt(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni, AdditionalConstraintFunctions acf) = translateFormula(lhs, rhs, Formula (Formula l, Formula r) { return lt(l, r);}, acf)
-  when RelationMatrix lhs := translateExpression(lhsExpr, env, uni, acf),
-       RelationMatrix rhs := translateExpression(rhsExpr, env, uni, acf);
+Formula translateFormula(lt(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni, AdditionalConstraintFunctions acf, Cache cache) = translateIntCompFormula(lhs, rhs, Formula (Formula l, Formula r) { return lt(l, r);}, acf, cache)
+  when RelationMatrix lhs := translateCachedExpression(lhsExpr, env, uni, acf, cache),
+       RelationMatrix rhs := translateCachedExpression(rhsExpr, env, uni, acf, cache);
 
-Formula translateFormula(lte(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni, AdditionalConstraintFunctions acf) = translateFormula(lhs, rhs, Formula (Formula l, Formula r) { return lte(l, r);}, acf)
-  when RelationMatrix lhs := translateExpression(lhsExpr, env, uni, acf),
-       RelationMatrix rhs := translateExpression(rhsExpr, env, uni, acf);
+Formula translateFormula(lte(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni, AdditionalConstraintFunctions acf, Cache cache) = translateIntCompFormula(lhs, rhs, Formula (Formula l, Formula r) { return lte(l, r);}, acf, cache)
+  when RelationMatrix lhs := translateCachedExpression(lhsExpr, env, uni, acf, cache),
+       RelationMatrix rhs := translateCachedExpression(rhsExpr, env, uni, acf, cache);
 
-Formula translateFormula(intEqual(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni, AdditionalConstraintFunctions acf) = translateFormula(lhs, rhs, Formula (Formula l, Formula r) { return equal(l, r);}, acf) 
-  when RelationMatrix lhs := translateExpression(lhsExpr, env, uni, acf),
-       RelationMatrix rhs := translateExpression(rhsExpr, env, uni, acf);
+Formula translateFormula(intEqual(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni, AdditionalConstraintFunctions acf, Cache cache) = translateIntCompFormula(lhs, rhs, Formula (Formula l, Formula r) { return equal(l, r);}, acf, cache) 
+  when RelationMatrix lhs := translateCachedExpression(lhsExpr, env, uni, acf, cache),
+       RelationMatrix rhs := translateCachedExpression(rhsExpr, env, uni, acf, cache);
 
-Formula translateFormula(intInequal(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni, AdditionalConstraintFunctions acf) = translateFormula(lhs, rhs, Formula (Formula l, Formula r) { return inequal(l, r);}, acf) 
-  when RelationMatrix lhs := translateExpression(lhsExpr, env, uni, acf),
-       RelationMatrix rhs := translateExpression(rhsExpr, env, uni, acf);
+Formula translateFormula(intInequal(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni, AdditionalConstraintFunctions acf, Cache cache) = translateIntCompFormula(lhs, rhs, Formula (Formula l, Formula r) { return inequal(l, r);}, acf, cache) 
+  when RelationMatrix lhs := translateCachedExpression(lhsExpr, env, uni, acf, cache),
+       RelationMatrix rhs := translateCachedExpression(rhsExpr, env, uni, acf, cache);
 
-Formula translateFormula(RelationMatrix lhs, RelationMatrix rhs, Formula (Formula lhsElement, Formula rhsElement) operation, AdditionalConstraintFunctions acf) {
+Formula translateIntCompFormula(RelationMatrix lhs, RelationMatrix rhs, Formula (Formula lhsElement, Formula rhsElement) operation, AdditionalConstraintFunctions acf, Cache cache) {
   if (arity(lhs) == 0 || arity(rhs) == 0) { return \false(); }
   
   if (arity(lhs) != 1 || arity(rhs) != 1) {
@@ -94,7 +94,7 @@ Formula translateFormula(RelationMatrix lhs, RelationMatrix rhs, Formula (Formul
   return result; 
 }       
 
-RelationMatrix translateExpression(intLit(int i), Environment env, Universe uni, AdditionalConstraintFunctions acf) {
+RelationMatrix translateExpression(intLit(int i), Environment env, Universe uni, AdditionalConstraintFunctions acf, Cache cache) {
   Atom consAtom = "_c<i>";
   
   acf.addAtomToUniverse(atomWithAttributes(consAtom, [attributeAndValue("cons", intTheory(), intExpr(intLit(i)))]));
@@ -102,8 +102,8 @@ RelationMatrix translateExpression(intLit(int i), Environment env, Universe uni,
   return (["_c<i>"] : relAndAtt(\true(), \int(i))); 
 }
   
-RelationMatrix translateExpression(neg(Expr expr), Environment env, Universe uni, AdditionalConstraintFunctions acf) {
-  RelationMatrix m = translateExpression(expr, env, uni, acf);
+RelationMatrix translateExpression(neg(Expr expr), Environment env, Universe uni, AdditionalConstraintFunctions acf, Cache cache) {
+  RelationMatrix m = translateCachedExpression(expr, env, uni, acf, cache);
   
   for (Index idx <- m) {
     if (relAndAtt(Formula relForm, Formula attForm) := m[idx], \int(_) := attForm || intVar(_) := attForm) {
@@ -120,29 +120,47 @@ RelationMatrix translateExpression(neg(Expr expr), Environment env, Universe uni
   return m;
 }
 
-RelationMatrix translateExpression(addition(list[Expr] terms), Environment env, Universe uni, AdditionalConstraintFunctions acf)
-  = translateExpression(terms, Formula (Formula lhs, Formula rhs) { return addition(lhs, rhs); }, \int(0), env, uni, acf);
+RelationMatrix translateExpression(abs(Expr expr), Environment env, Universe uni, AdditionalConstraintFunctions acf, Cache cache) {
+  RelationMatrix m = translateCachedExpression(expr, env, uni, acf, cache);
+  
+  for (Index idx <- m) {
+    if (relAndAtt(Formula relForm, Formula attForm) := m[idx], \int(_) := attForm || intVar(_) := attForm) {
+      Atom resultAtom = acf.freshAtom();       
+      acf.addAtomToUniverse(atomWithAttributes(resultAtom, [attribute("val", intTheory())]));  
+      acf.addAttributeConstraint(equal(toIntVar(resultAtom,"val"), abs(attForm)));
+      
+      m[idx] = relAndAtt(m[idx].relForm, toIntVar(resultAtom, "val"));      
+    } else {
+      throw "Can not negate integer attribute on a non selected integer attribute";
+    }
+  }
+  
+  return m;
+}
 
-RelationMatrix translateExpression(multiplication(list[Expr] terms), Environment env, Universe uni, AdditionalConstraintFunctions acf) 
-  = translateExpression(terms, Formula (Formula lhs, Formula rhs) { return multiplication(lhs, rhs); }, \int(1), env, uni, acf);
+RelationMatrix translateExpression(addition(list[Expr] terms), Environment env, Universe uni, AdditionalConstraintFunctions acf, Cache cache)
+  = translateExpression(terms, Formula (Formula lhs, Formula rhs) { return addition(lhs, rhs); }, \int(0), env, uni, acf, cache);
+
+RelationMatrix translateExpression(multiplication(list[Expr] terms), Environment env, Universe uni, AdditionalConstraintFunctions acf, Cache cache) 
+  = translateExpression(terms, Formula (Formula lhs, Formula rhs) { return multiplication(lhs, rhs); }, \int(1), env, uni, acf, cache);
 
 
-private RelationMatrix translateExpression(list[Expr] terms, Formula (Formula lhs, Formula rhs) operation, Formula startAttForm, Environment env, Universe uni, AdditionalConstraintFunctions acf) {
+private RelationMatrix translateExpression(list[Expr] terms, Formula (Formula lhs, Formula rhs) operation, Formula startAttForm, Environment env, Universe uni, AdditionalConstraintFunctions acf, Cache cache) {
   RelationMatrix buildResult([], Formula relForm, Formula attForm) {
     Atom resultAtom = acf.freshAtom();
 
     if (\int(_) := attForm) {
       return ([resultAtom]: relAndAtt(relForm, attForm));
-    }
-      
-    acf.addAtomToUniverse(atomWithAttributes(resultAtom, [attribute("val", intTheory())]));
-    acf.addAttributeConstraint(equal(toIntVar(resultAtom, "val"), attForm));
+    } else {
+      acf.addAtomToUniverse(atomWithAttributes(resultAtom, [attribute("val", intTheory())]));
+      acf.addAttributeConstraint(equal(toIntVar(resultAtom, "val"), attForm));
 
-    return ([resultAtom]: relAndAtt(relForm, toIntVar(resultAtom, "val")));
+      return ([resultAtom]: relAndAtt(relForm, toIntVar(resultAtom, "val")));
+    }
   }
   
   RelationMatrix buildResult([Expr hd, *Expr tl], Formula relForm, Formula attForm) {
-    RelationMatrix m = translateExpression(hd, env, uni, acf);
+    RelationMatrix m = translateCachedExpression(hd, env, uni, acf, cache);
     
     RelationMatrix relResult = ();
     
@@ -160,18 +178,18 @@ private RelationMatrix translateExpression(list[Expr] terms, Formula (Formula lh
   return buildResult(terms, \true(), startAttForm);
 }
 
-RelationMatrix translateExpression(subtraction(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni, AdditionalConstraintFunctions acf) 
-  = translateExpression(lhsExpr, rhsExpr, Formula (Formula l, Formula r) {return addition(l,neg(r));}, env, uni, acf);
+RelationMatrix translateExpression(subtraction(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni, AdditionalConstraintFunctions acf, Cache cache) 
+  = translateExpression(lhsExpr, rhsExpr, Formula (Formula l, Formula r) {return addition(l,neg(r));}, env, uni, acf, cache);
 
-RelationMatrix translateExpression(division(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni, AdditionalConstraintFunctions acf) 
-  = translateExpression(lhsExpr, rhsExpr, Formula (Formula l, Formula r) {return division(l,r);}, env, uni, acf);
+RelationMatrix translateExpression(division(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni, AdditionalConstraintFunctions acf, Cache cache) 
+  = translateExpression(lhsExpr, rhsExpr, Formula (Formula l, Formula r) {return division(l,r);}, env, uni, acf, cache);
 
-RelationMatrix translateExpression(modulo(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni, AdditionalConstraintFunctions acf) 
-  = translateExpression(lhsExpr, rhsExpr, Formula (Formula l, Formula r) {return modulo(l,r);}, env, uni, acf);
+RelationMatrix translateExpression(modulo(Expr lhsExpr, Expr rhsExpr), Environment env, Universe uni, AdditionalConstraintFunctions acf, Cache cache) 
+  = translateExpression(lhsExpr, rhsExpr, Formula (Formula l, Formula r) {return modulo(l,r);}, env, uni, acf, cache);
 
-private RelationMatrix translateExpression(Expr lhsExpr, Expr rhsExpr, Formula (Formula l, Formula r) operation, Environment env, Universe uni, AdditionalConstraintFunctions acf) {
-  RelationMatrix lhs = translateExpression(lhsExpr, env, uni, acf);
-  RelationMatrix rhs = translateExpression(rhsExpr, env, uni, acf);
+private RelationMatrix translateExpression(Expr lhsExpr, Expr rhsExpr, Formula (Formula l, Formula r) operation, Environment env, Universe uni, AdditionalConstraintFunctions acf, Cache cache) {
+  RelationMatrix lhs = translateCachedExpression(lhsExpr, env, uni, acf, cache);
+  RelationMatrix rhs = translateCachedExpression(rhsExpr, env, uni, acf, cache);
   
   if (lhs == () || rhs == ()) { 
     return ();
@@ -207,8 +225,8 @@ private RelationMatrix translateExpression(Expr lhsExpr, Expr rhsExpr, Formula (
   return relResult;
 }  
 
-RelationMatrix translateExpression(sum(Expr e), Environment env, Universe uni, AdditionalConstraintFunctions acf) {
-  RelationMatrix m = translateExpression(e, env, uni, acf);
+RelationMatrix translateExpression(sum(Expr e), Environment env, Universe uni, AdditionalConstraintFunctions acf, Cache cache) {
+  RelationMatrix m = translateCachedExpression(e, env, uni, acf, cache);
   
   if (size(getOneFrom(m)) != 1) {
     throw "Relation to sum to should be an unary relation with a single integer attribute";
@@ -231,8 +249,8 @@ RelationMatrix translateExpression(sum(Expr e), Environment env, Universe uni, A
   return ([resultAtom] : relAndAtt(\true(), toIntVar(resultAtom, "val")));   
 }
 
-RelationMatrix translateExpression(car(Expr e), Environment env, Universe uni, AdditionalConstraintFunctions acf) {
-  RelationMatrix m = translateExpression(e, env, uni, acf);
+RelationMatrix translateExpression(car(Expr e), Environment env, Universe uni, AdditionalConstraintFunctions acf, Cache cache) {
+  RelationMatrix m = translateCachedExpression(e, env, uni, acf, cache);
 
   Atom resultAtom = acf.freshAtom();
   acf.addAtomToUniverse(atomWithAttributes(resultAtom, [attribute("val", intTheory())]));

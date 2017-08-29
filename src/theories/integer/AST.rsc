@@ -23,6 +23,7 @@ data AlleFormula
 data Expr
 	= intLit(int i)
 	| neg(Expr expr)
+	| abs(Expr expr)
 	| multiplication(Expr lhs, Expr rhs)
   | multiplication(list[Expr] terms)
 	| division(Expr lhs, Expr rhs)

@@ -46,7 +46,7 @@ str unparse(implication(AlleFormula lhsForm, AlleFormula rhsForm))     = "(<unpa
 str unparse(equality(AlleFormula lhsForm, AlleFormula rhsForm))        = "(<unparse(lhsForm)> \<=\> <unparse(rhsForm)>)";  
 str unparse(universal(list[VarDeclaration] decls, AlleFormula form))   = "(forall <intercalate(", ", [unparse(d) | VarDeclaration d <- decls])> | <unparse(form)>)";
 str unparse(existential(list[VarDeclaration] decls, AlleFormula form)) = "(exists <intercalate(", ", [unparse(d) | VarDeclaration d <- decls])> | <unparse(form)>)";
-
+str unparse(let(list[VarDeclaration] decls, AlleFormula form))         = "(let <intercalate(", ", [unparse(d) | VarDeclaration d <- decls])> | <unparse(form)>)";
 default str unparse(AlleFormula f) { throw "No unparse function for formula \'<f>\'"; }
 
 str unparse(variable(str name))                                             = name;

@@ -15,4 +15,5 @@ Root in Dir
 // All files and dirs are (reflexive-transitive) 'content' of the Root dir 
 (File++Dir) in Root.*contents
 // All files and dirs can only be contained by one dir
-//forall f:(File++Dir) | lone contents.f
+forall f:(File++Dir) | lone contents.f
+

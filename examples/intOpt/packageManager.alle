@@ -1,3 +1,9 @@
+uni {
+  id: {a,b,c,d,e,f,g,z,y,h}
+
+  (id:id,size:int): {<a,1>,<b,1>,<c,_>,<d,1>,<e,_>,<f,0>,<g,_>,<z,0>,<y,_>,<h,0>}
+}
+
 {a{size(int)=1},b{size(int)=1},c{size(int)=0},d{size(int)=1},e{size(int)=0},f{size(int)=0},g{size(int)=1},z{size(int)=0},y{size(int)=0},h{size(int)=0}}
 
 Package:1 [{<a>,<b>,<c>,<d>,<e>,<f>,<g>,<h>,<y>,<z>},{<a>,<b>,<c>,<d>,<e>,<f>,<g>,<h>,<y>,<z>}]

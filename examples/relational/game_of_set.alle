@@ -1,0 +1,36 @@
+{c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,red,green,purple,squiggle,oval,diamond,onee,two,three,open,striped,solid}
+
+// Color property
+Color:1 [{<red>,<green>,<purple>},{<red>,<green>,<purple>}]
+cardColor:2 [{},{<c1,red>,<c1,green>,<c1,purple>,<c2,red>,<c2,green>,<c2,purple>,<c3,red>,<c3,green>,<c3,purple>,<c4,red>,<c4,green>,<c4,purple>,<c5,red>,<c5,green>,<c5,purple>,<c6,red>,<c6,green>,<c6,purple>,<c7,red>,<c7,green>,<c7,purple>,<c8,red>,<c8,green>,<c8,purple>,<c9,red>,<c9,green>,<c9,purple>,<c10,red>,<c10,green>,<c10,purple>,<c11,red>,<c11,green>,<c11,purple>,<c12,red>,<c12,green>,<c12,purple>}]
+ 
+// Symbol property
+Symbol:1 [{<squiggle>,<oval>,<diamond>},{<squiggle>,<oval>,<diamond>}]
+cardSymbol:2 [{}, {<c1,squiggle>,<c1,oval>,<c1,diamond>,<c2,squiggle>,<c2,oval>,<c2,diamond>,<c3,squiggle>,<c3,oval>,<c3,diamond>,<c4,squiggle>,<c4,oval>,<c4,diamond>,<c5,squiggle>,<c5,oval>,<c5,diamond>,<c6,squiggle>,<c6,oval>,<c6,diamond>,<c7,squiggle>,<c7,oval>,<c7,diamond>,<c8,squiggle>,<c8,oval>,<c8,diamond>,<c9,squiggle>,<c9,oval>,<c9,diamond>,<c10,squiggle>,<c10,oval>,<c10,diamond>,<c11,squiggle>,<c11,oval>,<c11,diamond>,<c12,squiggle>,<c12,oval>,<c12,diamond>}] 
+
+// Nr of shapes property
+NrOfShapes:1 [{<onee>,<two>,<three>},{<onee>,<two>,<three>}]
+cardNrOfShapes:2 [{}, {<c1,onee>,<c1,two>,<c1,three>,<c2,onee>,<c2,two>,<c2,three>,<c3,onee>,<c3,two>,<c3,three>,<c4,onee>,<c4,two>,<c4,three>,<c5,onee>,<c5,two>,<c5,three>,<c6,onee>,<c6,two>,<c6,three>,<c7,onee>,<c7,two>,<c7,three>,<c8,onee>,<c8,two>,<c8,three>,<c9,onee>,<c9,two>,<c9,three>,<c10,onee>,<c10,two>,<c10,three>,<c11,onee>,<c11,two>,<c11,three>,<c12,onee>,<c12,two>,<c12,three>}]
+
+// Shadings property
+Shading:1 [{<open>,<striped>,<solid>},{<open>,<striped>,<solid>}]
+cardShading:1 [{},{<c1,open>,<c1,striped>,<c1,solid>,<c2,open>,<c2,striped>,<c2,solid>,<c3,open>,<c3,striped>,<c3,solid>,<c4,open>,<c4,striped>,<c4,solid>,<c5,open>,<c5,striped>,<c5,solid>,<c6,open>,<c6,striped>,<c6,solid>,<c7,open>,<c7,striped>,<c7,solid>,<c8,open>,<c8,striped>,<c8,solid>,<c9,open>,<c9,striped>,<c9,solid>,<c10,open>,<c10,striped>,<c10,solid>,<c11,open>,<c11,striped>,<c11,solid>,<c12,open>,<c12,striped>,<c12,solid>}]
+
+Card:1 [{<c1>,<c2>,<c3>,<c4>,<c5>,<c6>,<c7>,<c8>,<c9>,<c10>,<c11>,<c12>},{<c1>,<c2>,<c3>,<c4>,<c5>,<c6>,<c7>,<c8>,<c9>,<c10>,<c11>,<c12>}]
+Set:1 [{},{<c1>,<c2>,<c3>,<c4>,<c5>,<c6>,<c7>,<c8>,<c9>,<c10>,<c11>,<c12>}]
+
+// Cards can have only one color, symbol, nr of shapes and shading
+forall c:Card | one c.cardColor && one c.cardSymbol && one c.cardNrOfShapes && one c.cardShading
+
+// Make sure that all the cards on the table are distinct
+forall c1:Card, c2:Card\c1 | no (c1.cardColor & c2.cardColor) || no (c1.cardSymbol & c2.cardSymbol) || no (c1.cardNrOfShapes & c2.cardNrOfShapes) || no (c1.cardShading & c2.cardShading) 
+              
+// In a set, for all three cards, for all the properties it must hold that or the property is equal for all               
+forall c1:Set | (exists c2:Set\c1, c3:Set\(c1++c2) | let triple:(c1++c2++c3) |
+                  ((one triple.cardColor     || #(triple.cardColor) = 3) && 
+                  (one triple.cardSymbol     || #(triple.cardSymbol) = 3) && 
+                  (one triple.cardNrOfShapes || #(triple.cardNrOfShapes) = 3) && 
+                  (one triple.cardShading    || #(triple.cardShading) = 3)))
+
+minimize #Set
+ 

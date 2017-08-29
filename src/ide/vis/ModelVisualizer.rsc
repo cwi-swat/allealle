@@ -117,7 +117,7 @@ void renderModel(Universe universe, Model model, Model (Theory) nextModel, void 
 set[str] getNaryRelations(Model model) = {name | r:nary(str name, set[VectorAndVar] _, bool _) <- model.relations};
 
 Figure visualizeModel(Universe universe, Model model, DisplayOptions disOpt) {
-	if (model == empty()) {
+	if (model == empty()) { 
 		return text("No more models available", size(100));
 	}
 

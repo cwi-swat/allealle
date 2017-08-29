@@ -18,6 +18,7 @@ str unparse(intInequal(Expr lhsExpr, Expr rhsExpr)) = "(<unparse(lhsExpr)> != <u
   
 str unparse(intLit(int i))                               = "<i>";
 str unparse(neg(Expr e))                                 = "(-<unparse(e)>)";
+str unparse(abs(Expr e))                                 = "(|<unparse(e)>|)";
 //str unparse(multiplication(Expr lhs, Expr rhs))          = "(<unparse(lhs)> * <unparse(rhs)>)";
 str unparse(multiplication(list[Expr] terms))            = "(<intercalate(" * ", [unparse(t) | Expr t <- terms])>)";
 str unparse(division(Expr lhs, Expr rhs))                = "(<unparse(lhs)> / <unparse(rhs)>)";

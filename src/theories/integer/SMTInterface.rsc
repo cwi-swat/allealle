@@ -19,6 +19,7 @@ str compileAttributeValue(Atom a, attributeAndValue(str name, intTheory(), intEx
 str compile(\int(int i))                          = "<i>"; 
 str compile(intVar(str name))                     = "<name>";
 str compile(neg(Formula f))                       = "(- <compile(f)>)"; 
+str compile(abs(Formula f))                       = "(ite (\>= <compF> 0) <compF> (- <compF>))" when str compF := compile(f); 
 str compile(lt(Formula lhs, Formula rhs))         = "(\< <compile(lhs)> <compile(rhs)>)";
 str compile(lte(Formula lhs, Formula rhs))        = "(\<= <compile(lhs)> <compile(rhs)>)";
 str compile(gt(Formula lhs, Formula rhs))         = "(\> <compile(lhs)> <compile(rhs)>)";

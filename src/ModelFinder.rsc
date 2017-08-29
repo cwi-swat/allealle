@@ -32,9 +32,9 @@ ModelFinderResult checkInitialSolution(Problem problem) {
 	print("done, took: <(ie.time/1000000)> ms\n");
 	
  
-	print("Translating problem to SAT formula...");
+	println("Translating problem to SAT formula...");
 	tuple[TranslationResult r, int time] t = bm(translateProblem, problem, ie.env);
-	print("done, took: <(t.time/1000000)> ms\n");
+	println("\n\nDone translating, took: <(t.time/1000000)> ms");
 	 
 	if (t.r.relationalFormula == \false()) {
 		return trivialUnsat();
@@ -64,7 +64,7 @@ ModelFinderResult runInSolver(Problem problem, TranslationResult tr, Environment
 	
 	str fullSmtProblem = "<smtVarDeclResult.smt>\n<smtAttributeValues.smt>\n<smtCompileRelFormResult.smt>\n<smtCompileAttFormResult.smt>\n<smtCompileAdditionalComands.smt>";
 	
-	writeFile(|project://allealle/bin/latestSmt.smt2|, fullSmtProblem);
+	writeFile(|project://allealle/bin/latestSmt.smt2|, "<fullSmtProblem>\n(check-sat)");
 	  
 	smtVarCollectResult.vars = removeAllAddedVars(smtVarCollectResult.vars);   
 	  
@@ -103,6 +103,7 @@ set[SMTVar] removeAllAddedVars(set[SMTVar] vars) = {v | SMTVar v <- vars, !start
 
 SMTModel getValues(SolverPID pid, set[SMTVar] vars) {
   resp = runSolver(pid, "(get-value (<intercalate(" ", [v.name | v <- vars])>))", wait=50);
+  
   return getValues(resp, vars);
 }
  

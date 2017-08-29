@@ -8,6 +8,7 @@ data Formula
 	= \int(int i)
 	| intVar(str name)
 	| neg(Formula f)
+  | abs(Formula f)
 	| lt(Formula lhs, Formula rhs)
 	| lte(Formula lhs, Formula rhs)
 	| gt(Formula lhs, Formula rhs)

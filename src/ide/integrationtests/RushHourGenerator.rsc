@@ -17,9 +17,9 @@ data Vehicle
 alias InitialSetup = map[str name, Vehicle v];
 alias Puzzle = tuple[InitialSetup setup, int maxSteps];
 
-Puzzle puzzle1 = <("green_car":car(hor(),0,0), "red_car":redCar(1), "blue_car":car(hor(),4,4), "orange_car":car(ver(),4,0), "purple_truck":truck(ver(),1,0), "blue_truck":truck(ver(),1,3), "yellow_truck":truck(ver(),0,5), "green_truck":truck(hor(),5,2)), 8>;
-Puzzle puzzle2 = <("green_car":car(ver(),0,0), "yellow_truck":truck(hor(),0,3), "red_car":redCar(0), "orange_car":car(ver(),1,3), "blue_car":car(ver(),2,4), "purple_truc":truck(ver(),1,5), "blue_truck":truck(hor(),3,0), "darg_green_car":car(hor(),5,0), "pink_car":car(ver(),4,2), "black_car":car(hor(),5,3), "purple_car":car(hor(),4,4)), 8>;
-Puzzle puzzle40 = <("yt": truck(ver(),0,0), "lgc":car(hor(),0,1), "bluc":car(ver(),1,1), "pic":car(ver(),1,2), "oc":car(ver(),0,4), "rc":redCar(3), "pt":truck(ver(),1,5), "bt":truck(hor(),3,0), "puc":car(ver(),3,3), "brc":car(hor(),5,0), "dgc":car(ver(),4,2), "yc":car(hor(),5,3), "bla":car(hor(),4,4)), 5>;
+Puzzle puzzle1 = <("green_car":car(hor(),0,0), "red_car":redCar(1), "blue_car":car(hor(),4,4), "orange_car":car(ver(),4,0), "purple_truck":truck(ver(),1,0), "blue_truck":truck(ver(),1,3), "yellow_truck":truck(ver(),0,5), "green_truck":truck(hor(),5,2)), 5>;
+Puzzle puzzle2 = <("green_car":car(ver(),0,0), "yellow_truck":truck(hor(),0,3), "red_car":redCar(0), "orange_car":car(ver(),1,3), "blue_car":car(ver(),2,4), "purple_truc":truck(ver(),1,5), "blue_truck":truck(hor(),3,0), "dark_green_car":car(hor(),5,0), "pink_car":car(ver(),4,2), "black_car":car(hor(),5,3), "purple_car":car(hor(),4,4)), 5>;
+Puzzle puzzle40 = <("yellow_truck": truck(ver(),0,0), "light_green_car":car(hor(),0,1), "blue_car":car(ver(),1,1), "pink_car":car(ver(),1,2), "orange_car":car(ver(),0,4), "red_car":redCar(3), "pink_truck":truck(ver(),1,5), "blue_truck":truck(hor(),3,0), "purple_car":car(ver(),3,3), "brown_car":car(hor(),5,0), "dark_green_car":car(ver(),4,2), "yellow_car":car(hor(),5,3), "black_car":car(hor(),4,4)), 20>;
 
 void genProblem1() = genProblem(puzzle1);
 void genProblem2() = genProblem(puzzle2);
@@ -96,8 +96,8 @@ str constructProblem(InitialSetup setup, int maxSteps) {
          '
          '// some vehicle should move between two states
          'forall s1:State, s2:State\\s1 | s1-\>s2 in ordening =\>
-         '    let moved:{v:Vehicle | let pOld:v.(s1.posInState), pNew:v.(s2.posInState) | pOld::col != pNew::col || pOld::row != pNew::row} | #moved = 1
-         '////  (exists v:Vehicle | let pOld:v.(s1.posInState), pNew:v.(s2.posInState) | pOld::col != pNew::col || pOld::row != pNew::row)
+         '//    let moved:{v:Vehicle | let pOld:v.(s1.posInState), pNew:v.(s2.posInState) | pOld::col != pNew::col || pOld::row != pNew::row} | #moved = 1
+         '  (exists v:Vehicle | let pOld:v.(s1.posInState), pNew:v.(s2.posInState) | pOld::col != pNew::col || pOld::row != pNew::row)
          ' 
          '// two horizontal cars on the same row should never overlap
          'forall s:State, v1:Horizontal, v2:Horizontal\\v1 | let p1:v1.(s.posInState), p2:v2.(s.posInState) | 
@@ -127,10 +127,14 @@ str constructProblem(InitialSetup setup, int maxSteps) {
          '
          '// two orthogonal vehicles can not bunny hop over eachother
          'forall s1:State, s2:State, v1:Horizontal, v2:Vertical | s1-\>s2 in ordening =\> (let p1Old:v1.(s1.posInState), p1New:v1.(s2.posInState), p2Old:v2.(s1.posInState), p2New:v2.(s2.posInState) |
-         '  ((p1Old::col \< p2Old::col && p1New::col \> p2Old::col) =\> ((p1Old::row \< p2Old::row || p1Old::row \>= (p2Old::row + v2::length)))) &&
-         '  ((p1Old::col \> p2Old::col && p1New::col \< p2Old::col) =\> ((p1Old::row \< p2Old::row || p1Old::row \>= (p2Old::row + v2::length)))) &&
-         '  ((p2Old::row \< p1Old::row && p2New::row \> p1New::row) =\> ((p2Old::col \< p1Old::col || p2Old::col \>= (p1Old::col + v1::length)))) &&
-         '  ((p2Old::row \> p1Old::row && p2New::row \< p1New::row) =\> ((p2Old::col \< p1Old::col || p2Old::col \>= (p1Old::col + v1::length)))))  
+         '  //((p1Old::col \< p2Old::col && p1New::col \> p2Old::col) =\> ((p1Old::row \< p2Old::row || p1Old::row \>= (p2Old::row + v2::length)))) &&
+         '  //((p1Old::col \> p2Old::col && p1New::col \< p2Old::col) =\> ((p1Old::row \< p2Old::row || p1Old::row \>= (p2Old::row + v2::length)))) &&
+         '  //((p2Old::row \< p1Old::row && p2New::row \> p1New::row) =\> ((p2Old::col \< p1Old::col || p2Old::col \>= (p1Old::col + v1::length)))) &&
+         '  //((p2Old::row \> p1Old::row && p2New::row \< p1New::row) =\> ((p2Old::col \< p1Old::col || p2Old::col \>= (p1Old::col + v1::length)))))  
+         ' ((p1Old::col \< p2Old::col && (p1Old::row \>= p2Old::row && p1Old::row \< (p2Old::row + v2::length))) =\> p1New::col \< p2New::col) &&
+         ' ((p1Old::col \> p2Old::col && (p1Old::row \>= p2Old::row && p1Old::row \< (p2Old::row + v2::length))) =\> p1New::col \> p2New::col) &&
+         ' ((p2Old::row \< p1Old::row && (p2Old::col \>= p1Old::col && p2Old::col \< (p1Old::col + v1::length))) =\> p2New::row \< p1New::row) &&
+         ' ((p2Old::row \> p1Old::row && (p2Old::col \>= p1Old::col && p2Old::col \< (p1Old::col + v1::length))) =\> p2New::row \> p1New::row)) 
          '
          'minimize #State";
 }
