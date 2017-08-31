@@ -1,13 +1,8 @@
-{a{v(int)},b{v(int)},c{v(int)}}
+{p1,p2,p3}
 
-A:1[{},{<a>,<b>,<c>}]
-B:1[{},{<a>,<b>,<c>}]
+Person:1  [{<p1>,<p2>,<p3>},{<p1>,<p2>,<p3>}]
+couples:2 [{},{<p1,p2>,<p1,p3>,<p2,p3>}]
 
-(A\B)::v = 15
-(A&B)::v = -1
-(B\A)::v = 10
+couples in Person->Person
 
-//some A
-
-maximize sum(A::v)
-maximize sum(B::v)
+some couples
