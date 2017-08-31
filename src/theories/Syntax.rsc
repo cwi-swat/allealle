@@ -1,6 +1,6 @@
 module theories::Syntax
 
-extend theories::Layout;
+extend lang::std::Layout;
 
 start syntax Problem = problem: Universe uni RelationalBound* bounds AlleFormula* constraints;
 

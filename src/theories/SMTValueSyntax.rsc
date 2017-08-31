@@ -1,6 +1,6 @@
 module theories::SMTValueSyntax
 
-extend theories::Layout;
+extend lang::std::Layout;
 
 start syntax SmtValues = "(" VarAndValue+ values")";
 
