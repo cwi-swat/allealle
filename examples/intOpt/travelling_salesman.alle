@@ -1,13 +1,10 @@
-{a,b,c,d,ab{length(int)=20},ad{length(int)=35},ac{length(int)=42},bc{length(int)=30},bd{length(int)=34},cd{length(int)=12}}
+City (1) = {<a>,<b>,<c>,<d>}
+StartingPoint (1) <= {<a>,<b>,<c>,<d>}
+route (2 :: length:int) <= {<a,b,20>,<a,c,42>,<a,d,35>,<b,a,20>,<b,c,30>,<b,d,34>,<c,a,42>,<c,b,30>,<c,d,12>,<d,a,35>,<d,b,34>,<d,c,12>}
 
-Point:1 [{<a>,<b>,<c>,<d>},{<a>,<b>,<c>,<d>}]
-path:3 [{<a,b,ab>,<a,d,ad>,<a,c,ac>,<b,a,ab>,<b,c,bc>,<b,d,bd>,<c,a,ac>,<c,b,bc>,<c,d,cd>,<d,a,ad>,<d,b,bd>,<d,c,cd>}, {<a,b,ab>,<a,d,ad>,<a,c,ac>,<b,a,ab>,<b,c,bc>,<b,d,bd>,<c,a,ac>,<c,b,bc>,<c,d,cd>,<d,a,ad>,<d,b,bd>,<d,c,cd>}]
-Length:1 [{},{<ab>,<ac>,<ad>,<bc>,<bd>,<cd>}]
-route:2 [{}, {<a,b>,<a,c>,<a,d>,<b,a>,<b,c>,<b,d>,<c,a>,<c,b>,<c,d>,<d,a>,<d,b>,<d,c>}]
+forall c:City | one c.route && one route.c
 
-forall p:Point,p':Point\p | p' in p.^route
-forall p:Point | one p.route
+one StartingPoint
+City in StartingPoint.(*route)
 
-forall p:Point,p':Point\p | p->p' in route => exists l:Length | p->p'->l in path
-
-minimize sum(Length::length)
+minimize sum(route::length)

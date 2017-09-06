@@ -2,10 +2,10 @@ module ide::CombinedModelFinder
 
 extend ModelFinder;
 
-extend theories::integer::Translator;
-extend theories::integer::SMTInterface;
-extend theories::integer::Unparser;
+extend translation::theories::integer::Translator;
+extend translation::theories::integer::SMTInterface;
+extend translation::theories::integer::Unparser;
 
-extend theories::integerOpt::Translator;
-extend theories::integerOpt::SMTInterface;
-extend theories::integerOpt::Unparser;
+extend translation::theories::integerOpt::Translator;
+extend translation::theories::integerOpt::SMTInterface;
+extend translation::theories::integerOpt::Unparser;

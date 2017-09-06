@@ -1,4 +1,4 @@
-module theories::SMTValueSyntax
+module translation::SMTValueSyntax
 
 extend lang::std::Layout;
 

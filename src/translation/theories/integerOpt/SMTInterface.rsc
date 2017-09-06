@@ -1,6 +1,6 @@
-module theories::integerOpt::SMTInterface
+module translation::theories::integerOpt::SMTInterface
 
-extend theories::integer::SMTInterface;
+extend translation::theories::integer::SMTInterface;
 
 str compileCommand(minimize(Formula f)) = "(minimize <compile(f)>)";
 str compileCommand(maximize(Formula f)) = "(maximize <compile(f)>)";

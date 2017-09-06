@@ -1,14 +1,16 @@
-module theories::Binder
+module translation::Binder
 
 import logic::Propositional;
-import theories::AST;
+import translation::AST;
 
 import List;
 import Map;
 import Set;
 import IO;
 
-alias Index = list[Atom]; 
+alias Index = list[Id]; 
+
+alias IdDomain = set[Id]; 
 
 data Cell 
   = relOnly(Formula relForm)
@@ -17,9 +19,9 @@ data Cell
 
 alias RelationMatrix = map[Index, Cell];
 
-alias Environment = tuple[map[str, RelationMatrix] relations, map[Atom, map[str, Formula]] attributes]; 
+alias Environment = tuple[map[str, RelationMatrix] relations, map[Index, map[str, Formula]] attributes]; 
 
-int sizeOfUniverse(Universe u) = size(u.atoms);
+int sizeOfIdDomain(IdDomain idd) = size(idd);
 
 int arity(RelationMatrix rm) = 0 when rm == ();
 default int arity(RelationMatrix rm) = size(getOneFrom(rm));
@@ -30,7 +32,9 @@ private RelationMatrix square(RelationMatrix m, int i, int size) = m when i >= s
 private RelationMatrix square(RelationMatrix m, int i, int size) = or(n, \join(n, n)) when RelationMatrix n := square(m, i * 2, size); 
 
 @memo
-RelationMatrix identity(Universe uni) = ([ad.atom,ad.atom] : relOnly(\true()) | AtomDecl ad <- uni.atoms);
+RelationMatrix identity(Environment env) = ([id,id] : relOnly(\true()) | Id id <- getIdDomain(env));
+
+set[Id] getIdDomain(Environment env) = {*idx | str r <- env.relations, list[Id] idx <- env.relations[r]}; 
 
 @memo
 RelationMatrix or(RelationMatrix lhs, RelationMatrix rhs) {
@@ -65,18 +69,18 @@ RelationMatrix transitiveClosure(RelationMatrix m) {
     throw "TRANSITIVE CLOSURE only works on binary relations";
   }
   
-  set[Atom] rows = {a | [Atom a, Atom _] <- m}; 
+  set[Id] rows = {a | [Id a, Id _] <- m}; 
 
   return square(m, 1, size(rows));
 }
 
 @memo
-RelationMatrix reflexiveTransitiveClosure(RelationMatrix m, Universe uni) {
+RelationMatrix reflexiveTransitiveClosure(RelationMatrix m, Environment env) {
   if (arity(m) != 2) {
     throw "REFLEXIVE TRANSITIVE CLOSURE only works on binary relations";
   }
   
-  return or(transitiveClosure(m), identity(uni));
+  return or(transitiveClosure(m), identity(env));
 } 
 
 @memo
@@ -97,13 +101,13 @@ RelationMatrix \join(RelationMatrix lhs, RelationMatrix rhs) {
     throw "JOIN only works on two non-unary relations"; 
   }
         
-  set[Index] indicesEndingWith(Atom a, RelationMatrix b) = {idx | Index idx <- b, idx[-1] == a};
-  set[Index] indicesStartingWith(Atom a, RelationMatrix b) = {idx | Index idx <- b, idx[0] == a};
+  set[Index] indicesEndingWith(Id a, RelationMatrix b) = {idx | Index idx <- b, idx[-1] == a};
+  set[Index] indicesStartingWith(Id a, RelationMatrix b) = {idx | Index idx <- b, idx[0] == a};
 
-  set[Atom] mostRightAtomInLhs = {idx[-1] | Index idx <- lhs};
+  set[Id] mostRightIdInLhs = {idx[-1] | Index idx <- lhs};
     
   RelationMatrix relResult = ();
-  for (Atom current <- mostRightAtomInLhs) {
+  for (Id current <- mostRightIdInLhs) {
     set[Index] lhsIndices = indicesEndingWith(current, lhs);
     set[Index] rhsIndices = indicesStartingWith(current, rhs);
     
@@ -112,7 +116,7 @@ RelationMatrix \join(RelationMatrix lhs, RelationMatrix rhs) {
         Formula val = and(lhs[lhsIdx].relForm, rhs[rhsIdx].relForm);
         
         Index joinIdx = (lhsIdx - lhsIdx[-1]) + (rhsIdx - rhsIdx[0]);
-
+        
         if (joinIdx notin relResult) {
           relResult[joinIdx] = relOnly(val);
         } else {
@@ -121,7 +125,7 @@ RelationMatrix \join(RelationMatrix lhs, RelationMatrix rhs) {
       }
     }
   }
-  
+   
   return relResult;
 }
 

@@ -1,8 +1,8 @@
 {s1,s2,s3,s4,s5,s6,s7,s8,goat,wolf,cabbage,farmer}
 
-State:1 [{<s1>,<s2>,<s3>,<s4>,<s5>,<s6>,<s7>,<s8>}, {<s1>,<s2>,<s3>,<s4>,<s5>,<s6>,<s7>,<s8>}]
+State:1 [{<s1>}, {<s1>,<s2>,<s3>,<s4>,<s5>,<s6>,<s7>,<s8>}]
 StartState: 1 [{<s1>}, {<s1>}]
-ordering:2 [{<s1,s2>,<s2,s3>,<s3,s4>,<s4,s5>,<s5,s6>,<s6,s7>,<s7,s8>}, {<s1,s2>,<s2,s3>,<s3,s4>,<s4,s5>,<s5,s6>,<s6,s7>,<s7,s8>}]
+ordering:2 [{}, {<s1,s2>,<s2,s3>,<s3,s4>,<s4,s5>,<s5,s6>,<s6,s7>,<s7,s8>}]
 
 Passenger: 1 [{<goat>,<wolf>,<cabbage>,<farmer>}, {<goat>,<wolf>,<cabbage>,<farmer>}]
 Goat: 1 [{<goat>},{<goat>}]
@@ -25,27 +25,20 @@ far: 2  [{},
              
 ordering in State -> State
 
-Goat in Passenger
-Wolf in Passenger
-Cabbage in Passenger
-Farmer in Passenger
-
-eats in Passenger -> Passenger
-
 // a Passenger can only be on one shore in each state
 forall s:State| no near[s] & far[s]
 
 // All states should have all passengers on one side or another 
-forall s:State | (near[s] ++ far[s]) == Passenger
+forall s:State | (near[s]++far[s]) == Passenger
 
 // The goal is to get all Passengers to the other side compared to the start state
-exists s:State | (Passenger in far[s])
+exists s:State | Passenger in far[s]
 
 // The farmer is always in the boat going from one shore to the other
-forall s1:State, s2: State | ((s1 -> s2 in ordering) => ((Farmer in near[s1] => Farmer in far[s2]) && (Farmer in far[s1] => Farmer in near[s2])))
+forall s1:State, s2: State | s1 -> s2 in ordering => (Farmer in near[s1] => Farmer in far[s2]) && (Farmer in far[s1] => Farmer in near[s2])
 
 // During a transition the boat can only have at max one passenger
-forall s1:State, s2: State, p1:(Passenger\Farmer), p2:(Passenger\Farmer) | ((s1 -> s2 in ordering && (not (p1 == p2))) => (not ((p1 ++ p2 in (near[s1] & far[s2])) || (p1 ++ p2 in (far[s1] & near[s2]))) ))
+forall s1:State, s2: State, p1:Passenger\Farmer, p2:Passenger\(Farmer++p1) | s1 -> s2 in ordering => (not ((p1++p2 in near[s1]&far[s2]) || p1++p2 in far[s1]&near[s2]))
 
 // If a passengers goes from one side to the other it means that the Farmer also goes from the same side to the other
 forall s1:State, s2:State, p:(Passenger\Farmer) | ((s1 -> s2 in ordering) => ( ((p in (near[s1] & far[s2])) => Farmer in near[s1] & far[s2]) &&
