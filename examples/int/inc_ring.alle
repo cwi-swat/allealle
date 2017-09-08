@@ -1,27 +1,22 @@
-{n1(int),n2(int),n3(int)}
-
-Elem:1 [{},{<n1>,<n2>,<n3>}]
-Start:1 [{},{<n1>,<n2>,<n3>}]
-ring:2 [{},{<n1,n1>,<n1,n2>,<n2,n1>,<n2,n2>,<n1,n3>,<n3,n1>,<n2,n3>,<n3,n2>,<n3,n3>}]
+Elem (1 :: num:int) <= {<n1,?>,<n2,?>,<n3,?>}
+Start (1)           <= {<n1>,<n2>,<n3>}
+ring (2)            <= {<n1,n1>,<n1,n2>,<n2,n1>,<n2,n2>,<n1,n3>,<n3,n1>,<n2,n3>,<n3,n2>,<n3,n3>}
 
 ring in Elem -> Elem
 Start in Elem
 
-Elem > 0
+Elem::num > 0
 
 // One of the elements in the ring is considered the start element
 one Start
 
-// The ring is cyclic, all two combinations of Elem should be in the transitive closure of ring
-forall e1: Elem, e2:Elem\e1 | e1->e2 in ^ring
+// The ring is cyclic, all elements should be reachable from the start element (including itself) 
+forall e:Elem | e in Start.^ring
 
-// Every element is part of the ring
-forall e: Elem | one ring[e]
-
-// The ring always contains at least two elements
-forall e: Elem | not (e->e in ring)
-
-//sum(e: Elem | e) = 9
+// Only one element leads to an other element
+forall e:Elem | one e.ring && one ring.e
 
 // All elements in the ring have incrementing values starting from the Start ring
-forall e1: Elem, e2: Elem\(e1++Start) | e1->e2 in ring => e2 = e1 + 1
+forall e1: Elem, e2: Elem\Start | e1->e2 in ring => e2::num = e1::num + 1
+
+#Elem >= 2

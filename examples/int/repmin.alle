@@ -4,25 +4,17 @@
 // repmin ( Pair ( Leaf (3) , Pair ( Leaf (1) , Leaf (10))))
 // == Pair ( Leaf (1) , Pair ( Leaf (1) , Leaf (1)))
 
-{p1,p2,l1,l2,l3,gm1(int),gm2(int),gm3(int),gm4(int),gm5(int),lm1(int),lm2(int),lm3(int)=3,lm4(int)=1,lm5(int)=10}
+Node (1 :: globMin:int, locMin:int) = {<p1,?,?>,<p2,?,?>,<l1,?,3>,<l2,?,1>,<l3,?,10>}
+Root (1)                            = {<p1>}
+Pair (1)                            = {<p1>,<p2>}
+Leaf (1)                            = {<l1>,<l2>,<l3>}
+tree (2)                            = {<p1,l1>,<p1,p2>,<p2,l2>,<p2,l3>}
 
-Node:1[{<p1>,<p2>,<l1>,<l2>,<l3>},{<p1>,<p2>,<l1>,<l2>,<l3>}]
-Root:1[{<p1>},{<p1>}]
-Pair:1[{<p1>,<p2>},{<p1>,<p2>}]
-Leaf:1[{<l1>,<l2>,<l3>},{<l1>,<l2>,<l3>}]
-tree:2[{<p1,l1>,<p1,p2>,<p2,l2>,<p2,l3>},{<p1,l1>,<p1,p2>,<p2,l2>,<p2,l3>}]
-locMin:2[{<p1,lm1>,<p2,lm2>,<l1,lm3>,<l2,lm4>,<l3,lm5>},{<p1,lm1>,<p2,lm2>,<l1,lm3>,<l2,lm4>,<l3,lm5>}]
-globMin:2[{<p1,gm1>,<p2,gm2>,<l1,gm3>,<l2,gm4>,<l3,gm5>},{<p1,gm1>,<p2,gm2>,<l1,gm3>,<l2,gm4>,<l3,gm5>}]
-
-Pair in Node
-Leaf in Node
-Root in Node
-
-tree in Pair->(Pair++Leaf)
-
-forall p:Pair, c1:Node, c2:Node\c1 | c1 in tree[p] && c2 in tree[p] => ((locMin[c1]) < (locMin[c2]) => locMin[p] = locMin[c1]) && ((locMin[c1]) >= (locMin[c2]) => locMin[p] = locMin[c2])
+forall p:Pair, c1:Node, c2:Node\c1 | c1 in p.tree && c2 in p.tree => 
+  (c1::locMin < c2::locMin => p::locMin = c1::locMin) && 
+  (c1::locMin >= c2::locMin => p::locMin = c2::locMin)
   
-globMin[Root] = locMin[Root]
+Root::globMin = Root::locMin
 
-forall p:Pair | globMin[tree[p]] = globMin[p] 
+forall p:Pair | (p.tree)::globMin = p::globMin
   

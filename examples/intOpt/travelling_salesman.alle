@@ -1,10 +1,13 @@
-City (1) = {<a>,<b>,<c>,<d>}
-StartingPoint (1) <= {<a>,<b>,<c>,<d>}
-route (2 :: length:int) <= {<a,b,20>,<a,c,42>,<a,d,35>,<b,a,20>,<b,c,30>,<b,d,34>,<c,a,42>,<c,b,30>,<c,d,12>,<d,a,35>,<d,b,34>,<d,c,12>}
+City (1) = {<a>,<b>,<c>,<d>,<e>,<f>}
+StartingPoint (1) <= {<a>,<b>,<c>,<d>,<e>,<f>}
+route (2 :: length:int) <= {<a,b,9>,<a,e,3>,<a,f,5>,<b,a,9>,<b,c,5>,<b,f,4>,<c,b,5>,<c,d,2>,<c,f,8>,<d,c,2>,<d,e,1>,<d,f,7>,<e,a,3>,<e,d,1>,<e,f,5>,<f,a,5>}
+TotalLength (1 :: length:int) = {<total,?>}
 
 forall c:City | one c.route && one route.c
 
 one StartingPoint
-City in StartingPoint.(*route)
+City in StartingPoint.*route
 
-minimize sum(route::length)
+TotalLength::length = sum(route::length)
+
+minimize TotalLength::length

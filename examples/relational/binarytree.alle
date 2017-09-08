@@ -1,5 +1,5 @@
 Node(1) >= {<n1>} <= {<n1>,<n2>,<n3>,<n4>}
-Root(1) = {<n1>}
+Root(1) =  {<n1>}
 edge(2) <= {<n1,n1>,<n1,n2>,<n1,n3>,<n1,n4>,<n2,n1>,<n2,n2>,<n2,n3>,<n2,n4>,<n3,n1>,<n3,n2>,<n3,n3>,<n3,n4>,<n4,n1>,<n4,n2>,<n4,n3>,<n4,n4>}
 
 edge in Node -> Node
@@ -8,12 +8,18 @@ Root in Node
 // All nodes are transitive connected to the Root node
 Node in Root.*edge
 
-// A node in a tree can only have one incoming edge
-forall n:Node | lone edge.n
+// A nodes in a tree, except the root, can only have one incoming edge
+forall n:Node\Root | one edge.n
+
+// The root node does not have any incoming edges
+no edge.Root
 
 // A tree is acyclic
 forall n:Node | not (n in n.^edge)
 
 // Nodes can maximal have two outgoing edges
-forall n:Node | #n.edge = 2 || #n.edge = 0
+forall n:Node | #n.edge <= 2
+
+// Balanced tree => if a child node has childs of itself then the parent must have two children
+forall n:Node | some (n.edge).edge => #n.edge = 2
 

@@ -1,6 +1,6 @@
 sack(1 :: maxWeight:int, totalWeight:int, totalPrice:int) = {<sack, 15, ?, ?>} 
 package(1 :: price:int, weight:int)                       = {<a,4,12>,<b,2,2>,<c,2,1>,<d,1,1>,<e,10,4>}
-content(2)                                                <= {<sack,a>,<sack,b>,<sack,c>,<sack,e>}
+content(2)                                                <= {<sack,a>,<sack,b>,<sack,c>,<sack,d>,<sack,e>}
  
 sack::totalPrice = sum((sack.content)::price)
 sack::totalWeight = sum((sack.content)::weight)
