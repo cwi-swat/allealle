@@ -30,4 +30,4 @@ forall s1: State, s2:State | s1 -> s2 in ordering =>
   )
  
 // Goal state 
-exists s:State | (s.accountInState)::balance = 30
+exists s:State | (s.accountInState)::balance = 29

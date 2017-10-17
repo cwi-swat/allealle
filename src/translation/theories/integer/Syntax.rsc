@@ -16,6 +16,7 @@ syntax AlleFormula
   | gte:        AlleExpr lhs "\>=" AlleExpr rhs
   | intEqual:   AlleExpr lhs "="   AlleExpr rhs
   | intInequal: AlleExpr lhs "!="  AlleExpr rhs
+  | distinct:   "distinct" "(" AlleExpr expr ")"
   ;
   
 syntax AlleExpr
@@ -35,4 +36,4 @@ syntax AlleExpr
 
 lexical IntLit = [0-9]+;
 
-keyword Keywords = "int" | "sum" ;
+keyword Keywords = "int" | "sum" | "distinct";

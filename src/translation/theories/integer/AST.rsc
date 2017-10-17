@@ -18,6 +18,7 @@ data AlleFormula
 	| gte(AlleExpr lhsExpr, AlleExpr rhsExpr)
 	| intEqual(AlleExpr lhsExpr, AlleExpr rhsExpr)
 	| intInequal(AlleExpr lhsExpr, AlleExpr rhsExpr)
+	| distinct(AlleExpr terms)
 	;	
 	
 data AlleExpr
@@ -32,9 +33,7 @@ data AlleExpr
   | addition(list[AlleExpr] terms)
 	| subtraction(AlleExpr lhs, AlleExpr rhs)
   | sum(AlleExpr expr)
-  | sumBind(AlleExpr bind, AlleExpr expr)
   | car(AlleExpr expr)
-  | carBind(AlleExpr bind, AlleExpr expr)
 	;
 	
 	

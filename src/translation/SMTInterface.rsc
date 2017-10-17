@@ -64,16 +64,26 @@ str compileSMTVariableDeclarations(set[SMTVar] vars) = "<for (SMTVar var <- vars
 str compileVariableDeclaration(<str name, id()>) = "(declare-const <name> Bool)";
 default str compileVariableDeclaration(SMTVar var) { throw "Unable to compile variable <var> to SMT, no SMT compiler available for theory \'<var.domain>\'"; }
 
-str compile(\and(set[Formula] forms)) = "(and <for (f <- forms) {> 
-                                                    '  <compile(f)><}>)";
-str compile(\or(set[Formula] forms))  = "(or <for (f <- forms) {>
-                                                   '  <compile(f)><}>)";
-str compile(\not(formula))            = "(not <compile(formula)>)";
-str compile(ite(Formula c, Formula t, Formula e)) = "(ite 
-                                                    '  <compile(c)>
-                                                    '  <compile(t)>
-                                                    '  <compile(e)>
-                                                    ')";                                                      
+str compile(\and(set[Formula] forms)) {
+   str clauses = "";
+   for (f <- forms) {
+    clauses += compile(f) + " ";
+   }
+   
+   return "(and " + clauses + ")";
+}   
+str compile(\or(set[Formula] forms))  { 
+   str clauses = "";
+   for (f <- forms) {
+    clauses += compile(f) + " ";
+   }
+   
+   return "(or " + clauses + ")";
+}
+
+str compile(\not(formula))            = "(not " + compile(formula) + ")";
+str compile(ite(Formula c, Formula t, Formula e)) = "(ite " + compile(c) + " " + compile(t) + " " + compile(e) + ")";
+                                                                                                         
 str compile(\false())                 = "false"; 
 str compile(\true())                  = "true";
 str compile(\var(name))               = name; 

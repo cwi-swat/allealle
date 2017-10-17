@@ -1,12 +1,14 @@
-module smt::solver::SolverRunner
+module solver::backend::z3::SolverRunner
 
-import smt::solver::Z3;
+import solver::backend::z3::Z3;
 
 import List;
 import String;
 import Boolean;
 import IO;
 import Map;
+
+import logic::Integer;
 
 alias SolverPID = int;
 

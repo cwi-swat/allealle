@@ -14,6 +14,7 @@ str unparse(gt(AlleExpr lhsExpr, AlleExpr rhsExpr))         = "(<unparse(lhsExpr
 str unparse(gte(AlleExpr lhsExpr, AlleExpr rhsExpr))        = "(<unparse(lhsExpr)> \>= <unparse(rhsExpr)>)";
 str unparse(intEqual(AlleExpr lhsExpr, AlleExpr rhsExpr))   = "(<unparse(lhsExpr)> = <unparse(rhsExpr)>)";
 str unparse(intInequal(AlleExpr lhsExpr, AlleExpr rhsExpr)) = "(<unparse(lhsExpr)> != <unparse(rhsExpr)>)";
+str unparse(distinct(AlleExpr e))                           = "(distinct(<unparse(e)>)";
   
 str unparse(intLit(int i))                                  = "<i>";
 str unparse(neg(AlleExpr e))                                = "(-<unparse(e)>)";

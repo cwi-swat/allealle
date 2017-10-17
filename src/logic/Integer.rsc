@@ -8,7 +8,6 @@ data Formula
 	= \int(int i)
 	| intVar(str name)
 	| neg(Formula f)
-  | abs(Formula f)
 	| lt(Formula lhs, Formula rhs)
 	| lte(Formula lhs, Formula rhs)
 	| gt(Formula lhs, Formula rhs)
@@ -19,6 +18,7 @@ data Formula
 	| multiplication(list[Formula] forms)
 	| division(Formula lhs, Formula rhs)
 	| modulo(Formula lhs, Formula rhs) 
+	| distinct(list[Formula] forms)
 	;
 
 data Command
@@ -64,3 +64,5 @@ Formula gt(\int(x),\int(y)) = \true() when x > y;
 
 Formula gte(\int(x),\int(y)) = \false() when x < y;
 Formula gte(\int(x),\int(y)) = \true() when x >= y;
+
+Formula abs(Formula f) = ite(gte(f, \int(0)), f, neg(f));

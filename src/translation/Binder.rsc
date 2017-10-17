@@ -93,7 +93,7 @@ RelationMatrix difference(RelationMatrix lhs, RelationMatrix rhs) {
 } 
 
 @memo
-RelationMatrix \join(RelationMatrix lhs, RelationMatrix rhs) {
+RelationMatrix dotJoin(RelationMatrix lhs, RelationMatrix rhs) {
   int arityLhs = arity(lhs);
   int arityRhs = arity(rhs);
     
@@ -111,16 +111,19 @@ RelationMatrix \join(RelationMatrix lhs, RelationMatrix rhs) {
     set[Index] lhsIndices = indicesEndingWith(current, lhs);
     set[Index] rhsIndices = indicesStartingWith(current, rhs);
     
-    if (lhsIndices != {} && rhsIndices != {}) {  
-      for (Index lhsIdx <- lhsIndices, lhs[lhsIdx].relForm != \false(), Index rhsIdx <- rhsIndices, rhs[rhsIdx].relForm != \false()) {
-        Formula val = and(lhs[lhsIdx].relForm, rhs[rhsIdx].relForm);
-        
+    for (Index lhsIdx <- lhsIndices, lhs[lhsIdx].relForm != \false(), Index rhsIdx <- rhsIndices, rhs[rhsIdx].relForm != \false()) {
+      Formula val = and(lhs[lhsIdx].relForm, rhs[rhsIdx].relForm);
+      
+      if (val != \false()) {
         Index joinIdx = (lhsIdx - lhsIdx[-1]) + (rhsIdx - rhsIdx[0]);
-        
-        if (joinIdx notin relResult) {
+        if (val == \true()) {
+          relResult[joinIdx].relForm = \true();
+        } else if (joinIdx in relResult) {
+            if (relResult[joinIdx].relForm != \true()) {
+              relResult[joinIdx] = relOnly(\or(relResult[joinIdx].relForm, val));
+            }
+        } else {        
           relResult[joinIdx] = relOnly(val);
-        } else {
-          relResult[joinIdx] = relOnly(\or(relResult[joinIdx].relForm, val)); 
         }
       }
     }

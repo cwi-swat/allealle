@@ -18,7 +18,7 @@ str compileVariableDeclaration(<str name, \int()>) = "(declare-const <name> Int)
 str compile(\int(int i))                          = "<i>"; 
 str compile(intVar(str name))                     = "<name>";
 str compile(neg(Formula f))                       = "(- <compile(f)>)"; 
-str compile(abs(Formula f))                       = "(ite (\>= <compF> 0) <compF> (- <compF>))" when str compF := compile(f); 
+//str compile(abs(Formula f))                       = "(ite (\>= <compF> 0) <compF> (- <compF>))" when str compF := compile(f); 
 str compile(lt(Formula lhs, Formula rhs))         = "(\< <compile(lhs)> <compile(rhs)>)";
 str compile(lte(Formula lhs, Formula rhs))        = "(\<= <compile(lhs)> <compile(rhs)>)";
 str compile(gt(Formula lhs, Formula rhs))         = "(\> <compile(lhs)> <compile(rhs)>)";
@@ -27,8 +27,9 @@ str compile(equal(Formula lhs, Formula rhs))      = "(= <compile(lhs)> <compile(
 str compile(inequal(Formula lhs, Formula rhs))    = "(not (= <compile(lhs)> <compile(rhs)>))";
 str compile(addition(list[Formula] forms))        = "(+ <for (f <- forms) {><compile(f)> <}>)";
 str compile(multiplication(list[Formula] forms))  = "(* <for (f <- forms) {><compile(f)> <}>)";
-str compile(modulo(Formula lhs, Formula rhs))     = "(mod <compile(lhs)> <compile(rhs)>)";  
+str compile(modulo(Formula lhs, Formula rhs))     = "(mod <compile(lhs)> <compile(rhs)>)";
 str compile(division(Formula lhs, Formula rhs))   = "(div <compile(lhs)> <compile(rhs)>)"; 
+str compile(distinct(list[Formula] terms))        = "(distinct <intercalate(" ", [compile(t) | Formula t <- terms])>)"; 
 
 Formula getValue(SmtValue smtValue, <str _, \int()>) = toFormula(smtValue);
  

@@ -73,6 +73,25 @@ Formula translateIntCompFormula(RelationMatrix lhs, RelationMatrix rhs, Formula 
   }    
   
   return result; 
+}
+
+Formula translateFormula(distinct(AlleExpr expr), Environment env, AdditionalConstraintFunctions acf, Cache cache) {
+  RelationMatrix m = translateExpression(expr, env, acf, cache);
+  
+  list[Formula] terms = [];
+  for (Index idx <- m) {
+    if (relAndAtt(Formula relForm, Formula attForm) := m[idx], isIntForm(attForm)) {
+      Index tmpIdx = [acf.freshIntermediateId()];
+      Formula tmpVar = toIntVar(tmpIdx, "val");
+      acf.addIntermediateVar(tmpVar);       
+      
+      terms += ite(relForm, attForm, tmpVar);
+    } else {
+      throw "Can not perform integer distinct on non integer attribute";
+    }
+  } 
+  
+  return distinct(terms);
 }       
 
 RelationMatrix translateExpression(intLit(int i), Environment env, AdditionalConstraintFunctions acf, Cache cache) = (["_c<i>"] : relAndAtt(\true(), \int(i))); 

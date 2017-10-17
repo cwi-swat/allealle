@@ -10,7 +10,7 @@
 }
 @contributor{Jouke Stoel - stoel@cwi.nl (CWI)}
 
-module smt::solver::Z3
+module solver::backend::z3::Z3
 
 import String;
 import IO;

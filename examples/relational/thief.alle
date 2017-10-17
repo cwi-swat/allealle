@@ -1,0 +1,28 @@
+// A group of five school children is caught in a crime.
+matthew (1) = {<matthew>}
+peter (1)   = {<peter>}
+jack (1)    = {<jack>}
+arnold (1)  = {<arnold>}
+carl (1)    = {<carl>}
+
+liar (1)    <= {<matthew>,<peter>,<jack>,<arnold>,<carl>}
+thief (1)   <= {<matthew>,<peter>,<jack>,<arnold>,<carl>}
+
+// One of them has stolen something from some kid they all dislike.
+one thief
+
+// The headmistress has to find out who did it. She questions the children, and this is what they say:
+// Matthew: "Carl didn't do it, and neither did I."
+not (matthew in liar) => no (carl++matthew) & thief
+// Peter:   "It was Matthew or it was Jack."
+not (peter in liar)   => some (matthew++jack) & thief
+// Jack:    "Matthew and Peter are both lying."
+not (jack in liar)    => matthew++peter in liar
+// Arnold:  "Matthew or Peter is speaking the truth, but not both."
+not (arnold in liar)  => one (matthew++peter) & liar
+// Carl:    "What Arnold says is not true."
+not (carl in liar)    => no (matthew++peter) & liar
+
+// Their class teacher now comes in. She says: "three of these boys always tell the truth and two always lie." 
+// The class teacher is telling the truth.
+#liar = 2

@@ -1,4 +1,4 @@
 Manifest-Version: 0.0.1
 Main-Function: main
 Main-Module: ide::Plugin
-Source: src, examples/api
+Source: src

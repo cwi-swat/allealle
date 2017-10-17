@@ -1,8 +1,0 @@
-// a + b
-
-{a,b,c,d,e}
-
-Node:1 [{<a>,<b>,<c>},{<a>,<b>,<c>,<d>,<e>}]
-
-
-Program[Start] in Expr

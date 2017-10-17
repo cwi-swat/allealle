@@ -5,6 +5,8 @@ import translation::AST;
 import translation::Binder; 
 import translation::Unparser;
 
+import logic::CBCFactory;
+
 import IO; 
 import List;
 
@@ -153,9 +155,9 @@ bool bprint(str line) {
 }
 
 private tuple[Formula, int] bm(AlleFormula f, Environment env, AdditionalConstraintFunctions acf, Cache cache) {
-  int startTime = userTime();
+  int startTime = cpuTime();
   Formula result = translateCachedFormula(f, env, acf, cache);
-  return <result, userTime() - startTime>;
+  return <result, cpuTime() - startTime>;
 }
 
 map[str, RelationMatrix] constructSingleton(str newVarName, Index idx) = (newVarName : (idx : relOnly(\true())));
@@ -177,24 +179,50 @@ Formula translateFormula(empty(AlleExpr expr), Environment env, AdditionalConstr
 Formula translateFormula(atMostOne(AlleExpr expr), Environment env, AdditionalConstraintFunctions acf, Cache cache) 
   = \or(translateCachedFormula(empty(expr), env, acf, cache), translateCachedFormula(exactlyOne(expr), env, acf, cache));
 
-Formula translateFormula(exactlyOne(AlleExpr expr), Environment env, AdditionalConstraintFunctions acf, Cache cache) 
-  = (\false() | \or(it, \and(m[x].relForm, (\true() | \and(it, \not(m[y].relForm)) | Index y <- m, y != x))) | Index x <- m)    
-    when RelationMatrix m := translateCachedExpression(expr, env, acf, cache);
+Formula translateFormula(exactlyOne(AlleExpr expr), Environment env, AdditionalConstraintFunctions acf, Cache cache) {
+  RelationMatrix m = translateCachedExpression(expr, env, acf, cache);
+  
+  set[Formula] outer = {};
+  
+  for (Index x <- m) {
+    set[Formula] inner = {};    
+
+    if (m[x].relForm == \false()) {
+      inner += \false();
+    } else {
+
+      for (Index y <- m, y != x, m[y].relForm != \false()) {
+        inner += not(m[y].relForm);
+      }
+    
+      Formula innerAnd = \and({m[x].relForm, *inner});
+      if (innerAnd == \true()) {
+        return \true();
+      }
+    
+      outer += innerAnd;
+    }
+  }
+  
+  return \or(outer);
+}
+  //= (\false() | \or(it, \and(m[x].relForm, (\true() | \and(it, \not(m[y].relForm)) | Index y <- m, y != x))) | Index x <- m)    
+  //  when RelationMatrix m := translateCachedExpression(expr, env, acf, cache);
 
 Formula translateFormula(nonEmpty(AlleExpr expr), Environment env, AdditionalConstraintFunctions acf, Cache cache) {
   RelationMatrix m = translateCachedExpression(expr, env, acf, cache);
   
-  Formula result = \false();
+  set[Formula] clauses = {};
   
   for (Index idx <- m) {
     if (m[idx].relForm == \true()) {
       return \true();
     }
     
-    result = \or(result, m[idx].relForm);
+    clauses += m[idx].relForm;
   } 
   
-  return result;
+  return \or(clauses);
 }
 
 Formula translateFormula(subset(AlleExpr lhsExpr, AlleExpr rhsExpr), Environment env, AdditionalConstraintFunctions acf, Cache cache) {
@@ -292,7 +320,7 @@ Formula translateFormula(existential(list[VarDeclaration] decls, AlleFormula for
 
 private Formula translateQuantification(Formula (Formula, Formula) innerOpper, Formula (set[Formula]) outerOpper, list[VarDeclaration] decls, AlleFormula form, Environment env, AdditionalConstraintFunctions acf, Cache cache) {
   
-  Formula buildForm([], map[str,RelationMatrix] extraBindings) = substitutes(extEnv(env, extraBindings));
+  Formula buildForm([], map[str,RelationMatrix] extraBindings) = translateCachedFormula(form, extEnv(env, extraBindings), acf, cache); //substitutes(extEnv(env, extraBindings));
 
   Formula buildForm([VarDeclaration hd, *VarDeclaration tl], map[str,RelationMatrix] extraBindings) {
     set[Formula] result = {};
@@ -314,9 +342,9 @@ private Formula translateQuantification(Formula (Formula, Formula) innerOpper, F
   
   Formula result = buildForm(decls, ());
   
-  result = visit(result) {
-    case substitutes(Environment subs) => translateCachedFormula(form, subs, acf, cache)
-  }
+  //result = visit(result) {
+  //  case substitutes(Environment subs) => translateCachedFormula(form, subs, acf, cache)
+  //}
   
   return result;
 }
@@ -375,9 +403,12 @@ RelationMatrix translateExpression(difference(AlleExpr lhsExpr, AlleExpr rhsExpr
   when RelationMatrix lhs := translateCachedExpression(lhsExpr, env, acf, cache),
        RelationMatrix rhs := translateCachedExpression(rhsExpr, env, acf, cache);
 
-RelationMatrix translateExpression(\join(AlleExpr lhsExpr, AlleExpr rhsExpr), Environment env, AdditionalConstraintFunctions acf, Cache cache) = \join(lhs, rhs) 
-  when RelationMatrix lhs := translateCachedExpression(lhsExpr, env, acf, cache), 
-       RelationMatrix rhs := translateCachedExpression(rhsExpr, env, acf, cache);
+RelationMatrix translateExpression(\join(AlleExpr lhsExpr, AlleExpr rhsExpr), Environment env, AdditionalConstraintFunctions acf, Cache cache) {
+  RelationMatrix lhs = translateCachedExpression(lhsExpr, env, acf, cache); 
+  RelationMatrix rhs = translateCachedExpression(rhsExpr, env, acf, cache);
+  
+  return dotJoin(lhs, rhs); 
+}
 
 RelationMatrix translateExpression(accessorJoin(AlleExpr lhsExpr, AlleExpr rhsExpr), Environment env, AdditionalConstraintFunctions acf, Cache cache) = translateCachedExpression(\join(rhsExpr, lhsExpr), env, acf, cache);
 
