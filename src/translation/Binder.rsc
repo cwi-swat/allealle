@@ -2,13 +2,15 @@ module translation::Binder
 
 import logic::Propositional;
 import translation::AST;
-
+import translation::Dimensions;
 import List;
 import Map;
 import Set;
 import IO;
 
-alias Index = list[Id]; 
+import util::Math;
+
+alias Index = int;
 
 alias IdDomain = set[Id]; 
 
@@ -17,129 +19,125 @@ data Cell
   | relAndAtt(Formula relForm, Formula attForm)
   ;
 
-alias RelationMatrix = map[Index, Cell];
+alias RelationMatrix = tuple[Dimensions dim, map[Index, Cell] cells];
 
 alias Environment = tuple[map[str, RelationMatrix] relations, map[Index, map[str, Formula]] attributes]; 
 
-int sizeOfIdDomain(IdDomain idd) = size(idd);
-
-int arity(RelationMatrix rm) = 0 when rm == ();
-default int arity(RelationMatrix rm) = size(getOneFrom(rm));
-
-private bool sameArity(RelationMatrix lhs, RelationMatrix rhs) = arity(lhs) == arity(rhs); 
-
-private RelationMatrix square(RelationMatrix m, int i, int size) = m when i >= size;
-private RelationMatrix square(RelationMatrix m, int i, int size) = or(n, \join(n, n)) when RelationMatrix n := square(m, i * 2, size); 
+private bool sameArity(RelationMatrix lhs, RelationMatrix rhs) = lhs.dim.arity == rhs.dim.arity;  
 
 @memo
-RelationMatrix identity(Environment env) = ([id,id] : relOnly(\true()) | Id id <- getIdDomain(env));
-
-set[Id] getIdDomain(Environment env) = {*idx | str r <- env.relations, list[Id] idx <- env.relations[r]}; 
+RelationMatrix universe(int universeSize) = <square(1,universeSize), (i : relOnly(\true()) | int i <- [0..universeSize])>;
 
 @memo
+RelationMatrix identity(int universeSize) = <square(2,universeSize), (i*universeSize + i : relOnly(\true()) | int i <- [0..universeSize])>;
+
 RelationMatrix or(RelationMatrix lhs, RelationMatrix rhs) {
   if (!sameArity(lhs,rhs)) {
     throw "OR only works on relations of same arity";
   }
   
-  return (idx : relOnly(\or(lhsVal, rhsVal)) | Index idx <- (lhs + rhs), Formula lhsVal := ((idx in lhs) ? lhs[idx].relForm : \false()), Formula rhsVal := ((idx in rhs) ? rhs[idx].relForm : \false()));
+  return <lhs.dim, (idx : relOnly(\or(lhsVal, rhsVal)) | Index idx <- (lhs.cells + rhs.cells), Formula lhsVal := ((idx in lhs.cells) ? lhs.cells[idx].relForm : \false()), Formula rhsVal := ((idx in rhs.cells) ? rhs.cells[idx].relForm : \false()))>;
 }
 
-@memo
 RelationMatrix and(RelationMatrix lhs, RelationMatrix rhs) {
   if (!sameArity(lhs,rhs)) {
     throw "AND only works on relations of same arity";
   }
   
-  return (idx : relOnly(\and(lhs[idx].relForm, rhs[idx].relForm)) | Index idx <- lhs, idx in rhs);
+  return <lhs.dim, (idx : relOnly(\and(lhs.cells[idx].relForm, rhs.cells[idx].relForm)) | Index idx <- lhs.cells, idx in rhs.cells)>;
 }
 
-@memo
 RelationMatrix transpose(RelationMatrix m) {
-  if (arity(m) != 2) {
+  if (m.dim.arity != 2) {
     throw "TRANSPOSE only works on binary relations";
   }
   
-  return (reverse(idx) : m[idx] | Index idx <- m);
+  int rows = m.dim.size;
+  int cols = m.dim.size;
+      
+  return <m.dim, ((idx%cols)*rows + (idx / cols) : m.cells[idx] | Index idx <- m.cells)>;
 } 
 
-@memo
 RelationMatrix transitiveClosure(RelationMatrix m) {
-  if (arity(m) != 2) {
+  if (m.dim.arity != 2) {
     throw "TRANSITIVE CLOSURE only works on binary relations";
   }
   
-  set[Id] rows = {a | [Id a, Id _] <- m}; 
+  int rows = 0;
+  int lastRow = -1;
+  for (Index idx <- m.cells, idx / m.dim.size > lastRow) {
+    rows += 1;
+    lastRow = idx / m.dim.size;
+  } 
 
-  return square(m, 1, size(rows));
+  int i = 1;
+  RelationMatrix ret = m;
+  while (i < rows) {
+    ret = or(ret, dotJoin(ret,ret));
+    i*=2;
+  }
+  
+  return ret;
 }
 
-@memo
 RelationMatrix reflexiveTransitiveClosure(RelationMatrix m, Environment env) {
-  if (arity(m) != 2) {
+  if (m.dim.arity != 2) {
     throw "REFLEXIVE TRANSITIVE CLOSURE only works on binary relations";
   }
   
-  return or(transitiveClosure(m), identity(env));
+  return or(transitiveClosure(m), identity(m.dim.size));
 } 
 
-@memo
 RelationMatrix difference(RelationMatrix lhs, RelationMatrix rhs) {
   if (!sameArity(lhs,rhs)) {
     throw "DIFFERENCE only works on relations of same arity";
   }
   
-  return (idx : relOnly(\and(lhs[idx].relForm, rhsVal)) | Index idx <- lhs, Formula rhsVal := ((idx in rhs) ? not(rhs[idx].relForm) : \true()));
-} 
+  return <lhs.dim, (idx : relOnly(\and(lhs.cells[idx].relForm, rhsVal)) | Index idx <- lhs, Formula rhsVal := ((idx in rhs.cells) ? not(rhs.cells[idx].relForm) : \true()))>;
+}  
 
-@memo
 RelationMatrix dotJoin(RelationMatrix lhs, RelationMatrix rhs) {
-  int arityLhs = arity(lhs);
-  int arityRhs = arity(rhs);
-    
-  if (arityLhs == 1 && arityRhs == 1) { 
+  if (lhs.dim.arity == 1 && rhs.dim.arity == 1) { 
     throw "JOIN only works on two non-unary relations"; 
   }
+  
+  if (lhs.cells == () || rhs.cells == ()) {
+    return <dotJoin(lhs.dim, rhs.dim), ()>;
+  }  
         
-  set[Index] indicesEndingWith(Id a, RelationMatrix b) = {idx | Index idx <- b, idx[-1] == a};
-  set[Index] indicesStartingWith(Id a, RelationMatrix b) = {idx | Index idx <- b, idx[0] == a};
-
-  set[Id] mostRightIdInLhs = {idx[-1] | Index idx <- lhs};
+  map[Index,Cell] rCells = ();
+  int b = rhs.dim.size;
+  int c = capacity(rhs.dim) / b;
+  
+  for (Index lIdx <- lhs.cells) {
+    int rowHead = (lIdx % b)*c;
+    int rowTail = rowHead + c - 1;
     
-  RelationMatrix relResult = ();
-  for (Id current <- mostRightIdInLhs) {
-    set[Index] lhsIndices = indicesEndingWith(current, lhs);
-    set[Index] rhsIndices = indicesStartingWith(current, rhs);
-    
-    for (Index lhsIdx <- lhsIndices, lhs[lhsIdx].relForm != \false(), Index rhsIdx <- rhsIndices, rhs[rhsIdx].relForm != \false()) {
-      Formula val = and(lhs[lhsIdx].relForm, rhs[rhsIdx].relForm);
-      
+    for (Index rIdx <- rhs.cells, rIdx >= rowHead, rIdx <= rowTail) {
+      Formula val = and(lhs.cells[lIdx].relForm, rhs.cells[rIdx].relForm);
       if (val != \false()) {
-        Index joinIdx = (lhsIdx - lhsIdx[-1]) + (rhsIdx - rhsIdx[0]);
-        if (val == \true()) {
-          relResult[joinIdx].relForm = \true();
-        } else if (joinIdx in relResult) {
-            if (relResult[joinIdx].relForm != \true()) {
-              relResult[joinIdx] = relOnly(\or(relResult[joinIdx].relForm, val));
-            }
-        } else {        
-          relResult[joinIdx] = relOnly(val);
+        int k = (lIdx / b)*c + rIdx%c;
+        if (val == \true()) { 
+          rCells[k] = relOnly(\true());
+        } else if (k in rCells) {
+          rCells[k] = relOnly(\or(val, rCells[k].relForm));
+        } else {
+          rCells[k] = relOnly(val);
         }
       }
     }
   }
    
-  return relResult;
+  return <dotJoin(lhs.dim, rhs.dim), rCells>; 
 }
 
-@memo
 RelationMatrix product(RelationMatrix lhs, RelationMatrix rhs) {
-  return (lhsIdx + rhsIdx : relOnly(\and(lhs[lhsIdx].relForm, rhs[rhsIdx].relForm)) | Index lhsIdx <- lhs, lhs[lhsIdx].relForm != \false(), Index rhsIdx <- rhs, rhs[rhsIdx].relForm != \false());
+  int rCap = capacity(rhs.dim);
+  return <cross(lhs.dim, rhs.dim), (rCap * lIdx + rIdx : relOnly(\and(lhs.cells[lIdx].relForm, rhs.cells[rIdx].relForm)) | Index lIdx <- lhs, lhs.cells[lIdx].relForm != \false(), Index rIdx <- rhs, rhs.cells[rIdx].relForm != \false())>;
 }
 
-@memo
 RelationMatrix ite(Formula \case, RelationMatrix \then, RelationMatrix \else) {
-  if (arity(then) != arity(\else)) {
+  if (!sameArity(then,\else)) {
     throw "Arity of relation in THEN must be equal to the arity of the relation in ELSE for the ITE to work";
   }
 
@@ -149,14 +147,14 @@ RelationMatrix ite(Formula \case, RelationMatrix \then, RelationMatrix \else) {
     return \else;
   } 
   
-  RelationMatrix relResult = ();
+  map[Index,Cell] rCells = ();
   
-  for (Index idx <- (then + \else)) {
-    Formula thenRel = ((idx in then) ? then[idx].relForm : \false());
-    Formula elseRel = ((idx in \else) ? \else[idx].relForm : \false()); 
+  for (Index idx <- (then.cells + \else.cells)) {
+    Formula thenRel = ((idx in then.cells) ? then.cells[idx].relForm : \false());
+    Formula elseRel = ((idx in \else.cells) ? \else.cells[idx].relForm : \false()); 
     
-    relResult[idx] = relOnly(ite(\case, thenRel, elseRel));
+    rCells[idx] = relOnly(ite(\case, thenRel, elseRel));
   } 
   
-  return relResult;
+  return <then.dim, rCells>;
 }
