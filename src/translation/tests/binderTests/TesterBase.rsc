@@ -1,20 +1,15 @@
-module theories::tests::binderTests::TesterBase
+module translation::tests::binderTests::TesterBase
 
-import theories::Binder;
-import theories::AST;
-
+import translation::Binder;
 import logic::Propositional;
 
 import IO;
 import List;
  
-RelationMatrix t(list[Atom] vector) = (vector:<\true(), ()>); 
-RelationMatrix v(list[Atom] vector) = (vector:<var(relVar(vector)), ()>);
-RelationMatrix v(list[Atom] vector, str baseName) = (vector:<var(relVar(baseName, vector)), ()>);
-RelationMatrix f(list[Atom] vector) = (vector:<\false(), ()>);
-RelationMatrix val(list[Atom] vector, Formula f) = (vector:<f, ()>);
- 
-void voidAdder(set[TheoryFormula] cons) {}    
+RelationMatrix truth(list[str] vector) = (vector:relOnly(\true())); 
+RelationMatrix truths(list[list[str]] vectors) = (() | it + truth(v) | v <- vectors);
 
-private str relVar(list[Atom] vector) = intercalate("_", vector);   
-private str relVar(str baseName, list[Atom] vector) = "<baseName>_<intercalate("_", vector)>";  
+RelationMatrix var(list[str] vector, str relName) = (vector:relOnly(var("<relName>_<relVar(vector)>")));
+RelationMatrix vars(list[list[str]] vectors, str relName) = (() | it + var(v, relName) | v <- vectors);
+ 
+str relVar(list[str] vector) = intercalate("_", vector);   

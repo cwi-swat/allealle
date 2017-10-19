@@ -31,12 +31,12 @@ private bool sameArity(RelationMatrix lhs, RelationMatrix rhs) = arity(lhs) == a
 private RelationMatrix square(RelationMatrix m, int i, int size) = m when i >= size;
 private RelationMatrix square(RelationMatrix m, int i, int size) = or(n, \join(n, n)) when RelationMatrix n := square(m, i * 2, size); 
 
-@memo
+//@memo
 RelationMatrix identity(Environment env) = ([id,id] : relOnly(\true()) | Id id <- getIdDomain(env));
 
 set[Id] getIdDomain(Environment env) = {*idx | str r <- env.relations, list[Id] idx <- env.relations[r]}; 
 
-@memo
+//@memo
 RelationMatrix or(RelationMatrix lhs, RelationMatrix rhs) {
   if (!sameArity(lhs,rhs)) {
     throw "OR only works on relations of same arity";
@@ -45,7 +45,7 @@ RelationMatrix or(RelationMatrix lhs, RelationMatrix rhs) {
   return (idx : relOnly(\or(lhsVal, rhsVal)) | Index idx <- (lhs + rhs), Formula lhsVal := ((idx in lhs) ? lhs[idx].relForm : \false()), Formula rhsVal := ((idx in rhs) ? rhs[idx].relForm : \false()));
 }
 
-@memo
+//@memo
 RelationMatrix and(RelationMatrix lhs, RelationMatrix rhs) {
   if (!sameArity(lhs,rhs)) {
     throw "AND only works on relations of same arity";
@@ -54,7 +54,7 @@ RelationMatrix and(RelationMatrix lhs, RelationMatrix rhs) {
   return (idx : relOnly(\and(lhs[idx].relForm, rhs[idx].relForm)) | Index idx <- lhs, idx in rhs);
 }
 
-@memo
+//@memo
 RelationMatrix transpose(RelationMatrix m) {
   if (arity(m) != 2) {
     throw "TRANSPOSE only works on binary relations";
@@ -63,7 +63,7 @@ RelationMatrix transpose(RelationMatrix m) {
   return (reverse(idx) : m[idx] | Index idx <- m);
 } 
 
-@memo
+//@memo
 RelationMatrix transitiveClosure(RelationMatrix m) {
   if (arity(m) != 2) {
     throw "TRANSITIVE CLOSURE only works on binary relations";
@@ -74,7 +74,7 @@ RelationMatrix transitiveClosure(RelationMatrix m) {
   return square(m, 1, size(rows));
 }
 
-@memo
+//@memo
 RelationMatrix reflexiveTransitiveClosure(RelationMatrix m, Environment env) {
   if (arity(m) != 2) {
     throw "REFLEXIVE TRANSITIVE CLOSURE only works on binary relations";
@@ -83,7 +83,7 @@ RelationMatrix reflexiveTransitiveClosure(RelationMatrix m, Environment env) {
   return or(transitiveClosure(m), identity(env));
 } 
 
-@memo
+//@memo
 RelationMatrix difference(RelationMatrix lhs, RelationMatrix rhs) {
   if (!sameArity(lhs,rhs)) {
     throw "DIFFERENCE only works on relations of same arity";
@@ -92,7 +92,6 @@ RelationMatrix difference(RelationMatrix lhs, RelationMatrix rhs) {
   return (idx : relOnly(\and(lhs[idx].relForm, rhsVal)) | Index idx <- lhs, Formula rhsVal := ((idx in rhs) ? not(rhs[idx].relForm) : \true()));
 } 
 
-@memo
 RelationMatrix dotJoin(RelationMatrix lhs, RelationMatrix rhs) {
   int arityLhs = arity(lhs);
   int arityRhs = arity(rhs);
@@ -132,12 +131,12 @@ RelationMatrix dotJoin(RelationMatrix lhs, RelationMatrix rhs) {
   return relResult;
 }
 
-@memo
+//@memo
 RelationMatrix product(RelationMatrix lhs, RelationMatrix rhs) {
   return (lhsIdx + rhsIdx : relOnly(\and(lhs[lhsIdx].relForm, rhs[rhsIdx].relForm)) | Index lhsIdx <- lhs, lhs[lhsIdx].relForm != \false(), Index rhsIdx <- rhs, rhs[rhsIdx].relForm != \false());
 }
 
-@memo
+//@memo
 RelationMatrix ite(Formula \case, RelationMatrix \then, RelationMatrix \else) {
   if (arity(then) != arity(\else)) {
     throw "Arity of relation in THEN must be equal to the arity of the relation in ELSE for the ITE to work";
