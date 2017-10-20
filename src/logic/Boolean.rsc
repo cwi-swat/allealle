@@ -16,8 +16,8 @@ data Command;
 Formula \or({})									                      = \false();
 Formula \or({Formula x}) 						                  = x;
   
-//Formula \or({\false(), *Formula r})   			          = \or(r);
-//Formula \or({\true(), *Formula _})   			            = \true();
+Formula \or({\false(), *Formula r})   			          = \or(r);
+Formula \or({\true(), *Formula _})   			            = \true();
 
 //Formula \or({Formula a, \or(set[Formula] c)})         = \or({a,*c});
 //Formula \or({*Formula a, \or(set[Formula] c)})       = \or({*a,*c});
@@ -63,8 +63,8 @@ default Formula \or(Formula a, Formula b)             = \or({a,b});
 Formula \and({})                                      = \true();
 
 Formula \and({Formula x})                             = x;
-//Formula \and({\true(), *Formula r})                   = \and(r);
-//Formula \and({\false(), *Formula _})                  = \false();
+Formula \and({\true(), *Formula r})                   = \and(r);
+Formula \and({\false(), *Formula _})                  = \false();
 //Formula \and({*Formula a, \and(set[Formula] c)})      = \and({*a,*c});
 
 Formula \and(\true(), Formula b)                      = b;

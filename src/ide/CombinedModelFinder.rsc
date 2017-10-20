@@ -8,4 +8,4 @@ extend translation::theories::integer::Unparser;
 
 extend translation::theories::integerOpt::Translator;
 extend translation::theories::integerOpt::SMTInterface;
-extend translation::theories::integerOpt::Unparser;
+extend translation::theories::integerOpt::Unparser; 

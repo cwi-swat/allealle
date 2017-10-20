@@ -32,10 +32,14 @@ void runJoinBenchmark(int nrOfPigeons, int nrOfHoles, int warmup, int nrOfRounds
   
   print("Running benchmark (<nrOfRounds> total iterations): ");
   for (int i <- [0..nrOfRounds]) {
-    int startTime = cpuTime();
-    dotJoin(cPigeons,cNest);
-    times += [(cpuTime() - startTime) / 1000000];
-    print(".");
+   
+    for (int idx <- cPigeons.cells) {
+      RelationMatrix p = <square(1,size(uni)), (idx : cPigeons.cells[idx])>;
+      int startTime = cpuTime();
+      dotJoin(p,cNest);
+      times += [(cpuTime() - startTime) / 1000000];
+      print(".");
+    }
   }
   
   print("done\n");

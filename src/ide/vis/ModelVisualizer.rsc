@@ -142,7 +142,7 @@ Figure visualizeModel(Model model, DisplayOptions disOpt) {
     
     for (nary(str relName, set[ModelTuple] tuples) <- model.relations, ModelTuple t <- tuples) {
       map[str,str] attVals = (att.name : val2Str(att.val) | ModelAttribute att <- t.attributes);
-      Index idx = t.idx.idx;
+      list[Id] idx = t.idx.idx;
 
       for (int i <- [0..size(idx)-1]) {
         edges += visEdge(relName, idx[i], idx[i+1], i, attVals);
@@ -183,7 +183,7 @@ Figures textualizeModel(Model model) {
     return [text(""), text("No more models available", fontBold(true), myLeft())];
   }
   
-  bool indexSort(Index a, Index b ) {
+  bool indexSort(list[Id] a, list[Id] b ) {
     for (int i <- [0..size(a)]) {
       if (a[i] < b[i]) { return true; }
       else if (a[i] > b[i]) { return false; }
@@ -200,9 +200,9 @@ Figures textualizeModel(Model model) {
   for (str relName <- sortedRel, ModelRelation r <- model.relations, r.name == relName) {
     m += text("<relName>:", fontBold(true), fontItalic(true), myLeft());
     
-    list[Index] sortedIndices = sort([t.idx.idx | ModelTuple t <- r.tuples], indexSort);
+    list[list[Id]] sortedIndices = sort([t.idx.idx | ModelTuple t <- r.tuples], indexSort);
     
-    for (Index idx <- sortedIndices, ModelTuple t <- r.tuples, t.idx.idx == idx) {
+    for (list[Id] idx <- sortedIndices, ModelTuple t <- r.tuples, t.idx.idx == idx) {
       m += text("  <intercalate(" -\> ", [idx[i] | int i <- [0..size(idx)]])> <displayAttributes(t.attributes)>", myLeft());
     } 
         

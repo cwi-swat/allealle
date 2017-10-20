@@ -12,8 +12,6 @@ import util::Math;
 
 alias Index = int;
 
-alias IdDomain = set[Id]; 
-
 data Cell 
   = relOnly(Formula relForm)
   | relAndAtt(Formula relForm, Formula attForm)
@@ -21,9 +19,37 @@ data Cell
 
 alias RelationMatrix = tuple[Dimensions dim, map[Index, Cell] cells];
 
-alias Environment = tuple[map[str, RelationMatrix] relations, map[Index, map[str, Formula]] attributes]; 
+alias Environment = tuple[map[str, RelationMatrix] relations, map[list[Id], map[str, Formula]] attributes, list[Id] universe]; 
 
 private bool sameArity(RelationMatrix lhs, RelationMatrix rhs) = lhs.dim.arity == rhs.dim.arity;  
+
+@memo
+int getIntIndex(list[Id] atomVector, list[Id] atomsInUniverse) {
+  int multiplier = 1;
+  int index = 0;
+  int uniSize = size(atomsInUniverse);
+  
+  for (int i <- [size(atomVector)-1..-1]) {
+    index += indexOf(atomsInUniverse, atomVector[i]) * multiplier;
+    multiplier *= uniSize;
+  }
+  
+  return index;
+}
+
+@memo
+list[Id] getVectorIndex(int index, int arity, list[Id] atomsInUniverse) {
+  list[Id] vector = [];
+  int multiplier = 1;
+  int uniSize = size(atomsInUniverse);
+  
+  for (int i <- [0..arity]) {
+    vector = atomsInUniverse[(index / multiplier) % uniSize] + vector;
+    multiplier *= uniSize;
+  }
+  
+  return vector;
+}
 
 @memo
 RelationMatrix universe(int universeSize) = <square(1,universeSize), (i : relOnly(\true()) | int i <- [0..universeSize])>;
@@ -93,7 +119,7 @@ RelationMatrix difference(RelationMatrix lhs, RelationMatrix rhs) {
     throw "DIFFERENCE only works on relations of same arity";
   }
   
-  return <lhs.dim, (idx : relOnly(\and(lhs.cells[idx].relForm, rhsVal)) | Index idx <- lhs, Formula rhsVal := ((idx in rhs.cells) ? not(rhs.cells[idx].relForm) : \true()))>;
+  return <lhs.dim, (idx : relOnly(\and(lhs.cells[idx].relForm, rhsVal)) | Index idx <- lhs.cells, Formula rhsVal := ((idx in rhs.cells) ? not(rhs.cells[idx].relForm) : \true()))>;
 }  
 
 RelationMatrix dotJoin(RelationMatrix lhs, RelationMatrix rhs) {
@@ -133,7 +159,9 @@ RelationMatrix dotJoin(RelationMatrix lhs, RelationMatrix rhs) {
 
 RelationMatrix product(RelationMatrix lhs, RelationMatrix rhs) {
   int rCap = capacity(rhs.dim);
-  return <cross(lhs.dim, rhs.dim), (rCap * lIdx + rIdx : relOnly(\and(lhs.cells[lIdx].relForm, rhs.cells[rIdx].relForm)) | Index lIdx <- lhs, lhs.cells[lIdx].relForm != \false(), Index rIdx <- rhs, rhs.cells[rIdx].relForm != \false())>;
+  RelationMatrix productResult = <cross(lhs.dim, rhs.dim), (rCap * lIdx + rIdx : relOnly(\and(lhs.cells[lIdx].relForm, rhs.cells[rIdx].relForm)) | Index lIdx <- lhs.cells, lhs.cells[lIdx].relForm != \false(), Index rIdx <- rhs.cells, rhs.cells[rIdx].relForm != \false())>;
+  
+  return productResult;
 }
 
 RelationMatrix ite(Formula \case, RelationMatrix \then, RelationMatrix \else) {

@@ -23,14 +23,14 @@ tuple[void () next, void (Domain) nextWithDom, void () stop] translateAndSolve(l
     
     void nextWithDom(Domain d) {  
       model = nextModel(d);
-      printModel(model);
+      printModel(model); 
   
       if (model == empty()) { stop(); }
     } 
-  
+   
     printModel(model);
     
-    return <next, nextWithDom, stop>;
+    return <next, nextWithDom, stop>; 
   } 
   else if (trivialSat(Model model) := r) {
     println("Trivially satisfiable");

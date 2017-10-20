@@ -22,8 +22,8 @@ data ModelAttribute
   ;
 
 data ModelIndex
-  = fixedIndex(Index idx)
-  | varIndex(Index idx, str smtVarName)
+  = fixedIndex(list[Id] idx)
+  | varIndex(list[Id] idx, str smtVarName)
   ;
   
 data ModelTuple
@@ -43,11 +43,11 @@ data Model
 set[SMTVar] collectSMTVars(Environment env)  {
   set[SMTVar] result = {};
 
-  for (str varName <- env.relations, RelationMatrix m := env.relations[varName], Index idx <- m, var(str name) := m[idx].relForm) {
+  for (str varName <- env.relations, RelationMatrix m := env.relations[varName], Index idx <- m.cells, var(str name) := m.cells[idx].relForm) {
       result += <name, id()>;
   }    
     
-  for (Index idx <- env.attributes, str attName <- env.attributes[idx], just(SMTVar var) := constructAttributeVar(env.attributes[idx][attName])) {
+  for (list[Id] idx <- env.attributes, str attName <- env.attributes[idx], just(SMTVar var) := constructAttributeVar(env.attributes[idx][attName])) {
     result += var;
   }
   
@@ -127,22 +127,24 @@ Model constructRelationalModel(SMTModel smtModel, Environment env) {
     set[ModelTuple] tuples = {};
     RelationMatrix m = env.relations[relName];
      
-    for (Index idx <- m, !(var(str n) := m[idx].relForm && smtModel[<n, id()>] == \false())) {
+    for (Index idx <- m.cells, !(var(str n) := m.cells[idx].relForm && smtModel[<n, id()>] == \false())) {
+      list[Id] vector = getVectorIndex(idx, m.dim.arity, env.universe);
+
       ModelIndex mIdx;
       list[ModelAttribute] attributes = [];
       
-      if (var(str name) := m[idx].relForm, smtModel[<name, id()>] == \true() ) {
-        mIdx = varIndex(idx, name);
+      if (var(str name) := m.cells[idx].relForm, smtModel[<name, id()>] == \true() ) {
+        mIdx = varIndex(vector, name);
       }
-      else if (\true() := m[idx].relForm) {
-        mIdx = fixedIndex(idx);
+      else if (\true() := m.cells[idx].relForm) {
+        mIdx = fixedIndex(vector);
       }  
       
-      if (idx in env.attributes) {
-        for (str attName <- env.attributes[idx]) {
-          tuple[Domain attDom, Value attVal] val = getAttributeValue(env.attributes[idx][attName], smtModel);
+      if (vector in env.attributes) {
+        for (str attName <- env.attributes[vector]) {
+          tuple[Domain attDom, Value attVal] val = getAttributeValue(env.attributes[vector][attName], smtModel);
           
-          if (just(str smtVarName) := getAttributeVarName(env.attributes[idx][attName])) {
+          if (just(str smtVarName) := getAttributeVarName(env.attributes[vector][attName])) {
             attributes += varAttribute(attName, val.attDom, val.attVal, smtVarName);
           } else {
             attributes += fixedAttribute(attName, val.attDom, val.attVal); 
@@ -153,13 +155,13 @@ Model constructRelationalModel(SMTModel smtModel, Environment env) {
       tuples += mTuple(mIdx, attributes); 
     }
     
-    if (size(getOneFrom(env.relations[relName])) == 1) {
+    if (m.dim.arity == 1) {
       relations += unary(relName, tuples);
     } else {
       relations += nary(relName, tuples);
-    }  
+    }   
   }
-  
+     
   return model(relations);
 } 
 

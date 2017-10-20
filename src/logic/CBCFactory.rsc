@@ -63,21 +63,21 @@ Formula rewrite(\or({Formula a, *Formula orc, \and({a, Formula* ar})})) = \or({a
 
 default Formula rewrite(c:\or(set[Formula] clauses))          = c;
 
-Formula \and({})                                      = \true();
-
-Formula \and({Formula x})                             = x;
-Formula \and({\true(), *Formula r})                   = \and(r);
-Formula \and({\false(), *Formula _})                  = \false();
-Formula \and({*Formula a, \and(set[Formula] c)})      = \and({*a,*c});
-
-Formula \and(\true(), Formula b)                      = b;
-Formula \and(Formula a, \true())                      = a;
-
-Formula \and(\false(), Formula _)                     = \false();
-Formula \and(Formula _, \false())                     = \false();
-
-Formula \and(Formula a, not(a))                       = \false();
-Formula \and(not(Formula a), a)                       = \false();
+//Formula \and({})                                      = \true();
+//
+//Formula \and({Formula x})                             = x;
+//Formula \and({\true(), *Formula r})                   = \and(r);
+//Formula \and({\false(), *Formula _})                  = \false();
+//Formula \and({*Formula a, \and(set[Formula] c)})      = \and({*a,*c});
+//
+//Formula \and(\true(), Formula b)                      = b;
+//Formula \and(Formula a, \true())                      = a;
+//
+//Formula \and(\false(), Formula _)                     = \false();
+//Formula \and(Formula _, \false())                     = \false();
+//
+//Formula \and(Formula a, not(a))                       = \false();
+//Formula \and(not(Formula a), a)                       = \false();
 
 //Formula \and(Formula a, \and(set[Formula] inner))     = \and({a, *inner});
 //Formula \and(\and(set[Formula] inner), Formula a)     = \and({a, *inner});
@@ -88,24 +88,24 @@ Formula \and(not(Formula a), a)                       = \false();
 //Formula \and(not(Formula a), \or({a, *Formula rest})) = \and({not(a), \or(rest)});
 //Formula \and(\or({not(Formula a), *Formula rest}), a) = \and({not(a), \or(rest)});
 
-Formula \and(Formula a, \or(set[Formula] clauses))    = a when a in clauses;
-Formula \and(\or(set[Formula] clauses), Formula a)    = a when a in clauses;
+//Formula \and(Formula a, \or(set[Formula] clauses))    = a when a in clauses;
+//Formula \and(\or(set[Formula] clauses), Formula a)    = a when a in clauses;
 
 //Formula \and({*Formula l, \or(set[Formula] r)})       = \and(l) when Formula a <- l, a in r;
 
-Formula \and(\or(set[Formula] l), \or(l))             = \or(l);
-
-default Formula \and(Formula a, Formula b)            = \and({a,b});
-
-Formula \not(not(Formula g))                          = g;
-Formula \not(\true())                                 = \false();
-Formula \not(\false())                                = \true();
-
-Formula \ite(\true(), Formula t, Formula _)           = t;
-Formula \ite(\false(), Formula _, Formula e)          = e;
-Formula \ite(Formula _, Formula t, t)                 = t;
-//default Formula \ite(Formula c, Formula t, Formula e) = \or(\iff(c,t),\iff(\not(c),e));
-
-Formula \if(Formula l, Formula r)                     = \or(\not(l),r);
-Formula \fi(Formula l, Formula r)                     = \if(r, l);
-Formula \iff(Formula l, Formula r)                    = \and(\if(l,r),\fi(l,r));
+//Formula \and(\or(set[Formula] l), \or(l))             = \or(l);
+//
+//default Formula \and(Formula a, Formula b)            = \and({a,b});
+//
+//Formula \not(not(Formula g))                          = g;
+//Formula \not(\true())                                 = \false();
+//Formula \not(\false())                                = \true();
+//
+//Formula \ite(\true(), Formula t, Formula _)           = t;
+//Formula \ite(\false(), Formula _, Formula e)          = e;
+//Formula \ite(Formula _, Formula t, t)                 = t;
+////default Formula \ite(Formula c, Formula t, Formula e) = \or(\iff(c,t),\iff(\not(c),e));
+//
+//Formula \if(Formula l, Formula r)                     = \or(\not(l),r);
+//Formula \fi(Formula l, Formula r)                     = \if(r, l);
+//Formula \iff(Formula l, Formula r)                    = \and(\if(l,r),\fi(l,r));
