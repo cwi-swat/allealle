@@ -19,7 +19,7 @@ data Cell
 
 alias RelationMatrix = map[Index, Cell];
 
-alias Environment = tuple[map[str, RelationMatrix] relations, map[Index, map[str, Formula]] attributes]; 
+alias Environment = tuple[map[str, RelationMatrix] relations, map[Index, map[str, Formula]] attributes, list[Id] idDomain]; 
 
 int sizeOfIdDomain(IdDomain idd) = size(idd);
 
@@ -28,15 +28,12 @@ default int arity(RelationMatrix rm) = size(getOneFrom(rm));
 
 private bool sameArity(RelationMatrix lhs, RelationMatrix rhs) = arity(lhs) == arity(rhs); 
 
-private RelationMatrix square(RelationMatrix m, int i, int size) = m when i >= size;
-private RelationMatrix square(RelationMatrix m, int i, int size) = or(n, \join(n, n)) when RelationMatrix n := square(m, i * 2, size); 
+@memo 
+RelationMatrix universe(Environment env) = ([id] : relOnly(\true()) | Id id <- env.idDomain);
 
-//@memo
-RelationMatrix identity(Environment env) = ([id,id] : relOnly(\true()) | Id id <- getIdDomain(env));
+@memo
+RelationMatrix identity(Environment env) = ([id,id] : relOnly(\true()) | Id id <- env.idDomain);
 
-set[Id] getIdDomain(Environment env) = {*idx | str r <- env.relations, list[Id] idx <- env.relations[r]}; 
-
-//@memo
 RelationMatrix or(RelationMatrix lhs, RelationMatrix rhs) {
   if (!sameArity(lhs,rhs)) {
     throw "OR only works on relations of same arity";
@@ -45,16 +42,14 @@ RelationMatrix or(RelationMatrix lhs, RelationMatrix rhs) {
   return (idx : relOnly(\or(lhsVal, rhsVal)) | Index idx <- (lhs + rhs), Formula lhsVal := ((idx in lhs) ? lhs[idx].relForm : \false()), Formula rhsVal := ((idx in rhs) ? rhs[idx].relForm : \false()));
 }
 
-//@memo
 RelationMatrix and(RelationMatrix lhs, RelationMatrix rhs) {
   if (!sameArity(lhs,rhs)) {
     throw "AND only works on relations of same arity";
   }
   
-  return (idx : relOnly(\and(lhs[idx].relForm, rhs[idx].relForm)) | Index idx <- lhs, idx in rhs);
+  return (idx : relOnly(\and(lhs[idx].relForm, rhs[idx].relForm)) | Index idx <- lhs, idx in rhs, lhs[idx].relForm != \false(), rhs[idx].relForm != \false());
 }
 
-//@memo
 RelationMatrix transpose(RelationMatrix m) {
   if (arity(m) != 2) {
     throw "TRANSPOSE only works on binary relations";
@@ -63,18 +58,23 @@ RelationMatrix transpose(RelationMatrix m) {
   return (reverse(idx) : m[idx] | Index idx <- m);
 } 
 
-//@memo
 RelationMatrix transitiveClosure(RelationMatrix m) {
   if (arity(m) != 2) {
     throw "TRANSITIVE CLOSURE only works on binary relations";
   }
   
-  set[Id] rows = {a | [Id a, Id _] <- m}; 
+  int rows = size({a | [Id a, Id _] <- m}); 
 
-  return square(m, 1, size(rows));
+  RelationMatrix ret = m;
+  int i = 1;
+  while(i < rows) {
+    ret = or(ret, dotJoin(ret,ret));
+    i *= 2;
+  }
+  
+  return ret;
 }
 
-//@memo
 RelationMatrix reflexiveTransitiveClosure(RelationMatrix m, Environment env) {
   if (arity(m) != 2) {
     throw "REFLEXIVE TRANSITIVE CLOSURE only works on binary relations";
@@ -83,7 +83,6 @@ RelationMatrix reflexiveTransitiveClosure(RelationMatrix m, Environment env) {
   return or(transitiveClosure(m), identity(env));
 } 
 
-//@memo
 RelationMatrix difference(RelationMatrix lhs, RelationMatrix rhs) {
   if (!sameArity(lhs,rhs)) {
     throw "DIFFERENCE only works on relations of same arity";
@@ -92,6 +91,7 @@ RelationMatrix difference(RelationMatrix lhs, RelationMatrix rhs) {
   return (idx : relOnly(\and(lhs[idx].relForm, rhsVal)) | Index idx <- lhs, Formula rhsVal := ((idx in rhs) ? not(rhs[idx].relForm) : \true()));
 } 
 
+@memo
 RelationMatrix dotJoin(RelationMatrix lhs, RelationMatrix rhs) {
   int arityLhs = arity(lhs);
   int arityRhs = arity(rhs);
@@ -116,11 +116,9 @@ RelationMatrix dotJoin(RelationMatrix lhs, RelationMatrix rhs) {
       if (val != \false()) {
         Index joinIdx = (lhsIdx - lhsIdx[-1]) + (rhsIdx - rhsIdx[0]);
         if (val == \true()) {
-          relResult[joinIdx].relForm = \true();
-        } else if (joinIdx in relResult) {
-            if (relResult[joinIdx].relForm != \true()) {
-              relResult[joinIdx] = relOnly(\or(relResult[joinIdx].relForm, val));
-            }
+          relResult[joinIdx] = relOnly(\true());
+        } else if (joinIdx in relResult, relResult[joinIdx].relForm != \true()) {
+          relResult[joinIdx] = relOnly(\or(relResult[joinIdx].relForm, val));
         } else {        
           relResult[joinIdx] = relOnly(val);
         }
@@ -131,10 +129,8 @@ RelationMatrix dotJoin(RelationMatrix lhs, RelationMatrix rhs) {
   return relResult;
 }
 
-//@memo
-RelationMatrix product(RelationMatrix lhs, RelationMatrix rhs) {
-  return (lhsIdx + rhsIdx : relOnly(\and(lhs[lhsIdx].relForm, rhs[rhsIdx].relForm)) | Index lhsIdx <- lhs, lhs[lhsIdx].relForm != \false(), Index rhsIdx <- rhs, rhs[rhsIdx].relForm != \false());
-}
+RelationMatrix product(RelationMatrix lhs, RelationMatrix rhs) 
+ = (lIdx + rIdx : relOnly(\and(lhs[lIdx].relForm, rhs[rIdx].relForm)) | Index lIdx <- lhs, lhs[lIdx].relForm != \false(), Index rIdx <- rhs, rhs[rIdx].relForm != \false());
 
 //@memo
 RelationMatrix ite(Formula \case, RelationMatrix \then, RelationMatrix \else) {

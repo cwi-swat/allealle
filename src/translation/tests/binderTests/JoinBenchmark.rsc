@@ -26,6 +26,7 @@ void runJoinBenchmark(int nrOfPigeons, int nrOfHoles, int warmup, int nrOfRounds
   
   print("Running benchmark (<nrOfRounds> total iterations): ");
   for (int i <- [0..nrOfRounds]) {
+    int startTimeWholeLoop = cpuTime();
     for (Index idx <- pigeons) {
       RelationMatrix p = (idx : pigeons[idx]);
       int startTime = cpuTime();
@@ -33,6 +34,7 @@ void runJoinBenchmark(int nrOfPigeons, int nrOfHoles, int warmup, int nrOfRounds
       times += [(cpuTime() - startTime) / 1000000];
       print(".");
     }
+    times += [(cpuTime() - startTimeWholeLoop) / 1000000];
   }
   
   print("done\n");

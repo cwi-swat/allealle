@@ -5,7 +5,7 @@ import translation::AST;
 import translation::Binder; 
 import translation::Unparser;
 
-import logic::CBCFactory;
+//import logic::CBCFactory;
 
 import IO; 
 import List;
@@ -26,13 +26,24 @@ data Cache = cache(Maybe[Formula] (FormulaCacheKey) formulaLookup, void (Formula
 alias TranslationResult = tuple[Formula relationalFormula, Formula attributeFormula, set[Formula] intermediateVars, list[Command] additionalCommands];
 
 Environment createInitialEnvironment(Problem p) {
+  list[Id] idDomain = extractIdDomain(p);
+
   map[str, RelationMatrix] relations = (r.name:createRelationMatrix(r) | Relation r <- p.relations);
   map[Index, map[str, Formula]] attributes = (() | createAttributeLookup(r, it) | r:relationWithAttributes(str name, int arityOfIds, list[AttributeHeader] headers, RelationalBound bounds) <- p.relations); 
    
-  return <relations, attributes>;
+  return <relations, attributes, idDomain>;
 }   
+                      
+list[Id] extractIdDomain(Problem p) {
+  list[Tuple] getTuples(exact(list[Tuple] tuples)) = tuples;
+  list[Tuple] getTuples(atMost(list[Tuple] upper)) = upper;
+  list[Tuple] getTuples(atLeastAtMost(_, list[Tuple] upper)) = upper;
+  
+  return dup([id | Relation r <- p.relations, Tuple t <- getTuples(r.bounds), id(Id id) <- t.values]);   
+}                      
                                                                                                                                                     
 RelationMatrix createRelationMatrix(Relation r) {
+  @memo
   str idxToStr(Index idx) = intercalate("_", idx);
   
   tuple[list[Index] lb, list[Index] ub] bounds = getBounds(r.arityOfIds, r.bounds);
@@ -53,7 +64,8 @@ RelationMatrix createRelationMatrix(Relation r) {
 tuple[list[Index], list[Index]] getBounds(int arity, exact(list[Tuple] tuples)) = <b,b> when list[Index] b := getIndices(arity, tuples);
 tuple[list[Index], list[Index]] getBounds(int arity, atMost(list[Tuple] upper)) = <[], ub> when list[Index] ub := getIndices(arity, upper);
 tuple[list[Index], list[Index]] getBounds(int arity, atLeastAtMost(list[Tuple] lower, list[Tuple] upper)) = <lb,ub> when list[Index] lb := getIndices(arity, lower), list[Index] ub := getIndices(arity, upper);
-      
+
+@memo      
 private list[Index] getIndices(int arity, list[Tuple] tuples) {
   list[Index] indices = [];
   for (Tuple t <- tuples) {
@@ -110,17 +122,22 @@ private map[Index, map[str, Formula]] createPartialAttributeLookup(int arityOfId
                                            
 default Formula createAttribute(Index idx, str name, Domain d, Value v) { throw "No attribute creator found for domain \'<d>\' with value \'<v>\'"; } 
                                                                                             
-TranslationResult translateProblem(Problem p, Environment env) {
+TranslationResult translateProblem(Problem p, Environment env, bool logIndividualFormula = true) {
   FormulaCache formCache = ();
   ExprCache exprCache = ();
   
-  Maybe[Formula] formulaLookup(FormulaCacheKey key) = just(formCache[key]) when key in formCache;
-  default Maybe[Formula] formulaLookup(FormulaCacheKey key) = nothing();
+  Maybe[Formula] formulaLookup(FormulaCacheKey key) {
+    if (key in formCache) { return just(formCache[key]); } 
+    else {return nothing(); }
+  }
   void storeFormula(FormulaCacheKey key, Formula f) { formCache[key] = f; }
   
-  Maybe[RelationMatrix] exprLookup(ExprCacheKey key) = just(exprCache[key]) when key in exprCache;
-  default Maybe[RelationMatrix] exprLookup(ExprCacheKey key) = nothing();
+  Maybe[RelationMatrix] exprLookup(ExprCacheKey key) { 
+    if (key in exprCache) { return just(exprCache[key]); } 
+    else { return nothing(); }
+  }
   void storeExpr(ExprCacheKey key, RelationMatrix rm) { exprCache[key] = rm; }
+  
   
   set[Formula] attributeConstraints = {};
   void addAttributeConstraint(Formula constraint) {
@@ -143,7 +160,12 @@ TranslationResult translateProblem(Problem p, Environment env) {
     return "_tmp_<tmpNr>";
   }
    
-  Formula relForm = and({r | AlleFormula f <- p.constraints, bprint("\nTranslating \'<unparse(f)>\' ..."), <Formula r, int time> := bm(f, env, <addAttributeConstraint, addAdditionalCommand, addIntermediateVar, freshIntermediateId>, cache(formulaLookup, storeFormula, exprLookup, storeExpr)), bprint("in <time / 1000000> ms.")});
+  Formula relForm;
+  if (logIndividualFormula) {
+    relForm = and({r | AlleFormula f <- p.constraints, bprint("\nTranslating \'<unparse(f)>\' ..."), <Formula r, int time> := bm(f, env, <addAttributeConstraint, addAdditionalCommand, addIntermediateVar, freshIntermediateId>, cache(formulaLookup, storeFormula, exprLookup, storeExpr)), bprint("in <time / 1000000> ms.")});
+  } else {
+    relForm = and({translateCachedFormula(f, env, <addAttributeConstraint, addAdditionalCommand, addIntermediateVar, freshIntermediateId>, cache(formulaLookup, storeFormula, exprLookup, storeExpr)) | AlleFormula f <- p.constraints});
+  }    
   Formula attForm = and(attributeConstraints);
   
   return <relForm, attForm, intermediateVars, additionalCommands>; 
@@ -182,33 +204,28 @@ Formula translateFormula(atMostOne(AlleExpr expr), Environment env, AdditionalCo
 Formula translateFormula(exactlyOne(AlleExpr expr), Environment env, AdditionalConstraintFunctions acf, Cache cache) {
   RelationMatrix m = translateCachedExpression(expr, env, acf, cache);
   
-  set[Formula] outer = {};
-  
-  for (Index x <- m) {
-    set[Formula] inner = {};    
-
-    if (m[x].relForm == \false()) {
-      inner += \false();
-    } else {
-
-      for (Index y <- m, y != x, m[y].relForm != \false()) {
-        inner += not(m[y].relForm);
-      }
-    
-      Formula innerAnd = \and({m[x].relForm, *inner});
-      if (innerAnd == \true()) {
-        return \true();
-      }
-    
-      outer += innerAnd;
-    }
+  if (m == ()) {
+    return \false();
   }
   
-  return \or(outer);
+  set[Formula] clauses = {};
+  
+  Formula partial = \false();
+  
+  for (Index x <- m) {
+    Formula clause = or(\not(m[x].relForm), not(partial));
+    if (clause == \false()) {
+      return \false();
+    }
+    clauses += clause;  
+    partial = \or(partial, m[x].relForm);
+  }
+  
+  clauses += partial;
+  
+  return \and(clauses);
 }
-  //= (\false() | \or(it, \and(m[x].relForm, (\true() | \and(it, \not(m[y].relForm)) | Index y <- m, y != x))) | Index x <- m)    
-  //  when RelationMatrix m := translateCachedExpression(expr, env, acf, cache);
-
+ 
 Formula translateFormula(nonEmpty(AlleExpr expr), Environment env, AdditionalConstraintFunctions acf, Cache cache) {
   RelationMatrix m = translateCachedExpression(expr, env, acf, cache);
   
@@ -229,27 +246,17 @@ Formula translateFormula(subset(AlleExpr lhsExpr, AlleExpr rhsExpr), Environment
   RelationMatrix lhs = translateCachedExpression(lhsExpr, env, acf, cache);
   RelationMatrix rhs = translateCachedExpression(rhsExpr, env, acf, cache);
   
-  RelationMatrix m = ();
-  for (Index idx <- (lhs + rhs)) {
-    Formula lhsVal = (idx in lhs) ? lhs[idx].relForm : \false();
-    Formula rhsVal = (idx in rhs) ? rhs[idx].relForm : \false();
- 
-    m[idx] = relOnly(\or(\not(lhsVal), rhsVal));
-    if (m[idx].relForm == \false()) {
+  set[Formula] clauses = {};
+  for (Index idx <- lhs) {
+    Formula partial = \or(not(lhs[idx].relForm), (idx in rhs ? rhs[idx].relForm : \false()));
+    if (partial == \false()) {
       return \false();
     }
-  } 
-
-  if (m == ()) {
-    return \false();
-  }
-
-  Formula result = \true();
-  for (Index idx <- m) {  
-    result = \and(result, m[idx].relForm);
+    
+    clauses += partial;   
   }
   
-  return result;
+  return \and(clauses);
 }
      
 Formula translateFormula(equal(AlleExpr lhsExpr, AlleExpr rhsExpr), Environment env, AdditionalConstraintFunctions acf, Cache cache)
@@ -295,7 +302,7 @@ Formula translateFormula(equality(AlleFormula lhsForm, AlleFormula rhsForm), Env
   return \or(\and(l,r), \and(\not(l), \not(r)));
 }
 
-private Environment extEnv(Environment orig, map[str, RelationMatrix] newRelations) = <orig.relations + newRelations, orig.attributes>; 
+private Environment extEnv(Environment orig, map[str, RelationMatrix] newRelations) = <orig.relations + newRelations, orig.attributes, orig.idDomain>; 
 
 Formula translateFormula(let(list[VarDeclaration] decls, AlleFormula form), Environment env, AdditionalConstraintFunctions acf, Cache cache) {
   Environment extendedEnv = env;
@@ -308,45 +315,82 @@ Formula translateFormula(let(list[VarDeclaration] decls, AlleFormula form), Envi
   return translateCachedFormula(form, extendedEnv, acf, cache);
 }
 
-data Formula 
-  = substitutes(Environment subs)
-  ; 
-
-Formula translateFormula(universal(list[VarDeclaration] decls, AlleFormula form), Environment env, AdditionalConstraintFunctions acf, Cache cache) 
-  = translateQuantification(Formula (Formula l, Formula r) { return \or(\not(l), r); }, Formula (set[Formula] clauses) { return  \and(clauses); }, decls, form, env, acf, cache);
-
-Formula translateFormula(existential(list[VarDeclaration] decls, AlleFormula form), Environment env, AdditionalConstraintFunctions acf, Cache cache) 
-  = translateQuantification(Formula (Formula l, Formula r) { return \and(l,r); }, Formula (set[Formula] clauses) { return \or(clauses); }, decls, form, env, acf, cache);
-
-private Formula translateQuantification(Formula (Formula, Formula) innerOpper, Formula (set[Formula]) outerOpper, list[VarDeclaration] decls, AlleFormula form, Environment env, AdditionalConstraintFunctions acf, Cache cache) {
+Formula translateFormula(universal(list[VarDeclaration] decls, AlleFormula form), Environment env, AdditionalConstraintFunctions acf, Cache cache) {
+  bool shortCircuited = false;
   
-  Formula buildForm([], map[str,RelationMatrix] extraBindings) = translateCachedFormula(form, extEnv(env, extraBindings), acf, cache); //substitutes(extEnv(env, extraBindings));
-
-  Formula buildForm([VarDeclaration hd, *VarDeclaration tl], map[str,RelationMatrix] extraBindings) {
-    set[Formula] result = {};
-    
-    RelationMatrix m = translateCachedExpression(hd.binding, extEnv(env, extraBindings), acf, cache);
-
-    for (Index idx <- m) {
-      Formula clause = buildForm(tl, extraBindings + constructSingleton(hd.name, idx));
-    
-      if (clause == \false() && m[idx].relForm == \true()) {
-        return \false();
-      }
-      
-      result += innerOpper(m[idx].relForm, clause);   
-    }    
-    
-    return outerOpper(result);
+  set[Formula] clauses = {};
+  void accumulate(Formula clause) {
+    clauses += clause;
+    if (clause == \false()) {
+      shortCircuited = true;
+    }
   }
   
-  Formula result = buildForm(decls, ());
+  bool isShortCircuited() = shortCircuited;
   
-  //result = visit(result) {
-  //  case substitutes(Environment subs) => translateCachedFormula(form, subs, acf, cache)
-  //}
+  forall(decls, 0, \false(), accumulate, isShortCircuited, form, env, acf, cache);
   
-  return result;
+  return \and(clauses);
+}
+
+private void forall(list[VarDeclaration] decls, int currentDecl, Formula declConstraints, void (Formula) accumulate, bool () isShortCircuited, AlleFormula form, Environment env, AdditionalConstraintFunctions acf, Cache cache) {
+  if (isShortCircuited()) {
+    return;
+  }
+  
+  if (currentDecl == size(decls)) {
+    return accumulate(\or(declConstraints, translateCachedFormula(form, env, acf, cache)));
+  }
+  
+  RelationMatrix m = translateCachedExpression(decls[currentDecl].binding, env, acf, cache);
+
+  set[Formula] clauses = {};  
+  for (Index idx <- m) {
+    forall(decls, currentDecl + 1, \or(not(m[idx].relForm), declConstraints),  accumulate, isShortCircuited, form, extEnv(env, constructSingleton(decls[currentDecl].name, idx)), acf, cache);
+
+    if (isShortCircuited()) {
+      return;
+    }
+  } 
+}
+
+Formula translateFormula(existential(list[VarDeclaration] decls, AlleFormula form), Environment env, AdditionalConstraintFunctions acf, Cache cache) {
+  bool shortCircuited = false;
+  
+  set[Formula] clauses = {};
+  void accumulate(Formula clause) {
+    clauses += clause;
+    if (clause == \true()) {
+      shortCircuited = true;
+    }
+  }
+  
+  bool isShortCircuited() = shortCircuited;
+  
+  exists(decls, 0, \false(), accumulate, isShortCircuited, form, env, acf, cache);
+  
+  return \or(clauses);
+}
+
+private void exists(list[VarDeclaration] decls, int currentDecl, Formula declConstraints, void (Formula) accumulate, bool () isShortCircuited, AlleFormula form, Environment env, AdditionalConstraintFunctions acf, Cache cache) {
+  if (isShortCircuited()) {
+    return;
+  }
+  
+  if (currentDecl == size(decls)) {
+    return accumulate(\and(declConstraints, translateCachedFormula(form, env, acf, cache)));
+  }
+  
+  RelationMatrix m = translateCachedExpression(decls[currentDecl].binding, env, acf, cache);
+
+  set[Formula] clauses = {};  
+  for (Index idx <- m) {
+    forall(decls, currentDecl + 1, \and(m[idx].relForm, declConstraints),  accumulate, isShortCircuited, form, extEnv(env, constructSingleton(decls[currentDecl].name, idx)), acf, cache);
+
+    if (isShortCircuited()) {
+      return;
+    }
+  } 
 }
 
 default Formula translateFormula(AlleFormula f, Environment env, AdditionalConstraintFunctions acf, Cache cache) { throw "Translation of formula \'<f>\' not supported"; }
