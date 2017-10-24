@@ -39,8 +39,8 @@ Formula \or(Formula _, \true())                       = \true();
 Formula \or(\false(), Formula b)                      = b;
 Formula \or(Formula a, \false())                      = a;
 
-//Formula \or(Formula a, \or(set[Formula] inner))       = \or({a, *inner});
-//Formula \or(\or(set[Formula] inner), Formula a)       = \or({a, *inner});
+Formula \or(Formula a, \or(set[Formula] inner))       = \or({a, *inner});
+Formula \or(\or(set[Formula] inner), Formula a)       = \or({a, *inner});
 
 Formula \or(\not(Formula a), a)                       = \true();
 Formula \or(Formula a, \not(a))                       = \true();
@@ -51,8 +51,8 @@ Formula \or(Formula a, \not(a))                       = \true();
 //Formula \or(not(Formula a), \and({a, *Formula rest})) = \or({\and({a, *rest})});
 //Formula \or(\and({Formula a, *Formula rest}), not(a)) = \or({\and({a, *rest})});
 
-//Formula \or(Formula a, \and(set[Formula] clauses))    = a when a in clauses; 
-//Formula \or(\and(set[Formula] clauses), Formula a)    = a when a in clauses;
+Formula \or(Formula a, \and(set[Formula] clauses))    = a when a in clauses; 
+Formula \or(\and(set[Formula] clauses), Formula a)    = a when a in clauses;
 
 //Formula \or({*Formula r, \and(set[Formula] l)})       = \or(r) when Formula a <- l, a in r;
 
@@ -76,8 +76,8 @@ Formula \and(Formula _, \false())                     = \false();
 Formula \and(Formula a, not(a))                       = \false();
 Formula \and(not(Formula a), a)                       = \false();
 
-//Formula \and(Formula a, \and(set[Formula] inner))     = \and({a, *inner});
-//Formula \and(\and(set[Formula] inner), Formula a)     = \and({a, *inner});
+Formula \and(Formula a, \and(set[Formula] inner))     = \and({a, *inner});
+Formula \and(\and(set[Formula] inner), Formula a)     = \and({a, *inner});
 
 //Formula \and(Formula a, \or({not(a), *Formula rest})) = \and({a, \or(rest)});
 //Formula \and(\or({not(Formula a), *Formula rest}), a) = \and({a, \or(rest)});
@@ -85,8 +85,8 @@ Formula \and(not(Formula a), a)                       = \false();
 //Formula \and(not(Formula a), \or({a, *Formula rest})) = \and({not(a), \or(rest)});
 //Formula \and(\or({not(Formula a), *Formula rest}), a) = \and({not(a), \or(rest)});
 
-//Formula \and(Formula a, \or(set[Formula] clauses))    = a when a in clauses;
-//Formula \and(\or(set[Formula] clauses), Formula a)    = a when a in clauses;
+Formula \and(Formula a, \or(set[Formula] clauses))    = a when a in clauses;
+Formula \and(\or(set[Formula] clauses), Formula a)    = a when a in clauses;
 
 //Formula \and({*Formula l, \or(set[Formula] r)})       = \and(l) when Formula a <- l, a in r;
 

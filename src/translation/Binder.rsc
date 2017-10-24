@@ -91,13 +91,17 @@ RelationMatrix difference(RelationMatrix lhs, RelationMatrix rhs) {
   return (idx : relOnly(\and(lhs[idx].relForm, rhsVal)) | Index idx <- lhs, Formula rhsVal := ((idx in rhs) ? not(rhs[idx].relForm) : \true()));
 } 
 
-@memo
+//@memo
 RelationMatrix dotJoin(RelationMatrix lhs, RelationMatrix rhs) {
   int arityLhs = arity(lhs);
   int arityRhs = arity(rhs);
     
   if (arityLhs == 1 && arityRhs == 1) { 
     throw "JOIN only works on two non-unary relations"; 
+  }
+  
+  if (lhs == () || rhs == ()) {
+    return ();
   }
         
   set[Index] indicesEndingWith(Id a, RelationMatrix b) = {idx | Index idx <- b, idx[-1] == a};
