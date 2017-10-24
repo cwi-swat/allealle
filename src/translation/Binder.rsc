@@ -122,6 +122,7 @@ RelationMatrix difference(RelationMatrix lhs, RelationMatrix rhs) {
   return <lhs.dim, (idx : relOnly(\and(lhs.cells[idx].relForm, rhsVal)) | Index idx <- lhs.cells, Formula rhsVal := ((idx in rhs.cells) ? not(rhs.cells[idx].relForm) : \true()))>;
 }  
 
+@memo
 RelationMatrix dotJoin(RelationMatrix lhs, RelationMatrix rhs) {
   if (lhs.dim.arity == 1 && rhs.dim.arity == 1) { 
     throw "JOIN only works on two non-unary relations"; 
