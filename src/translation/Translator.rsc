@@ -168,6 +168,7 @@ Formula translateFormula(empty(AlleExpr expr), Environment env, AdditionalConstr
 Formula translateFormula(atMostOne(AlleExpr expr), Environment env, AdditionalConstraintFunctions acf) 
   = \or(translateFormula(empty(expr), env, acf), translateFormula(exactlyOne(expr), env, acf));
 
+
 Formula translateFormula(exactlyOne(AlleExpr expr), Environment env, AdditionalConstraintFunctions acf) {
   RelationMatrix m = translateExpression(expr, env, acf);
   
@@ -193,6 +194,7 @@ Formula translateFormula(exactlyOne(AlleExpr expr), Environment env, AdditionalC
   return \and(clauses);
 }
  
+
 Formula translateFormula(nonEmpty(AlleExpr expr), Environment env, AdditionalConstraintFunctions acf) {
   RelationMatrix m = translateExpression(expr, env, acf);
   
@@ -291,6 +293,7 @@ Formula translateFormula(let(list[VarDeclaration] decls, AlleFormula form), Envi
   return translateFormula(form, extendedEnv, acf);
 }
 
+
 Formula translateFormula(universal(list[VarDeclaration] decls, AlleFormula form), Environment env, AdditionalConstraintFunctions acf) {
   bool shortCircuited = false;
   
@@ -372,7 +375,9 @@ private void exists(list[VarDeclaration] decls, int currentDecl, Formula declCon
 
 default Formula translateFormula(AlleFormula f, Environment env, AdditionalConstraintFunctions acf) { throw "Translation of formula \'<f>\' not supported"; }
 
+
 RelationMatrix translateExpression(variable(str name), Environment env, AdditionalConstraintFunctions acf) = env.relations[name];
+
 
 RelationMatrix translateExpression(attributeLookup(AlleExpr e, str name), Environment env, AdditionalConstraintFunctions acf) {
   RelationMatrix m = translateExpression(e, env, acf);
