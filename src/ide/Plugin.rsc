@@ -7,7 +7,8 @@ import ide::Imploder;
 import ide::CombinedModelFinder;
 import ide::vis::ModelVisualizer;
 
-import theories::Binder;
+import translation::Translator;
+import translation::Binder;
 
 import util::IDE;
 import util::Prompt;
@@ -32,12 +33,12 @@ void main(){
 	registerContributions(lang, contribs);
 } 
  
-void checkAndVisualize(ide::CombinedSyntax::Problem p) {
-	ModelFinderResult result = checkInitialSolution(implodeProblem(p));
-	if (sat(Model currentModel, ide::CombinedAST::Universe uni, Model (ide::CombinedAST::Theory) nextModel, void () stop) := result) {
-		renderModel(uni, currentModel, nextModel, stop);
-	} else if (trivialSat(Model model, ide::CombinedAST::Universe uni) := result) {
-	  renderModel(uni, model, Model (ide::CombinedAST::Theory) { return empty(); }, void () {;});
+void checkAndVisualize(ide::CombinedSyntax::Problem p) {  
+	ModelFinderResult result = checkInitialSolution(implodeProblem(p)); 
+	if (sat(Model currentModel, Model (Domain) nextModel, void () stop) := result) {
+		renderModel(currentModel, nextModel, stop);
+	} else if (trivialSat(Model model) := result) {
+	  renderModel(model, Model (ide::CombinedAST::Domain) { return empty(); }, void () {;});
 	} else if (trivialUnsat() := result) {
     alert("Not satisfiable (trivially), nothing to visualize");
 	} else {

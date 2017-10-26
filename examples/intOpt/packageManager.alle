@@ -1,23 +1,15 @@
-uni {
-  id: {a,b,c,d,e,f,g,z,y,h}
+Package (1 :: size:int) = {<a,1>,<b,1>,<c,0>,<d,1>,<e,0>,<f,0>,<g,1>,<h,0>,<y,0>,<z,0>}
 
-  (id:id,size:int): {<a,1>,<b,1>,<c,_>,<d,1>,<e,_>,<f,0>,<g,_>,<z,0>,<y,_>,<h,0>}
-}
+InstallProfile (1) <= {<a>,<b>,<c>,<d>,<e>,<f>,<g>,<h>,<y>,<z>}
 
-{a{size(int)=1},b{size(int)=1},c{size(int)=0},d{size(int)=1},e{size(int)=0},f{size(int)=0},g{size(int)=1},z{size(int)=0},y{size(int)=0},h{size(int)=0}}
+Installed (1) = {<z>,<c>,<e>,<y>,<f>,<h>}
+UninstallProfile (1) <= {<z>,<c>,<e>,<y>,<f>,<h>}
+InstallPackage (1) = {<a>}
 
-Package:1 [{<a>,<b>,<c>,<d>,<e>,<f>,<g>,<h>,<y>,<z>},{<a>,<b>,<c>,<d>,<e>,<f>,<g>,<h>,<y>,<z>}]
+depends (2) = {<a,b>,<a,c>,<a,z>,<b,d>,<c,d>,<c,e>,<c,f>,<c,g>,<y,z>,<f,h>}
+dependChoice (3) = {<c,d,e>,<c,e,d>,<c,f,g>,<c,g,f>}
 
-InstallProfile:1 [{},{<a>,<b>,<c>,<d>,<e>,<f>,<g>,<h>,<y>,<z>}]
-
-Installed:1 [{<z>,<c>,<e>,<y>,<f>,<h>},{<z>,<c>,<e>,<y>,<f>,<h>}]
-UninstallProfile:1 [{},{<z>,<c>,<e>,<y>,<f>,<h>}]
-InstallPackage:1 [{<a>},{<a>}]
-
-depends:2 [{<a,b>,<a,c>,<a,z>,<b,d>,<c,d>,<c,e>,<c,f>,<c,g>,<y,z>,<f,h>},{<a,b>,<a,c>,<a,z>,<b,d>,<c,d>,<c,e>,<c,f>,<c,g>,<y,z>,<f,h>}]
-dependChoice:3 [{<c,d,e>,<c,e,d>,<c,f,g>,<c,g,f>}, {<c,d,e>,<c,e,d>,<c,f,g>,<c,g,f>}]
-
-conflicts:2 [{<d,e>,<d,f>},{<d,e>,<d,f>}]
+conflicts (2) = {<d,e>,<d,f>}
 
 // If the package to install is not yet installed then it should be in the installation profile
 no (InstallPackage & Installed) => InstallPackage in InstallProfile

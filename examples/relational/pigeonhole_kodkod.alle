@@ -1,0 +1,8 @@
+Pigeon (1) = {<p1>,<p2>}
+Hole (1) = {<h1>,<h2>}
+nest (2) <= {<p1,h1>,<p1,h2>,<p2,h1>,<p2,h2>}
+
+nest in Pigeon->Hole
+forall p:Pigeon | one p.nest
+
+forall p1:Pigeon, p2:Pigeon | p1 !== p2 => no p1.nest&p2.nest

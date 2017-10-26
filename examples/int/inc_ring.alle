@@ -1,0 +1,22 @@
+Elem (1 :: num:int) <= {<n1,?>,<n2,?>,<n3,?>}
+Start (1)           <= {<n1>,<n2>,<n3>}
+ring (2)            <= {<n1,n1>,<n1,n2>,<n2,n1>,<n2,n2>,<n1,n3>,<n3,n1>,<n2,n3>,<n3,n2>,<n3,n3>}
+
+ring in Elem -> Elem
+Start in Elem
+
+Elem::num > 0
+
+// One of the elements in the ring is considered the start element
+one Start
+
+// The ring is cyclic, all elements should be reachable from the start element (including itself) 
+forall e:Elem | e in Start.^ring
+
+// Only one element leads to an other element
+forall e:Elem | one e.ring && one ring.e
+
+// All elements in the ring have incrementing values starting from the Start ring
+forall e1: Elem, e2: Elem\Start | e1->e2 in ring => e2::num = e1::num + 1
+
+#Elem >= 2

@@ -1,11 +1,9 @@
-{vvd{seats(int)=33}, pvv{seats(int)=20}, cda{seats(int)=19}, d66{seats(int)=19}, groenlinks{seats(int)=14}, sp{seats(int)=14}, pvda{seats(int)=9}, christenunie{seats(int)=5}, pvdd{seats(int)=5},vijftigplus{seats(int)=4}, sgp{seats(int)=3},denk{seats(int)=3},fvd{seats(int)=2},total{val(int)}}
-
-Party:1 [{<vvd>,<pvv>,<cda>,<d66>,<groenlinks>,<sp>,<pvda>,<christenunie>,<pvdd>,<vijftigplus>,<sgp>,<denk>,<fvd>}, {<vvd>,<pvv>,<cda>,<d66>,<groenlinks>,<sp>,<pvda>,<christenunie>,<pvdd>,<vijftigplus>,<sgp>,<denk>,<fvd>}]
-Goverment:1 [{}, {<vvd>,<cda>,<pvv>,<d66>,<groenlinks>,<sp>,<pvda>,<christenunie>,<pvdd>,<vijftigplus>,<sgp>,<denk>,<fvd>}]
-Opposition:1 [{<cda>}, {<vvd>,<pvv>,<cda>,<d66>,<groenlinks>,<sp>,<pvda>,<christenunie>,<pvdd>,<vijftigplus>,<sgp>,<denk>,<fvd>}]
-Total:1[{<total>},{<total>}]
-exclusion:2 [{<vvd,pvv>,<cda,pvv>,<d66,pvv>,<groenlinks,pvv>,<sp,pvv>,<pvda,pvv>,<christenunie,pvv>,<pvdd,pvv>,<sp,vvd>}, {<vvd,pvv>,<cda,pvv>,<d66,pvv>,<groenlinks,pvv>,<sp,pvv>,<pvda,pvv>,<christenunie,pvv>,<pvdd,pvv>,<sp,vvd>}]
-inclusion:2 [{<pvdd,groenlinks>,<pvdd,christenunie>},{<pvdd,groenlinks>,<pvdd,christenunie>}]
+Party (1 :: seats:int) =  {<vvd,33>,<pvv,20>,<cda,19>,<d66,19>,<groenlinks,14>,<sp,14>,<pvda,9>,<christenunie,5>,<pvdd,5>,<vijftigplus,4>,<sgp,3>,<denk,3>,<fvd,2>}
+Goverment (1)          <= {<vvd>,<cda>,<pvv>,<d66>,<groenlinks>,<sp>,<pvda>,<christenunie>,<pvdd>,<vijftigplus>,<sgp>,<denk>,<fvd>}
+Opposition (1)         <= {<vvd>,<pvv>,<cda>,<d66>,<groenlinks>,<sp>,<pvda>,<christenunie>,<pvdd>,<vijftigplus>,<sgp>,<denk>,<fvd>}
+Total (1 :: val:int)   =  {<total,?>}
+exclusion (2)          =  {<vvd,pvv>,<cda,pvv>,<d66,pvv>,<groenlinks,pvv>,<sp,pvv>,<pvda,pvv>,<christenunie,pvv>,<pvdd,pvv>,<sp,vvd>}
+inclusion (2)          =  {<pvdd,groenlinks>,<pvdd,christenunie>}
 
 Goverment ++ Opposition == Party
 no Goverment&Opposition
@@ -15,8 +13,6 @@ forall p1:Party, p2:Party\p1 | p1->p2 in inclusion => (p1 in Goverment => p2 in 
 
 Total::val = sum(Goverment::seats)
 Total::val > 75
-
-//sum(Goverment::seats) > 75
 
 #Goverment <= 5
 

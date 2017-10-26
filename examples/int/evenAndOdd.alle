@@ -1,26 +1,19 @@
-{a{v(int)},b{v(int)},c{v(int)},d{v(int)}}
-
-Num:1   [{<a>,<b>,<c>,<d>},{<a>,<b>,<c>,<d>}]
-Even:1  [{},{<a>,<b>,<c>,<d>}]
-Odd:1   [{},{<a>,<b>,<c>,<d>}]
-twice:2 [{},{<a,b>,<a,c>,<a,d>,<a,e>,<b,a>,<b,c>,<b,d>,<b,e>,<c,a>,<c,b>,<c,e>,<d,a>,<d,b>,<d,c>,<d,e>,<e,a>,<e,b>,<e,c>,<e,d>}]
+Num (1 :: val:int) <= {<a,?>,<b,?>,<c,?>,<d,?>}
+Even(1)            <={<a>,<b>,<c>,<d>}
+Odd (1)            <={<a>,<b>,<c>,<d>}
+twice (2)          <={<a,b>,<a,c>,<a,d>,<a,e>,<b,a>,<b,c>,<b,d>,<b,e>,<c,a>,<c,b>,<c,e>,<d,a>,<d,b>,<d,c>,<d,e>,<e,a>,<e,b>,<e,c>,<e,d>}
 
 Even in Num
 Odd in Num
 
-Num::v > 0 && Num::v < 50
+Num::val > 0 && Num::val < 50
 
 no Even&Odd
 Even++Odd == Num
 
-forall n1:Num, n2:Num\n1 | n1::v != n2::v
+distinct(Num::val)
+ 
+forall n:Num | ((n::val % 2) = 0) <=> n in Even
 
-forall n:Num | ((n::v % 2) = 0) <=> n in Even
-
-twice == {n1: Num, n2:Num\n1 | n2::v = n1::v * 2}
-
-exists n1:Num, n2:Num\n1, n3:Num\(n1++n2) | n1->n2 in twice && n2->n3 in twice
-
-exists n1:Num, n2:Num\n1 | n1 in Odd && n1->n2 in twice
-
-sum(Num::v) = 34
+twice == {n1: Num, n2:Num\n1 | n2::val = n1::val * 2}
+#twice >= 2

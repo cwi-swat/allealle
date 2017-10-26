@@ -50,37 +50,35 @@ void generateRelSudoku(rel[int, int, int] filledInCells, loc locationToSave) {
    println("done defining a relational sudoku puzzle"); 
 }
 
+//'cell (1 :: val:int)  = {<intercalate(",", ["\<c<c>_<r>,<val>\>" | int c <- [1..10], int r <- [1..10], str val := ((/<c,r, int v> := filledInCells) ? "<v>" : "?")])>}
 void generateIntSudoku(rel[int, int, int] filledInCells, loc locationToSave) {
-  str gridBound = intercalate(",", ["\<n<c>,n<r>,c<c>_<r>\>" | int c <- [1..10], int r <- [1..10]]);
-  
-  str problem = "{n1,n2,n3,n4,n5,n6,n7,n8,n9,<intercalate(",",[val | int c <- [1..10], int r <- [1..10], str val := ((/<c,r, int v> := filledInCells) ? "c<c>_<r>{val(int)=<v>}" : "c<c>_<r>{val(int)}")])>}
+  str problem = "num (1)              = {\<n1\>,\<n2\>,\<n3\>,\<n4\>,\<n5\>,\<n6\>,\<n7\>,\<n8\>,\<n9\>}
+                'r1 (1)               = {\<n1\>,\<n2\>,\<n3\>}
+                'r2 (1)               = {\<n4\>,\<n5\>,\<n6\>}
+                'r3 (1)               = {\<n7\>,\<n8\>,\<n9\>}
+                'grid (2 :: val:int)  = {<intercalate(",", ["\<n<c>,n<r>,<val>\>" | int c <- [1..10], int r <- [1..10], str val := ((/<c,r, int v> := filledInCells) ? "<v>" : "?")])>}
                 '
-                'num: 1 [{\<n1\>,\<n2\>,\<n3\>,\<n4\>,\<n5\>,\<n6\>,\<n7\>,\<n8\>,\<n9\>},{\<n1\>,\<n2\>,\<n3\>,\<n4\>,\<n5\>,\<n6\>,\<n7\>,\<n8\>,\<n9\>}]
-                'cell:1 [{<intercalate(",", ["\<c<c>_<r>\>" | int c <- [1..10], int r <- [1..10]])>},{<intercalate(",", ["\<c<c>_<r>\>" | int c <- [1..10], int r <- [1..10]])>}]
-                'r1:  1 [{\<n1\>,\<n2\>,\<n3\>},{\<n1\>,\<n2\>,\<n3\>}]
-                'r2:  1 [{\<n4\>,\<n5\>,\<n6\>},{\<n4\>,\<n5\>,\<n6\>}]
-                'r3:  1 [{\<n7\>,\<n8\>,\<n9\>},{\<n7\>,\<n8\>,\<n9\>}]
-                'grid:3 [{<gridBound>},{<gridBound>}]
+                'cell \>= 1 && cell \<= 9
                 '
-                'r1 in num
-                'r2 in num
-                'r3 in num
-                'grid in num-\>num-\>cell
-                '
-                'cell \> 0 && cell \< 10
-                '
-                'forall x:num, y:num  | grid[x][y]::val != grid[x][num\\y]::val
-                'forall x:num, y:num  | grid[x][y]::val != grid[num\\x][y]::val
-                'forall x: r1, y: r1  | grid[x][y]::val != grid[r1\\x][r1\\y]::val
-                'forall x: r1, y: r2  | grid[x][y]::val != grid[r1\\x][r2\\y]::val
-                'forall x: r1, y: r3  | grid[x][y]::val != grid[r1\\x][r3\\y]::val
-                'forall x: r2, y: r1  | grid[x][y]::val != grid[r2\\x][r1\\y]::val
-                'forall x: r2, y: r2  | grid[x][y]::val != grid[r2\\x][r2\\y]::val
-                'forall x: r2, y: r3  | grid[x][y]::val != grid[r2\\x][r3\\y]::val
-                'forall x: r3, y: r1  | grid[x][y]::val != grid[r3\\x][r1\\y]::val         
-                'forall x: r3, y: r2  | grid[x][y]::val != grid[r3\\x][r2\\y]::val          
-                'forall x: r3, y: r3  | grid[x][y]::val != grid[r3\\x][r3\\y]::val
+                'forall x::num | distinct(num.x.grid::val)
+                'forall y::num | distinct(y.num.grid::val)
+                'forall x:r1   | distinct(r1.x.grid::val) && distinct(r2.x.grid::val) && distinct(r3.x.grid::val)
+                'forall x:r2   | distinct(r1.x.grid::val) && distinct(r2.x.grid::val) && distinct(r3.x.grid::val)
+                'forall x:r3   | distinct(r1.x.grid::val) && distinct(r2.x.grid::val) && distinct(r3.x.grid::val)
                 ";
+
+                //'forall x:num, y:num  | y.x.grid[x][y]::val != grid[x][num\\y]::val
+                //'forall x:num, y:num  | grid[x][y]::val != grid[num\\x][y]::val
+                //'forall x: r1, y: r1  | grid[x][y]::val != grid[r1\\x][r1\\y]::val
+                //'forall x: r1, y: r2  | grid[x][y]::val != grid[r1\\x][r2\\y]::val
+                //'forall x: r1, y: r3  | grid[x][y]::val != grid[r1\\x][r3\\y]::val
+                //'forall x: r2, y: r1  | grid[x][y]::val != grid[r2\\x][r1\\y]::val
+                //'forall x: r2, y: r2  | grid[x][y]::val != grid[r2\\x][r2\\y]::val
+                //'forall x: r2, y: r3  | grid[x][y]::val != grid[r2\\x][r3\\y]::val
+                //'forall x: r3, y: r1  | grid[x][y]::val != grid[r3\\x][r1\\y]::val         
+                //'forall x: r3, y: r2  | grid[x][y]::val != grid[r3\\x][r2\\y]::val          
+                //'forall x: r3, y: r3  | grid[x][y]::val != grid[r3\\x][r3\\y]::val
+
   
   writeFile(locationToSave + "sudoku.alle", problem);
   println("done defining the integer sudoku puzzle");

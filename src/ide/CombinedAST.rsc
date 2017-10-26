@@ -1,5 +1,5 @@
 module ide::CombinedAST
 
-extend theories::AST;
-extend theories::integer::AST;
-extend theories::integerOpt::AST;  
+extend translation::AST;
+extend translation::theories::integer::AST;
+extend translation::theories::integerOpt::AST;  

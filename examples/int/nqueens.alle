@@ -1,9 +1,11 @@
-{q1{x(int),y(int)},q2{x(int),y(int)},q3{x(int),y(int)},q4{x(int),y(int)},q5{x(int),y(int)},q6{x(int),y(int)},q7{x(int),y(int)},q8{x(int),y(int)},q9{x(int),y(int)},q10{x(int),y(int)}}
-
-Queen:1 [{<q1>,<q2>,<q3>,<q4>,<q5>,<q6>,<q7>,<q8>,<q9>,<q10>},{<q1>,<q2>,<q3>,<q4>,<q5>,<q6>,<q7>,<q8>,<q9>,<q10>}]
+Queen (1 :: x:int, y:int) = {<q1,?,?>,<q2,?,?>,<q3,?,?>,<q4,?,?>,<q5,?,?>,<q6,?,?>,<q7,?,?>,<q8,?,?>,<q9,?,?>,<q10,?,?>}
 
 Queen::x >= 1 && Queen::x <=10
 Queen::y >= 1 && Queen::y <=10
 
-// Queens cannot be on the same row or column or on the diagonal
-forall q:Queen, q':Queen\q | q::x != q'::x && q::y != q'::y && |q::x - q'::x| != |q::y - q'::y|
+// Queens cannot be on the same row or column
+distinct(Queen::x)
+distinct(Queen::y)
+
+// Queens cannot be on the same diagonal
+forall q:Queen, q':Queen\q | |q::x - q'::x| != |q::y - q'::y|
