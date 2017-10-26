@@ -34,9 +34,13 @@ public class MemoCacheClearer {
 				for (Pair<String, List<AbstractFunction>> func : functions) {
 					for (AbstractFunction f : func.getSecond()) {
 						if (f instanceof NamedFunction) {
-							((NamedFunction)f).clearMemoizationCache();
-							if (debug.getValue()) {
-								ec.getStdOut().println("Cleared the memo cache of the \'" + f.getName() + "\' function");
+							NamedFunction nf = ((NamedFunction)f);
+							if (nf.hasMemoization()) {
+								nf.clearMemoizationCache();
+								if (debug.getValue()) {
+									ec.getStdOut().println("Cleared the memo cache of the \'" + f.getName() + "\' function");
+							
+								}
 							}
 						}
 					}
