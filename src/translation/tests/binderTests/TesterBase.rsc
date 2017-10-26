@@ -12,4 +12,6 @@ RelationMatrix truths(list[list[str]] vectors) = (() | it + truth(v) | v <- vect
 RelationMatrix var(list[str] vector, str relName) = (vector:relOnly(var("<relName>_<relVar(vector)>")));
 RelationMatrix vars(list[list[str]] vectors, str relName) = (() | it + var(v, relName) | v <- vectors);
  
+RelationMatrix build(list[RelationMatrix] matrices) = (() | it + m | m <- matrices); 
+ 
 str relVar(list[str] vector) = intercalate("_", vector);   

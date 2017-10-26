@@ -1,21 +1,32 @@
-module theories::tests::binderTests::TransposeTester
+module translation::tests::binderTests::TransposeTester
 
-extend theories::tests::binderTests::TesterBase;
+extend translation::tests::binderTests::TesterBase;
 
-test bool transposeOfUnaryRelationIsItself() {
-  RelationMatrix unary = t(["a"]) + t(["b"]);
-
-  return transpose(unary) == unary;
-}
 
 test bool transposeOfBinary() {
-  RelationMatrix binary = t(["a","b"]) + t(["a","c"]);
+  RelationMatrix binary = truths([["a","b"],["a","c"]]);
   
-  return transpose(binary) == t(["b","a"]) + t(["c","a"]);
+  return transpose(binary) == truths([["b","a"],["c","a"]]);
 }
 
-test bool tranposeOfTenary() {
-  RelationMatrix tenary = t(["a","b","c"]) + t(["a","b","d"]);
+test bool transposeOfIdentityIsItself() {
+  RelationMatrix iden = truths([["a","a"],["b","b"],["c","c"]]);
   
-  return transpose(tenary) == t(["c","b","a"]) + t(["d","b","a"]);
+  return transpose(iden) == iden;
+}
+
+test bool canOnlyTransposeBinaryRelations() {
+  RelationMatrix unary = truths([["a"],["b"],["c"]]);
+  try {
+    transpose(unary);
+    fail;
+  } catch ex: {};
+  
+  RelationMatrix tenary = truths([["a","b","c"],["c","d","e"]]);
+  try {
+    transpose(tenary);
+    fail;
+  } catch ex: {};
+  
+  return true;
 }

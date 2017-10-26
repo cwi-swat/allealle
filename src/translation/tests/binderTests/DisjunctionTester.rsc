@@ -1,42 +1,35 @@
-module theories::tests::binderTests::DisjunctionTester
+module translation::tests::binderTests::DisjunctionTester
 
-extend theories::tests::binderTests::TesterBase;
+extend translation::tests::binderTests::TesterBase;
 
 test bool disjunctionWithOnlyTruthValuesOnlyResultsInTruthValues() {
-  RelationMatrix lhs = t(["a"]) + f(["b"]) + t(["c"]) + f(["d"]);
-  RelationMatrix rhs = t(["a"]) + f(["b"]) + f(["c"]) + t(["d"]);
+  RelationMatrix lhs = truths([["a"],["c"]]);
+  RelationMatrix rhs = truths([["a"],["b"],["d"]]);
   
-  return disjunction(lhs,rhs) == t(["a"]) + f(["b"]) + t(["c"]) + t(["d"]);
+  return or(lhs,rhs) == truths([["a"],["b"],["c"],["d"]]);
 }
 
 test bool disjunctionMatricesShouldBeOfSameArity() {
-  RelationMatrix lhs = t(["a"]) + f(["b"]);
-  RelationMatrix rhs = t(["a","b"]) + f(["b","c"]);
+  RelationMatrix lhs = truths([["a"],["b"]]);
+  RelationMatrix rhs = truths([["a","b"],["b","c"]]);
   
   try {
-    disjunction(lhs, rhs);
+    or(lhs, rhs);
   } catch ex: {return true;}
 
   fail;
 }
 
-test bool disjunctionMissingVectorsOnEitherSideAreSeenAsFalseValues() {
-  RelationMatrix lhs = t(["a"]) + f(["c"]);
-  RelationMatrix rhs = t(["b"]);
-  
-  return disjunction(lhs,rhs) == t(["a"]) + t(["b"]) + f(["c"]);
-}
-
 test bool disjunctionUsingVarsResultsInOrsInTheFormulas() {
-  RelationMatrix lhs = v(["a"], "lhs");
-  RelationMatrix rhs = v(["a"], "rhs");
+  RelationMatrix lhs = var(["a"], "lhs");
+  RelationMatrix rhs = var(["a"], "rhs");
   
-  return disjunction(lhs,rhs) == val(["a"], \or({var("lhs_a"), var("rhs_a")}));
+  return or(lhs,rhs) == (["a"]:relOnly(\or({var("lhs_a"), var("rhs_a")})));
 }
 
 test bool disjunctionUsingVarsAndTruthValuesResultsInSingleFormulas() {
-  RelationMatrix lhs = v(["a"], "lhs") + t(["b"]);
-  RelationMatrix rhs = f(["a"]) + v(["b"], "rhs");
+  RelationMatrix lhs = build([var(["a"], "lhs"),truth(["b"])]);
+  RelationMatrix rhs = var(["b"], "rhs");
 
-  return disjunction(lhs,rhs) == v(["a"], "lhs") + t(["b"]);
+  return or(lhs,rhs) == build([(["a"]:relOnly(var("lhs_a"))), truth(["b"])]);
 }

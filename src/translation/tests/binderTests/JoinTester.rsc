@@ -16,55 +16,53 @@ test bool test2x1Join_onlyTruthValues() {
 	return 	dotJoin(parent, person) == truths([["j"],["s"]]);				 
 }
 
-//test bool test1x2Join_withVars() {
-//  RelationMatrix person = truths([["j"],["s"],["l"]]);
-//	RelationMatrix parent = vars([["j","l"],["s","l"]], "parent");
-//		
-//	return 	dotJoin(person, parent) == val(["l"], \or({var("j_l"), var("s_l")}));
-//}
+test bool test1x2Join_withVars() {
+  RelationMatrix person = truths([["j"],["s"],["l"]]);
+	RelationMatrix parent = vars([["j","l"],["s","l"]], "parent");
+		
+	return 	dotJoin(person, parent) == (["l"]: relOnly(\or({var("parent_j_l"), var("parent_s_l")})));
+}
 //
-//test bool test2x1Join_withVars() {
-//	RelationMatrix person = t(["j"])+t(["s"])+t(["l"]);
-//	RelationMatrix parent = v(["j","l"])+v(["s","l"]);
-//		
-//	return \join(parent, person, voidAdder) == val(["j"], var("j_l"))+val(["s"], var("s_l"));				 
-//}
-//
-//test bool test2x2_onlyTruthValues() {
-//	RelationMatrix person = t(["j"])+t(["heily"])+t(["l"]);
-//	RelationMatrix parent = t(["j","l"])+t(["heily","j"]);
-//	
-//	return \join(parent,parent, voidAdder) == t(["heily","l"]);
-//}
-//
-//test bool test2x2_withVars() {
-//	RelationMatrix r = v(["a","a"])+v(["a","b"])+v(["b","a"])+v(["b","b"]);
-//		
-//	return \join(r,r, voidAdder) == val(["a", "a"], \or({var("a_a"), \and({var("a_b"),var("b_a")})})) +
-//						 val(["a", "b"], \or({\and({var("a_a"), var("a_b")}), \and({var("a_b"), var("b_b")})})) +
-//						 val(["b", "a"], \or({\and({var("b_a"), var("a_a")}), \and({var("b_b"), var("b_a")})})) +
-//						 val(["b", "b"], \or({\and({var("b_a"), var("a_b")}), var("b_b")}));			
-//}
-//
-//test bool test2x2_withVarsAndTruthVals() {
-//	RelationMatrix r = t(["a","a"])+v(["a","b"])+v(["b","a"]);
-//
-//	return \join(r,r, voidAdder) == t(["a", "a"]) +
-//						 val(["a", "b"], var("a_b")) +
-//						 val(["b", "a"], var("b_a")) +
-//						 val(["b", "b"], \and({var("b_a"), var("a_b")}));
-//}
-//
-//test bool test1x2_withVarsAndTruthVals() {
-//	RelationMatrix p = t(["p"]);
-//	RelationMatrix n = v(["p","h"]);
-//	
-//	return \join(p,n, voidAdder) == val(["h"], var("p_h"));
-//}
-//
-//test bool test1x3_withTruthValues() {
-//  RelationMatrix nums = t(["n1"]); 
-//  RelationMatrix cells = t(["n1", "n1", "n9"]) + t(["n1", "n2", "n2"]) + t(["n1", "n3", "n3"]);
-//
-//  return \join(nums, \join(nums, cells, voidAdder), voidAdder) == t(["n9"]);  
-//}
+test bool test2x1Join_withVars() {
+  RelationMatrix person = truths([["j"],["s"],["l"]]);
+  RelationMatrix parent = vars([["j","l"],["s","l"]], "parent");
+		
+	return dotJoin(parent, person) == (["j"]:relOnly(var("parent_j_l")), ["s"]:relOnly(var("parent_s_l")));				 
+}
+
+test bool test2x2_onlyTruthValues() {
+	RelationMatrix parent = truths([["j","l"],["h","j"]]);
+	
+	return dotJoin(parent,parent) == truth(["h","l"]);
+}
+
+test bool test2x2_withVars() {
+	RelationMatrix r = vars([["a","a"],["a","b"],["b","a"],["b","b"]],"rel");
+		
+	return dotJoin(r,r) == (["a","a"]:relOnly(\or({var("rel_a_a"), \and({var("rel_a_b"), var("rel_b_a")})})),
+						              ["a","b"]:relOnly(\or({\and({var("rel_a_a"), var("rel_a_b")}), \and({var("rel_a_b"), var("rel_b_b")})})),
+						              ["b","a"]:relOnly(\or({\and({var("rel_b_a"), var("rel_a_a")}), \and({var("rel_b_b"), var("rel_b_a")})})),
+						              ["b","b"]:relOnly(\or({\and({var("rel_b_a"), var("rel_a_b")}), var("rel_b_b")})));			
+}
+
+test bool test2x2_withVarsAndTruthVals() {
+	RelationMatrix r = build([truth(["a","a"]),vars([["a","b"],["b","a"]],"rel")]);
+
+	return dotJoin(r,r) == build([truth(["a","a"]),
+	                              vars([["a","b"],["b","a"]],"rel"),
+	                              (["b","b"]:relOnly(\and({var("rel_a_b"),var("rel_b_a")})))]);
+}
+
+test bool test1x2_withVarsAndTruthVals() {
+	RelationMatrix p = truth(["p"]);
+	RelationMatrix n = var(["p","h"],"rel");
+	
+	return dotJoin(p,n) == (["h"]:relOnly(var("rel_p_h")));
+}
+
+test bool test1x3_withTruthValues() {
+  RelationMatrix nums = truth(["n1"]); 
+  RelationMatrix cells = truths([["n1","n1","n9"],["n1", "n2", "n2"],["n1", "n3", "n3"]]);
+
+  return dotJoin(nums, dotJoin(nums, cells)) == truth(["n9"]);  
+}
