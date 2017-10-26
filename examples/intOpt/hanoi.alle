@@ -8,7 +8,7 @@ place (3)             >= {<s1,r1,d1>,<s1,r1,d2>,<s1,r1,d3>} <= {<s1,r1,d1>,<s1,r
 
 place in State->Rod->Disc
 
-forall s:State, d:Disc | #((s.place).d) = 1
+forall s:State, d:Disc | one (s.place).d
 
 exists s:State | Disc == GoalRod.(s.place)
 

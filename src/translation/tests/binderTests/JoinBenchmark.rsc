@@ -3,6 +3,7 @@ module translation::tests::binderTests::JoinBenchmark
 extend translation::tests::binderTests::TesterBase;
 
 import util::Benchmark;
+import util::MemoCacheClearer;
 
 RelationMatrix constructPigeonRelation(int nrOfPigeons) = truths([["p<i>"] | int i <- [1..nrOfPigeons+1]]);
 RelationMatrix constructHoleRelation(int nrOfHoles) = truths([["h<i>"] | int i <- [1..nrOfHoles+1]]);
@@ -27,14 +28,16 @@ void runJoinBenchmark(int nrOfPigeons, int nrOfHoles, int warmup, int nrOfRounds
   print("Running benchmark (<nrOfRounds> total iterations): ");
   for (int i <- [0..nrOfRounds]) {
     int startTimeWholeLoop = cpuTime();
-    for (Index idx <- pigeons) {
-      RelationMatrix p = (idx : pigeons[idx]);
+    for (Index idx <- holes) {
+      clearMemoCache({"translation::Binder","translation::Translator"});
+      RelationMatrix h = (idx : holes[idx]);
       int startTime = cpuTime();
-      r = dotJoin(p,nest);
+      r = dotJoin(nest,h);
       times += [(cpuTime() - startTime) / 1000000];
       print(".");
     }
     times += [(cpuTime() - startTimeWholeLoop) / 1000000];
+    gc();
   }
   
   print("done\n");

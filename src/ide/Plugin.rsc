@@ -7,6 +7,7 @@ import ide::Imploder;
 import ide::CombinedModelFinder;
 import ide::vis::ModelVisualizer;
 
+import translation::Translator;
 import translation::Binder;
 
 import util::IDE;
@@ -32,9 +33,9 @@ void main(){
 	registerContributions(lang, contribs);
 } 
  
-void checkAndVisualize(ide::CombinedSyntax::Problem p) {
-	ModelFinderResult result = checkInitialSolution(implodeProblem(p));
-	if (sat(Model currentModel, Model (ide::CombinedAST::Domain) nextModel, void () stop) := result) {
+void checkAndVisualize(ide::CombinedSyntax::Problem p) {  
+	ModelFinderResult result = checkInitialSolution(implodeProblem(p)); 
+	if (sat(Model currentModel, Model (Domain) nextModel, void () stop) := result) {
 		renderModel(currentModel, nextModel, stop);
 	} else if (trivialSat(Model model) := result) {
 	  renderModel(model, Model (ide::CombinedAST::Domain) { return empty(); }, void () {;});

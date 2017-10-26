@@ -21,35 +21,41 @@ Formula createAttribute(Index idx, str name, \int(), lit(negInt(int i))) = neg(\
 Formula toIntVar(Index idx, str attName) = intVar(toIntVarName(idx, attName));
 str toIntVarName(Index idx, str attName) = "<intercalate("_", idx)>!<attName>";
 
-Formula translateFormula(gt(AlleExpr lhsExpr, AlleExpr rhsExpr), Environment env, AdditionalConstraintFunctions acf, Cache cache) = translateIntCompFormula(lhs, rhs, Formula (Formula l, Formula r) { return gt(l, r);}, acf, cache)
-  when RelationMatrix lhs := translateCachedExpression(lhsExpr, env, acf, cache),
-       RelationMatrix rhs := translateCachedExpression(rhsExpr, env, acf, cache);
+@memo
+Formula translateFormula(gt(AlleExpr lhsExpr, AlleExpr rhsExpr), Environment env, AdditionalConstraintFunctions acf) = translateIntCompFormula(lhs, rhs, Formula (Formula l, Formula r) { return gt(l, r);}, acf)
+  when RelationMatrix lhs := translateExpression(lhsExpr, env, acf),
+       RelationMatrix rhs := translateExpression(rhsExpr, env, acf);
 
-Formula translateFormula(gte(AlleExpr lhsExpr, AlleExpr rhsExpr), Environment env, AdditionalConstraintFunctions acf, Cache cache) = translateIntCompFormula(lhs, rhs, Formula (Formula l, Formula r) { return gte(l, r);}, acf, cache)
-  when RelationMatrix lhs := translateCachedExpression(lhsExpr, env, acf, cache),
-       RelationMatrix rhs := translateCachedExpression(rhsExpr, env, acf, cache);
+@memo
+Formula translateFormula(gte(AlleExpr lhsExpr, AlleExpr rhsExpr), Environment env, AdditionalConstraintFunctions acf) = translateIntCompFormula(lhs, rhs, Formula (Formula l, Formula r) { return gte(l, r);}, acf)
+  when RelationMatrix lhs := translateExpression(lhsExpr, env, acf),
+       RelationMatrix rhs := translateExpression(rhsExpr, env, acf);
 
-Formula translateFormula(lt(AlleExpr lhsExpr, AlleExpr rhsExpr), Environment env, AdditionalConstraintFunctions acf, Cache cache) = translateIntCompFormula(lhs, rhs, Formula (Formula l, Formula r) { return lt(l, r);}, acf, cache)
-  when RelationMatrix lhs := translateCachedExpression(lhsExpr, env, acf, cache),
-       RelationMatrix rhs := translateCachedExpression(rhsExpr, env, acf, cache);
+@memo
+Formula translateFormula(lt(AlleExpr lhsExpr, AlleExpr rhsExpr), Environment env, AdditionalConstraintFunctions acf) = translateIntCompFormula(lhs, rhs, Formula (Formula l, Formula r) { return lt(l, r);}, acf)
+  when RelationMatrix lhs := translateExpression(lhsExpr, env, acf),
+       RelationMatrix rhs := translateExpression(rhsExpr, env, acf);
 
-Formula translateFormula(lte(AlleExpr lhsExpr, AlleExpr rhsExpr), Environment env, AdditionalConstraintFunctions acf, Cache cache) = translateIntCompFormula(lhs, rhs, Formula (Formula l, Formula r) { return lte(l, r);}, acf, cache)
-  when RelationMatrix lhs := translateCachedExpression(lhsExpr, env, acf, cache),
-       RelationMatrix rhs := translateCachedExpression(rhsExpr, env, acf, cache);
+@memo
+Formula translateFormula(lte(AlleExpr lhsExpr, AlleExpr rhsExpr), Environment env, AdditionalConstraintFunctions acf) = translateIntCompFormula(lhs, rhs, Formula (Formula l, Formula r) { return lte(l, r);}, acf)
+  when RelationMatrix lhs := translateExpression(lhsExpr, env, acf),
+       RelationMatrix rhs := translateExpression(rhsExpr, env, acf);
 
-Formula translateFormula(intEqual(AlleExpr lhsExpr, AlleExpr rhsExpr), Environment env, AdditionalConstraintFunctions acf, Cache cache) = translateIntCompFormula(lhs, rhs, Formula (Formula l, Formula r) { return equal(l, r);}, acf, cache) 
-  when RelationMatrix lhs := translateCachedExpression(lhsExpr, env, acf, cache),
-       RelationMatrix rhs := translateCachedExpression(rhsExpr, env, acf, cache);
+@memo
+Formula translateFormula(intEqual(AlleExpr lhsExpr, AlleExpr rhsExpr), Environment env, AdditionalConstraintFunctions acf) = translateIntCompFormula(lhs, rhs, Formula (Formula l, Formula r) { return equal(l, r);}, acf) 
+  when RelationMatrix lhs := translateExpression(lhsExpr, env, acf),
+       RelationMatrix rhs := translateExpression(rhsExpr, env, acf);
 
-Formula translateFormula(intInequal(AlleExpr lhsExpr, AlleExpr rhsExpr), Environment env, AdditionalConstraintFunctions acf, Cache cache) = translateIntCompFormula(lhs, rhs, Formula (Formula l, Formula r) { return inequal(l, r);}, acf, cache) 
-  when RelationMatrix lhs := translateCachedExpression(lhsExpr, env, acf, cache),
-       RelationMatrix rhs := translateCachedExpression(rhsExpr, env, acf, cache);
+@memo
+Formula translateFormula(intInequal(AlleExpr lhsExpr, AlleExpr rhsExpr), Environment env, AdditionalConstraintFunctions acf) = translateIntCompFormula(lhs, rhs, Formula (Formula l, Formula r) { return inequal(l, r);}, acf) 
+  when RelationMatrix lhs := translateExpression(lhsExpr, env, acf),
+       RelationMatrix rhs := translateExpression(rhsExpr, env, acf);
 
 bool isIntForm(\int(int _)) = true;
 bool isIntForm(intVar(str _)) = true;
 default bool isIntForm(Formula _) = false; 
 
-Formula translateIntCompFormula(RelationMatrix lhs, RelationMatrix rhs, Formula (Formula lhsElement, Formula rhsElement) operation, AdditionalConstraintFunctions acf, Cache cache) {
+Formula translateIntCompFormula(RelationMatrix lhs, RelationMatrix rhs, Formula (Formula lhsElement, Formula rhsElement) operation, AdditionalConstraintFunctions acf) {
   if (size(lhs) == 0 || size(rhs) == 0) { return \false(); }
     
   Formula result = \true();
@@ -75,8 +81,9 @@ Formula translateIntCompFormula(RelationMatrix lhs, RelationMatrix rhs, Formula 
   return result; 
 }
 
-Formula translateFormula(distinct(AlleExpr expr), Environment env, AdditionalConstraintFunctions acf, Cache cache) {
-  RelationMatrix m = translateExpression(expr, env, acf, cache);
+@memo
+Formula translateFormula(distinct(AlleExpr expr), Environment env, AdditionalConstraintFunctions acf) {
+  RelationMatrix m = translateExpression(expr, env, acf);
   
   list[Formula] terms = [];
   for (Index idx <- m) {
@@ -94,16 +101,19 @@ Formula translateFormula(distinct(AlleExpr expr), Environment env, AdditionalCon
   return distinct(terms);
 }       
 
-RelationMatrix translateExpression(intLit(int i), Environment env, AdditionalConstraintFunctions acf, Cache cache) = (["_c<i>"] : relAndAtt(\true(), \int(i))); 
+@memo
+RelationMatrix translateExpression(intLit(int i), Environment env, AdditionalConstraintFunctions acf) = (["_c<i>"] : relAndAtt(\true(), \int(i))); 
   
-RelationMatrix translateExpression(neg(AlleExpr expr), Environment env, AdditionalConstraintFunctions acf, Cache cache) 
-  = translateUnaryExpression(expr, Formula (Formula f) { return neg(f); }, env, acf, cache);
+@memo
+RelationMatrix translateExpression(neg(AlleExpr expr), Environment env, AdditionalConstraintFunctions acf) 
+  = translateUnaryExpression(expr, Formula (Formula f) { return neg(f); }, env, acf);
 
-RelationMatrix translateExpression(abs(AlleExpr expr), Environment env, AdditionalConstraintFunctions acf, Cache cache) 
-  = translateUnaryExpression(expr, Formula (Formula f) { return abs(f); }, env, acf, cache);
+@memo
+RelationMatrix translateExpression(abs(AlleExpr expr), Environment env, AdditionalConstraintFunctions acf) 
+  = translateUnaryExpression(expr, Formula (Formula f) { return abs(f); }, env, acf);
 
-private RelationMatrix translateUnaryExpression(AlleExpr expr, Formula (Formula) opr, Environment env, AdditionalConstraintFunctions acf, Cache cache) {
-  RelationMatrix m = translateCachedExpression(expr, env, acf, cache);
+private RelationMatrix translateUnaryExpression(AlleExpr expr, Formula (Formula) opr, Environment env, AdditionalConstraintFunctions acf) {
+  RelationMatrix m = translateExpression(expr, env, acf);
   
   for (Index idx <- m) {
     if (relAndAtt(Formula relForm, Formula attForm) := m[idx], isIntForm(attForm)) {
@@ -122,14 +132,16 @@ private RelationMatrix translateUnaryExpression(AlleExpr expr, Formula (Formula)
   return m;
 }
 
-RelationMatrix translateExpression(addition(list[AlleExpr] terms), Environment env, AdditionalConstraintFunctions acf, Cache cache)
-  = translateNaryExpression(terms, Formula (Formula lhs, Formula rhs) { return addition(lhs, rhs); }, \int(0), env, acf, cache);
+@memo
+RelationMatrix translateExpression(addition(list[AlleExpr] terms), Environment env, AdditionalConstraintFunctions acf)
+  = translateNaryExpression(terms, Formula (Formula lhs, Formula rhs) { return addition(lhs, rhs); }, \int(0), env, acf);
 
-RelationMatrix translateExpression(multiplication(list[AlleExpr] terms), Environment env, AdditionalConstraintFunctions acf, Cache cache) 
-  = translateNaryExpression(terms, Formula (Formula lhs, Formula rhs) { return multiplication(lhs, rhs); }, \int(1), env, acf, cache);
+@memo
+RelationMatrix translateExpression(multiplication(list[AlleExpr] terms), Environment env, AdditionalConstraintFunctions acf) 
+  = translateNaryExpression(terms, Formula (Formula lhs, Formula rhs) { return multiplication(lhs, rhs); }, \int(1), env, acf);
 
 
-private RelationMatrix translateNaryExpression(list[AlleExpr] terms, Formula (Formula lhs, Formula rhs) opr, Formula startAttForm, Environment env, AdditionalConstraintFunctions acf, Cache cache) {
+private RelationMatrix translateNaryExpression(list[AlleExpr] terms, Formula (Formula lhs, Formula rhs) opr, Formula startAttForm, Environment env, AdditionalConstraintFunctions acf) {
   RelationMatrix buildResult([], Formula relForm, Formula attForm) {
     Index tmpIdx = [acf.freshIntermediateId()];
 
@@ -146,7 +158,7 @@ private RelationMatrix translateNaryExpression(list[AlleExpr] terms, Formula (Fo
   }
   
   RelationMatrix buildResult([AlleExpr hd, *AlleExpr tl], Formula relForm, Formula attForm) {
-    RelationMatrix m = translateCachedExpression(hd, env, acf, cache);
+    RelationMatrix m = translateExpression(hd, env, acf);
     
     RelationMatrix relResult = ();
     
@@ -164,18 +176,21 @@ private RelationMatrix translateNaryExpression(list[AlleExpr] terms, Formula (Fo
   return buildResult(terms, \true(), startAttForm);
 }
 
-RelationMatrix translateExpression(subtraction(AlleExpr lhsExpr, AlleExpr rhsExpr), Environment env, AdditionalConstraintFunctions acf, Cache cache) 
-  = translateBinaryExpression(lhsExpr, rhsExpr, Formula (Formula l, Formula r) {return addition(l,neg(r));}, env, acf, cache);
+@memo
+RelationMatrix translateExpression(subtraction(AlleExpr lhsExpr, AlleExpr rhsExpr), Environment env, AdditionalConstraintFunctions acf) 
+  = translateBinaryExpression(lhsExpr, rhsExpr, Formula (Formula l, Formula r) {return addition(l,neg(r));}, env, acf);
 
-RelationMatrix translateExpression(division(AlleExpr lhsExpr, AlleExpr rhsExpr), Environment env, AdditionalConstraintFunctions acf, Cache cache) 
-  = translateBinaryExpression(lhsExpr, rhsExpr, Formula (Formula l, Formula r) {return division(l,r);}, env, acf, cache);
+@memo
+RelationMatrix translateExpression(division(AlleExpr lhsExpr, AlleExpr rhsExpr), Environment env, AdditionalConstraintFunctions acf) 
+  = translateBinaryExpression(lhsExpr, rhsExpr, Formula (Formula l, Formula r) {return division(l,r);}, env, acf);
 
-RelationMatrix translateExpression(modulo(AlleExpr lhsExpr, AlleExpr rhsExpr), Environment env, AdditionalConstraintFunctions acf, Cache cache) 
-  = translateBinaryExpression(lhsExpr, rhsExpr, Formula (Formula l, Formula r) {return modulo(l,r);}, env, acf, cache);
+@memo
+RelationMatrix translateExpression(modulo(AlleExpr lhsExpr, AlleExpr rhsExpr), Environment env, AdditionalConstraintFunctions acf) 
+  = translateBinaryExpression(lhsExpr, rhsExpr, Formula (Formula l, Formula r) {return modulo(l,r);}, env, acf);
 
-private RelationMatrix translateBinaryExpression(AlleExpr lhsExpr, AlleExpr rhsExpr, Formula (Formula l, Formula r) opr, Environment env, AdditionalConstraintFunctions acf, Cache cache) {
-  RelationMatrix lhs = translateCachedExpression(lhsExpr, env, acf, cache);
-  RelationMatrix rhs = translateCachedExpression(rhsExpr, env, acf, cache);
+private RelationMatrix translateBinaryExpression(AlleExpr lhsExpr, AlleExpr rhsExpr, Formula (Formula l, Formula r) opr, Environment env, AdditionalConstraintFunctions acf) {
+  RelationMatrix lhs = translateExpression(lhsExpr, env, acf);
+  RelationMatrix rhs = translateExpression(rhsExpr, env, acf);
   
   if (lhs == () || rhs == ()) { 
     return ();
@@ -209,8 +224,9 @@ private RelationMatrix translateBinaryExpression(AlleExpr lhsExpr, AlleExpr rhsE
   return result;
 }  
 
-RelationMatrix translateExpression(sum(AlleExpr e), Environment env, AdditionalConstraintFunctions acf, Cache cache) {
-  RelationMatrix m = translateCachedExpression(e, env, acf, cache);
+@memo
+RelationMatrix translateExpression(sum(AlleExpr e), Environment env, AdditionalConstraintFunctions acf) {
+  RelationMatrix m = translateExpression(e, env, acf);
   
   Index tmpIdx = [acf.freshIntermediateId()];
   Formula tmpVar = toIntVar(tmpIdx, "val");
@@ -231,8 +247,9 @@ RelationMatrix translateExpression(sum(AlleExpr e), Environment env, AdditionalC
   return (tmpIdx : relAndAtt(\true(), tmpVar));   
 }
 
-RelationMatrix translateExpression(car(AlleExpr e), Environment env, AdditionalConstraintFunctions acf, Cache cache) {
-  RelationMatrix m = translateCachedExpression(e, env, acf, cache);
+@memo
+RelationMatrix translateExpression(car(AlleExpr e), Environment env, AdditionalConstraintFunctions acf) {
+  RelationMatrix m = translateExpression(e, env, acf);
 
   Index tmpIdx = [acf.freshIntermediateId()];
   Formula tmpVar = toIntVar(tmpIdx, "val");

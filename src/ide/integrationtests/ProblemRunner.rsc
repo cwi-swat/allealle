@@ -5,6 +5,8 @@ import ide::CombinedAST;
 import ide::CombinedModelFinder;
 
 import translation::SMTInterface;
+
+import logic::Propositional;
   
 import IO;
 import List;

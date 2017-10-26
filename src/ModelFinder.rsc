@@ -11,6 +11,7 @@ import translation::Unparser;
 import solver::backend::z3::SolverRunner; 
 
 import util::Benchmark;
+import util::MemoCacheClearer;
 import IO; 
 import ValueIO;
 import List;
