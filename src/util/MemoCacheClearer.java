@@ -48,8 +48,4 @@ public class MemoCacheClearer {
 			}
 		}
 	}
-	
-	public void gc() {
-		System.gc();
-	}
 }
