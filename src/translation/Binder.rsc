@@ -128,8 +128,10 @@ RelationMatrix dotJoin(RelationMatrix lhs, RelationMatrix rhs) {
       Index joinIdx = (lhsIdx - lhsIdx[-1]) + (rhsIdx - rhsIdx[0]);
       if (val == \true()) {
         relResult[joinIdx] = relOnly(\true());
-      } else if (joinIdx in relResult, relResult[joinIdx].relForm != \true()) {
-        relResult[joinIdx] = relOnly(\or(relResult[joinIdx].relForm, val));
+      } else if (joinIdx in relResult) {
+          if (relResult[joinIdx].relForm != \true()) {
+            relResult[joinIdx] = relOnly(\or(relResult[joinIdx].relForm, val));
+          }
       } else {        
         relResult[joinIdx] = relOnly(val);
       }
