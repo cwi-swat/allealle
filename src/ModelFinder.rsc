@@ -32,7 +32,6 @@ ModelFinderResult checkInitialSolution(Problem problem) {
 	print("Building initial environment...");
 	tuple[Environment env, int time] ie = bm(createInitialEnvironment, problem); 
 	print("done, took: <(ie.time/1000000)> ms\n");
-	
  
 	println("Translating problem to SMT formula...");
 	tuple[TranslationResult r, int time] t = bm(translateProblem, problem, ie.env);
@@ -74,9 +73,9 @@ ModelFinderResult runInSolver(Problem problem, TranslationResult tr, Environment
 	writeFile(|project://allealle/bin/latestSmt.smt2|, "<fullSmtProblem>\n(check-sat)");
 	  
 	print("Solving by Z3...");
-	tuple[bool result, int time] solving = bm(isSatisfiable, solverPid, fullSmtProblem); 
-	print("done, took: <solving.time/1000000> ms\n");
-	println("Outcome is \'<solving.result>\'");
+	bool satisfiable = isSatisfiable(solverPid, fullSmtProblem); 
+	print("done, took: <getSolvingTime(solverPid)> ms\n");
+	println("Outcome is \'<satisfiable>\'");
   
 	SMTModel smtModel = ();
 	Model model = empty();
@@ -84,7 +83,7 @@ ModelFinderResult runInSolver(Problem problem, TranslationResult tr, Environment
 	Model next(Domain dom) {
 	  print("Getting next model from SMT solver...");
 		smtModel = nextSmtModel(solverPid, dom, smtModel, model, smtVarCollectResult.vars);
-	  print("done!\n");
+	  print("done, took: <getSolvingTime(solverPid)> ms\n");
 	        
 		if (smtModel == ()) {
 			return empty();
@@ -94,7 +93,7 @@ ModelFinderResult runInSolver(Problem problem, TranslationResult tr, Environment
 		}
 	}  
 
-	if(solving.result) {
+	if(satisfiable) {
 		smtModel = firstSmtModel(solverPid, smtVarCollectResult.vars);
 		model = constructRelationalModel(smtModel, env);
 		
@@ -156,27 +155,27 @@ private int countClauses(Formula f) {
 private int countVars(set[SMTVar] vars) = size(vars);
 
 private tuple[&T, int] bm(&T () methodToBenchmark) {
-	int startTime = userTime();
+	int startTime = cpuTime();
 	&T result = methodToBenchmark();
-	return <result, userTime() - startTime>;
+	return <result, cpuTime() - startTime>;
 }
 
 private tuple[&T, int] bm(&T (&R) methodToBenchmark, &R p) {
-	int startTime = userTime();
+	int startTime = cpuTime();
 	&T result = methodToBenchmark(p);
-	return <result, userTime() - startTime>;
+	return <result, cpuTime() - startTime>;
 }
 
 private tuple[&T, int] bm(&T (&R,&Q) methodToBenchmark, &R p1, &Q p2) {
-	int startTime = userTime();
+	int startTime = cpuTime();
 	&T result = methodToBenchmark(p1,p2);
-	return <result, userTime() - startTime>;
+	return <result, cpuTime() - startTime>;
 }
 
 private tuple[&T, int] bm(&T (&R,&Q,&S) methodToBenchmark, &R p1, &Q p2, &S p3) {
-	int startTime = userTime();
+	int startTime = cpuTime();
 	&T result = methodToBenchmark(p1,p2,p3);
-	return <result, userTime() - startTime>;
+	return <result, cpuTime() - startTime>;
 }
 
 

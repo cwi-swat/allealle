@@ -46,6 +46,19 @@ bool checkSat(SolverPID pid) {
 	}
 }
 
+int getSolvingTime(SolverPID pid) {
+  str result = runSolver(pid, "(get-info :all-statistics)", wait=5);
+  
+  int time;  
+  if (/[:]time[ ]*<sec:[0-9]*>[.]<hun:[0-9][0-9]>/ := result) {
+    time = toInt(sec)*1000 + toInt(hun)*10;  
+  } else {
+    throw "Unable to parse the solving time from the statistics of Z3";
+  }
+  
+  return time;
+}
+
 str runSolver(SolverPID pid, str commands, int wait = 0) {
 	try {
 		return run(pid, commands, debug=false, wait = wait);
