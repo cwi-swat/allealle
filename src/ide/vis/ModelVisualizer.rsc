@@ -140,7 +140,7 @@ Figure visualizeModel(Model model, DisplayOptions disOpt) {
   set[VisEdge] buildVisEdges() {
     set[VisEdge] edges = {};
     
-    for (nary(str relName, set[ModelTuple] tuples) <- model.relations, ModelTuple t <- tuples) {
+    for (nary(str relName, set[ModelTuple] tuples) <- model.relations, relName notin disOpt.filteredEdges, ModelTuple t <- tuples) {
       map[str,str] attVals = (att.name : val2Str(att.val) | ModelAttribute att <- t.attributes);
       Index idx = t.idx.idx;
 
