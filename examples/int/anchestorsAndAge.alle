@@ -36,7 +36,5 @@ forall p: Person\Adam | p::age < Adam::age
 // If p is c's parent then p must have been an adult when c was born 
 forall p: Person, c: Person\p | p -> c in parent => p::age - c::age > 17
 
-exists p:Person | p::age = 37
-
 // If two persons have the same parent and the same age, they must be twins
 twin == {p1: Person, p2: Person\p1 | parent.p1 == parent.p2 && p1::age = p2::age}

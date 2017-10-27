@@ -1,0 +1,14 @@
+Time (1) <= {<t>}
+Event (1) <= {<e>}
+first (1) = {<t1>}
+last (1) <= {<t10>}
+
+pre (2) <= {<a,b>}
+post (2) <= {<a,b>}
+next (2) <= {<d,e>}
+
+Key (1) <= {<k1>}
+Card (1) <= {<c1>}
+Guest (1) <= {<g1>}
+Room (1) <= {<r1>}
+HotelEvent (1) 

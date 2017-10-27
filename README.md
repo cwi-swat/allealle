@@ -1,1 +1,2 @@
-#Alle Alle - a relational model finder with extended theories
+#AlleAlle - An Extensibe Relational Model Finder Modulo Theories
+

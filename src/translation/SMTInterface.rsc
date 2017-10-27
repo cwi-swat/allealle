@@ -70,7 +70,7 @@ str compile(\and(set[Formula] forms)) {
     clauses += compile(f) + " ";
    }
    
-   return "(and " + clauses + ")";
+   return "(and " + clauses + ")\n";
 }   
 str compile(\or(set[Formula] forms))  { 
    str clauses = "";
@@ -78,11 +78,11 @@ str compile(\or(set[Formula] forms))  {
     clauses += compile(f) + " ";
    }
    
-   return "(or " + clauses + ")";
+   return "(or " + clauses + ")\n";
 }
 
 str compile(\not(formula))            = "(not " + compile(formula) + ")";
-str compile(ite(Formula c, Formula t, Formula e)) = "(ite " + compile(c) + " " + compile(t) + " " + compile(e) + ")";
+str compile(ite(Formula c, Formula t, Formula e)) = "(ite " + compile(c) + " " + compile(t) + " " + compile(e) + ")\n";
                                                                                                          
 str compile(\false())                 = "false"; 
 str compile(\true())                  = "true";

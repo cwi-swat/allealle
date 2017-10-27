@@ -10,6 +10,8 @@ import IO;
 
 import util::Benchmark;
 
+alias AdditionalConstraintFunctions = tuple[void (Formula) addAttributeConstraint, void (Command) addAdditionalCommand, void (Formula) addIntermediateVar, Id () freshIntermediateId]; 
+
 alias Index = list[Id]; 
 
 data Cell 
