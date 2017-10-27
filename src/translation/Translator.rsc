@@ -13,8 +13,6 @@ import List;
 import util::Maybe;
 import util::Benchmark;
 
-alias AdditionalConstraintFunctions = tuple[void (Formula) addAttributeConstraint, void (Command) addAdditionalCommand, void (Formula) addIntermediateVar, Id () freshIntermediateId]; 
-
 alias TranslationResult = tuple[Formula relationalFormula, Formula attributeFormula, set[Formula] intermediateVars, list[Command] additionalCommands];
 
 Environment createInitialEnvironment(Problem p) {
@@ -347,7 +345,7 @@ Formula translateFormula(existential(list[VarDeclaration] decls, AlleFormula for
   
   bool isShortCircuited() = shortCircuited;
   
-  exists(decls, 0, \false(), accumulate, isShortCircuited, form, env, acf);
+  exists(decls, 0, \true(), accumulate, isShortCircuited, form, env, acf);
   
   return \or(clauses);
 }
@@ -365,7 +363,7 @@ private void exists(list[VarDeclaration] decls, int currentDecl, Formula declCon
 
   set[Formula] clauses = {};  
   for (Index idx <- m) {
-    forall(decls, currentDecl + 1, \and(m[idx].relForm, declConstraints),  accumulate, isShortCircuited, form, extEnv(env, constructSingleton(decls[currentDecl].name, idx)), acf);
+    exists(decls, currentDecl + 1, \and(m[idx].relForm, declConstraints),  accumulate, isShortCircuited, form, extEnv(env, constructSingleton(decls[currentDecl].name, idx)), acf);
 
     if (isShortCircuited()) {
       return;
