@@ -64,6 +64,7 @@ str compileSMTVariableDeclarations(set[SMTVar] vars) = "<for (SMTVar var <- vars
 str compileVariableDeclaration(<str name, id()>) = "(declare-const <name> Bool)";
 default str compileVariableDeclaration(SMTVar var) { throw "Unable to compile variable <var> to SMT, no SMT compiler available for theory \'<var.domain>\'"; }
 
+@memo
 str compile(\and(set[Formula] forms)) {
    str clauses = "";
    for (f <- forms) {
@@ -72,6 +73,7 @@ str compile(\and(set[Formula] forms)) {
    
    return "(and " + clauses + ")\n";
 }   
+@memo
 str compile(\or(set[Formula] forms))  { 
    str clauses = "";
    for (f <- forms) {
@@ -81,11 +83,16 @@ str compile(\or(set[Formula] forms))  {
    return "(or " + clauses + ")\n";
 }
 
+@memo
 str compile(\not(formula))            = "(not " + compile(formula) + ")";
+@memo
 str compile(ite(Formula c, Formula t, Formula e)) = "(ite " + compile(c) + " " + compile(t) + " " + compile(e) + ")\n";
                                                                                                          
+@memo
 str compile(\false())                 = "false"; 
+@memo
 str compile(\true())                  = "true";
+@memo
 str compile(\var(name))               = name; 
 
 default str compile(Formula f) { throw "Unable to compile <f> to SMT, no SMT compiler available"; }

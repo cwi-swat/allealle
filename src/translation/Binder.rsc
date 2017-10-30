@@ -2,6 +2,7 @@ module translation::Binder
 
 import logic::Propositional;
 import translation::AST;
+import translation::Environment;
 
 import List;
 import Map;
@@ -62,12 +63,44 @@ RelationMatrix transpose(RelationMatrix m) {
 } 
 
 @memo
+RelationMatrix override(RelationMatrix lhs, RelationMatrix rhs) {
+  if (!sameArity(lhs,rhs)) {
+    throw "OVERRIDE only works on relations of same arity";
+  }
+  
+  if (rhs == ()) {
+    return lhs;
+  }
+
+  set[Id] firstIdsLhs = {idx[0] | Index idx <- lhs};
+
+  map[Id, set[Index]] lhsRows = (a : {idx | idx:[a,*_] <- lhs} | Id a <- firstIdsLhs);
+
+  map[Id, Formula] rhsNandForm = ();
+  for (Index idx <- rhs, idx[0] notin rhsNandForm, idx[0] in lhsRows) {
+    set[Formula] clauses = {not(rhs[idx2].relForm) | Index idx2 <- rhs, idx[0] == idx2[0]};
+    rhsNandForm[idx[0]] = and(clauses);  
+  }
+  
+  RelationMatrix result = rhs;
+  
+  for (Id i <- lhsRows, Index idx <- lhsRows[i]) {
+    Formula current = (idx in result) ? result[idx].relForm : \false();
+    Formula nand = (i in rhsNandForm) ? rhsNandForm[i] : \true();
+     
+    result[idx] = relOnly(or(current, and(lhs[idx].relForm, nand)));
+  } 
+  
+  return result;
+}
+
+@memo
 RelationMatrix transitiveClosure(RelationMatrix m) {
   if (arity(m) != 2) {
     throw "TRANSITIVE CLOSURE only works on binary relations";
   }
   
-  int rows = size({a | [Id a, Id _] <- m}); 
+  int rows = size({idx[0] | Index idx <- m}); 
 
   RelationMatrix ret = m;
   int i = 1;

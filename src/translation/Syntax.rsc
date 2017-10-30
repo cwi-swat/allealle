@@ -21,12 +21,19 @@ syntax RelationalBound
 
 syntax Tuple 
   = tup: "\<" {Value ","}+ values "\>"
+  | range: "\<" {RangedValue ","}+ from "\>" ".." "\<" {RangedValue ","}+ to "\>"
   ;  
 
 syntax Value
   = id: Id id
   | lit: Literal lit
   | hole: "?"
+  ;
+
+syntax RangedValue
+  = id: RangedId prefix RangedNr numm
+  | templateLit: Literal lit
+  | templateHole: "?"
   ;
 
 syntax Domain = id: "id";  
@@ -62,12 +69,16 @@ syntax AlleExpr
   | reflexClosure:      "*" AlleExpr expr
   > attributeLookup:    AlleExpr expr "::" AttributeName name
   | left union:         AlleExpr lhs "++" AlleExpr rhs 
+  | left override:      AlleExpr lhs "+++" AlleExpr rhs
   | left intersection:  AlleExpr lhs "&" AlleExpr rhs
   | left difference:    AlleExpr lhs "\\" AlleExpr rhs
   | left product:       AlleExpr lhs "-\>" AlleExpr rhs
   | ifThenElse:         AlleFormula form "?" AlleExpr then ":" AlleExpr else
   | comprehension:      "{" {VarDeclaration ","}+ decls "|" AlleFormula form "}"
   ;
+
+lexical RangedId = ([a-z_] !<< [a-z_][a-zA-Z_]* !>> [a-zA-Z_]) \ Keywords;
+lexical RangedNr = [0-9]+;
 
 lexical Id = ([a-z_] !<< [a-z_][a-zA-Z0-9_]* !>> [a-zA-Z0-9_]) \ Keywords;
 lexical AttributeName = ([a-zA-Z_] !<< [a-zA-Z_][a-zA-Z0-9_\']* !>> [a-zA-Z0-9_]) \ Keywords;

@@ -2,6 +2,7 @@ module translation::Translator
 
 import logic::Propositional;
 import translation::AST;
+import translation::Environment;
 import translation::Binder; 
 import translation::Unparser;
 
@@ -14,103 +15,6 @@ import util::Maybe;
 import util::Benchmark;
 
 alias TranslationResult = tuple[Formula relationalFormula, Formula attributeFormula, set[Formula] intermediateVars, list[Command] additionalCommands];
-
-Environment createInitialEnvironment(Problem p) {
-  list[Id] idDomain = extractIdDomain(p);
-
-  map[str, RelationMatrix] relations = (r.name:createRelationMatrix(r) | Relation r <- p.relations);
-  map[Index, map[str, Formula]] attributes = (() | createAttributeLookup(r, it) | r:relationWithAttributes(str name, int arityOfIds, list[AttributeHeader] headers, RelationalBound bounds) <- p.relations); 
-   
-  return <relations, attributes, idDomain>;
-}   
-                      
-list[Id] extractIdDomain(Problem p) {
-  list[Tuple] getTuples(exact(list[Tuple] tuples)) = tuples;
-  list[Tuple] getTuples(atMost(list[Tuple] upper)) = upper;
-  list[Tuple] getTuples(atLeastAtMost(_, list[Tuple] upper)) = upper;
-  
-  return dup([id | Relation r <- p.relations, Tuple t <- getTuples(r.bounds), id(Id id) <- t.values]);   
-}                      
-                                                                                                                                                    
-RelationMatrix createRelationMatrix(Relation r) {
-  @memo
-  str idxToStr(Index idx) = intercalate("_", idx);
-  
-  tuple[list[Index] lb, list[Index] ub] bounds = getBounds(r.arityOfIds, r.bounds);
-  
-  RelationMatrix relResult = (); 
-    
-  for (Index idx <- bounds.lb) {
-    relResult += (idx : relOnly(\true()));
-  }
-
-  for (Index idx <- bounds.ub, idx notin bounds.lb) {
-    relResult += (idx : relOnly(var("<r.name>_<idxToStr(idx)>")));
-  }
-
-  return relResult;
-} 
-
-tuple[list[Index], list[Index]] getBounds(int arity, exact(list[Tuple] tuples)) = <b,b> when list[Index] b := getIndices(arity, tuples);
-tuple[list[Index], list[Index]] getBounds(int arity, atMost(list[Tuple] upper)) = <[], ub> when list[Index] ub := getIndices(arity, upper);
-tuple[list[Index], list[Index]] getBounds(int arity, atLeastAtMost(list[Tuple] lower, list[Tuple] upper)) = <lb,ub> when list[Index] lb := getIndices(arity, lower), list[Index] ub := getIndices(arity, upper);
-
-@memo      
-private list[Index] getIndices(int arity, list[Tuple] tuples) {
-  list[Index] indices = [];
-  for (Tuple t <- tuples) {
-     Index idx = [id | id(Id id) <- t.values];
-     
-     if (size(idx) != arity) {
-      throw "Arity definition of id field and nr of ids in tuples do not match";
-     }
-     
-     indices += [idx];
-  }
-  
-  return indices;
-}
-
-map[Index, map[str, Formula]] createAttributeLookup(relationWithAttributes(str _, int arityOfIds, list[AttributeHeader] headers, RelationalBound bounds), map[Index, map[str, Formula]] currentLookup) {
-  map[Index, map[str, Formula]] partial = createPartialAttributeLookup(arityOfIds, headers, bounds);
-  
-  for (Index idx <- partial) {
-    if (idx in currentLookup) {
-      currentLookup[idx] += partial[idx];
-    } else {
-      currentLookup[idx] = partial[idx];
-    }
-  }     
-  
-  return currentLookup;
-} 
-
-map[Index, map[str, Formula]] createPartialAttributeLookup(int arityOfIds, list[AttributeHeader] headers, exact(list[Tuple] tuples)) = createPartialAttributeLookup(arityOfIds, headers, tuples);
-map[Index, map[str, Formula]] createPartialAttributeLookup(int arityOfIds, list[AttributeHeader] headers, atMost(list[Tuple] upper)) = createPartialAttributeLookup(arityOfIds, headers, upper);
-map[Index, map[str, Formula]] createPartialAttributeLookup(int arityOfIds, list[AttributeHeader] headers, atLeastAtMost(list[Tuple] _, list[Tuple] upper)) = createPartialAttributeLookup(arityOfIds, headers, upper);
-
-private map[Index, map[str, Formula]] createPartialAttributeLookup(int arityOfIds, list[AttributeHeader] headers, list[Tuple] tuples) {
-  map[Index, map[str, Formula]] result = ();
-  
-  for (Tuple t <- tuples) {
-    Index idx = [id | id(Id id) <- t.values];
-    if (arityOfIds + size(headers) != size(t.values)) {
-      throw "Total arity of relation and size of the defined tuples differ";
-    }
-
-    map[str, Formula] attributes = ();
-        
-    for (int i <- [0..size(headers)], AttributeHeader h := headers[i], Value v := t.values[arityOfIds + i]) {
-      attributes[h.name] = createAttribute(idx, h.name, h.dom, v);  
-    }
-    
-    result[idx] = attributes;  
-  }
-  
-  return result;
-}      
-                                           
-default Formula createAttribute(Index idx, str name, Domain d, Value v) { throw "No attribute creator found for domain \'<d>\' with value \'<v>\'"; } 
                                                                                              
 TranslationResult translateProblem(Problem p, Environment env, bool logIndividualFormula = true) {
   set[Formula] attributeConstraints = {};
@@ -163,8 +67,14 @@ Formula translateFormula(empty(AlleExpr expr), Environment env, AdditionalConstr
   = \not(translateFormula(nonEmpty(expr), env, acf));
 
 
-Formula translateFormula(atMostOne(AlleExpr expr), Environment env, AdditionalConstraintFunctions acf) 
-  = \or(translateFormula(empty(expr), env, acf), translateFormula(exactlyOne(expr), env, acf));
+Formula translateFormula(atMostOne(AlleExpr expr), Environment env, AdditionalConstraintFunctions acf) {
+  Formula empty = translateFormula(empty(expr), env, acf);
+  if (empty == \true()) {
+    return \true();
+  }  
+  
+  return or(empty, translateFormula(exactlyOne(expr), env, acf));
+}
 
 
 Formula translateFormula(exactlyOne(AlleExpr expr), Environment env, AdditionalConstraintFunctions acf) {
@@ -228,9 +138,14 @@ Formula translateFormula(subset(AlleExpr lhsExpr, AlleExpr rhsExpr), Environment
 }
      
 
-Formula translateFormula(equal(AlleExpr lhsExpr, AlleExpr rhsExpr), Environment env, AdditionalConstraintFunctions acf)
-  = \and(translateFormula(subset(lhsExpr, rhsExpr), env, acf), translateFormula(subset(rhsExpr, lhsExpr), env, acf));
-
+Formula translateFormula(equal(AlleExpr lhsExpr, AlleExpr rhsExpr), Environment env, AdditionalConstraintFunctions acf) {
+  Formula l = translateFormula(subset(lhsExpr, rhsExpr), env, acf);
+  if (l == \false()) {
+    return \false();
+  }
+  
+  return \and(l, translateFormula(subset(rhsExpr, lhsExpr), env, acf));
+}
 
 Formula translateFormula(inequal(AlleExpr lhsExpr, AlleExpr rhsExpr), Environment env, AdditionalConstraintFunctions acf) 
   = translateFormula(negation(equal(lhsExpr, rhsExpr)), env, acf);
@@ -278,7 +193,6 @@ Formula translateFormula(equality(AlleFormula lhsForm, AlleFormula rhsForm), Env
 }
 
 private Environment extEnv(Environment orig, map[str, RelationMatrix] newRelations) = <orig.relations + newRelations, orig.attributes, orig.idDomain>; 
-
 
 Formula translateFormula(let(list[VarDeclaration] decls, AlleFormula form), Environment env, AdditionalConstraintFunctions acf) {
   Environment extendedEnv = env;
@@ -412,6 +326,9 @@ RelationMatrix translateExpression(union(AlleExpr lhsExpr, AlleExpr rhsExpr), En
   when RelationMatrix lhs := translateExpression(lhsExpr, env, acf),
        RelationMatrix rhs := translateExpression(rhsExpr, env, acf);
 
+RelationMatrix translateExpression(override(AlleExpr lhsExpr, AlleExpr rhsExpr), Environment env, AdditionalConstraintFunctions acf) = override(lhs,rhs)  
+  when RelationMatrix lhs := translateExpression(lhsExpr, env, acf),
+       RelationMatrix rhs := translateExpression(rhsExpr, env, acf);
 
 RelationMatrix translateExpression(intersection(AlleExpr lhsExpr, AlleExpr rhsExpr), Environment env, AdditionalConstraintFunctions acf) = and(lhs, rhs)
   when RelationMatrix lhs := translateExpression(lhsExpr, env, acf),

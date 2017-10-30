@@ -65,6 +65,7 @@ str unparse(transpose(AlleExpr expr))                                           
 str unparse(closure(AlleExpr expr))                                                 = "(^<unparse(expr)>)";
 str unparse(reflexClosure(AlleExpr expr))                                           = "(*<unparse(expr)>)";
 str unparse(union(AlleExpr lhs, AlleExpr rhs))                                      = "(<unparse(lhs)>++<unparse(rhs)>)";
+str unparse(override(AlleExpr lhs, AlleExpr rhs))                                   = "(<unparse(lhs)>+++<unparse(rhs)>)";
 str unparse(intersection(AlleExpr lhs, AlleExpr rhs))                               = "(<unparse(lhs)>&<unparse(rhs)>)";
 str unparse(difference(AlleExpr lhs, AlleExpr rhs))                                 = "(<unparse(lhs)>\\<unparse(rhs)>)";
 str unparse(\join(AlleExpr lhs, AlleExpr rhs))                                      = "(<unparse(lhs)>.<unparse(rhs)>)";

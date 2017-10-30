@@ -19,12 +19,19 @@ data RelationalBound
 
 data Tuple 
   = tup(list[Value] values)
+  | range(list[RangedValue] from, list[RangedValue] to)
   ;  
 
 data Value
   = id(Id id)
   | lit(Literal lit)
   | hole()
+  ;
+
+data RangedValue
+  = id(str prefix, int numm)
+  | templateLit(Literal lit)
+  | templateHole()
   ;
 
 alias Id = str;
@@ -57,6 +64,7 @@ data AlleExpr
   | closure(AlleExpr expr)
   | reflexClosure(AlleExpr expr)
   | union(AlleExpr lhs, AlleExpr rhs) 
+  | override(AlleExpr lhs, AlleExpr rhs)
   | intersection(AlleExpr lhs, AlleExpr rhs)
   | difference(AlleExpr lhs, AlleExpr rhs)
   | \join(AlleExpr lhs, AlleExpr rhs)
