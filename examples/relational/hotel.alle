@@ -1,14 +1,90 @@
-Time (1) <= {<t>}
-Event (1) <= {<e>}
+Time (1) <= {<t1>..<t6>}
+Event (1) <= {<e1>..<e6>}
+Room (1) <= {<r1>..<r6>}
+Card (1) <= {<c1>..<c6>}
+Key (1) <= {<k1>..<k6>}
+Guest (1) <= {<g1>..<g6>}
+
 first (1) = {<t1>}
-last (1) <= {<t10>}
+last (1) <= {<t1>..<t6>}
+next (2) <= {<t1,t2>..<t1,t6>,<t2,t3>..<t2,t6>,<t3,t4>..<t3,t6>,<t4,t5>,<t4,t6>,<t5,t6>}
 
-pre (2) <= {<a,b>}
-post (2) <= {<a,b>}
-next (2) <= {<d,e>}
+pre (2) <= {<t1,e1>..<t6,e6>}
+post (2) <= {<t1,e1>..<t6,e6>}
 
-Key (1) <= {<k1>}
-Card (1) <= {<c1>}
-Guest (1) <= {<g1>}
-Room (1) <= {<r1>}
-HotelEvent (1) 
+HotelEvent (1) <= {<e1>..<e6>}
+RoomCardEvent (1) <= {<e1>..<e6>}
+Checkin (1) <= {<e1>..<e6>}
+Enter (1) <= {<e1>..<e6>}
+NormalEnter (1) <= {<e1>..<e6>}
+RecodeEnter (1) <= {<e1>..<e6>}
+Checkout (1) <= {<e1>..<e6>} 
+
+k1 (2) <= {<c1,k1>..<c6,k6>}
+k2 (2) <= {<c1,k1>..<c6,k6>}
+
+key (3) <= {<r1,k1,t1>..<r6,k6,t6>}
+prev (3) <= {<r1,k1,t1>..<r6,k6,t6>}
+occ (3) <= {<r1,g1,t1>..<r6,g6,t6>}
+
+holds (3) <= {<g1,c1,t1>..<g6,c6,t6>}
+
+guest (2) <= {<e1,g1>..<e6,g6>}
+room (2) <= {<e1,r1>..<e6,r6>}
+card (2) <= {<e1,c1>..<e6,c6>}
+
+// Total ordering of the next relation
+one last
+last in Time
+Time == first.*next
+no next.first
+no last.next
+forall t:Time\last | one t.next
+
+// pre and post are functions
+pre in Event->Time
+post in Event->Time
+forall e:Event | one e.pre && one e.post
+
+forall t:Time\last | one {e:Event | e.pre == t && e.post == t.next}
+
+// card invariants
+k1 in Card->Key
+k2 in Card->Key
+forall c:Card | one c.k1 && one c.k2
+
+// room invariants
+key in Room->Key->Time
+prev in Room->Key->Time
+occ in Room->Guest->Time
+forall r:Room, t:Time | one r.key.t && lone r.prev.t
+
+// guest invariants
+holds in Card->Time
+
+// init invariants
+prev.first == key.first
+key.first in Room->Key
+forall k:Key | lone (key.first).k
+no holds.first
+no occ.first
+
+// hotel event invariants
+HotelEvent == Event
+HotelEvent == RoomCardEvent++Checkout
+no RoomCardEvent & Checkout
+guest in HotelEvent->Guest
+forall h:HotelEvent | one h.guest
+
+// room card invariants
+RoomCardEvent in HotelEvent
+RoomCardEvent == Checkin++Enter
+no Checkin & Enter
+room in RoomCardEvent->Room
+card in RoomCardEvent->Card
+forall r:RoomCardEvent | one r.room && one r.card
+
+// invariants for checkin
+forall c:Checkin | no (c.room).occ.(c.pre) && 
+                   (c.card).k1 == (c.room).prev.(c.pre) //&&
+                   //holds.(c.post) == holds.(c.pre)
