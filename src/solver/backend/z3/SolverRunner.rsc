@@ -51,7 +51,7 @@ int getSolvingTime(SolverPID pid) {
   
   int time;  
   if (/[:]time[ ]*<sec:[0-9]*>[.]<hun:[0-9][0-9]>/ := result) {
-    time = toInt(sec)*1000 + toInt(hun)*10;  
+    time = toInt(sec)*1000 + toInt(hun[0] == "0" ? hun[1] : hun)*10;  
   } else {
     throw "Unable to parse the solving time from the statistics of Z3";
   }
