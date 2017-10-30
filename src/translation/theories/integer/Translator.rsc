@@ -13,10 +13,6 @@ import List;
 import Set;
 import Map;
 import IO;
- 
-Formula createAttribute(Index idx, str name, \int(), hole()) = toIntVar(idx, name);  
-Formula createAttribute(Index idx, str name, \int(), lit(posInt(int i))) = \int(i);  
-Formula createAttribute(Index idx, str name, \int(), lit(negInt(int i))) = neg(\int(i));  
 
 Formula translateFormula(gt(AlleExpr lhsExpr, AlleExpr rhsExpr), Environment env, AdditionalConstraintFunctions acf) = translateIntCompFormula(lhs, rhs, Formula (Formula l, Formula r) { return gt(l, r);}, acf)
   when RelationMatrix lhs := translateExpression(lhsExpr, env, acf),
