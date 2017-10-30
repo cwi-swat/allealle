@@ -3,6 +3,7 @@ module ModelFinder
 import logic::Propositional;
  
 import translation::AST;
+import translation::Environment;
 import translation::Translator; 
 import translation::SMTInterface; 
 import translation::Binder;
