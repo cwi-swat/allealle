@@ -1,6 +1,5 @@
 module ide::vis::integrationtests::VisualizerTester
 
-import ModelFinder;
 import translation::Binder; 
 
 import ide::CombinedAST;
