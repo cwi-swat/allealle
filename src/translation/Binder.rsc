@@ -2,7 +2,6 @@ module translation::Binder
 
 import logic::Propositional;
 import translation::AST;
-import translation::Environment;
 
 import List;
 import Map;
@@ -22,18 +21,10 @@ data Cell
 
 alias RelationMatrix = map[Index, Cell];
 
-alias Environment = tuple[map[str, RelationMatrix] relations, map[Index, map[str, Formula]] attributes, list[Id] idDomain]; 
-
 int arity(RelationMatrix rm) = 0 when rm == ();
 default int arity(RelationMatrix rm) = size(getOneFrom(rm));
 
 private bool sameArity(RelationMatrix lhs, RelationMatrix rhs) = arity(lhs) == arity(rhs); 
-
-@memo 
-RelationMatrix universe(Environment env) = ([id] : relOnly(\true()) | Id id <- env.idDomain);
-
-@memo
-RelationMatrix identity(Environment env) = ([id,id] : relOnly(\true()) | Id id <- env.idDomain);
 
 @memo
 RelationMatrix or(RelationMatrix lhs, RelationMatrix rhs) {
@@ -72,16 +63,16 @@ RelationMatrix override(RelationMatrix lhs, RelationMatrix rhs) {
     return lhs;
   }
 
-  set[Id] firstIdsLhs = {idx[0] | Index idx <- lhs};
-
-  map[Id, set[Index]] lhsRows = (a : {idx | idx:[a,*_] <- lhs} | Id a <- firstIdsLhs);
+  map[Id, set[Index]] lhsRows = ();
+  for (Index idx <- lhs) {
+    lhsRows[idx[0]] = (idx[0] in lhsRows) ? lhsRows[idx[0]] + idx : {idx};
+  }
 
   map[Id, Formula] rhsNandForm = ();
-  for (Index idx <- rhs, idx[0] notin rhsNandForm, idx[0] in lhsRows) {
-    set[Formula] clauses = {not(rhs[idx2].relForm) | Index idx2 <- rhs, idx[0] == idx2[0]};
-    rhsNandForm[idx[0]] = and(clauses);  
+  for (Index idx <- rhs, idx[0] in lhsRows) {
+    rhsNandForm[idx[0]] = (idx[0] in rhsNandForm) ? and(rhsNandForm[idx[0]], not(rhs[idx].relForm)) : not(rhs[idx].relForm); 
   }
-  
+    
   RelationMatrix result = rhs;
   
   for (Id i <- lhsRows, Index idx <- lhsRows[i]) {
@@ -107,18 +98,18 @@ RelationMatrix transitiveClosure(RelationMatrix m) {
   while(i < rows) {
     ret = or(ret, dotJoin(ret,ret));
     i *= 2;
-  }
+  } 
   
-  return ret;
+  return ret; 
 }
 
 @memo
-RelationMatrix reflexiveTransitiveClosure(RelationMatrix m, Environment env) {
+RelationMatrix reflexiveTransitiveClosure(RelationMatrix m, RelationMatrix iden) {
   if (arity(m) != 2) {
     throw "REFLEXIVE TRANSITIVE CLOSURE only works on binary relations";
   }
   
-  return or(transitiveClosure(m), identity(env));
+  return or(transitiveClosure(m), iden); 
 } 
 
 @memo

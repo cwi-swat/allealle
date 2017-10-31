@@ -2,6 +2,7 @@ module translation::SMTInterface
 
 import translation::AST;
 import translation::Binder;
+import translation::Environment;
 import translation::SMTValueSyntax;
 
 import logic::Propositional;

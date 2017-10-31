@@ -11,7 +11,7 @@ alias Environment = tuple[map[str, RelationMatrix] relations, map[Index, map[str
 
 Environment createInitialEnvironment(Problem p) {
   list[Id] idDomain = extractIdDomain(p);
-
+ 
   map[str, RelationMatrix] relations = (r.name:createRelationMatrix(r) | Relation r <- p.relations);
   map[Index, map[str, Formula]] attributes = (() | createAttributeLookup(r, it) | r:relationWithAttributes(str name, int arityOfIds, list[AttributeHeader] headers, RelationalBound bounds) <- p.relations); 
    

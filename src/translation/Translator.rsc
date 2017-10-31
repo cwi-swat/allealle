@@ -310,6 +310,13 @@ RelationMatrix translateExpression(attributeLookup(AlleExpr e, str name), Enviro
 }
 
 
+@memo 
+RelationMatrix universe(Environment env) = ([id] : relOnly(\true()) | Id id <- env.idDomain);
+
+@memo
+RelationMatrix identity(Environment env) = ([id,id] : relOnly(\true()) | Id id <- env.idDomain);
+
+
 RelationMatrix translateExpression(transpose(AlleExpr expr), Environment env, AdditionalConstraintFunctions acf) = transpose(m)
   when RelationMatrix m := translateExpression(expr, env, acf); 
 
@@ -318,7 +325,7 @@ RelationMatrix translateExpression(closure(AlleExpr expr), Environment env, Addi
   when RelationMatrix m := translateExpression(expr, env, acf);
 
 
-RelationMatrix translateExpression(reflexClosure(AlleExpr expr), Environment env, AdditionalConstraintFunctions acf) = reflexiveTransitiveClosure(m, env)
+RelationMatrix translateExpression(reflexClosure(AlleExpr expr), Environment env, AdditionalConstraintFunctions acf) = reflexiveTransitiveClosure(m, identity(env))
   when RelationMatrix m := translateExpression(expr, env, acf);
 
 
