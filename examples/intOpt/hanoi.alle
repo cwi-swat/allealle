@@ -1,12 +1,15 @@
 Disc (1 :: size:int)  = {<d3,3>,<d2,2>,<d1,1>}
 Rod  (1)              = {<r1>,<r2>,<r3>}
 GoalRod (1)           = {<r3>}
-State (1)             = {<s1>,<s2>,<s3>,<s4>,<s5>,<s6>,<s7>,<s8>}
+State (1)            >= {<s1>} <= {<s1>..<s8>}
 InitialState (1)      = {<s1>}
-ordering (2)          = {<s1,s2>,<s2,s3>,<s3,s4>,<s4,s5>,<s5,s6>,<s6,s7>,<s7,s8>}
-place (3)             >= {<s1,r1,d1>,<s1,r1,d2>,<s1,r1,d3>} <= {<s1,r1,d1>,<s1,r1,d2>,<s1,r1,d3>,<s1,r2,d1>,<s1,r2,d2>,<s1,r2,d3>,<s1,r3,d1>,<s1,r3,d2>,<s1,r3,d3>,<s2,r1,d1>,<s2,r1,d2>,<s2,r1,d3>,<s2,r2,d1>,<s2,r2,d2>,<s2,r2,d3>,<s2,r3,d1>,<s2,r3,d2>,<s2,r3,d3>,<s3,r1,d1>,<s3,r1,d2>,<s3,r1,d3>,<s3,r2,d1>,<s3,r2,d2>,<s3,r2,d3>,<s3,r3,d1>,<s3,r3,d2>,<s3,r3,d3>,<s4,r1,d1>,<s4,r1,d2>,<s4,r1,d3>,<s4,r2,d1>,<s4,r2,d2>,<s4,r2,d3>,<s4,r3,d1>,<s4,r3,d2>,<s4,r3,d3>,<s5,r1,d1>,<s5,r1,d2>,<s5,r1,d3>,<s5,r2,d1>,<s5,r2,d2>,<s5,r2,d3>,<s5,r3,d1>,<s5,r3,d2>,<s5,r3,d3>,<s6,r1,d1>,<s6,r1,d2>,<s6,r1,d3>,<s6,r2,d1>,<s6,r2,d2>,<s6,r2,d3>,<s6,r3,d1>,<s6,r3,d2>,<s6,r3,d3>,<s7,r1,d1>,<s7,r1,d2>,<s7,r1,d3>,<s7,r2,d1>,<s7,r2,d2>,<s7,r2,d3>,<s7,r3,d1>,<s7,r3,d2>,<s7,r3,d3>,<s8,r1,d1>,<s8,r1,d2>,<s8,r1,d3>,<s8,r2,d1>,<s8,r2,d2>,<s8,r2,d3>,<s8,r3,d1>,<s8,r3,d2>,<s8,r3,d3>} 
+ordering (2)         <= {<s1,s2>,<s2,s3>,<s3,s4>,<s4,s5>,<s5,s6>,<s6,s7>,<s7,s8>}
+place (3)            >= {<s1,r1,d1>,<s1,r1,d2>,<s1,r1,d3>} <= {<s1,r1,d1>,<s1,r1,d2>,<s1,r1,d3>,<s2,r1,d1>..<s8,r3,d3>} 
 
 place in State->Rod->Disc
+ordering in State->State
+
+State in InitialState.*ordering
 
 forall s:State, d:Disc | one (s.place).d
 
