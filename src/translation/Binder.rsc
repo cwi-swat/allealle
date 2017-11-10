@@ -28,6 +28,12 @@ private bool sameArity(RelationMatrix lhs, RelationMatrix rhs) = arity(lhs) == a
 
 @memo
 RelationMatrix or(RelationMatrix lhs, RelationMatrix rhs) {
+  if (rhs == ()) {
+    return lhs;
+  } else if (lhs == ()) {
+    return rhs;
+  }
+  
   if (!sameArity(lhs,rhs)) {
     throw "OR only works on relations of same arity";
   }
@@ -37,6 +43,10 @@ RelationMatrix or(RelationMatrix lhs, RelationMatrix rhs) {
 
 @memo
 RelationMatrix and(RelationMatrix lhs, RelationMatrix rhs) {
+  if (lhs == () || rhs == ()) {
+    return ();
+  }
+  
   if (!sameArity(lhs,rhs)) {
     throw "AND only works on relations of same arity";
   }
@@ -55,12 +65,14 @@ RelationMatrix transpose(RelationMatrix m) {
 
 @memo
 RelationMatrix override(RelationMatrix lhs, RelationMatrix rhs) {
-  if (!sameArity(lhs,rhs)) {
-    throw "OVERRIDE only works on relations of same arity";
-  }
-  
   if (rhs == ()) {
     return lhs;
+  } else if (lhs == ()) {
+    return rhs;
+  }
+
+  if (!sameArity(lhs,rhs)) {
+    throw "OVERRIDE only works on relations of same arity";
   }
 
   map[Id, set[Index]] lhsRows = ();
@@ -114,6 +126,12 @@ RelationMatrix reflexiveTransitiveClosure(RelationMatrix m, RelationMatrix iden)
 
 @memo
 RelationMatrix difference(RelationMatrix lhs, RelationMatrix rhs) {
+  if (lhs == ()) {
+    return ();
+  } else if (rhs == ()) {
+    return lhs;
+  }
+  
   if (!sameArity(lhs,rhs)) {
     throw "DIFFERENCE only works on relations of same arity";
   }
