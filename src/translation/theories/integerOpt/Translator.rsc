@@ -2,6 +2,7 @@ module translation::theories::integerOpt::Translator
 
 extend translation::theories::integer::Translator;
 
+import translation::Environment;
 import translation::theories::integerOpt::AST;
 
 Formula translateFormula(minimize(AlleExpr expr), Environment env, AdditionalConstraintFunctions acf) = translate(m, Command (Formula f) { return minimize(f);}, acf)
@@ -10,7 +11,6 @@ Formula translateFormula(minimize(AlleExpr expr), Environment env, AdditionalCon
 Formula translateFormula(maximize(AlleExpr expr), Environment env, AdditionalConstraintFunctions acf) = translate(m, Command (Formula f) { return maximize(f);}, acf)
     when RelationMatrix m := translateExpression(expr, env, acf);
   
-@memo
 private Formula translate(RelationMatrix m, Command (Formula) opr, AdditionalConstraintFunctions acf) {
   if (size(m) != 1 && arity(m) != 1) {
     throw "Can only minimize or maximize singleton, unary expressions (results of sum, cardinality, etc)";

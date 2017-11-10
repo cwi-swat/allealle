@@ -166,7 +166,7 @@ Figures displayAttributes(map[str,str] attributes) {
     return [];
   }
   
-  return [text("(<intercalate(",", ["<attName>:<attributes[attName]>" | str attName <- attributes])>)", center())];
+  return [text("[<intercalate(",", ["<attName>:<attributes[attName]>" | str attName <- attributes])>]", center())];
 }
 
 Figure displayNode(VisNode n, DisplayOptions disOpt) 
