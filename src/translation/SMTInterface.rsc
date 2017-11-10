@@ -161,10 +161,12 @@ Model constructRelationalModel(SMTModel smtModel, Environment env) {
       tuples += mTuple(mIdx, attributes); 
     }
     
-    if (size(getOneFrom(env.relations[relName])) == 1) {
-      relations += unary(relName, tuples);
-    } else {
-      relations += nary(relName, tuples);
+    if (env.relations[relName] != ()) {
+      if (size(getOneFrom(env.relations[relName])) == 1) {
+        relations += unary(relName, tuples);
+      } else {
+        relations += nary(relName, tuples);
+      }
     }  
   }
   

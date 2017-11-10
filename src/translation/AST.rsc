@@ -30,6 +30,7 @@ data Value
 
 data RangedValue
   = id(str prefix, int numm)
+  | idOnly(Id id)
   | templateLit(Literal lit)
   | templateHole()
   ;
