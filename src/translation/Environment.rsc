@@ -76,6 +76,7 @@ list[Tuple] convertTuple(range(list[RangedValue] from, list[RangedValue] to)) {
 list[Tuple] buildTuplesFromRange([], list[Value] currentIdx, list[Value] templates) = [tup([*currentIdx,*templates])];
 list[Tuple] buildTuplesFromRange([list[Id] hd, *list[Id] tl], list[Value] currentIdx, list[Value] templates) = [*buildTuplesFromRange(tl, currentIdx + id(i), templates) | Id i <- hd];
 
+Value convert(idOnly(Id atom)) = id(atom);
 Value convert(templateLit(Literal l)) = lit(l);
 Value convert(templateHole()) = hole();
 default Value convert(RangedValue v) { throw "Unable to convert \'v\' to a Value"; }
