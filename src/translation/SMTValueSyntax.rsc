@@ -1,6 +1,6 @@
 module translation::SMTValueSyntax
 
-extend lang::std::Layout;
+extend translation::Layout;
 
 start syntax SmtValues = "(" VarAndValue+ values")";
 

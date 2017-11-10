@@ -1,6 +1,6 @@
 module translation::Syntax
 
-extend lang::std::Layout;
+extend translation::Layout;
 
 start syntax Problem = problem: Relation* relations AlleFormula* constraints;
 
@@ -14,7 +14,7 @@ syntax AttributeHeader
   ;
 
 syntax RelationalBound
-  = exact: "=" "{" {Tuple ","}+ tuples "}"
+  = exact: "=" "{" {Tuple ","}*tuples "}"
   | atMost: "\<=" "{" {Tuple ","}+ upper "}"
   | atLeastAtMost: "\>=" "{" {Tuple ","}+ lower "}" "\<=" "{" {Tuple ","}+ upper "}"
   ;
@@ -32,6 +32,7 @@ syntax Value
 
 syntax RangedValue
   = id: RangedId prefix RangedNr numm
+  | idOnly: RangedId id
   | templateLit: Literal lit
   | templateHole: "?"
   ;
