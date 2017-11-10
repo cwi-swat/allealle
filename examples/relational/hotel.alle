@@ -9,8 +9,8 @@ first (1) = {<t1>}
 last (1) <= {<t1>..<t6>}
 next (2) <= {<t1,t2>..<t1,t6>,<t2,t3>..<t2,t6>,<t3,t4>..<t3,t6>,<t4,t5>,<t4,t6>,<t5,t6>}
 
-pre (2) <= {<t1,e1>..<t6,e6>}
-post (2) <= {<t1,e1>..<t6,e6>}
+pre (2) <= {<e1,t1>..<e6,t6>}
+post (2) <= {<e1,t1>..<e6,t6>}
 
 HotelEvent (1) <= {<e1>..<e6>}
 RoomCardEvent (1) <= {<e1>..<e6>}
@@ -33,7 +33,7 @@ guest (2) <= {<e1,g1>..<e6,g6>}
 room (2) <= {<e1,r1>..<e6,r6>}
 card (2) <= {<e1,c1>..<e6,c6>}
 
-// Total ordering of the next relation
+// Time Event invariants
 one last
 last in Time
 Time == first.*next
@@ -41,7 +41,6 @@ no next.first
 no last.next
 forall t:Time\last | one t.next
 
-// pre and post are functions
 pre in Event->Time
 post in Event->Time
 forall e:Event | one e.pre && one e.post
@@ -60,7 +59,7 @@ occ in Room->Guest->Time
 forall r:Room, t:Time | one r.key.t && lone r.prev.t
 
 // guest invariants
-holds in Card->Time
+holds in Guest->Card->Time
 
 // init invariants
 prev.first == key.first
@@ -86,5 +85,53 @@ forall r:RoomCardEvent | one r.room && one r.card
 
 // invariants for checkin
 forall c:Checkin | no (c.room).occ.(c.pre) && 
-                   (c.card).k1 == (c.room).prev.(c.pre) //&&
-                   //holds.(c.post) == holds.(c.pre)
+                   (c.card).k1 == (c.room).prev.(c.pre) &&
+                   holds.(c.post) == holds.(c.pre) ++ (c.guest->c.card) && 
+                   prev.(c.post) == prev.(c.pre) +++ (c.room->(c.card).k2) &&
+                   occ.(c.post) == occ.(c.pre) ++ (c.room->c.guest) &&
+                   key.(c.pre) == key.(c.post)
+
+// enter invariants
+Enter in RoomCardEvent
+Enter == NormalEnter ++ RecodeEnter
+no NormalEnter & RecodeEnter
+forall e:Enter | e.card in (e.guest).holds.(e.pre)
+                
+// normal enter invariants
+NormalEnter in Enter
+forall n:NormalEnter | (n.card).k2 == (n.room).key.(n.pre) &&
+                       prev.(n.pre) == prev.(n.post) &&
+                       holds.(n.pre) == holds.(n.post) &&
+                       occ.(n.pre) == occ.(n.post) &&
+                       key.(n.pre) == key.(n.post)
+                       
+// recode enter invariants
+RecodeEnter in Enter
+
+forall n:RecodeEnter | (n.card).k1 == (n.room).key.(n.pre) &&
+                       key.(n.post) == key.(n.pre) +++ (n.room -> (n.card).k2) &&
+                       prev.(n.pre) == prev.(n.post) &&
+                       holds.(n.pre) == holds.(n.post) &&
+                       occ.(n.pre) == occ.(n.post)
+                       
+// invariants for checkout
+Checkout in HotelEvent
+forall c:Checkout | some (occ.(c.pre)).(c.guest) &&
+                    occ.(c.post) == occ.(c.pre) \ (Room->(c.guest)) &&
+                    prev.(c.pre) == prev.(c.post) &&
+                    holds.(c.pre) == holds.(c.post) &&
+                    key.(c.pre) == key.(c.post)
+
+// Always issue fresh key invariants
+forall e1:Checkin, e2:Checkin\e1 | (e1.card).k2 !== (e2.card).k2
+forall e:Checkin | not ((e.card).k2 in (Room.key).first)        
+
+// No intervening invariant
+forall c:Checkin \ (pre.last) | 
+  exists e:Enter | e.pre == c.post &&
+                   e.room == c.room &&
+                   e.guest == c.guest                              
+
+// no bad entry
+not (forall e:Enter | let occs: (e.room).(occ.(e.pre)) | some occs => e.guest in occs)                  
+                   
