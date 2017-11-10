@@ -14,13 +14,13 @@ import io.usethesource.vallang.IString;
 import io.usethesource.vallang.IValue;
 import io.usethesource.vallang.IValueFactory;
 
-public class MemoCacheClearer {
+public class InterpretedMemoCacheClearer {
 	
-	public MemoCacheClearer(IValueFactory vf) {
+	public InterpretedMemoCacheClearer(IValueFactory vf) {
 		super();
 	}
 	
-	public void clearMemoCache(ISet modules, IBool debug, IEvaluatorContext ec) {
+	public void clearInterpretedMemoCache(ISet modules, IBool debug, IEvaluatorContext ec) {
 		for (IValue mod : modules) {
 			String modName = ((IString)mod).getValue();
 			
@@ -38,7 +38,7 @@ public class MemoCacheClearer {
 							if (nf.hasMemoization()) {
 								nf.clearMemoizationCache();
 								if (debug.getValue()) {
-									ec.getStdOut().println("Cleared the memo cache of the \'" + f.getName() + "\' function");
+									ec.getStdOut().println("Cleared the interpreted memo cache of the \'" + f.getName() + "\' function");
 							
 								}
 							}
