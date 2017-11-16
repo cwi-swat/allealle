@@ -2,11 +2,12 @@ module translation::theories::bitvector::Syntax
 
 extend translation::Syntax;
 
-syntax Domain = bv: "bv" "(" Int bits ")";
+syntax Domain = bv: "bv" "[" IntLit bits "]";
 
 syntax Literal 
   = bvIntLit : "[bv]" IntLit lit 
   | bvHexLit : "#x" HexLit lit
+  | bvBinLit : "#b" BinLit lit
   ;
 
 syntax AlleFormula
@@ -48,5 +49,6 @@ syntax AlleExpr
 
 lexical IntLit = [0-9]+;
 lexical HexLit = [0-9abcdef]+;
+lexical BinLit = [01]+;
 
-keyword Keywords = "[bvu]" | "[bv]" | "#x";
+keyword Keywords = "bv" | "[bvu]" | "[bv]" | "#x" |"#b";

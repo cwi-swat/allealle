@@ -6,7 +6,7 @@ start syntax Problem = problem: Relation* relations AlleFormula* constraints;
 
 syntax Relation 
   = relation:                 Variable v "(" Arity arityOfIds ")" RelationalBound bounds
-  | relationWithAttributes:  Variable v "(" Arity arityOfIds "::"  {AttributeHeader ","}+ header ")" RelationalBound bounds
+  | relationWithAttributes:   Variable v "(" Arity arityOfIds "::"  {AttributeHeader ","}+ header ")" RelationalBound bounds
   ;
 
 syntax AttributeHeader
@@ -25,20 +25,23 @@ syntax Tuple
   ;  
 
 syntax Value
-  = id: Id id
+  = Idd id
   | lit: Literal lit
-  | hole: "?"
+  | "?"
   ;
 
 syntax RangedValue
   = id: RangedId prefix RangedNr numm
   | idOnly: RangedId id
   | templateLit: Literal lit
-  | templateHole: "?"
+  | "?"
   ;
 
-syntax Domain = id: "id";  
-syntax Literal = none: "none"; 
+syntax Domain 
+  = "id"
+  | "FAIL"
+  ;  
+syntax Literal = "none"; 
   
 syntax AlleFormula
   = bracket "(" AlleFormula form ")"
@@ -48,8 +51,8 @@ syntax AlleFormula
   | exactlyOne:         "one" AlleExpr expr
   | nonEmpty:           "some" AlleExpr expr
   | subset:             AlleExpr lhsExpr "in" AlleExpr rhsExpr
-  | equal:              AlleExpr lhsExpr "==" AlleExpr rhsExpr
-  | inequal:            AlleExpr lhsExpr "!==" AlleExpr rhsExpr
+  | equal:              AlleExpr lhsExpr "=" AlleExpr rhsExpr
+  | inequal:            AlleExpr lhsExpr "!=" AlleExpr rhsExpr
   > left conjunction:   AlleFormula lhsForm "&&" AlleFormula rhsForm
   | left disjunction:   AlleFormula lhsForm "||" AlleFormula rhsForm  
   > implication:        AlleFormula lhsForm "=\>" AlleFormula rhsForm
@@ -69,8 +72,8 @@ syntax AlleExpr
   | closure:            "^" AlleExpr expr
   | reflexClosure:      "*" AlleExpr expr
   > attributeLookup:    AlleExpr expr "::" AttributeName name
-  | left union:         AlleExpr lhs "++" AlleExpr rhs 
-  | left override:      AlleExpr lhs "+++" AlleExpr rhs
+  | left union:         AlleExpr lhs "+" AlleExpr rhs 
+  | left override:      AlleExpr lhs "++" AlleExpr rhs
   | left intersection:  AlleExpr lhs "&" AlleExpr rhs
   | left difference:    AlleExpr lhs "\\" AlleExpr rhs
   | left product:       AlleExpr lhs "-\>" AlleExpr rhs
@@ -80,6 +83,8 @@ syntax AlleExpr
 
 lexical RangedId = ([a-z_] !<< [a-z_][a-zA-Z_]* !>> [a-zA-Z_]) \ Keywords;
 lexical RangedNr = [0-9]+;
+
+lexical Idd = ([a-z_] !<< [a-z_][a-zA-Z0-9_]* !>> [a-zA-Z0-9_]) \ Keywords;
 
 lexical Id = ([a-z_] !<< [a-z_][a-zA-Z0-9_]* !>> [a-zA-Z0-9_]) \ Keywords;
 lexical AttributeName = ([a-zA-Z_] !<< [a-zA-Z_][a-zA-Z0-9_\']* !>> [a-zA-Z0-9_]) \ Keywords;

@@ -37,7 +37,11 @@ data RangedValue
 
 alias Id = str;
 
-data Domain = id();  
+data Domain 
+  = id()
+  | \fail()
+  ;
+    
 data Literal = none(); 
 
 data AlleFormula

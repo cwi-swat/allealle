@@ -1,6 +1,6 @@
 module translation::theories::integer::AST
 
-extend translation::AST;
+import translation::AST;
 import IO;
 
 // Integer theory extensions
@@ -25,11 +25,9 @@ data AlleExpr
 	= intLit(int i)
 	| neg(AlleExpr expr)
 	| abs(AlleExpr expr)
-	| multiplication(AlleExpr lhs, AlleExpr rhs)
   | multiplication(list[AlleExpr] terms)
 	| division(AlleExpr lhs, AlleExpr rhs)
 	| modulo(AlleExpr lhs, AlleExpr rhs)
-	| addition(AlleExpr lhs, AlleExpr rhs)
   | addition(list[AlleExpr] terms)
 	| subtraction(AlleExpr lhs, AlleExpr rhs)
   | sum(AlleExpr expr)

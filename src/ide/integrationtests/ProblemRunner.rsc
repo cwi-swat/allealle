@@ -1,6 +1,6 @@
 module ide::integrationtests::ProblemRunner
 
-import ide::Imploder;
+import ide::CombinedImploder;
 import ide::CombinedAST;
 import ide::CombinedModelFinder;
 

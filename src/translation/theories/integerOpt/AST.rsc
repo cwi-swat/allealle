@@ -1,6 +1,6 @@
 module translation::theories::integerOpt::AST
 
-extend translation::theories::integer::AST;
+extend translation::AST;
 
 import IO;
 

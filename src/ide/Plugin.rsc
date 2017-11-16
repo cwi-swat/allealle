@@ -3,7 +3,7 @@ module ide::Plugin
 import ide::Parser;
 import ide::CombinedSyntax;
 import ide::CombinedAST;
-import ide::Imploder;
+import ide::CombinedImploder;
 import ide::CombinedModelFinder;
 import ide::vis::ModelVisualizer;
 
@@ -35,7 +35,7 @@ void main(){
  
 void checkAndVisualize(ide::CombinedSyntax::Problem p) {  
 	ModelFinderResult result = checkInitialSolution(implodeProblem(p)); 
-	if (sat(Model currentModel, Model (Domain) nextModel, void () stop) := result) {
+	if (sat(Model currentModel, Model (ide::CombinedAST::Domain) nextModel, void () stop) := result) {
 		renderModel(currentModel, nextModel, stop);
 	} else if (trivialSat(Model model) := result) {
 	  renderModel(model, Model (ide::CombinedAST::Domain) { return empty(); }, void () {;});

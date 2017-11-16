@@ -2,7 +2,7 @@ module translation::theories::integer::Syntax
 
 extend translation::Syntax;
 
-syntax Domain = \int: "int";
+syntax Domain = "int";
 
 syntax Literal 
   = posInt: IntLit lit
@@ -14,8 +14,6 @@ syntax AlleFormula
   | lte:        AlleExpr lhs "\<=" AlleExpr rhs
   | gt:         AlleExpr lhs "\>"  AlleExpr rhs
   | gte:        AlleExpr lhs "\>=" AlleExpr rhs
-  | intEqual:   AlleExpr lhs "="   AlleExpr rhs
-  | intInequal: AlleExpr lhs "!="  AlleExpr rhs
   | distinct:   "distinct" "(" AlleExpr expr ")"
   ;
   
@@ -28,7 +26,7 @@ syntax AlleExpr
   > left multiplication:  AlleExpr lhs "*" AlleExpr rhs
   | division:             AlleExpr lhs "/" AlleExpr rhs
   | modulo:               AlleExpr lhs "%" AlleExpr rhs
-  > left addition:        AlleExpr lhs "+" AlleExpr rhs 
+  > left union:           AlleExpr lhs "+" AlleExpr rhs 
   | left subtraction:     AlleExpr lhs "-" AlleExpr rhs
   > sum:                  "sum" "(" AlleExpr expr ")"
   | car:                  "#" AlleExpr expr

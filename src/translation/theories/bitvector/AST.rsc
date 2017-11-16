@@ -1,8 +1,13 @@
 module translation::theories::bitvector::AST
 
+data Domain
+  = bv(int bits)
+  ;
+
 data Literal 
   = bvIntLit(int lit) 
   | bvHexLit(str lit)
+  | bvBinLit(int lit)
   ;
 
 data AlleFormula
@@ -22,20 +27,20 @@ data AlleExpr
   = variable(str var)
   | bvIntLit(int lit) 
   | bvHexLit(str lit)
-  | bvNeg:                "[bv]" "-" AlleExpr e
-  | left bvMult:          "[bv]" AlleExpr lhs "*" AlleExpr rhs
-  | bvUnRem:              "[bvu]" AlleExpr lhs "/" AlleExpr rhs
-  | bvRem:                "[bv]" AlleExpr lhs "/" AlleExpr rhs
-  | bvMod:                "[bv]" AlleExpr lhs "%" AlleExpr rhs
-  | left bvAdd:           "[bv]" AlleExpr lhs "+" AlleExpr rhs 
-  | left bvSub:           "[bv]" AlleExpr lhs "-" AlleExpr rhs
-  | bvShiftLeft:          "[bv]" AlleExpr lhs "\<\<" AlleExpr rhs
-  | bvUnShiftRight:       "[bvu]" AlleExpr lhs "\>\>" AlleExpr rhs
-  | bvShiftRight:         "[bv]" AlleExpr lhs "\>\>" AlleExpr rhs
-  | bvOr:                 "[bv]" AlleExpr lhs "|" AlleExpr rhs
-  | bvAnd:                "[bv]" AlleExpr lhs "&" AlleExpr rhs
-  | bvNot:                "[bv]" "!" AlleExpr e
-  | bvNand:               "[bv]" AlleExpr lhs "!&" AlleExpr rhs
-  | bvNor:                "[bv]" AlleExpr lhs "!|" AlleExpr rhs
-  | bvXnor:               "[bv]" AlleExpr lhs "x!|" AlleExpr rhs 
+  | bvNeg(AlleExpr e)
+  | bvMult(AlleExpr lhs, AlleExpr rhs)
+  | bvUnRem(AlleExpr lhs, AlleExpr rhs)
+  | bvRem(AlleExpr lhs, AlleExpr rhs)
+  | bvMod(AlleExpr lhs, AlleExpr rhs)
+  | bvAdd(AlleExpr lhs, AlleExpr rhs)
+  | bvSub(AlleExpr lhs, AlleExpr rhs)
+  | bvShiftLeft(AlleExpr lhs, AlleExpr rhs)
+  | bvUnShiftRight( AlleExpr lhs, AlleExpr rhs)
+  | bvShiftRight(AlleExpr lhs, AlleExpr rhs)
+  | bvOr(AlleExpr lhs, AlleExpr rhs)
+  | bvAnd(AlleExpr lhs, AlleExpr rhs)
+  | bvNot(AlleExpr e)
+  | bvNand(AlleExpr lhs, AlleExpr rhs)
+  | bvNor(AlleExpr lhs, AlleExpr rhs)
+  | bvXnor(AlleExpr lhs, AlleExpr rhs) 
   ;
