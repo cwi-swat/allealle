@@ -1,18 +1,18 @@
-Person(1)	    >= {<p1>} <= {<p1>,<p2>,<p3>,<p4>}
+Person(1)	    >= {<p1>} <= {<p1>..<p4>}
 Adam(1)	      =  {<p1>}
-parent(2)	    <= {<p1,p2>,<p1,p3>,<p1,p4>,<p2,p1>,<p2,p3>,<p2,p4>,<p3,p1>,<p3,p2>,<p3,p4>,<p4,p1>,<p4,p2>,<p4,p3>}
-anchestor(2)  <= {<p1,p2>,<p1,p3>,<p1,p4>,<p2,p1>,<p2,p3>,<p2,p4>,<p3,p1>,<p3,p2>,<p3,p4>,<p4,p1>,<p4,p2>,<p4,p3>}
+parent(2)	    <= {<p1,p1>..<p4,p4>}
+anchestor(2)  <= {<p1,p1>..<p4,p4>}
 
 Adam in Person
 parent in Person -> Person
 anchestor in Person -> Person
 
 // Everybody has a parent except Adam
-forall p:Person | ((not p == Adam) => one parent.p)
+forall p:Person | ((not p = Adam) => one parent.p)
 no parent.Adam
 
 // Nobody is its own parent
-forall p:Person | not (p == parent.p) 
+forall p:Person | not (p = parent.p) 
 
 // Nobody is the parent of an anchestor
 forall p:Person | not (p in (^parent).p)
@@ -21,4 +21,4 @@ forall p:Person | not (p in (^parent).p)
 Person in Adam.(*parent)
 
 // Anchestor is the transposed transitive closure of the parent relation (if you are somebodies parent, grandparent, etc you are an anchestor
-anchestor == ~(^parent)
+anchestor = ~(^parent)

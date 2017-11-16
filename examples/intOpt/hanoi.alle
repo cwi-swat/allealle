@@ -13,12 +13,12 @@ State in InitialState.*ordering
 
 forall s:State, d:Disc | one (s.place).d
 
-exists s:State | Disc == GoalRod.(s.place)
+exists s:State | Disc = GoalRod.(s.place)
 
-forall s1:State, s2:State, d1:Disc  | let oldRodDisc1: (s1.place).d1, newRodDisc1: (s2.place).d1 | (s1->s2 in ordering && oldRodDisc1 !== newRodDisc1) => 
+forall s1:State, s2:State, d1:Disc  | let oldRodDisc1: (s1.place).d1, newRodDisc1: (s2.place).d1 | (s1->s2 in ordering && oldRodDisc1 != newRodDisc1) => 
     (forall d2:Disc\d1 | let oldRodDisc2: (s1.place).d2, newRodDisc2: (s2.place).d2 |
-      oldRodDisc2 == newRodDisc2 &&
-      ((oldRodDisc1 == oldRodDisc2 ||newRodDisc1 == newRodDisc2) => d2::size > d1::size) 
+      oldRodDisc2 = newRodDisc2 &&
+      ((oldRodDisc1 = oldRodDisc2 ||newRodDisc1 = newRodDisc2) => d2::size > d1::size) 
     )
 
 minimize #State

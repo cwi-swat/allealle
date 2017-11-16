@@ -9,7 +9,7 @@ workAddress in Address->Alias
 
 forall a:Address | some a.homeAddress || some a.workAddress
 
-preferredAddress == homeAddress +++ workAddress
+preferredAddress = homeAddress ++ workAddress
 
 some workAddress\homeAddress
 some homeAddress\workAddress

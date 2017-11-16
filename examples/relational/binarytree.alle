@@ -20,6 +20,3 @@ forall n:Node | not (n in n.^edge)
 // Nodes can maximal have two outgoing edges
 forall n:Node | #n.edge <= 2
 
-// Balanced tree => if a child node has childs of itself then the parent must have two children
-forall n:Node | some (n.edge).edge => #n.edge = 2
-

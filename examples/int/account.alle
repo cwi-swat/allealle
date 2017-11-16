@@ -11,13 +11,13 @@ triggeredEvent (2)          <= {<s2,withdraw>,<s2,deposit>,<s3,withdraw>,<s3,dep
 ordering in State -> State
 accountInState in State -> Account 
 
-triggeredEvent in State->(Withdraw++Deposit)
+triggeredEvent in State->(Withdraw+Deposit)
 
 // Entity constraints
 forall s:State | some s.accountInState
 forall s:State\InitialState | s in InitialState.^ordering
 
-State::amount > 0 && State::amount < 11
+(State\InitialState)::amount > 0 && State::amount < 11
 
 // Initial state
 (InitialState.accountInState)::balance = 0
@@ -25,8 +25,8 @@ State::amount > 0 && State::amount < 11
 // Transition function
 forall s1: State, s2:State | s1 -> s2 in ordering => 
   (
-    ((s2.accountInState)::balance = (s1.accountInState)::balance + s2::amount && s2.triggeredEvent == Deposit) ||
-    ((s1.accountInState::balance >= s2::amount &&  (s2.accountInState)::balance = (s1.accountInState)::balance - s2::amount) && s2.triggeredEvent == Withdraw)
+    ((s2.accountInState)::balance = (s1.accountInState)::balance + s2::amount && s2.triggeredEvent = Deposit) ||
+    ((s1.accountInState::balance >= s2::amount &&  (s2.accountInState)::balance = (s1.accountInState)::balance - s2::amount) && s2.triggeredEvent = Withdraw)
   )
  
 // Goal state 

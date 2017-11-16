@@ -1,10 +1,10 @@
-File (1)     <= {<f0>,<f1>,<f2>}
+File (1)     <= {<f0>..<f2>}
 Dir (1)      <= {<d0>,<d1>}
 Root (1)      = {<d0>}
-contents (2) >= {<d0,d1>} <= {<d0,d0>,<d0,d1>,<d0,f0>,<d0,f1>,<d0,f2>,<d1,d0>,<d1,d1>,<d1,f0>,<d1,f1>,<d1,f2>}
+contents (2) >= {<d0,d1>} <= {<d0,d0>..<d1,d1>,<d0,f0>,<d1,f2>}
 					 
 // Only dirs can contain other dirs and files
-contents in Dir -> (Dir++File)
+contents in Dir -> (Dir+File)
 // A dir cannot contain itself
 forall d: Dir | not (d in d.^contents)
 // Root is a Dir
@@ -12,5 +12,5 @@ Root in Dir
 // All files and dirs are (reflexive-transitive) 'content' of the Root dir 
 (File++Dir) in Root.*contents
 // All files and dirs can only be contained by one dir
-forall f:(File++Dir) | lone contents.f
+forall f:(File+Dir) | lone contents.f
 

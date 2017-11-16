@@ -9,11 +9,11 @@ Odd in Num
 Num::val > 0 && Num::val < 50
 
 no Even&Odd
-Even++Odd == Num
+Even+Odd = Num
 
 distinct(Num::val)
  
 forall n:Num | ((n::val % 2) = 0) <=> n in Even
 
-twice == {n1: Num, n2:Num\n1 | n2::val = n1::val * 2}
+twice = {n1: Num, n2:Num\n1 | n2::val = n1::val * 2}
 #twice >= 2

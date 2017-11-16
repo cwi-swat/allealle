@@ -1,6 +1,6 @@
-Elem (1 :: num:int) <= {<n1,?>,<n2,?>,<n3,?>}
-Start (1)           <= {<n1>,<n2>,<n3>}
-ring (2)            <= {<n1,n1>,<n1,n2>,<n2,n1>,<n2,n2>,<n1,n3>,<n3,n1>,<n2,n3>,<n3,n2>,<n3,n3>}
+Elem (1 :: num:int) <= {<n1,?>..<n10,?>}
+Start (1)           <= {<n1>..<n10>}
+ring (2)            <= {<n1,n1>..<n10,n10>}
 
 ring in Elem -> Elem
 Start in Elem
@@ -11,7 +11,7 @@ Elem::num > 0
 one Start
 
 // The ring is cyclic, all elements should be reachable from the start element (including itself) 
-forall e:Elem | e in Start.^ring
+Elem in Start.*ring
 
 // Only one element leads to an other element
 forall e:Elem | one e.ring && one ring.e

@@ -1,5 +1,5 @@
 State (1)		   = {<wa>,<nt>,<sa>,<q>,<nsw>,<v>,<t>}
-Color (1) 	   = {<green>,<yellow>,<blue>}
+Color (1) 	     = {<green>,<yellow>,<blue>}
 connect (2)	   = {<wa,sa>,<wa,nt>,<nt,wa>,<nt,sa>,<nt,q>,<sa,wa>,<sa,nt>,<sa,q>,<sa,nsw>,<sa,v>,<q,nt>,<q,sa>,<q,nsw>,<nsw,q>,<nsw,sa>,<nsw,v>,<v,sa>,<v,nsw>}
 hasColor (2)  <= {<wa,green>,<wa,yellow>,<wa,blue>,<nt,green>,<nt,yellow>,<nt,blue>,<sa,green>,<sa,yellow>,<sa,blue>,<q,green>,<q,yellow>,<q,blue>,<nsw,green>,<nsw,yellow>,<nsw,blue>,<v,green>,<v,yellow>,<v,blue>,<t,green>,<t,yellow>,<t,blue>}
 
@@ -7,4 +7,4 @@ hasColor in State -> Color
 
 forall s:State | one s.hasColor
 
-forall s1:State, s2:State | s2 in s1.connect => s1.hasColor !== s2.hasColor
+forall s1:State, s2:State | s2 in s1.connect => s1.hasColor != s2.hasColor

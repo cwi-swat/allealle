@@ -5,7 +5,7 @@ Total (1 :: val:int)   =  {<total,?>}
 exclusion (2)          =  {<vvd,pvv>,<cda,pvv>,<d66,pvv>,<groenlinks,pvv>,<sp,pvv>,<pvda,pvv>,<christenunie,pvv>,<pvdd,pvv>,<sp,vvd>}
 inclusion (2)          =  {<pvdd,groenlinks>,<pvdd,christenunie>}
 
-Goverment ++ Opposition == Party
+Goverment + Opposition = Party
 no Goverment&Opposition
 
 forall p1:Party, p2:Party\p1 | p1->p2 in exclusion => (p1 in Goverment => not (p2 in Goverment))
