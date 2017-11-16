@@ -47,8 +47,8 @@ str unparse(atMostOne(AlleExpr expr))                                           
 str unparse(exactlyOne(AlleExpr expr))                                              = "(one <unparse(expr)>)";
 str unparse(nonEmpty(AlleExpr expr))                                                = "(some <unparse(expr)>)"; 
 str unparse(subset(AlleExpr lhsExpr, AlleExpr rhsExpr))                             = "(<unparse(lhsExpr)> in <unparse(rhsExpr)>)";
-str unparse(equal(AlleExpr lhsExpr, AlleExpr rhsExpr))                              = "(<unparse(lhsExpr)> == <unparse(rhsExpr)>)";
-str unparse(inequal(AlleExpr lhsExpr, AlleExpr rhsExpr))                            = "(<unparse(lhsExpr)> !== <unparse(rhsExpr)>)";
+str unparse(equal(AlleExpr lhsExpr, AlleExpr rhsExpr))                              = "(<unparse(lhsExpr)> = <unparse(rhsExpr)>)";
+str unparse(inequal(AlleExpr lhsExpr, AlleExpr rhsExpr))                            = "(<unparse(lhsExpr)> != <unparse(rhsExpr)>)";
 str unparse(negation(AlleFormula form))                                             = "(not <unparse(form)>)";
 str unparse(conjunction(AlleFormula lhsForm, AlleFormula rhsForm))                  = "(<unparse(lhsForm)> && <unparse(rhsForm)>)";
 str unparse(disjunction(AlleFormula lhsForm, AlleFormula rhsForm))                  = "(<unparse(lhsForm)> || <unparse(rhsForm)>)";
@@ -64,8 +64,8 @@ str unparse(attributeLookup(AlleExpr expr, str name))                           
 str unparse(transpose(AlleExpr expr))                                               = "(~<unparse(expr)>)";
 str unparse(closure(AlleExpr expr))                                                 = "(^<unparse(expr)>)";
 str unparse(reflexClosure(AlleExpr expr))                                           = "(*<unparse(expr)>)";
-str unparse(union(AlleExpr lhs, AlleExpr rhs))                                      = "(<unparse(lhs)>++<unparse(rhs)>)";
-str unparse(override(AlleExpr lhs, AlleExpr rhs))                                   = "(<unparse(lhs)>+++<unparse(rhs)>)";
+str unparse(union(AlleExpr lhs, AlleExpr rhs))                                      = "(<unparse(lhs)>+<unparse(rhs)>)";
+str unparse(override(AlleExpr lhs, AlleExpr rhs))                                   = "(<unparse(lhs)>++<unparse(rhs)>)";
 str unparse(intersection(AlleExpr lhs, AlleExpr rhs))                               = "(<unparse(lhs)>&<unparse(rhs)>)";
 str unparse(difference(AlleExpr lhs, AlleExpr rhs))                                 = "(<unparse(lhs)>\\<unparse(rhs)>)";
 str unparse(\join(AlleExpr lhs, AlleExpr rhs))                                      = "(<unparse(lhs)>.<unparse(rhs)>)";
