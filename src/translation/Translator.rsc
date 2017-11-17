@@ -298,15 +298,21 @@ RelationMatrix translateExpression(attributeLookup(AlleExpr e, str name), Enviro
     return ();
   }
   
+  RelationMatrix result = ();
+  
   for (Index idx <- m) {
-    if (idx notin env.attributes || name notin env.attributes[idx]) {
-      throw "Attribute \'<name>\' not defined on \'<idx>\' ";
+    //if (idx notin env.attributes || name notin env.attributes[idx]) {
+    //  throw "Attribute \'<name>\' not defined on \'<idx>\' ";
+    //}
+
+    if (idx in env.attributes && name in env.attributes[idx]) {
+      result[idx] = relAndAtt(m[idx].relForm, env.attributes[idx][name]);
     }
     
-    m[idx] = relAndAtt(m[idx].relForm, env.attributes[idx][name]);
+    //m[idx] = relAndAtt(m[idx].relForm, env.attributes[idx][name]);
   }
   
-  return m;   
+  return result;   
 }
 
 
