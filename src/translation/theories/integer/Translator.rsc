@@ -40,7 +40,7 @@ Formula translateFormula(intInequal(AlleExpr lhsExpr, AlleExpr rhsExpr), Environ
 
 @memo
 Formula translateIntCompFormula(RelationMatrix lhs, RelationMatrix rhs, Formula (Formula lhsElement, Formula rhsElement) operation, AdditionalConstraintFunctions acf) {
-  if (size(lhs) == 0 || size(rhs) == 0) { return \false(); }
+  if (lhs == () || rhs == ()) { return \false(); }
     
   Formula result = \true();
 
