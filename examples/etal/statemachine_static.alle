@@ -1,0 +1,27 @@
+Machine (1) = {<m1>}
+
+State (1) = {<opened>,<closed>}
+state_cur (2) = {<m1,opened>,<m1,closed>}
+state_new (2) <= {<m1,opened>,<m1,closed>}
+
+InitialState_cur (2) = {} 
+InitialState_new (2) <= {<m1,opened>,<m1,closed>}
+
+Transition (1)  = {<toOpened>,<toClosed>}
+transition_cur (2) = {<opened,toClosed>,<closed,toOpened>}
+transition_new (2) <= {<opened,toClosed>,<opened,toOpened>,<closed,toOpened>,<closed,toClosed>}
+
+target_cur (2) = {<toClosed, closed>, <toOpened,opened>}
+target_new (2) <= {<toClosed, closed>, <toClosed,opened>, <toOpened,opened>, <toOpened,closed>}
+
+forall s:State | one state_new.s
+forall t:Transition | one transition_new.t
+forall t:Transition | one t.target_new 
+
+one InitialState_new
+some InitialState_cur => InitialState_new == InitialState_cur
+
+minimize |(#state_cur)-(#state_new)|
+minimize |(#InitialState_cur)-(#InitialState_new)|
+minimize |(#transition_cur)-(#transition_new)|
+minimize |(#target_cur)-(#target_new)|

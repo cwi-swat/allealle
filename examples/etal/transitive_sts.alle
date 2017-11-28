@@ -1,0 +1,8 @@
+State (1)        >= {<s1>} <= {<s1>..<s2>}
+ordering (2)     <= {<s1,s2>}
+
+Object (1)       = {<x>,<y>,<z>}
+to (3)           >= {<s1,x,y>,<s1,y,z>} <= {<s1,x,y>,<s1,y,z>,<s2,}
+to_orig (2)      = {<x,y>,<y,z>}
+to_new (2)      >= {<x,y>,<y,z>} <= {<x,y>,<y,x>,<y,z>,<z,y>,<x,z>,<z,x>}
+changed (1)     <= {<t>}

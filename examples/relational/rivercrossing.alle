@@ -7,15 +7,10 @@ Farmer (1)       = {<farmer>}
 
 eats (2)         = {<goat,cabbage>,<wolf,goat>}           
 
-near (2)         >= {<s1,goat>,<s1,cabbage>,<s1,farmer>,<s1,wolf>} 
-                 <= {<s1,goat>,<s1,cabbage>,<s1,farmer>,<s1,wolf>,<s2,goat>,<s2,cabbage>,<s2,farmer>,<s2,wolf>,<s3,goat>,<s3,cabbage>,<s3,farmer>,<s3,wolf>,
-                     <s4,goat>,<s4,cabbage>,<s4,farmer>,<s4,wolf>,<s5,goat>,<s5,cabbage>,<s5,farmer>,<s5,wolf>,<s6,goat>,<s6,cabbage>,<s6,farmer>,<s6,wolf>,
-                     <s7,goat>,<s7,cabbage>,<s7,farmer>,<s7,wolf>,<s8,goat>,<s8,cabbage>,<s8,farmer>,<s8,wolf>} 
+near (2)        >= {<s1,goat>,<s1,cabbage>,<s1,farmer>,<s1,wolf>} 
+                <= {<s1,goat>..<s8,goat>,<s1,cabbage>..<s8,cabbage>,<s1,farmer>..<s8,farmer>,<s1,wolf>..<s8,wolf>} 
 
-far (2)          <= {<s1,goat>,<s1,cabbage>,<s1,farmer>,<s1,wolf>,<s2,goat>,<s2,cabbage>,<s2,farmer>,<s2,wolf>,<s3,goat>,<s3,cabbage>,<s3,farmer>,<s3,wolf>,
-                     <s4,goat>,<s4,cabbage>,<s4,farmer>,<s4,wolf>,<s5,goat>,<s5,cabbage>,<s5,farmer>,<s5,wolf>,<s6,goat>,<s6,cabbage>,<s6,farmer>,<s6,wolf>,
-                     <s7,goat>,<s7,cabbage>,<s7,farmer>,<s7,wolf>,<s8,goat>,<s8,cabbage>,<s8,farmer>,<s8,wolf>} 
-
+far (2)         <= {<s1,goat>..<s8,goat>,<s1,cabbage>..<s8,cabbage>,<s1,farmer>..<s8,farmer>,<s1,wolf>..<s8,wolf>}
              
 ordering in State -> State
 near in State -> Passenger

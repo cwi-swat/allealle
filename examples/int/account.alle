@@ -1,21 +1,21 @@
-State (1 :: amount:int)     >= {<s1,0>} <= {<s1,0>,<s2,?>,<s3,?>,<s4,?>}
-InitialState (1)            = {<s1>}
-ordering (2)                <= {<s1,s2>,<s2,s3>,<s3,s4>}
-Account (1 :: balance:int)  >= {<ac1,?>} <= {<ac1,?>,<ac2,?>,<ac3,?>,<ac4,?>}
-accountInState (2)          >= {<s1,ac1>} <= {<s1,ac1>,<s2,ac2>,<s3,ac3>,<s4,ac4>}
+State (1 :: amount:int)     >= {<s1,0>} <= {<s1,0>,<s2,?>..<s5,?>}
+InitialState (1)             = {<s1>}
+ordering (2)                <= {<s1,s2>,<s2,s3>,<s3,s4>,<s4,s5>}
+Account (1 :: balance:int)  >= {<ac1,?>} <= {<ac1,?>..<ac5,?>}
+accountInState (2)          >= {<s1,ac1>} <= {<s1,ac1>,<s2,ac2>,<s3,ac3>,<s4,ac4>,<s5,ac5>}
 
 Withdraw (1)                = {<withdraw>}
 Deposit (1)                 = {<deposit>}
-triggeredEvent (2)          <= {<s2,withdraw>,<s2,deposit>,<s3,withdraw>,<s3,deposit>,<s4,withdraw>,<s4,deposit>}
+triggeredEvent (2)          <= {<s2,withdraw>..<s5,withdraw>,<s2,deposit>..<s5,deposit>}
 
 ordering in State -> State
-accountInState in State -> Account 
-
+accountInState in State->Account 
 triggeredEvent in State->(Withdraw+Deposit)
 
 // Entity constraints
 forall s:State | some s.accountInState
-forall s:State\InitialState | s in InitialState.^ordering
+State in InitialState.*ordering
+Account in (InitialState.*ordering).accountInState
 
 (State\InitialState)::amount > 0 && State::amount < 11
 
@@ -30,4 +30,6 @@ forall s1: State, s2:State | s1 -> s2 in ordering =>
   )
  
 // Goal state 
-exists s:State | (s.accountInState)::balance = 30
+exists s:State | (s.accountInState)::balance = 40
+
+minimize #State

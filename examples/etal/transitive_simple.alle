@@ -1,0 +1,10 @@
+Object (1)       = {<x>,<y>,<z>}
+to_cur (2)       = {<x,y>,<y,z>,<x,z>}
+to_new (2)      <= {<x,y>,<y,x>,<y,z>,<z,y>,<x,z>,<z,x>}
+changed (1)     <= {<t>}
+
+forall o:Object, o':Object\o | o' in o.^to_cur => o->o' in to_new
+
+to_cur == to_new <=> no changed
+
+minimize |(#to_cur) - (#to_new)|

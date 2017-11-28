@@ -1,0 +1,26 @@
+Order (1)   = {<o1>,<o2>}
+Client (1)  = {<c1>,<c2>}
+
+from_cur (2) = {<o1,c1>,<o1,c2>}
+from_new (2) <= {<o1,c1>,<o1,c2>,<o2,c1>,<o2,c2>}
+
+to_cur (2) = {<c1,o1>,<c2,o1>}
+to_new (2) <= {<c1,o1>,<c2,o1>,<c1,o2>,<c2,o2>}
+
+changed (1) <= {<t>}
+
+forall c:Client, o:Order | c->o in to_cur => lone c.from_new && lone from_new.o
+forall o:Order, c:Client | o->c in from_cur => lone to_new.o && lone c.to_new
+
+forall o:Order | lone to_new.o
+forall o:Order | lone o.from_new
+
+forall c:Client | lone c.to_new
+forall c:Client | lone from_new.c
+
+from_new == ~ to_new
+ 
+(to_cur == to_new) && (from_cur == from_new) <=> no changed
+
+minimize (#to_new) 
+minimize (#from_new)

@@ -1,0 +1,3 @@
+Queen (1 :: x:bv[3], y:bv[3]) = {<q1,?,?>..<q8,?,?>}
+
+forall q:Queen, q':Queen\q | [bv] q::x != q'::x && [bv] q::y != q'::y
