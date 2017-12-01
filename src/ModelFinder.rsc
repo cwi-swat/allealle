@@ -39,8 +39,6 @@ ModelFinderResult checkInitialSolution(Problem problem) {
 	println("\n\nDone translating, took: <(t.time/1000000)> ms");
 	
 	//countDeepestNesting(t.r.relationalFormula);
-	
-	writeBinaryValueFile(|project://allealle/bin/latestFormula.bin|, t.r.relationalFormula);
 	 
 	if (t.r.relationalFormula == \false()) {
 		return trivialUnsat();
