@@ -4,18 +4,11 @@ import List;
 import IO;
 
 void generatePrimes(int upperBound) {
-  str genTuples() = intercalate(",", ["\<n<i>\>" | int i <- [1..upperBound+1]]);
-  
-  str problem = "{<intercalate(",", ["n<i>{val(int)=<i>}" | int i <- [1..upperBound+1]])>}
+  str problem = "Num (1 :: val:int)  = {<intercalate(",", ["\<n<i>,<i>\>" | i <- [1..upperBound+1]])>}
+                'One (1)             = {\<n1\>}
+                'Prime (1)          \<= {\<n1\>..\<n<upperBound>\>} 
                 '
-                'Num:1    [{<genTuples()>},{<genTuples()>}]
-                'One:1    [{\<n1\>},{\<n1\>}]
-                'Primes:1 [{},{<genTuples()>}]
-                '
-                'Primes in Num
-                'One in Num
-                '
-                'forall p:Num | (exists n:Num\\(p++One) | p::val % n::valgit push --set-upstream origin no-preprocessing = 0) \<=\> not (p in Primes)";
+                'forall n:Num\\One | (exists n\':Num\\(n+One) | n\'::val \< n::val && n::val % n\'::val = 0) \<=\> not (n in Prime)";
   
   writeFile(|project://allealle/examples/int/primes.alle|, problem);
   println("Done generating primes example for <upperBound> numbers");  
@@ -40,5 +33,3 @@ list[int] calculatePrimesImperative(int upperBound) {
   
   return primes;
 }
-
-list[int] calculatePrimesFunctional(1) = [1];

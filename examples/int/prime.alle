@@ -1,0 +1,9 @@
+PossiblePrime (1 :: val:int) = {<n,1333333333333333333333333333333333333333333331>}
+Other (1 :: val:int)         = {<other,?>}
+Prime (1)                   <= {<n>}
+
+Other::val > 1 && (Other::val) < PossiblePrime::val
+
+PossiblePrime::val % Other::val = 0 <=> not (PossiblePrime in Prime)
+ 
+no Prime
