@@ -1,0 +1,6 @@
+Car  (1 :: price:int) = {<car1,20000>,<car2,30000>,<car3,50000>}
+Boat (1 :: price:int) = {<boat1,10000>,<boat2,40000>,<boat3,60000>}
+
+sale (2)              <= {<car1,boat1>..<car3,boat3>}
+
+sale = {c:Car,b:Boat | c::price >= b::price}

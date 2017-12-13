@@ -67,6 +67,7 @@ syntax VarDeclaration = varDecl: Variable var ":" AlleExpr expr;
 syntax AlleExpr
   = bracket "(" AlleExpr expr ")"
   > variable:           Variable v
+  //| lit:                Literal l
   > right \join:         AlleExpr lhs "." AlleExpr rhs
   > transpose:          "~" AlleExpr expr
   | closure:            "^" AlleExpr expr

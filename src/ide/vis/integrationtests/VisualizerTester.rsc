@@ -4,7 +4,7 @@ import translation::Binder;
 
 import ide::CombinedAST;
 import ide::CombinedModelFinder;
-import ide::Imploder;
+import ide::CombinedImploder;
 import ide::vis::ModelVisualizer; 
 
 import IO; 

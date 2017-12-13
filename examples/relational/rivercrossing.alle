@@ -28,14 +28,16 @@ forall s:State | (s.near+s.far) = Passenger
 exists s:State | Passenger in s.far
 
 // The farmer is always in the boat going from one shore to the other
-forall s1:State, s2: State | s1->s2 in ordering => (Farmer in s1.near => Farmer in s2.far) || (Farmer in s1.far => Farmer in s2.near)
+//forall s1:State, s2: State | s1->s2 in ordering => (Farmer in s1.near => Farmer in s2.far) || (Farmer in s1.far => Farmer in s2.near)
+forall o:ordering | let s1:o.State, s2:State.o | (Farmer in s1.near => Farmer in s2.far) || (Farmer in s1.far => Farmer in s2.near)
 
 // During a transition the boat can only have at max one passenger
-forall s1:State, s2: State, p1:Passenger\Farmer, p2:Passenger\(Farmer+p1) | s1 -> s2 in ordering => (not ((p1+p2 in s1.near & s2.far) || p1+p2 in s1.far & s2.near))
+//forall s1:State, s2: State, p1:Passenger\Farmer, p2:Passenger\(Farmer+p1) | s1 -> s2 in ordering => (not ((p1+p2 in s1.near & s2.far) || p1+p2 in s1.far & s2.near))
+forall o:ordering, p1:Passenger\Farmer, p2:Passenger\(Farmer+p1) | let s1:o.State, s2:State.o |(not ((p1+p2 in s1.near & s2.far) || p1+p2 in s1.far & s2.near))
 
 // If a passengers goes from one side to the other it means that the Farmer also goes from the same side to the other
-forall s1:State, s2:State, p:(Passenger\Farmer) | ((s1 -> s2 in ordering) => ( ((p in s1.near & s2.far) => Farmer in s1.near & s2.far) &&
-                                                                               ((p in s1.far & s2.near) => Farmer in s1.far & s2.near) ))
+forall o:ordering, p:(Passenger\Farmer) | let s1:o.State, s2:State.o | ( ((p in s1.near & s2.far) => Farmer in s1.near & s2.far) &&
+                                                                         ((p in s1.far & s2.near) => Farmer in s1.far & s2.near) )
 
 // The Wolf can never be on the same shore then the Goat and the Cabbage can never be on the same shore then the Goat unless the Farmer is there as well
 forall s:State, p1:Passenger, p2: Passenger | ((p1 -> p2 in eats) => ((p1 in s.near && p2 in s.far) || (p1 in s.far && p2 in s.near) || (p1+p2+Farmer in s.near) || (p1+p2+Farmer in s.far)))

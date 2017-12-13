@@ -25,8 +25,6 @@ syntax AlleFormula
   
 syntax AlleExpr
   = variable:             Variable v
-  > bvIntLit:             "[bv]" IntLit lit 
-  | bvHexLit:             "#x" HexLit lit
   > attributeLookup:      AlleExpr expr "::" AttributeName name
   > bvNeg:                "[bv]" "-" AlleExpr e
   > left bvMult:          "[bv]" AlleExpr lhs "*" AlleExpr rhs

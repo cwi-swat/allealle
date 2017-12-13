@@ -1,0 +1,45 @@
+PavingStone (1 :: index:int) = {<p1,1>,<p2,2>,<p3,3>,<p4,4>,<p5,5>,<p6,6>}
+Day (1 :: nr:int) >= {<d1,1>} <= {<d1,1>,<d2,2>,<d3,3>,<d4,4>,<d5,5>,<d6,6>,<d7,7>,<d8,8>,<d10,10>,<d11,11>,<d12,12>}
+FirstDay (1) = {<d1>}
+FinalDay (1) <= {<d1>..<d12>}
+PivotDay (1) <= {<d1>..<d12>}
+order (2) <= {<d1,d2>,<d2,d3>,<d3,d4>,<d4,d5>,<d5,d6>,<d6,d7>,<d7,d8>,<d8,d9>,<d9,d10>,<d10,d11>,<d11,d12>}
+under (2) <= {<d1,p1>..<d12,p6>}
+looked (2) <= {<d1,p1>..<d12,p6>}
+
+under in Day->PavingStone
+looked in Day->PavingStone
+order in Day->Day
+FinalDay in Day
+FirstDay in Day
+PivotDay in Day
+
+Day in FirstDay.*order
+
+no FinalDay.order
+one FinalDay
+
+FirstDay.looked::index = 2
+
+one PivotDay
+//PivotDay::nr = 4
+PivotDay::nr != 1 && PivotDay::nr != 2 && PivotDay::nr != 3 && PivotDay::nr != 5
+
+forall d:Day | one d.under && one d.looked
+
+forall o:order | let d1:o.Day, d2:Day.o | 
+  (d2.under::index = d1.under::index + 1) || (d2.under::index = d1.under::index - 1)
+
+forall o:order | let d1:o.Day, d2:Day.o | 
+  (d1::nr < PivotDay::nr => d2.looked::index = d1.looked::index + 1) &&
+  (d1::nr = PivotDay::nr => d2.looked::index = d1.looked::index) &&
+  (d1::nr > PivotDay::nr && d1.looked::index > 1 => d2.looked::index = d1.looked::index - 1) &&
+  (d1::nr > PivotDay::nr && d1.looked::index = 1 => d2.looked::index = 1)
+  
+FinalDay.under = FinalDay.looked
+forall d:Day\FinalDay | d.under != d.looked
+//forall d:Day | d.under != d.looked
+
+#Day = 8
+
+maximize #under
