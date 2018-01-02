@@ -1,17 +1,34 @@
-module logic::Boolean
+module smtlogic::Core
 
-import IO;
+data Sort
+  = \bool()
+  ;
 
 data Formula
 	= \true()
 	| \false()
+	| pVar(str name)
 	| \not(Formula f)
 	| \and(set[Formula] fs)
 	| \or(set[Formula] fs)
-	| ite(Formula c, Formula t, Formula e)
+  | implies(Formula \if, Formula \then)
+	| equal(Formula lhs, Formula rhs) 
+	| equal(Term lhsT, Term rhsT)
+	| distinct(set[Term] terms)
+	| ite(Formula c, Term t, Term e)
 	;
 
+data Term
+  = lit(Literal l)
+  | var(str name, Sort s)
+  ; 
+
+data Literal;
+  
 data Command;
+
+Sort sortOfLit(var(_,Sort s)) = s;
+default Sort sortOfLit(Literal l) { throw "Unable to obtain sort of literal \'<l>\'"; }
 
 Formula \or({})									                      = \false();
 Formula \or({Formula x}) 						                  = x;
@@ -103,6 +120,5 @@ Formula \ite(\false(), Formula _, Formula e)          = e;
 Formula \ite(Formula _, Formula t, t)                 = t;
 //default Formula \ite(Formula c, Formula t, Formula e) = \or(\iff(c,t),\iff(\not(c),e));
 
-Formula \if(Formula l, Formula r)           	        = \or(\not(l),r);
-Formula \fi(Formula l, Formula r)           	        = \if(r, l);
-Formula \iff(Formula l, Formula r)          	        = \and(\if(l,r),\fi(l,r));
+//Formula \if(Formula l, Formula r)           	        = \or(\not(l),r);
+//Formula \fi(Formula l, Formula r)           	        = \if(r, l);

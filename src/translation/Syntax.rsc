@@ -5,8 +5,12 @@ extend translation::Layout;
 start syntax Problem = problem: Relation* relations AlleFormula* constraints;
 
 syntax Relation 
-  = relation:                 Variable v "(" Arity arityOfIds ")" RelationalBound bounds
-  | relationWithAttributes:   Variable v "(" Arity arityOfIds "::"  {AttributeHeader ","}+ header ")" RelationalBound bounds
+  = RelVar v "(" {HeaderAttribute ","}+ header ")" RelationalBound bounds
+  ;
+
+syntax HeaderAttribute
+  = AttributeName name ":" Domain dom
+  | "_" ":" Domain dom
   ;
 
 syntax AttributeHeader
@@ -41,10 +45,12 @@ syntax Domain
   = "id"
   | "FAIL"
   ;  
+  
 syntax Literal = "none"; 
   
 syntax AlleFormula
   = bracket "(" AlleFormula form ")"
+  > \filter:            AlleExpr expr "::" "[" Restriction restrictions "]"
   > negation:           "not" AlleFormula form
   > empty:              "no" AlleExpr expr
   | atMostOne:          "lone" AlleExpr expr
@@ -62,24 +68,47 @@ syntax AlleFormula
   | existential:        "exists" {VarDeclaration ","}+ decls "|" AlleFormula form 
   ; 
 
-syntax VarDeclaration = varDecl: Variable var ":" AlleExpr expr;
+syntax VarDeclaration = varDecl: RelVar var ":" AlleExpr expr;
 
 syntax AlleExpr
   = bracket "(" AlleExpr expr ")"
-  > variable:           Variable v
-  //| lit:                Literal l
-  > right \join:         AlleExpr lhs "." AlleExpr rhs
-  > transpose:          "~" AlleExpr expr
-  | closure:            "^" AlleExpr expr
-  | reflexClosure:      "*" AlleExpr expr
-  > attributeLookup:    AlleExpr expr "::" AttributeName name
-  | left union:         AlleExpr lhs "+" AlleExpr rhs 
-  | left override:      AlleExpr lhs "++" AlleExpr rhs
-  | left intersection:  AlleExpr lhs "&" AlleExpr rhs
-  | left difference:    AlleExpr lhs "\\" AlleExpr rhs
-  | left product:       AlleExpr lhs "-\>" AlleExpr rhs
-  | ifThenElse:         AlleFormula form "?" AlleExpr then ":" AlleExpr else
-  | comprehension:      "{" {VarDeclaration ","}+ decls "|" AlleFormula form "}"
+  > variable:           RelVar v
+  | lit:                Literal l
+  > rename:             "[" {Rename ","}+ "]" AlleExpr
+  | projection:         AlleExpr r "[" {AttributeName ","}+ "]"
+  | restriction:        AlleExpr r "where" Restriction restriction
+  > transpose:          "~" TupleAttributeSelection? tas AlleExpr r
+  | closure:            "^" TupleAttributeSelection? tas AlleExpr r
+  | reflexClosure:      "*" TupleAttributeSelection? tas AlleExpr r
+  > left naturalJoin:   AlleExpr lhs ("|x|" | "⨝") AlleExpr rhs
+  | left dotJoin:       AlleExpr lhs "."   AlleExpr rhs
+  > left (union:        AlleExpr lhs "+"   AlleExpr rhs
+         |intersection: AlleExpr lhs "&"   AlleExpr rhs
+         |difference:   AlleExpr lhs "-"   AlleExpr rhs
+         |product:      AlleExpr lhs "x"   AlleExpr rhs
+         )
+  //| comprehension:     "{" {VarDeclaration ","}+ decls "|" AlleFormula form "}"
+  //| ifThenElse:         AlleFormula form "?" AlleExpr then ":" AlleExpr else
+  ;
+
+syntax TupleAttributeSelection 
+  = "\<" AttributeName first "," AttributeName second "\>"
+  ;
+
+syntax Rename = AttributeName new "/" AttributeName orig;
+
+syntax Restriction
+  = bracket "(" Restriction ")"
+  > "not" Restriction
+  > RestrictionExpr lhs "=" RestrictionExpr rhs
+  > left ( Restriction lhs "&&" Restriction rhs
+         | Restriction lhs "||" Restriction rhs
+         )
+  ;
+
+syntax RestrictionExpr
+  = AttributeName att
+  | Literal l
   ;
 
 lexical RangedId = ([a-z_] !<< [a-z_][a-zA-Z_]* !>> [a-zA-Z_]) \ Keywords;
@@ -87,11 +116,11 @@ lexical RangedNr = [0-9]+;
 
 lexical Idd = ([a-z_] !<< [a-z_][a-zA-Z0-9_]* !>> [a-zA-Z0-9_]) \ Keywords;
 
-lexical Id = ([a-z_] !<< [a-z_][a-zA-Z0-9_]* !>> [a-zA-Z0-9_]) \ Keywords;
-lexical AttributeName = ([a-zA-Z_] !<< [a-zA-Z_][a-zA-Z0-9_\']* !>> [a-zA-Z0-9_]) \ Keywords;
+lexical Id = ([a-z_] !<< [a-z][a-zA-Z0-9_]* !>> [a-zA-Z0-9_]) \ Keywords;
+lexical AttributeName = ([a-zA-Z] !<< [a-zA-Z][a-zA-Z0-9_\']* !>> [a-zA-Z0-9_]) \ Keywords;
 lexical Arity = [0-9]+;
 
-lexical Variable = ([a-zA-Z_] !<< [a-zA-Z_][a-zA-Z0-9_\']* !>> [a-zA-Z0-9_]) \ Keywords;
+lexical RelVar = ([a-zA-Z] !<< [a-zA-Z_][a-zA-Z0-9_\']* !>> [a-zA-Z0-9_]) \ Keywords;
 
-keyword Keywords = "none";
+keyword Keywords = "none" | "|x|" | "⨝";
 keyword Keywords = "no" | "lone" | "one" | "some" | "not" | "forall" | "exists" | "let";

@@ -6,8 +6,8 @@ import ide::Parser;
 import ide::CombinedDomainResolver;
 
 extend translation::Imploder;
-extend translation::theories::integer::Imploder;
-extend translation::theories::integerOpt::Imploder;
+//extend translation::theories::integer::Imploder;
+//extend translation::theories::integerOpt::Imploder;
 
 import ParseTree;
 import IO;

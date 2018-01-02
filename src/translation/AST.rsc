@@ -1,14 +1,14 @@
 module translation::AST
 
-data Problem = problem(list[Relation] relations, list[AlleFormula] constraints);
+data Problem = problem(list[RelationDef] relations, list[AlleFormula] constraints);
 
-data Relation 
-  = relation(str name, int arityOfIds, RelationalBound bounds)
-  | relationWithAttributes(str name, int arityOfIds, list[AttributeHeader] headers, RelationalBound bounds)
+data RelationDef
+  = relation(str name, list[HeaderAttribute] headers, RelationalBound bounds)
   ;
 
-data AttributeHeader
+data HeaderAttribute
   = header(str name, Domain dom)
+  | idHeader(Domain dom)
   ;
 
 data RelationalBound
@@ -44,8 +44,9 @@ data Domain
     
 data Literal = none(); 
 
-data AlleFormula
-  = empty(AlleExpr expr)
+data AlleFormula(loc origLoc = |unknown://|)
+  = \filter(AlleExpr expr, Restriction restriction)
+  | empty(AlleExpr expr)
   | atMostOne(AlleExpr expr)
   | exactlyOne(AlleExpr expr)
   | nonEmpty(AlleExpr expr)
@@ -63,20 +64,44 @@ data AlleFormula
   ; 
  
 data AlleExpr
-  = variable(str name)
-  | attributeLookup(AlleExpr expr, str name)
+  = relvar(str name)
+  | lit(Literal l)
+  | rename(AlleExpr expr, list[Rename] renames)
+  | projection(AlleExpr expr, list[str] attributes)
+  | restriction(AlleExpr expr, Restriction restriction)
+  | transpose(TupleAttributeSelection tas, AlleExpr expr)
   | transpose(AlleExpr expr)
-  | closure(AlleExpr expr)
-  | reflexClosure(AlleExpr expr)
-  | union(AlleExpr lhs, AlleExpr rhs) 
-  | override(AlleExpr lhs, AlleExpr rhs)
+  | closure(TupleAttributeSelection tas, AlleExpr r)
+  | closure(AlleExpr r)
+  | reflexClosure(TupleAttributeSelection tas, AlleExpr r)
+  | reflexClosure(AlleExpr r)
+  | naturalJoin(AlleExpr lhs, AlleExpr rhs)
+  | dotJoin(AlleExpr lhs, AlleExpr rhs)
+  | union(AlleExpr lhs, AlleExpr rhs)
   | intersection(AlleExpr lhs, AlleExpr rhs)
   | difference(AlleExpr lhs, AlleExpr rhs)
-  | \join(AlleExpr lhs, AlleExpr rhs)
-  | accessorJoin(AlleExpr col, AlleExpr select)
   | product(AlleExpr lhs, AlleExpr rhs)
-  | ifThenElse(AlleFormula caseForm, AlleExpr thenExpr, AlleExpr elseExpr)
-  | comprehension(list[VarDeclaration] decls, AlleFormula form)
   ;
 
 data VarDeclaration = varDecl(str name, AlleExpr binding);
+
+data TupleAttributeSelection 
+  = order(str first, str second)
+  ;
+
+data Rename 
+  = rename(str new, str orig)
+  ;
+
+data Restriction
+  = equal(RestrictionExpr lhsExpr, RestrictionExpr rhsExpr)
+  | and(Restriction lhs, Restriction rhs)
+  | or(Restriction lhs, Restriction rhs)
+  | not(Restriction)
+  ;
+
+
+data RestrictionExpr
+  = att(str name)
+  | lit(Literal l)
+  ;
