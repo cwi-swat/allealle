@@ -10,7 +10,7 @@ import List;
 
 alias Row = map[str,Cell];
 
-data RelationBuilder = rb(RelationBuilder (Row) t, RelationBuilder (Row, str) v, Relation () build);
+data RelationBuilder = rb(RelationBuilder (Row) t, RelationBuilder (Row) v, RelationBuilder (Row, Formula) f, Relation () build);
 
 RelationBuilder create(str relName, Header h) {
   Relation relation = <h,()>;
@@ -42,22 +42,30 @@ RelationBuilder create(str relName, Header h) {
     r -= k;
     relation.rows[k] = (k in relation.rows) ? relation.rows[k] + augment(k, r) : augment(k, r);
     
-    return rb(truth, variable, build);
+    return rb(truth, variable, form, build);
   }
 
-  RelationBuilder variable(Row r, str varName) {
+  RelationBuilder variable(Row r) {
     Key k = getKey(r);
     r -= k;
-    relation.rows[k] = (k in relation.rows) ? relation.rows[k] + augment(k, r, pVar(varName)) : augment(k, r, pVar(varName));
+    relation.rows[k] = (k in relation.rows) ? relation.rows[k] + augment(k, r, f = pvar(toStr(relName, k))) : augment(k, r, f = pvar(toStr(relName, k)));
     
-    return rb(truth, variable, build);
+    return rb(truth, variable, form, build);
   }
   
+  RelationBuilder form(Row r, Formula f) {
+    Key k = getKey(r);
+    r -= k;
+    relation.rows[k] = (k in relation.rows) ? relation.rows[k] + augment(k, r, f=f) : augment(k, r, f=f);
+    
+    return rb(truth, variable, form, build);
+  }
+    
   Relation build() {
     return relation; 
   }
   
-  return rb(truth, variable, build);
+  return rb(truth, variable, form, build);
 }
 
 str toStr(key(str k)) = k;

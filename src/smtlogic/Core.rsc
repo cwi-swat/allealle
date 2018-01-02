@@ -7,7 +7,7 @@ data Sort
 data Formula
 	= \true()
 	| \false()
-	| pVar(str name)
+	| pvar(str name)
 	| \not(Formula f)
 	| \and(set[Formula] fs)
 	| \or(set[Formula] fs)
