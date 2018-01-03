@@ -51,24 +51,26 @@ syntax Literal = "none";
 syntax AlleFormula
   = bracket "(" AlleFormula form ")"
   > \filter:            AlleExpr expr "::" "[" Restriction restrictions "]"
-  > negation:           "not" AlleFormula form
+  > negation:           ("not"|"¬") AlleFormula form
   > empty:              "no" AlleExpr expr
   | atMostOne:          "lone" AlleExpr expr
   | exactlyOne:         "one" AlleExpr expr
   | nonEmpty:           "some" AlleExpr expr
-  | subset:             AlleExpr lhsExpr "in" AlleExpr rhsExpr
+  | subset:             AlleExpr lhsExpr ("in" | "⊆") AlleExpr rhsExpr
   | equal:              AlleExpr lhsExpr "=" AlleExpr rhsExpr
-  | inequal:            AlleExpr lhsExpr "!=" AlleExpr rhsExpr
-  > left conjunction:   AlleFormula lhsForm "&&" AlleFormula rhsForm
-  | left disjunction:   AlleFormula lhsForm "||" AlleFormula rhsForm  
-  > implication:        AlleFormula lhsForm "=\>" AlleFormula rhsForm
-  | equality:           AlleFormula lhsForm "\<=\>" AlleFormula rhsForm
-  > let:                "let" {VarDeclaration ","}+ decls "|" AlleFormula form
-  > universal:          "forall" {VarDeclaration ","}+ decls "|" AlleFormula form
-  | existential:        "exists" {VarDeclaration ","}+ decls "|" AlleFormula form 
+  | inequal:            AlleExpr lhsExpr ("!=" | "≠") AlleExpr rhsExpr
+  > left conjunction:   AlleFormula lhsForm ("&&" | "∧") AlleFormula rhsForm
+  | left disjunction:   AlleFormula lhsForm ("||" | "∨") AlleFormula rhsForm  
+  > implication:        AlleFormula lhsForm ("=\>" | "⇒") AlleFormula rhsForm
+  | equality:           AlleFormula lhsForm ("\<=\>" | "⇔") AlleFormula rhsForm
+  > let:                "let" {VarBinding ","}+ bindings "|" AlleFormula form
+  > universal:          ("forall" | "∀") {VarDeclaration ","}+ decls "|" AlleFormula form
+  | existential:        ("exists" | "∃") {VarDeclaration ","}+ decls "|" AlleFormula form 
   ; 
 
-syntax VarDeclaration = varDecl: RelVar var ":" AlleExpr expr;
+syntax VarDeclaration = varDecl: RelVar var (":" | "∈") AlleExpr expr;
+
+syntax VarBinding = varBinding: RelVar var "=" AlleExpr expr;
 
 syntax AlleExpr
   = bracket "(" AlleExpr expr ")"
@@ -82,10 +84,10 @@ syntax AlleExpr
   | reflexClosure:      "*" TupleAttributeSelection? tas AlleExpr r
   > left naturalJoin:   AlleExpr lhs ("|x|" | "⨝") AlleExpr rhs
   | left dotJoin:       AlleExpr lhs "."   AlleExpr rhs
-  > left (union:        AlleExpr lhs "+"   AlleExpr rhs
-         |intersection: AlleExpr lhs "&"   AlleExpr rhs
-         |difference:   AlleExpr lhs "-"   AlleExpr rhs
-         |product:      AlleExpr lhs "x"   AlleExpr rhs
+  > left (union:        AlleExpr lhs ("+" | "∪")   AlleExpr rhs
+         |intersection: AlleExpr lhs ("&" | "∩")  AlleExpr rhs
+         |difference:   AlleExpr lhs ("-" | "∖")   AlleExpr rhs
+         |product:      AlleExpr lhs ("x" | "⨯")   AlleExpr rhs
          )
   //| comprehension:     "{" {VarDeclaration ","}+ decls "|" AlleFormula form "}"
   //| ifThenElse:         AlleFormula form "?" AlleExpr then ":" AlleExpr else

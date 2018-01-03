@@ -6,6 +6,7 @@ import ide::CombinedAST;
 import ide::CombinedImploder;
 import ide::CombinedModelFinder;
 import ide::vis::ModelVisualizer;
+import ide::UnicodeRewriter;
 
 import translation::Translator;
 import translation::Binder;
@@ -27,7 +28,8 @@ void main(){
 				if (/ide::CombinedSyntax::Problem p := current) {checkAndVisualize(p);}
 			})
 		),
-		syntaxProperties(#start[Problem])
+		syntaxProperties(#start[Problem]),
+		liveUpdater(unicodeRewrite)
 	};
 	
 	registerContributions(lang, contribs);
