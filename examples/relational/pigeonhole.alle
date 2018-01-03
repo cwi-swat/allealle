@@ -1,13 +1,6 @@
-//Pigeon (pId:id)            = {<p1>..<p10>}
-//Hole   (hId:id)            = {<h1>..<h9>}
-//nest   (pId:id, hId:id)   <= {<p1,h1>..<p10,h9>}
-//
-//forall p:Pigeon | one   p.nest
-//forall h:Hole   | lone  nest.h
-
 Pigeon (pId:id)            = {<p1>..<p10>}
 Hole   (hId:id)            = {<h1>..<h9>}
 nest   (pId:id, hId:id)   <= {<p1,h1>..<p10,h9>}
 
-forall p:Pigeon | one   (p ⨝ nest)[hId]
-forall h:Hole   | lone  (nest ⨝ h)[pId] 
+∀ p ∈ Pigeon | one   p ⨝ nest
+∀ h ∈ Hole   | lone  h ⨝ nest

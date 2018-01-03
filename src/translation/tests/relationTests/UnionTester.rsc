@@ -39,7 +39,6 @@ test bool unionIsAssociative() {
   Relation r3 = create("rel3", ("id":id())).t(("id":key("r3"))).build();
 
   return union(union(r1,r2),r3) == union(r1,union(r2,r3));  
-
 }
 
 test bool mandatoryRowsTrumpOptionalRowsAfterUnion() {

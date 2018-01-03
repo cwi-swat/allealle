@@ -21,12 +21,12 @@ Root (_:id)              = {<d0>}
 contents (_:id,_:id)    >= {<d0,d1>} <= {<d0,d0>..<d1,d1>,<d0,f0>,<d1,f2>}
            
 // Only dirs can contain other dirs and files
-contents in Dir x (Dir+File)
+contents ⊆ Dir ⨯ (Dir ∪ File)
 // A dir cannot contain itself
-forall d: Dir | not (d in d.^contents)  
+∀ d ∈ Dir | ¬ (d ⊆ d.^contents)  
 // Root is a Dir 
-Root in Dir
+Root ⊆ Dir
 // All files and dirs are (reflexive-transitive) 'content' of the Root dir 
-(File+Dir) in Root.*contents
+(File ∪ Dir) ⊆ Root.*contents
 // All files and dirs can only be contained by one dir
-forall f:(File+Dir) | lone contents.f
+∀ f ∈ (File ∪ Dir) | lone contents.f

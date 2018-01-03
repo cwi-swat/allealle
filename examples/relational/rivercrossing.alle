@@ -1,43 +1,50 @@
-State (1)       >= {<s1>} <= {<s1>..<s8>}
-InitialState (1) = {<s1>}
-ordering (2)    <= {<s1,s2>,<s2,s3>,<s3,s4>,<s4,s5>,<s5,s6>,<s6,s7>,<s7,s8>}
+State (sId:id)         >= {<s1>} <= {<s1>..<s8>}
+InitialState (sId:id)   = {<s1>}
+ordering (current:id,next:id) <= {<s1,s2>,<s2,s3>,<s3,s4>,<s4,s5>,<s5,s6>,<s6,s7>,<s7,s8>}
 
-Passenger (1)    = {<goat>,<wolf>,<cabbage>,<farmer>}
-Farmer (1)       = {<farmer>}
+Passenger (pId:id)      = {<goat>,<wolf>,<cabbage>,<farmer>}
+Farmer (pId:id)         = {<farmer>}
 
-eats (2)         = {<goat,cabbage>,<wolf,goat>}           
+eats (pId:id,eat:id)      = {<goat,cabbage>,<wolf,goat>}           
 
-near (2)        >= {<s1,goat>,<s1,cabbage>,<s1,farmer>,<s1,wolf>} 
-                <= {<s1,goat>..<s8,goat>,<s1,cabbage>..<s8,cabbage>,<s1,farmer>..<s8,farmer>,<s1,wolf>..<s8,wolf>} 
+near (sId:id,pId:id)     >= {<s1,goat>,<s1,cabbage>,<s1,farmer>,<s1,wolf>} 
+                     <= {<s1,goat>..<s8,goat>,<s1,cabbage>..<s8,cabbage>,<s1,farmer>..<s8,farmer>,<s1,wolf>..<s8,wolf>} 
 
-far (2)         <= {<s1,goat>..<s8,goat>,<s1,cabbage>..<s8,cabbage>,<s1,farmer>..<s8,farmer>,<s1,wolf>..<s8,wolf>}
+far (sId:id,pId:id)      <= {<s1,goat>..<s8,goat>,<s1,cabbage>..<s8,cabbage>,<s1,farmer>..<s8,farmer>,<s1,wolf>..<s8,wolf>}
              
-ordering in State -> State
-near in State -> Passenger
-far in State -> Passenger
+ordering ⊆ [current/sId]State ⨯ [next/sId]State
+near ⊆ State ⨯ Passenger
+far ⊆ State ⨯ Passenger
 
-State in InitialState.*ordering
+//State ⊆ InitialState.*ordering
 
 // a Passenger can only be on one shore in each state
-forall s:State| no (s.near & s.far)
+∀ s ∈ State | no (s ⨝ near ∩ s ⨝ far)
 
 // All states should have all passengers on one side or another 
-forall s:State | (s.near+s.far) = Passenger
+∀ s ∈ State | (s ⨝ near ∪ s ⨝ far)[pId] = Passenger
 
 // The goal is to get all Passengers to the other side compared to the start state
-exists s:State | Passenger in s.far
+∃ s ∈ State | Passenger ⊆ (s ⨝ far)[pId] 
 
 // The farmer is always in the boat going from one shore to the other
 //forall s1:State, s2: State | s1->s2 in ordering => (Farmer in s1.near => Farmer in s2.far) || (Farmer in s1.far => Farmer in s2.near)
-forall o:ordering | let s1:o.State, s2:State.o | (Farmer in s1.near => Farmer in s2.far) || (Farmer in s1.far => Farmer in s2.near)
-
+∀ o ∈ ordering | let s1 = [sId/current](o[current]), s2 = [sId/next](o[next]) | 
+  (Farmer ⊆ (s1 ⨝ near)[pId] ⇒ Farmer ⊆ (s2 ⨝ far)[pId]) ∨ (Farmer ⊆ (s1 ⨝ far)[pId] ⇒ Farmer ⊆ (s2 ⨝ near)[pId])
+ 
 // During a transition the boat can only have at max one passenger
-//forall s1:State, s2: State, p1:Passenger\Farmer, p2:Passenger\(Farmer+p1) | s1 -> s2 in ordering => (not ((p1+p2 in s1.near & s2.far) || p1+p2 in s1.far & s2.near))
-forall o:ordering, p1:Passenger\Farmer, p2:Passenger\(Farmer+p1) | let s1:o.State, s2:State.o |(not ((p1+p2 in s1.near & s2.far) || p1+p2 in s1.far & s2.near))
+∀ o ∈ ordering, p1 ∈ Passenger∖Farmer, p2 ∈ Passenger∖(Farmer ∪ p1) | let s1 = [sId/current](o[current]), s2 = [sId/next](o[next]) |
+  (¬ (p1 ∪ p2 ⊆ (s1 ⨝ near)[pId] ∩ (s2 ⨝ far)[pId] ∨ 
+      p1 ∪ p2 ⊆ (s1 ⨝ far)[pId] ∩ (s2 ⨝ near)[pId]))
 
 // If a passengers goes from one side to the other it means that the Farmer also goes from the same side to the other
-forall o:ordering, p:(Passenger\Farmer) | let s1:o.State, s2:State.o | ( ((p in s1.near & s2.far) => Farmer in s1.near & s2.far) &&
-                                                                         ((p in s1.far & s2.near) => Farmer in s1.far & s2.near) )
+∀ o ∈ ordering, p ∈ (Passenger∖Farmer) | let s1 = [sId/current](o[current]), s2 = [sId/next](o[next]) | 
+  ( ((p ⊆ (s1 ⨝ near)[pId] ∩ (s2 ⨝ far)[pId]) ⇒ Farmer ⊆ (s1 ⨝ near)[pId] ∩ (s2 ⨝ far)[pId]) ∧ 
+    ((p ⊆ (s1 ⨝ far)[pId] ∩ (s2 ⨝ near)[pId]) ⇒ Farmer ⊆ (s1 ⨝ far)[pId] ∩ (s2 ⨝ near)[pId]) )
 
 // The Wolf can never be on the same shore then the Goat and the Cabbage can never be on the same shore then the Goat unless the Farmer is there as well
-forall s:State, p1:Passenger, p2: Passenger | ((p1 -> p2 in eats) => ((p1 in s.near && p2 in s.far) || (p1 in s.far && p2 in s.near) || (p1+p2+Farmer in s.near) || (p1+p2+Farmer in s.far)))
+∀ s ∈ State, p1 ∈ Passenger, p2 ∈ Passenger | 
+  ((p1 ⨯ [eat/pId]p2 ⊆ eats) ⇒ ((p1 ⊆ (s ⨝ near)[pId] ∧ p2 ⊆ (s ⨝ far)[pId]) ∨ 
+                                (p1 ⊆ (s ⨝ far)[pId] ∧ p2 ⊆ (s ⨝ near)[pId]) ∨ 
+                                (p1 ∪ p2 ∪ Farmer ⊆ (s ⨝ near)[pId]) ∨ 
+                                (p1 ∪ p2 ∪ Farmer ⊆ (s ⨝ far)[pId])))

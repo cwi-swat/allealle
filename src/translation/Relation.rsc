@@ -60,9 +60,10 @@ Attributes combineRows(Attributes r1, Attributes r2, Formula (Formula,Formula) f
 
   bool addConstraint(Formula c) { combined[constraintsCol()] = formula(\and(getConstraints(combined), c)); return true;} 
 
-  Cell combineAtt(t1:term(v:var(_,_)), t2:term(l:lit(_))) = e2 when addConstraint(\equal(v,l));
-  Cell combineAtt(t1:expr(l:lit(_)), t2:term(v:var(_,_))) = e1 when addConstraint(\equal(v,l));
-  Cell combineAtt(t:term(_), t) = e;
+  Cell combineAtt(t1:term(v:var(_,_)), t2:term(l:lit(_))) = t2 when addConstraint(\equal(v,l));
+  Cell combineAtt(t1:term(l:lit(_)), t2:term(v:var(_,_))) = t1 when addConstraint(\equal(v,l));
+  Cell combineAtt(t:term(_), t) = t;
+  Cell combineAtt(term(v1:var(_,Sort s1)), term(v2:var(_,Sort s2))) = term(newVar) when s1 == s2, Term newVar := var("<v1.name>_<v2.name>", s1), addConstraint(\equal(v1,newVar)), addConstraint(\equal(v2,newVar));
   default Cell combinedAtt(Cell c1, Cell c2) { throw "Unable to combine \'<c1>\' with \'<c2>\'"; } 
 
   set[str] allAttributes = r1<0> + r2<0>;
@@ -130,52 +131,44 @@ Relation intersection(Relation lhs, Relation rhs) {
 
   map[Key,Attributes] rows = ();
   
-  set[Key] lhsKeys = getKeys(lhs);
-  set[Key] rhsKeys = getKeys(rhs);
+  set[Key] lhsKeys = getKeys(lhs); 
+  set[Key] rhsKeys = getKeys(rhs); 
   
   for (Key key <- lhsKeys, key in rhsKeys, !isFalse(lhs.rows[key]), !isFalse(rhs.rows[key])) {
-    Attributes r = combineRows(lhs.rows[key], rhs.rows[key]);
-    r[formulaCol()] = formula(\and(getFormula(lhs.rows[key]), getFormula(rhs.rows[key])));    
-  
-    rows[key] = r;
+    rows[key] = combineRows(lhs.rows[key], rhs.rows[key], Formula (Formula l, Formula r) { return \and(l,r);});
   } 
   
-  return <lhs.header, lhs.primKeys, rebuildIndices(rows), rows>;
+  return <lhs.header, rows>;
 }
 
 @memo
-Relation override(Relation lhs, Relation rhs) {
-  if (rhs == ()) {
+Relation difference(Relation lhs, Relation rhs) {
+  if (!unionCompatible(lhs,rhs)) {
+    throw "DIFFERENCE only works on union compatible relations";
+  }
+  
+  if (lhs.rows == () || rhs.rows == ()) {
     return lhs;
-  } else if (lhs == ()) {
-    return rhs;
   }
-
-  if (!sameArity(lhs,rhs)) {
-    throw "OVERRIDE only works on relations of same arity";
-  }
-
-  map[Id, set[Index]] lhsRows = ();
-  for (Index idx <- lhs) {
-    lhsRows[idx[0]] = (idx[0] in lhsRows) ? lhsRows[idx[0]] + idx : {idx};
-  }
-
-  map[Id, Formula] rhsNandForm = ();
-  for (Index idx <- rhs, idx[0] in lhsRows) {
-    rhsNandForm[idx[0]] = (idx[0] in rhsNandForm) ? and(rhsNandForm[idx[0]], not(rhs[idx].relForm)) : not(rhs[idx].relForm); 
-  }
+  
+  map[Key,Attributes] rows = ();
+  for (Key key <- lhs.rows) {
+    Attributes row = ();
+    if (key in rhs.rows) {
+      if (getFormula(rhs.rows[key]) != \true()) {
+        row = combineRows(lhs.rows[key], rhs.rows[key], Formula (Formula l, Formula r) { return \and(l, \not(r));});
+      }
+    } else {
+      row = lhs.rows[key];
+    }
     
-  Relation result = rhs;
-  
-  for (Id i <- lhsRows, Index idx <- lhsRows[i]) {
-    Formula current = (idx in result) ? result[idx].relForm : \false();
-    Formula nand = (i in rhsNandForm) ? rhsNandForm[i] : \true();
-     
-    result[idx] = relOnly(or(current, and(lhs[idx].relForm, nand)));
-  } 
-  
-  return result;
-}
+    if (row != ()) {
+      rows[key] = row;
+    }
+  }
+
+  return <lhs.header, rows>;
+} 
 
 @memo
 Relation transitiveClosure(Relation m) {
@@ -202,21 +195,6 @@ Relation reflexiveTransitiveClosure(Relation m, Relation iden) {
   }
   
   return or(transitiveClosure(m), iden); 
-} 
-
-@memo
-Relation difference(Relation lhs, Relation rhs) {
-  if (lhs == ()) {
-    return ();
-  } else if (rhs == ()) {
-    return lhs;
-  }
-  
-  if (!sameArity(lhs,rhs)) {
-    throw "DIFFERENCE only works on relations of same arity";
-  }
-  
-  return (idx : relOnly(\and(lhs[idx].relForm, rhsVal)) | Index idx <- lhs, Formula rhsVal := ((idx in rhs) ? not(rhs[idx].relForm) : \true()));
 } 
 
 @memo
