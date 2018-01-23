@@ -11,9 +11,9 @@ data Formula
 	| \not(Formula f)
 	| \and(set[Formula] fs)
 	| \or(set[Formula] fs)
-  | implies(Formula \if, Formula \then)
-	| equal(Formula lhs, Formula rhs) 
-	| equal(Term lhsT, Term rhsT)
+  //| implies(Formula \if, Formula \then)
+	| equal(set[Formula] fs) 
+	| equal(set[Term] ts)
 	| distinct(set[Term] terms)
 	| ite(Formula c, Term t, Term e)
 	;
@@ -122,3 +122,18 @@ Formula \ite(Formula _, Formula t, t)                 = t;
 
 //Formula \if(Formula l, Formula r)           	        = \or(\not(l),r);
 //Formula \fi(Formula l, Formula r)           	        = \if(r, l);
+
+Formula implies(\true(), Formula r)                   = r;
+Formula implies(\false(), Formula r)                  = \true();
+Formula implies(Formula r, \true())                   = \true();
+Formula implies(Formula r, \false())                  = r;
+Formula implies(Formula f, f)                         = f;
+default Formula implies(Formula i, Formula t)         = \or(not(i),t);
+
+Formula equal(Term t, t)                              = \true();
+Formula equal(lit(x),lit(y))                          = \false() when x != y;
+default Formula equal(Term l, Term r)                 = equal({l,r});
+
+default Formula equal(Formula l, Formula r)           = equal({l,r});
+
+
