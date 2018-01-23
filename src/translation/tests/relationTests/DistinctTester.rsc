@@ -21,12 +21,12 @@ bool checkAllDistinct(Relation r) {
   IndexedRows indexed = index(r);
   
   Formula isDistinct = \true();
+  Formula existsEqualRows = \false();
     
-  for (Tuple key <- indexed.indexedRows<0>, size(indexed.indexedRows[key]) > 1) {
+  for (Tuple key <- indexed.indexedRows<0>) {
     for (Row row1 <- indexed.indexedRows[key]) {
       isDistinct = \and(isDistinct, \and(row1.constraints.exists, row1.constraints.attConstraints));
 
-      Formula equalRows = \false();
       for (Row row2 <- indexed.indexedRows[key], row2 != row1) {
         Formula attEqual = \true();
 
@@ -38,24 +38,23 @@ bool checkAllDistinct(Relation r) {
           }         
         }
         
-        equalRows = \or(equalRows, attEqual); 
+        existsEqualRows = \or(existsEqualRows, attEqual); 
       }
-      
-      isDistinct = \and(isDistinct, equalRows);
     }    
   }
   
   str smt = "<declareBoolVars(r)>
-            '<declareIntVars(r)>
-            '(assert 
-            '  <compile(isDistinct)>
-            ')";
+            '<declareIntVars(r)>";
             
-  pid = startSolver();              
-  bool sat = isSatisfiable(pid, smt);
+  pid = startSolver();  
+  // It should be possible to have a model of the relation             
+  bool distinct = isSatisfiable(pid, smt + "\n(assert <compile(isDistinct)>)");
+  // It should not be possible to have two tuples with equal values in the same relation
+  bool equalRows = isSatisfiable(pid, "(assert <compile(existsEqualRows)>)");
+  
   stopSolver(pid);
  
-  return !sat;
+  return distinct && !equalRows;
 }
 
 set[str] getBoolVars(Relation r) = {v | /pvar(str v) := r};
