@@ -12,26 +12,26 @@ data HeaderAttribute
   ;
 
 data RelationalBound
-  = exact(list[Tuple] tuples)
-  | atMost(list[Tuple] upper)
-  | atLeastAtMost(list[Tuple] lower, list[Tuple] upper)
+  = exact(list[AlleTuple] tuples)
+  | atMost(list[AlleTuple] upper)
+  | atLeastAtMost(list[AlleTuple] lower, list[AlleTuple] upper)
   ;
 
-data Tuple 
-  = tup(list[Value] values)
+data AlleTuple 
+  = tup(list[AlleValue] values)
   | range(list[RangedValue] from, list[RangedValue] to)
   ;  
 
-data Value
+data AlleValue
   = id(Id id)
-  | lit(Literal lit)
+  | alleLit(AlleLiteral lit)
   | hole()
   ;
 
 data RangedValue
   = id(str prefix, int numm)
   | idOnly(Id id)
-  | templateLit(Literal lit)
+  | templateLit(AlleLiteral lit)
   | templateHole()
   ;
 
@@ -42,7 +42,7 @@ data Domain
   | \fail()
   ;
     
-data Literal = none(); 
+data AlleLiteral; 
 
 data AlleFormula(loc origLoc = |unknown://|)
   = \filter(AlleExpr expr, Restriction restriction)
@@ -65,7 +65,7 @@ data AlleFormula(loc origLoc = |unknown://|)
  
 data AlleExpr
   = relvar(str name)
-  | lit(Literal l)
+  | lit(AlleLiteral l)
   | rename(AlleExpr expr, list[Rename] renames)
   | projection(AlleExpr expr, list[str] attributes)
   | restriction(AlleExpr expr, Restriction restriction)
@@ -102,6 +102,6 @@ data Restriction
 
 
 data RestrictionExpr
-  = att(str name)
-  | lit(Literal l)
+  = att(str name) 
+  | lit(AlleLiteral l)
   ;
