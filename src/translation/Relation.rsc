@@ -10,82 +10,91 @@ import IO;
 
 import util::Benchmark;
 
-//alias AdditionalConstraintFunctions = tuple[void (Formula) addAttributeConstraint, void (Command) addAdditionalCommand, void (Formula) addIntermediateVar, Id () freshIntermediateId]; 
+alias Heading = map[str,Domain];
 
-alias Header = map[str,Domain];
+alias Rows = map[Tuple, Constraints];
+alias Row = tuple[Tuple values, Constraints constraints];
+alias Constraints = tuple[Formula exists, Formula attConstraints];
 
-alias Key = map[str,Cell];
-alias Attributes = map[str,Cell];
+alias Tuple = map[str,Cell];
 
-alias Relation = tuple[Header header, map[Key,Attributes] rows];
+alias Relation = tuple[Heading heading, Rows rows, set[str] partialKey];
 
-str formulaCol() = "_formula";
-str constraintsCol() = "_constraints";
-set[str] addedCols() = {formulaCol(), constraintsCol()};
+alias IndexedRows = tuple[set[str] partialKey, lrel[Tuple partialKey, Row row] indexedRows];
 
 data Cell 
   = key(str k)
-  | formula(Formula form)
   | term(Term t)
   ;
 
-Formula getFormula(Attributes r) = f when formula(Formula f) := r[formulaCol()];
-Formula getConstraints(Attributes r) = f when formula(Formula f) := r[constraintsCol()];
+bool isPresent(Constraints c) = c.exists != \false() && c.attConstraints != \false(); 
 
-bool isFalse(Attributes r) = getFormula(r) == \false(); 
+bool isFixed(var(_,_)) = false;
+default bool isFixed(Term _) = true;
 
-@memo
-set[str] getIdFieldsFromHeader(Header h) = {n | str n <- h, h[n] == id()}; 
+bool sameArity(Relation r1, Relation r2) = size(r1.heading) == size(r2.heading); 
 
-int arityOfIds(Relation rm) = size(getIdFieldsFromHeader(rm.header));
+IndexedRows index(Rows rows, set[str] partialKey)
+  = <partialKey, [<getPartialKeyTuple(row, partialKey), <row, rows[row]>> | Tuple row <- rows]>;
 
-bool sameArityOfIds(Relation lhs, Relation rhs) = arityOfIds(lhs) == arityOfIds(rhs); 
+IndexedRows index(Relation r) = index(r.rows, r.partialKey);
 
-@memo
-set[Key] getKeys(Relation m) = m.rows<0>; 
-
-bool unionCompatible(Relation lhs, Relation rhs) {
-  for (str att <- lhs.header, att notin rhs.header || lhs.header[att] != rhs.header[att]) {
-    return false;
-  } 
+Relation toRelation(IndexedRows rows, Heading heading)
+  = <heading, (k.row.values : k.row.constraints | k <- rows.indexedRows), rows.partialKey>;
   
-  return true;
-}
+Tuple getPartialKeyTuple(Tuple row, set[str] partialKey) = (att : row[att] | str att <- row, att in partialKey);
 
-@memo
-Attributes initRow() = (constraintsCol():formula(\true()));
+set[str] getIdFields(Heading h) = {f | str f <- h, h[f] == id()}; 
+  
+bool unionCompatible(Relation r1, Relation r2) = r1.heading == r2.heading; 
 
-Attributes combineRows(Attributes r1, Attributes r2, Formula (Formula,Formula) formOp) {
-  Attributes combined = initRow();
+bool isEmpty(Relation r) = r.rows == ();
 
-  bool addConstraint(Formula c) { combined[constraintsCol()] = formula(\and(getConstraints(combined), c)); return true;} 
-
-  Cell combineAtt(t1:term(v:var(_,_)), t2:term(l:lit(_))) = t2 when addConstraint(\equal(v,l));
-  Cell combineAtt(t1:term(l:lit(_)), t2:term(v:var(_,_))) = t1 when addConstraint(\equal(v,l));
-  Cell combineAtt(t:term(_), t) = t;
-  Cell combineAtt(term(v1:var(_,Sort s1)), term(v2:var(_,Sort s2))) = term(newVar) when s1 == s2, Term newVar := var("<v1.name>_<v2.name>", s1), addConstraint(\equal(v1,newVar)), addConstraint(\equal(v2,newVar));
-  default Cell combinedAtt(Cell c1, Cell c2) { throw "Unable to combine \'<c1>\' with \'<c2>\'"; } 
-
-  set[str] allAttributes = r1<0> + r2<0>;
-
-  for (str att <- allAttributes) {
-    if (att == formulaCol()) {
-      combined[formulaCol()] = formula(formOp(getFormula(r1), getFormula(r2)));
-    } else if (att == constraintsCol()) {
-      combined[constraintsCol()] = formula(\and({getConstraints(combined), getConstraints(r1), getConstraints(r2)}));
-    } else if (att in r1 && att in r2) {
-      combined[att] = combineAtt(r1[att],r2[att]);
-    } else if (att in r1) { 
-      combined[att] = r1[att];
-    } else {
-      combined[att] = r2[att];
-    }
+IndexedRows addRow(IndexedRows current, Row new) {
+  if (!isPresent(new.constraints)) {
+    return current;
   }
   
-  return combined;
-} 
+  Tuple newPartialKeyTuple = getPartialKeyTuple(new.values, current.partialKey);
+  
+  if (newPartialKeyTuple notin current.indexedRows.partialKey) {
+    return <current.partialKey, current.indexedRows + <newPartialKeyTuple, new>>;
+  }
+  
+  set[str] openAttributes = new.values<0> - current.partialKey;
+  
+  bool mergedRows = false;
+  
+  Formula constraintsForm = new.constraints.attConstraints;
+  for (Row r <- current.indexedRows[newPartialKeyTuple]) {
+    Formula tmpAttForm = \true();
+    
+    for (str att <- openAttributes) {
+      if (term(lhs) := r.values[att], term(rhs) := new.values[att]) {
+        tmpAttForm = \and(tmpAttForm, equal(lhs,rhs));
+      } else {
+        throw "Attribute \'<att>\' is not a term? Should not happen";
+      } 
+    }
+    
+    if (tmpAttForm != \true()) {
+      constraintsForm = \and(constraintsForm, implies(r.constraints.exists, not(tmpAttForm)));
+    } else {
+      // Attributes are equal or non-existing, so same row. Merge 'present' formula's
+      current.indexedRows = current.indexedRows - <newPartialKeyTuple,r> + <newPartialKeyTuple, <r.values, <\or(r.constraints.exists, new.constraints.exists), r.constraints.attConstraints>>>;
+      mergedRows = true;
+      break;
+    }   
+  }
+  
+  if (!mergedRows && constraintsForm != \false()) {
+    current.indexedRows = current.indexedRows + <newPartialKeyTuple, <new.values, <new.constraints.exists, constraintsForm>>>;
+  }
+  
+  return current;
+}
 
-@memo
+//@memo
 Relation union(Relation lhs, Relation rhs) {
   if (!unionCompatible(lhs,rhs)) {
     throw "UNION only works on union compatible relations";
@@ -96,30 +105,22 @@ Relation union(Relation lhs, Relation rhs) {
   } else if (lhs.rows == ()) {
     return rhs;
   }
-   
-  map[Key, Attributes] rows = ();
   
-  set[Key] lhsKeys = getKeys(lhs);
-  set[Key] rhsKeys = getKeys(rhs);
+  set[str] partialKey = lhs.partialKey & rhs.partialKey;
+  
+  IndexedRows lhsIndexed = index(lhs.rows, partialKey);
+  IndexedRows rhsIndexed = index(rhs.rows, partialKey);
+  
+  IndexedRows result = lhsIndexed; 
 
-  for (Key key <- (lhsKeys + rhsKeys)) {
-    Attributes row = ();
-    
-    if (key in lhsKeys && key in rhsKeys) {
-      row = combineRows(lhs.rows[key], rhs.rows[key], Formula (Formula l, Formula r) {return \or(l,r);});
-    } else if (key in lhsKeys) {
-      row = lhs.rows[key];
-    } else {
-      row = rhs.rows[key];
-    }
-    
-    rows[key] = row;
+  for (Tuple key <- rhsIndexed.indexedRows<0>, Row r <- rhsIndexed.indexedRows[key]) {
+    result = addRow(result, r);
   }  
    
-  return <lhs.header, rows>; 
+  return toRelation(result, lhs.heading); 
 }
- 
-@memo
+   
+//@memo
 Relation intersection(Relation lhs, Relation rhs) {
   if (!unionCompatible(lhs,rhs)) {
     throw "INTERSECTION only works on union compatible relations";
@@ -129,19 +130,32 @@ Relation intersection(Relation lhs, Relation rhs) {
     return lhs;
   }
 
-  map[Key,Attributes] rows = ();
+  set[str] partialKey = lhs.partialKey & rhs.partialKey;
+  set[str] openAttributes = lhs.heading<0> - partialKey;
   
-  set[Key] lhsKeys = getKeys(lhs); 
-  set[Key] rhsKeys = getKeys(rhs); 
-  
-  for (Key key <- lhsKeys, key in rhsKeys, !isFalse(lhs.rows[key]), !isFalse(rhs.rows[key])) {
-    rows[key] = combineRows(lhs.rows[key], rhs.rows[key], Formula (Formula l, Formula r) { return \and(l,r);});
+  IndexedRows lhsIndexed = index(lhs.rows, partialKey);
+  IndexedRows rhsIndexed = index(rhs.rows, partialKey);
+
+  IndexedRows result = <partialKey, []>;
+    
+  for (Tuple key <- lhsIndexed.indexedRows<0>, key in rhsIndexed.indexedRows<0>, Row l <- lhsIndexed.indexedRows[key], Row r <- rhsIndexed.indexedRows[key]) {
+    Formula tmpAttForm = \true();
+    
+    for (str att <- openAttributes) {
+      if (term(lTerm) := l.values[att], term(rTerm) := r.values[att]) {
+        tmpAttForm = \and(tmpAttForm, equal(lTerm,rTerm));
+      } else {
+        throw "Attribute \'<att>\' is not a term? Should not happen";
+      } 
+    }
+    
+    result.indexedRows = result.indexedRows + <key, <l.values, <\and(l.constraints.exists, r.constraints.exists), tmpAttForm>>>;   
   } 
   
-  return <lhs.header, rows>;
+  return toRelation(result, lhs.heading);
 }
 
-@memo
+//@memo
 Relation difference(Relation lhs, Relation rhs) {
   if (!unionCompatible(lhs,rhs)) {
     throw "DIFFERENCE only works on union compatible relations";
@@ -151,27 +165,63 @@ Relation difference(Relation lhs, Relation rhs) {
     return lhs;
   }
   
-  map[Key,Attributes] rows = ();
-  for (Key key <- lhs.rows) {
-    Attributes row = ();
-    if (key in rhs.rows) {
-      if (getFormula(rhs.rows[key]) != \true()) {
-        row = combineRows(lhs.rows[key], rhs.rows[key], Formula (Formula l, Formula r) { return \and(l, \not(r));});
-      }
-    } else {
-      row = lhs.rows[key];
+  set[str] partialKey = lhs.partialKey & rhs.partialKey;
+  set[str] openAttributes = lhs.heading<0> - partialKey;
+  
+  IndexedRows lhsIndexed = index(lhs.rows, partialKey);
+  IndexedRows rhsIndexed = index(rhs.rows, partialKey);
+
+  IndexedRows result = lhsIndexed;
+    
+  for (Tuple key <- lhsIndexed.indexedRows<0>, key in rhsIndexed.indexedRows<0>, Row l <- lhsIndexed.indexedRows[key], Row r <- rhsIndexed.indexedRows[key]) {
+    Formula tmpAttForm = \true();
+
+    for (str att <- openAttributes) {
+      if (term(lTerm) := l.values[att], term(rTerm) := r.values[att]) {
+        tmpAttForm = \and(tmpAttForm, equal(lTerm,rTerm));
+      } else {
+        throw "Attribute \'<att>\' is not a term? Should not happen";
+      } 
     }
     
-    if (row != ()) {
-      rows[key] = row;
+    if (tmpAttForm == \true()) {
+      // the rows are equal
+      if (r.constraints.exists != \true()) {
+        result.indexedRows = result.indexedRows - <key,l> + <key,<l.values, <\and(l.constraints.exists,\not(r.constraints.exists)),l.constraints.attConstraints>>>;
+      }
+    } else {
+      // The rows are equal but have variables for their attributes. 
+      result.indexedRows = result.indexedRows - <key,l> + <key,<l.values, <l.constraints.exists, implies(r.constraints.exists, not(tmpAttForm))>>>;
     }
   }
+  
+  return toRelation(result, lhs.heading);
+}
 
-  return <lhs.header, rows>;
-} 
+//@memo
+Relation projection(Relation relation, set[str] attributes) {
+  Heading projectedHeading = (c : relation.heading[c] | str c <- relation.heading, c in attributes);
+  
+  if (size(projectedHeading) != size(attributes)) {
+    throw "(Some of) the projected fields do not exists in the relation";
+  }
+  
+  set[str] projectedPartialKey = relation.partialKey & getIdFields(projectedHeading);
+  
+  IndexedRows projectedRel = <projectedPartialKey, []>;
+  
+  for (Tuple tup <- relation.rows) {
+    Tuple projectedTup = (att : tup[att] | str att <- tup, att in attributes);
+    projectedRel = addRow(projectedRel, <projectedTup, relation.rows[tup]>);
+  } 
+  
+  return toRelation(projectedRel, projectedHeading);
+}
+  
+  
 
 @memo
-Relation transitiveClosure(Relation m) {
+Relation transitiveClosure(Relation m, str from, str to) {
   if (arity(m) != 2) {
     throw "TRANSITIVE CLOSURE only works on binary relations";
   }
