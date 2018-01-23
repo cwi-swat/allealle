@@ -24,7 +24,7 @@ test bool unionIncompatibleRelationsCannotBeIntersected() {
   } catch e: ;     
   
   return true;
-}
+} 
 
 test bool intersectionIsCommutative() {
   Relation r1 = create("rel1", ("id":id())).t(("id":key("r1"))).t(("id":key("r2"))).build();
@@ -44,26 +44,26 @@ test bool intersectionIsAssociative() {
 test bool intersectionOfDistinctRelationsIsEmpty() {
   Relation r1 = create("rel1", ("id":id())).t(("id":key("r1"))).build();
   Relation r2 = create("rel2", ("id":id())).t(("id":key("r2"))).build();
-
-  return intersection(r1,r2) == <r1.header,()>;  
+ 
+  return intersection(r1,r2) == <r1.heading,(),{"id"}>;  
 }
 
 test bool optionalRowsTrumpMandatoryRowsAfterIntersection() {
   Relation r1 = create("rel1", ("id":id())).t(("id":key("r1"))).build();
   Relation r2 = create("rel2", ("id":id())).v(("id":key("r1"))).build();
   
-  return intersection(r1,r2) == create("result", ("id":id())).f(("id":key("r1")), pvar("rel2_r1")).build();
+  return intersection(r1,r2) == create("result", ("id":id())).f(("id":key("r1")), pvar("rel2_r1"),\true()).build();
 }
 
 test bool twoOptionalRowsMustBothBePresentAfterIntersection() {
   Relation r1 = create("rel1", ("id":id())).v(("id":key("r1"))).build();
   Relation r2 = create("rel2", ("id":id())).v(("id":key("r1"))).build();
   
-  return intersection(r1,r2) == create("result", ("id":id())).f(("id":key("r1")), \and(pvar("rel1_r1"),pvar("rel2_r1"))).build();
+  return intersection(r1,r2) == create("result", ("id":id())).f(("id":key("r1")), \and(pvar("rel1_r1"),pvar("rel2_r1")), \true()).build();
 }
 
 test bool intersectionOfNAryRelationsIsAllowed() {
-  Relation r1 = create("rel1", ("pId":id(),"hId":id())).t(("pId":key("p1"),"hId":key("h1"))).build();
+  Relation r1 = create("rel1", ("pId":id(),"hId":id())).t(("pId":key("p1"),"hId":key("h1"))).t(("pId":key("p1"),"hId":key("h2"))).build();
   Relation r2 = create("rel2", ("pId":id(),"hId":id())).t(("pId":key("p1"),"hId":key("h1"))).build();
 
   return intersection(r1,r2) == create("result", ("pId":id(),"hId":id()))
