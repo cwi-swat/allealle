@@ -11,7 +11,7 @@ test bool unionCompatibleRelationsCanBeIntersected() {
   Relation r1 = create("rel1", ("id":id())).t(("id":key("r1"))).t(("id":key("r2"))).build();
   Relation r2 = create("rel2", ("id":id())).t(("id":key("r2"))).build();
   
-  return intersection(r1,r2) == create("result", ("id":id())).t(("id":key("r2"))).build();
+  return intersect(r1,r2) == create("result", ("id":id())).t(("id":key("r2"))).build();
 }
 
 test bool unionIncompatibleRelationsCannotBeIntersected() {
@@ -19,54 +19,54 @@ test bool unionIncompatibleRelationsCannotBeIntersected() {
   Relation r2 = create("rel2", ("id2":id())).t(("id2":key("r2"))).build();
 
   try {
-    intersection(r1,r2);
+    intersect(r1,r2);
     fail;
   } catch e: ;     
   
   return true;
 } 
 
-test bool intersectionIsCommutative() {
+test bool intersectIsCommutative() {
   Relation r1 = create("rel1", ("id":id())).t(("id":key("r1"))).t(("id":key("r2"))).build();
   Relation r2 = create("rel2", ("id":id())).t(("id":key("r2"))).build();
 
-  return intersection(r1,r2) == intersection(r2,r1);  
+  return intersect(r1,r2) == intersect(r2,r1);  
 }
 
-test bool intersectionIsAssociative() {
+test bool intersectIsAssociative() {
   Relation r1 = create("rel1", ("id":id())).t(("id":key("r1"))).t(("id":key("r2"))).t(("id":key("r3"))).build();
   Relation r2 = create("rel2", ("id":id())).t(("id":key("r2"))).t(("id":key("r3"))).build();
   Relation r3 = create("rel3", ("id":id())).t(("id":key("r3"))).build();
 
-  return intersection(intersection(r1,r2),r3) == intersection(r1,intersection(r2,r3));  
+  return intersect(intersect(r1,r2),r3) == intersect(r1,intersect(r2,r3));  
 }
 
-test bool intersectionOfDistinctRelationsIsEmpty() {
+test bool intersectOfDistinctRelationsIsEmpty() {
   Relation r1 = create("rel1", ("id":id())).t(("id":key("r1"))).build();
   Relation r2 = create("rel2", ("id":id())).t(("id":key("r2"))).build();
  
-  return intersection(r1,r2) == <r1.heading,(),{"id"}>;  
+  return intersect(r1,r2) == <r1.heading,(),{"id"}>;  
 }
 
 test bool optionalRowsTrumpMandatoryRowsAfterIntersection() {
   Relation r1 = create("rel1", ("id":id())).t(("id":key("r1"))).build();
   Relation r2 = create("rel2", ("id":id())).v(("id":key("r1"))).build();
   
-  return intersection(r1,r2) == create("result", ("id":id())).f(("id":key("r1")), pvar("rel2_r1"),\true()).build();
+  return intersect(r1,r2) == create("result", ("id":id())).f(("id":key("r1")), pvar("rel2_r1"),\true()).build();
 }
 
 test bool twoOptionalRowsMustBothBePresentAfterIntersection() {
   Relation r1 = create("rel1", ("id":id())).v(("id":key("r1"))).build();
   Relation r2 = create("rel2", ("id":id())).v(("id":key("r1"))).build();
   
-  return intersection(r1,r2) == create("result", ("id":id())).f(("id":key("r1")), \and(pvar("rel1_r1"),pvar("rel2_r1")), \true()).build();
+  return intersect(r1,r2) == create("result", ("id":id())).f(("id":key("r1")), \and(pvar("rel1_r1"),pvar("rel2_r1")), \true()).build();
 }
 
-test bool intersectionOfNAryRelationsIsAllowed() {
+test bool intersectOfNAryRelationsIsAllowed() {
   Relation r1 = create("rel1", ("pId":id(),"hId":id())).t(("pId":key("p1"),"hId":key("h1"))).t(("pId":key("p1"),"hId":key("h2"))).build();
   Relation r2 = create("rel2", ("pId":id(),"hId":id())).t(("pId":key("p1"),"hId":key("h1"))).build();
 
-  return intersection(r1,r2) == create("result", ("pId":id(),"hId":id()))
+  return intersect(r1,r2) == create("result", ("pId":id(),"hId":id()))
     .t(("pId":key("p1"),"hId":key("h1")))
     .build();
 }

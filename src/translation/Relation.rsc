@@ -121,7 +121,7 @@ Relation union(Relation lhs, Relation rhs) {
 }
    
 //@memo
-Relation intersection(Relation lhs, Relation rhs) {
+Relation intersect(Relation lhs, Relation rhs) {
   if (!unionCompatible(lhs,rhs)) {
     throw "INTERSECTION only works on union compatible relations";
   }
@@ -186,8 +186,10 @@ Relation difference(Relation lhs, Relation rhs) {
     
     if (tmpAttForm == \true()) {
       // the rows are equal
+      result.indexedRows = result.indexedRows - <key,l>;
+
       if (r.constraints.exists != \true()) {
-        result.indexedRows = result.indexedRows - <key,l> + <key,<l.values, <\and(l.constraints.exists,\not(r.constraints.exists)),l.constraints.attConstraints>>>;
+        result.indexedRows = result.indexedRows + <key,<l.values, <\and(l.constraints.exists,\not(r.constraints.exists)),l.constraints.attConstraints>>>;
       }
     } else {
       // The rows are equal but have variables for their attributes. 
@@ -199,7 +201,7 @@ Relation difference(Relation lhs, Relation rhs) {
 }
 
 //@memo
-Relation projection(Relation relation, set[str] attributes) {
+Relation project(Relation relation, set[str] attributes) {
   Heading projectedHeading = (c : relation.heading[c] | str c <- relation.heading, c in attributes);
   
   if (size(projectedHeading) != size(attributes)) {
@@ -217,106 +219,133 @@ Relation projection(Relation relation, set[str] attributes) {
   
   return toRelation(projectedRel, projectedHeading);
 }
-  
-  
 
-@memo
-Relation transitiveClosure(Relation m, str from, str to) {
-  if (arity(m) != 2) {
-    throw "TRANSITIVE CLOSURE only works on binary relations";
+Relation rename(Relation relation, map[str,str] renamings) {
+  // Check whether renamed attributes are part of this relation
+  if (renamings<0> - relation.heading<0> != {}) {
+    throw "Can not rename a non existing attribute";
   }
+    
+  Heading renamedHeading = ((old in renamings ? renamings[old] : old) : relation.heading[old] | str old <- relation.heading);
+  if (size(renamedHeading) != size(relation.heading)) {
+    // some attributes collapse together because of name clashes. This is not allowed
+    throw "Renamed attributes overlap with existing attributenames";
+  }  
+  Rows renamedRows = ((((att in renamings) ? renamings[att] : att) : t[att] | str att <- t) : relation.rows[t] | Tuple t <- relation.rows);
   
-  int rows = size({idx[0] | Index idx <- m}); 
-
-  Relation ret = m;
-  int i = 1;
-  while(i < rows) {
-    ret = or(ret, dotJoin(ret,ret));
-    i *= 2;
-  } 
-  
-  return ret; 
+  return <renamedHeading, renamedRows, {((f in renamings) ? renamings[f] : f) | str f <- relation.partialKey}>; 
 }
 
-@memo
-Relation reflexiveTransitiveClosure(Relation m, Relation iden) {
-  if (arity(m) != 2) {
-    throw "REFLEXIVE TRANSITIVE CLOSURE only works on binary relations";
-  }
+Relation select(Relation relation, Formula (Tuple, Formula) criteria) {
+  Rows result = (); 
   
-  return or(transitiveClosure(m), iden); 
-} 
-
-@memo
-Relation dotJoin(Relation lhs, Relation rhs) {
-  int arityLhs = arity(lhs);
-  int arityRhs = arity(rhs);
-    
-  if (arityLhs == 1 && arityRhs == 1) { 
-    throw "JOIN only works on two non-unary relations"; 
-  }
-  
-  if (lhs == () || rhs == ()) {
-    return ();
-  }
-
-  set[Index] indicesEndingWith(Id a, Relation b) = {idx | Index idx <- b, idx[-1] == a};
-  set[Index] indicesStartingWith(Id a, Relation b) = {idx | Index idx <- b, idx[0] == a};
-  
-  set[Id] joiningIds;
-  if (size(lhs) < size(rhs)) {
-    joiningIds = {idx[-1] | Index idx <- lhs};
-  } else {
-    joiningIds = {idx[0] | Index idx <- rhs};
-  }
-  map[Id, set[Index]] lhsEndingWith = (b : indicesEndingWith(b,lhs) | Id b <- joiningIds);    
-  map[Id, set[Index]] rhsStartingWith = (b : indicesStartingWith(b,rhs) | Id b <- joiningIds);    
-
-  Relation relResult = ();
-  for (Id current <- joiningIds, Index lhsIdx <- lhsEndingWith[current], lhs[lhsIdx].relForm != \false(), Index rhsIdx <- rhsStartingWith[current], rhs[rhsIdx].relForm != \false()) {
-    Formula val = and(lhs[lhsIdx].relForm, rhs[rhsIdx].relForm);
-    
-    if (val != \false()) {
-      Index joinIdx = (lhsIdx - lhsIdx[-1]) + (rhsIdx - rhsIdx[0]);
-      if (val == \true()) {
-        relResult[joinIdx] = relOnly(\true());
-      } else if (joinIdx in relResult) {
-          if (relResult[joinIdx].relForm != \true()) {
-            relResult[joinIdx] = relOnly(\or(relResult[joinIdx].relForm, val));
-          }
-      } else {        
-        relResult[joinIdx] = relOnly(val);
-      }
+  for (Tuple t <- relation.rows) {
+    Formula attConstraints = criteria(t, relation.rows[t].attConstraints);
+    if (attConstraints != \false()) {
+      result[t] = <relation.rows[t].exists, attConstraints>;
     }
   }
-
-  return relResult;
+  
+  return <relation.heading, result, relation.partialKey>;
 }
 
-@memo
-Relation product(Relation lhs, Relation rhs) 
- = (lIdx + rIdx : relOnly(\and(lhs[lIdx].relForm, rhs[rIdx].relForm)) | Index lIdx <- lhs, lhs[lIdx].relForm != \false(), Index rIdx <- rhs, rhs[rIdx].relForm != \false());
-
-@memo
-Relation ite(Formula \case, Relation \then, Relation \else) {
-  if (arity(then) != arity(\else)) {
-    throw "Arity of relation in THEN must be equal to the arity of the relation in ELSE for the ITE to work";
-  }
-
-  if (\case == \true()) {
-    return then;
-  } else if (\case == \false()) {
-    return \else;
-  } 
-  
-  Relation relResult = ();
-  
-  for (Index idx <- (then + \else)) {
-    Formula thenRel = ((idx in then) ? then[idx].relForm : \false());
-    Formula elseRel = ((idx in \else) ? \else[idx].relForm : \false()); 
-    
-    relResult[idx] = relOnly(ite(\case, thenRel, elseRel));
-  } 
-  
-  return relResult;
-}
+//@memo
+//Relation transitiveClosure(Relation m, str from, str to) {
+//  if (arity(m) != 2) {
+//    throw "TRANSITIVE CLOSURE only works on binary relations";
+//  }
+//  
+//  int rows = size({idx[0] | Index idx <- m}); 
+//
+//  Relation ret = m;
+//  int i = 1;
+//  while(i < rows) {
+//    ret = or(ret, dotJoin(ret,ret));
+//    i *= 2;
+//  } 
+//  
+//  return ret; 
+//}
+//
+//@memo
+//Relation reflexiveTransitiveClosure(Relation m, Relation iden) {
+//  if (arity(m) != 2) {
+//    throw "REFLEXIVE TRANSITIVE CLOSURE only works on binary relations";
+//  }
+//  
+//  return or(transitiveClosure(m), iden); 
+//} 
+//
+//@memo
+//Relation dotJoin(Relation lhs, Relation rhs) {
+//  int arityLhs = arity(lhs);
+//  int arityRhs = arity(rhs);
+//    
+//  if (arityLhs == 1 && arityRhs == 1) { 
+//    throw "JOIN only works on two non-unary relations"; 
+//  }
+//  
+//  if (lhs == () || rhs == ()) {
+//    return ();
+//  }
+//
+//  set[Index] indicesEndingWith(Id a, Relation b) = {idx | Index idx <- b, idx[-1] == a};
+//  set[Index] indicesStartingWith(Id a, Relation b) = {idx | Index idx <- b, idx[0] == a};
+//  
+//  set[Id] joiningIds;
+//  if (size(lhs) < size(rhs)) {
+//    joiningIds = {idx[-1] | Index idx <- lhs};
+//  } else {
+//    joiningIds = {idx[0] | Index idx <- rhs};
+//  }
+//  map[Id, set[Index]] lhsEndingWith = (b : indicesEndingWith(b,lhs) | Id b <- joiningIds);    
+//  map[Id, set[Index]] rhsStartingWith = (b : indicesStartingWith(b,rhs) | Id b <- joiningIds);    
+//
+//  Relation relResult = ();
+//  for (Id current <- joiningIds, Index lhsIdx <- lhsEndingWith[current], lhs[lhsIdx].relForm != \false(), Index rhsIdx <- rhsStartingWith[current], rhs[rhsIdx].relForm != \false()) {
+//    Formula val = and(lhs[lhsIdx].relForm, rhs[rhsIdx].relForm);
+//    
+//    if (val != \false()) {
+//      Index joinIdx = (lhsIdx - lhsIdx[-1]) + (rhsIdx - rhsIdx[0]);
+//      if (val == \true()) {
+//        relResult[joinIdx] = relOnly(\true());
+//      } else if (joinIdx in relResult) {
+//          if (relResult[joinIdx].relForm != \true()) {
+//            relResult[joinIdx] = relOnly(\or(relResult[joinIdx].relForm, val));
+//          }
+//      } else {        
+//        relResult[joinIdx] = relOnly(val);
+//      }
+//    }
+//  }
+//
+//  return relResult;
+//}
+//
+//@memo
+//Relation product(Relation lhs, Relation rhs) 
+// = (lIdx + rIdx : relOnly(\and(lhs[lIdx].relForm, rhs[rIdx].relForm)) | Index lIdx <- lhs, lhs[lIdx].relForm != \false(), Index rIdx <- rhs, rhs[rIdx].relForm != \false());
+//
+//@memo
+//Relation ite(Formula \case, Relation \then, Relation \else) {
+//  if (arity(then) != arity(\else)) {
+//    throw "Arity of relation in THEN must be equal to the arity of the relation in ELSE for the ITE to work";
+//  }
+//
+//  if (\case == \true()) {
+//    return then;
+//  } else if (\case == \false()) {
+//    return \else;
+//  } 
+//  
+//  Relation relResult = ();
+//  
+//  for (Index idx <- (then + \else)) {
+//    Formula thenRel = ((idx in then) ? then[idx].relForm : \false());
+//    Formula elseRel = ((idx in \else) ? \else[idx].relForm : \false()); 
+//    
+//    relResult[idx] = relOnly(ite(\case, thenRel, elseRel));
+//  } 
+//  
+//  return relResult;
+//}

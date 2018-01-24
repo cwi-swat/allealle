@@ -70,26 +70,26 @@ test bool unionOfNAryRelationsIsAllowed() {
 }
  
 test bool unionWithExtraAttributes_WithSameFixedValuesResultsInSingleTuple() {
-  Relation r1 = create("rel1", ("pId":id(),"age":\int())).t(("pId":key("p1"),"age":term(lit(\int(20))))).build();
-  Relation r2 = create("rel2", ("pId":id(),"age":\int())).v(("pId":key("p1"),"age":term(lit(\int(20))))).build();
+  Relation r1 = create("rel1", ("pId":id(),"age":Domain::\int())).t(("pId":key("p1"),"age":term(lit(\int(20))))).build();
+  Relation r2 = create("rel2", ("pId":id(),"age":Domain::\int())).v(("pId":key("p1"),"age":term(lit(\int(20))))).build();
 
-  return union(r1,r2) == create("result", ("pId":id(), "age":\int())).t(("pId":key("p1"), "age":term(lit(\int(20))))).build();
+  return union(r1,r2) == create("result", ("pId":id(), "age":Domain::\int())).t(("pId":key("p1"), "age":term(lit(\int(20))))).build();
 }
 
 test bool unionWithExtraAttributes_WithDifferentFixedValuesResultsInTwoTuples() {
-  Relation r1 = create("rel1", ("pId":id(),"age":\int())).t(("pId":key("p1"),"age":term(lit(\int(20))))).build();
-  Relation r2 = create("rel2", ("pId":id(),"age":\int())).v(("pId":key("p1"),"age":term(lit(\int(30))))).build();
+  Relation r1 = create("rel1", ("pId":id(),"age":Domain::\int())).t(("pId":key("p1"),"age":term(lit(\int(20))))).build();
+  Relation r2 = create("rel2", ("pId":id(),"age":Domain::\int())).v(("pId":key("p1"),"age":term(lit(\int(30))))).build();
 
-  return union(r1,r2) == create("result", ("pId":id(), "age":\int())).t(("pId":key("p1"), "age":term(lit(\int(20))))).f(("pId":key("p1"), "age":term(lit(\int(30)))), \pvar("rel2_p1"), \true()).build();
+  return union(r1,r2) == create("result", ("pId":id(), "age":Domain::\int())).t(("pId":key("p1"), "age":term(lit(\int(20))))).f(("pId":key("p1"), "age":term(lit(\int(30)))), \pvar("rel2_p1"), \true()).build();
 }
 
 test bool unionWithExtraAttributes_WithDifferentMixedValuesResultsInTwoPossibleTuples() {
-  Relation r1 = create("rel1", ("pId":id(),"age":\int())).v(("pId":key("p1"),"age":term(lit(\int(20))))).build();
-  Relation r2 = create("rel2", ("pId":id(),"age":\int())).v(("pId":key("p1"),"age":term(var("rel2_age", Sort::\int())))).build();
+  Relation r1 = create("rel1", ("pId":id(),"age":Domain::\int())).v(("pId":key("p1"),"age":term(lit(\int(20))))).build();
+  Relation r2 = create("rel2", ("pId":id(),"age":Domain::\int())).v(("pId":key("p1"),"age":term(var("rel2_age", Sort::\int())))).build();
 
   Relation result = union(r1,r2);
 
-  return result == create("result", ("pId":id(), "age":\int()))
+  return result == create("result", ("pId":id(), "age":Domain::\int()))
                      .f(("pId":key("p1"), "age":term(lit(\int(20)))),pvar("rel1_p1"),\true())
                      .f(("pId":key("p1"), "age":term(var("rel2_age",Sort::\int()))),\pvar("rel2_p1"), \true())
                      .build() && checkAllDistinct(result);

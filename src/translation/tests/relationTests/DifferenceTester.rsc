@@ -3,7 +3,9 @@ module translation::tests::relationTests::DifferenceTester
 import translation::Relation;
 import translation::AST;
 import translation::tests::relationTests::RelationBuilder;
+
 import smtlogic::Core;
+import smtlogic::Ints;
 
 import IO;
 
@@ -48,25 +50,66 @@ test bool differenceOfDistinctRelationsResultsInTheLeftRelations() {
   return difference(r1,r2) == r1;  
 }
 
+test bool differenceOnAnEmptyRelationResultInAnEmptyRelation() {
+  Relation r1 = create("rel1", ("id":id())).build();
+  Relation r2 = create("rel2", ("id":id())).t(("id":key("r2"))).build();
+
+  return difference(r1,r2) == r1;  
+}
+
+test bool differenceWithAnEmptyRelationResultsInTheOriginalRelation() {
+  Relation r1 = create("rel1", ("id":id())).t(("id":key("r1"))).build();
+  Relation r2 = create("rel2", ("id":id())).build();
+
+  return difference(r1,r2) == r1;  
+}
+
 test bool optionalRowsTrumpMandatoryRows() {
   Relation r1 = create("rel1", ("id":id())).t(("id":key("r1"))).build();
   Relation r2 = create("rel2", ("id":id())).v(("id":key("r1"))).build();
   
-  return difference(r1,r2) == create("result", ("id":id())).f(("id":key("r1")), not(pvar("rel2_r1"))).build();
+  return difference(r1,r2) == create("result", ("id":id())).f(("id":key("r1")), not(pvar("rel2_r1")), \true()).build();
 }
 
-//test bool twoOptionalRowsMustBothBePresentAfterIntersection() {
-//  Relation r1 = create("rel1", ("id":id())).v(("id":key("r1"))).build();
-//  Relation r2 = create("rel2", ("id":id())).v(("id":key("r1"))).build();
-//  
-//  return intersection(r1,r2) == create("result", ("id":id())).f(("id":key("r1")), \and(pvar("rel1_r1"),pvar("rel2_r1"))).build();
-//}
-//
-//test bool intersectionOfNAryRelationsIsAllowed() {
-//  Relation r1 = create("rel1", ("pId":id(),"hId":id())).t(("pId":key("p1"),"hId":key("h1"))).build();
-//  Relation r2 = create("rel2", ("pId":id(),"hId":id())).t(("pId":key("p1"),"hId":key("h1"))).build();
-//
-//  return intersection(r1,r2) == create("result", ("pId":id(),"hId":id()))
-//    .t(("pId":key("p1"),"hId":key("h1")))
-//    .build();
-//}
+test bool optionalRowsTrumpMandatoryRowsPartTwo() {
+  Relation r1 = create("rel1", ("id":id())).v(("id":key("r1"))).build();
+  Relation r2 = create("rel2", ("id":id())).t(("id":key("r1"))).build();
+  
+  return difference(r1,r2) == create("result", ("id":id())).build();
+}
+
+test bool onEqualRows_rowOfRhsRelationMustNotExists() {
+  Relation r1 = create("rel1", ("id":id())).v(("id":key("r1"))).build();
+  Relation r2 = create("rel2", ("id":id())).v(("id":key("r1"))).build();
+  
+  return difference(r1,r2) == create("result", ("id":id())).f(("id":key("r1")), \and(pvar("rel1_r1"),not(pvar("rel2_r1"))), \true()).build();
+}
+
+test bool differenceOfNonOptionalRowsMustHaveExactSameAttributeValues() {
+  Relation r1 = create("rel1", ("id":id(),"num":Domain::\int())).t(("id":key("r1"),"num":term(lit(\int(10))))).build();
+  Relation r2 = create("rel2", ("id":id(),"num":Domain::\int())).t(("id":key("r1"),"num":term(lit(\int(10))))).build();
+  
+  return difference(r1,r2) == create("result", ("id":id(),"num":Domain::\int())).build();
+}
+
+test bool differenceOfRowsMustHaveExactSameAttributeValues() {
+  Relation r1 = create("rel1", ("id":id(),"num":Domain::\int())).v(("id":key("r1"),"num":term(lit(\int(20))))).build();
+  Relation r2 = create("rel2", ("id":id(),"num":Domain::\int())).v(("id":key("r1"),"num":term(lit(\int(10))))).build();
+  
+  return difference(r1,r2) == create("result", ("id":id(),"num":Domain::\int())).f(("id":key("r1"),"num":term(lit(\int(20)))), pvar("rel1_r1"), \true()).build();
+}
+
+test bool differenceOfRowsMustHaveExactSameAttributeValuesAlsoWhenTheyAreVariable() {
+  Relation r1 = create("rel1", ("id":id(),"num":Domain::\int())).v(("id":key("r1"),"num":term(var("n1",Sort::\int())))).build();
+  Relation r2 = create("rel2", ("id":id(),"num":Domain::\int())).v(("id":key("r1"),"num":term(var("n2",Sort::\int())))).build();
+  
+  return difference(r1,r2) == create("result", ("id":id(),"num":Domain::\int())).f(("id":key("r1"),"num":term(var("n1",Sort::\int()))), pvar("rel1_r1"), \or(not(pvar("rel2_r1")),not(equal(var("n1",Sort::\int()),var("n2",Sort::\int()))))).build();
+}
+
+
+test bool differenceOfOptionalRowsMustHaveExactSameAttributeValues() {
+  Relation r1 = create("rel1", ("id":id(),"num":Domain::\int())).v(("id":key("r1"),"num":term(lit(\int(10))))).build();
+  Relation r2 = create("rel2", ("id":id(),"num":Domain::\int())).v(("id":key("r1"),"num":term(lit(\int(10))))).build();
+  
+  return difference(r1,r2) == create("result", ("id":id(),"num":Domain::\int())).f(("id":key("r1"),"num":term(lit(\int(10)))), \and(pvar("rel1_r1"),not(pvar("rel2_r1"))), \true()).build();
+}
