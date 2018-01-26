@@ -31,7 +31,8 @@ RelationBuilder create(str relName, Heading h) {
 
   IndexedRows ir = index((), getIdFields(h));
    
-  Row toRow(Tuple t, Formula present, Formula att) = <t, <present, att>>;  
+  Row toRow(Tuple t, Formula present, Formula att) = <t, <present, att>> when t<0> == h<0>;
+  default Row toRow(Tuple t, Formula present, Formula att) { throw "Tuple <t> is not compatible with Heading <h>"; }  
    
   RelationBuilder truth(Tuple t) {
     ir = addRow(ir, toRow(t, \true(), \true()));    
