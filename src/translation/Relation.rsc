@@ -81,7 +81,7 @@ IndexedRows addRow(IndexedRows current, Row new) {
       constraintsForm = \and(constraintsForm, implies(r.constraints.exists, not(tmpAttForm)));
     } else {
       // Attributes are equal or non-existing, so same row. Merge 'present' formula's
-      current.indexedRows = current.indexedRows - <newPartialKeyTuple,r> + <newPartialKeyTuple, <r.values, <\or(r.constraints.exists, new.constraints.exists), r.constraints.attConstraints>>>;
+      current.indexedRows = current.indexedRows - <newPartialKeyTuple,r> + <newPartialKeyTuple, <r.values, <\or(r.constraints.exists, new.constraints.exists), \or(r.constraints.attConstraints, new.constraints.attConstraints)>>>;
       mergedRows = true;
       break;
     }   
@@ -94,7 +94,7 @@ IndexedRows addRow(IndexedRows current, Row new) {
   return current;
 }
 
-//@memo
+@memo
 Relation union(Relation lhs, Relation rhs) {
   if (!unionCompatible(lhs,rhs)) {
     throw "UNION only works on union compatible relations";
@@ -120,7 +120,7 @@ Relation union(Relation lhs, Relation rhs) {
   return toRelation(result, lhs.heading); 
 }
    
-//@memo
+@memo
 Relation intersect(Relation lhs, Relation rhs) {
   if (!unionCompatible(lhs,rhs)) {
     throw "INTERSECTION only works on union compatible relations";
@@ -155,7 +155,7 @@ Relation intersect(Relation lhs, Relation rhs) {
   return toRelation(result, lhs.heading);
 }
 
-//@memo
+@memo
 Relation difference(Relation lhs, Relation rhs) {
   if (!unionCompatible(lhs,rhs)) {
     throw "DIFFERENCE only works on union compatible relations";
@@ -200,7 +200,7 @@ Relation difference(Relation lhs, Relation rhs) {
   return toRelation(result, lhs.heading);
 }
 
-//@memo
+@memo
 Relation project(Relation relation, set[str] attributes) {
   Heading projectedHeading = (c : relation.heading[c] | str c <- relation.heading, c in attributes);
   
@@ -220,6 +220,7 @@ Relation project(Relation relation, set[str] attributes) {
   return toRelation(projectedRel, projectedHeading);
 }
 
+@memo
 Relation rename(Relation relation, map[str,str] renamings) {
   // Check whether renamed attributes are part of this relation
   if (renamings<0> - relation.heading<0> != {}) {
@@ -236,6 +237,7 @@ Relation rename(Relation relation, map[str,str] renamings) {
   return <renamedHeading, renamedRows, {((f in renamings) ? renamings[f] : f) | str f <- relation.partialKey}>; 
 }
 
+@memo
 Relation select(Relation relation, Formula (Tuple, Formula) criteria) {
   Rows result = (); 
   
@@ -247,6 +249,64 @@ Relation select(Relation relation, Formula (Tuple, Formula) criteria) {
   }
   
   return <relation.heading, result, relation.partialKey>;
+}
+
+@memo
+Relation product(Relation lhs, Relation rhs) {
+  // Headings must be disjoint
+  if (lhs.heading<0> & rhs.heading<0> != {}) {
+    throw "PRODUCT only works on relations with disjoint attribute names";
+  } 
+  
+  set[str] partialKey = lhs.partialKey + rhs.partialKey;
+  
+  IndexedRows result = <partialKey, []>;
+  
+  for (Tuple l <- lhs.rows, Tuple r <- rhs.rows) {
+    Constraints joined = <\and(lhs.rows[l].exists, rhs.rows[r].exists), \and(lhs.rows[l].attConstraints, rhs.rows[r].attConstraints)>;
+    if (isPresent(joined)) {
+      result = addRow(result, <l+r, joined>);  
+    }
+  }
+  
+  return toRelation(result, lhs.heading + rhs.heading);
+}
+
+@memo
+Relation naturalJoin(Relation lhs, Relation rhs) {
+  // Must have attributes with the same name and domain
+  set[str] joinAtts = (lhs.heading & rhs.heading)<0>;
+  if (joinAtts == {}) {
+    throw "No overlapping attributes to join";
+  }
+  
+  set[str] joinPartialKey = lhs.partialKey+rhs.partialKey; 
+  
+  // Index on joining attributes
+  IndexedRows indexedLhs = index(lhs.rows, joinAtts & joinPartialKey);
+  IndexedRows indexedRhs = index(rhs.rows, joinAtts & joinPartialKey);
+
+  bool joinOnKeysOnly = joinAtts & joinPartialKey == joinAtts;
+  
+  IndexedRows result = <joinPartialKey,[]>; 
+  for (Tuple key <- indexedLhs.indexedRows<0>, key in indexedRhs.indexedRows<0>, Row lr <- indexedLhs.indexedRows[key], Row rr <- indexedRhs.indexedRows[key]) {
+    Formula exists = \and(lr.constraints.exists,rr.constraints.exists);
+    Formula attForm = \and(lr.constraints.attConstraints,rr.constraints.attConstraints);
+
+    if (!joinOnKeysOnly) {
+      for (str att <- joinAtts) {
+        if (term(lTerm) := lr.values[att] && term(rTerm) := rr.values[att]) {
+         attForm = \and(attForm, equal(lTerm,rTerm));
+       } 
+      }
+    }
+
+    if (exists != \false() && attForm != \false()) {
+      result = addRow(result, <lr.values+rr.values, <exists, attForm>>);
+    }
+  }
+  
+  return toRelation(result, lhs.heading + rhs.heading);
 }
 
 //@memo
@@ -321,10 +381,6 @@ Relation select(Relation relation, Formula (Tuple, Formula) criteria) {
 //
 //  return relResult;
 //}
-//
-//@memo
-//Relation product(Relation lhs, Relation rhs) 
-// = (lIdx + rIdx : relOnly(\and(lhs[lIdx].relForm, rhs[rIdx].relForm)) | Index lIdx <- lhs, lhs[lIdx].relForm != \false(), Index rIdx <- rhs, rhs[rIdx].relForm != \false());
 //
 //@memo
 //Relation ite(Formula \case, Relation \then, Relation \else) {
