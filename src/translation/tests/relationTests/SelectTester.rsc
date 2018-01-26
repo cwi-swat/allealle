@@ -42,9 +42,7 @@ test bool selectDoesNothingIfFilterIsMet() {
                 .t(("id":key("p1"),"age":term(lit(\int(19)))))
                 .build();
                 
-  return select(r,mustBeOlderThen18) == create("person", ("id":id(),"age":Domain::\int()))
-                                          .t(("id":key("p1"),"age":term(lit(\int(19)))))
-                                          .build();                
+  return select(r,mustBeOlderThen18) == r;                
 }
 
 test bool selectFailsWhenAttributeDoesNotExist() {
