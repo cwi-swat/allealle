@@ -6,9 +6,8 @@ import IO;
 // Integer theory extensions
 data Domain = \int();
 
-data Literal 
-  = posInt(int i)
-  | negInt(int i)
+data RelLiteral 
+  = \int(int i)
   ;
 	
 data AlleFormula

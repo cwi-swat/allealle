@@ -1,61 +1,79 @@
 module translation::Environment
 
-import logic::Propositional;
+import smtlogic::Core;
 
 import translation::AST;
-import translation::Binder;
+import translation::Relation;
 
 import List;
 
-alias Environment = tuple[map[str, RelationMatrix] relations, map[Index, map[str, Formula]] attributes, list[Id] idDomain]; 
+alias Environment = tuple[map[str, Relation] relations, list[Id] idDomain]; 
 
 Environment createInitialEnvironment(Problem p) {
   list[Id] idDomain = extractIdDomain(p);
  
-  map[str, RelationMatrix] relations = (r.name:createRelationMatrix(r) | Relation r <- p.relations);
-  map[Index, map[str, Formula]] attributes = (() | createAttributeLookup(r, it) | r:relationWithAttributes(str name, int arityOfIds, list[AttributeHeader] headers, RelationalBound bounds) <- p.relations); 
+  map[str, Relation] relations = (r.name:createRelation(r) | RelationDef r <- p.relations);
    
-  return <relations, attributes, idDomain>;
+  return <relations, idDomain>;
 }   
                       
-list[Id] extractIdDomain(Problem p) {
-  list[Tuple] getTuples(exact(list[Tuple] tuples)) = tuples;
-  list[Tuple] getTuples(atMost(list[Tuple] upper)) = upper;
-  list[Tuple] getTuples(atLeastAtMost(_, list[Tuple] upper)) = upper;
-  
-  return dup([id | Relation r <- p.relations, Tuple t <- convertTuples(getTuples(r.bounds)), id(Id id) <- t.values]);   
-}                      
+list[Id] extractIdDomain(Problem p) =
+  dup([id | RelationDef r <- p.relations, AlleTuple t <- getAlleTuples(r.bounds)<1>, id(Id id) <- t.values]);   
                                                                                                                                                     
-RelationMatrix createRelationMatrix(Relation r) {
-  @memo
-  str idxToStr(Index idx) = intercalate("_", idx);
-  
-  tuple[list[Index] lb, list[Index] ub] bounds = getBounds(r.arityOfIds, r.bounds);
-  
-  RelationMatrix relResult = (); 
+Relation createRelation(RelationDef r) {
+  str idToStr(list[AlleValue] vals) = intercalate("_", [i | id(i) <- vals]);
+
+  list[str] orderedHeading = [ha.name | HeaderAttribute ha <- r.heading];
+  list[Domain] orderedDomains = [ha.dom | HeaderAttribute ha <- r.heading];
+  Heading heading = (orderedHeading[i] : orderedDomains[i] | int i <- [0..size(orderedHeading)]);
     
-  for (Index idx <- bounds.lb) {
-    relResult += (idx : relOnly(\true()));
+  set[str] partialKey = getIdFields(heading);
+  IndexedRows rows = <partialKey, []>;
+  
+  tuple[list[AlleTuple] lb, list[AlleTuple] ub] bounds = getAlleTuples(r.bounds);
+  
+  for (AlleTuple t <- bounds.lb) {
+    rows = addRow(rows, <convertAlleTuple(t, r.name, idToStr(t.values), orderedHeading, orderedDomains), <\true(), \true()>>);
   }
 
-  for (Index idx <- bounds.ub, idx notin bounds.lb) {
-    relResult += (idx : relOnly(var("<r.name>_<idxToStr(idx)>")));
+  for (AlleTuple t <- bounds.ub, t notin bounds.lb) {
+    rows = addRow(rows, <convertAlleTuple(t, r.name, idToStr(t.values), orderedHeading, orderedDomains), <pvar("<r.name>_<idToStr(t.values)>"), \true()>>);
   }
-
-  return relResult;
+ 
+  return toRelation(rows,heading);
 } 
 
+tuple[list[AlleTuple], list[AlleTuple]] getAlleTuples(exact(list[AlleTuple] tuples)) = <tups,tups> when list[AlleTuple] tups := convertRangedDefinitions(tuples);
+tuple[list[AlleTuple], list[AlleTuple]] getAlleTuples(atMost(list[AlleTuple] upper)) = <[], convertRangedDefinitions(upper)>;
+tuple[list[AlleTuple], list[AlleTuple]] getAlleTuples(atLeastAtMost(list[AlleTuple] lower, list[AlleTuple] upper)) = <convertRangedDefinitions(lower),convertRangedDefinitions(upper)>;
+
+Tuple convertAlleTuple(AlleTuple alleTuple, str relName, str varPostfix, list[str] attNames, list[Domain] attDomains) {
+  Tuple t = ();
+  for (int i <- [0..size(alleTuple.values)]) {
+    t[attNames[i]] = convertToCell(alleTuple.values[i], "<relName>_<varPostfix>_<attNames[i]>", attDomains[i]);
+  }
+  
+  return t;
+}
+
+Cell convertToCell(id(Id id), str _, Domain _) = key(id);
+Cell convertToCell(alleLit(AlleLiteral lit), str attVarName, Domain _) = term(convertToLit(lit));
+Cell convertToCell(hole(), str attVarName, Domain d) = term(convertToVar(attVarName, d)); 
+
+default Term convertToLit(AlleLiteral l) { throw "Can not convert literal \'<l>\', no conversion function found"; }
+default Term convertToVar(str varName, Domain d) { throw "Can not create a var with name \'<varName>\' for domain \'<d>\', no conversion function found";}
+
 @memo
-list[Tuple] convertTuples(list[Tuple] tuples) = [*convertTuple(t) | Tuple t <- tuples];
+list[AlleTuple] convertRangedDefinitions(list[AlleTuple] tuples) = [*convertRangedDefinition(t) | AlleTuple t <- tuples];
  
-list[Tuple] convertTuple(t:tup(list[Value] _)) = [t]; 
-list[Tuple] convertTuple(range(list[RangedValue] from, list[RangedValue] to)) {
+list[AlleTuple] convertRangedDefinition(t:tup(list[AlleValue] _)) = [t]; 
+list[AlleTuple] convertRangedDefinition(range(list[RangedValue] from, list[RangedValue] to)) {
   if (size(from) != size(to)) {
     throw "Unable to build tuples from ranges, arity of from and to do not match";
   } 
   
   list[list[Id]] newTupleIds = [];
-  list[Value] templates = [];
+  list[AlleValue] templates = [];
   for (int i <- [0..size(from)]) {
     if (id(str prefixFrom, int numFrom) := from[i], id(prefixTo, int numTo) := to[i]) {
       if (prefixFrom != prefixTo) {
@@ -71,73 +89,53 @@ list[Tuple] convertTuple(range(list[RangedValue] from, list[RangedValue] to)) {
   }
     
   return buildTuplesFromRange(newTupleIds, [], templates);
-} 
+}  
   
-list[Tuple] buildTuplesFromRange([], list[Value] currentIdx, list[Value] templates) = [tup([*currentIdx,*templates])];
-list[Tuple] buildTuplesFromRange([list[Id] hd, *list[Id] tl], list[Value] currentIdx, list[Value] templates) = [*buildTuplesFromRange(tl, currentIdx + id(i), templates) | Id i <- hd];
+list[AlleTuple] buildTuplesFromRange([], list[AlleValue] currentIds, list[AlleValue] templates) = [tup([*currentIds,*templates])];
+list[AlleTuple] buildTuplesFromRange([list[Id] hd, *list[Id] tl], list[AlleValue] currentIds, list[AlleValue] templates) = [*buildTuplesFromRange(tl, currentIds + id(i), templates) | Id i <- hd];
 
-Value convert(idOnly(Id atom)) = id(atom);
-Value convert(templateLit(Literal l)) = lit(l);
-Value convert(templateHole()) = hole();
-default Value convert(RangedValue v) { throw "Unable to convert \'v\' to a Value"; }
+AlleValue convert(idOnly(Id atom)) = id(atom);
+AlleValue convert(templateLit(AlleLiteral l)) = alleLit(l);
+AlleValue convert(templateHole()) = hole();
+default AlleValue convert(RangedValue v) { throw "Unable to convert \'v\' to a Value"; }
 
-tuple[list[Index], list[Index]] getBounds(int arity, exact(list[Tuple] tuples)) = <b,b> when list[Index] b := getIndices(arity, convertTuples(tuples));
-tuple[list[Index], list[Index]] getBounds(int arity, atMost(list[Tuple] upper)) = <[], ub> when list[Index] ub := getIndices(arity, convertTuples(upper));
-tuple[list[Index], list[Index]] getBounds(int arity, atLeastAtMost(list[Tuple] lower, list[Tuple] upper)) = <lb,ub> when list[Index] lb := getIndices(arity, convertTuples(lower)), list[Index] ub := getIndices(arity, convertTuples(upper));
-
-@memo      
-private list[Index] getIndices(int arity, list[Tuple] tuples) {
-  list[Index] indices = [];
-  for (Tuple t <- tuples) {
-     Index idx = [id | id(Id id) <- t.values];
-     
-     if (size(idx) != arity) {
-      throw "Arity definition of id field and nr of ids in tuples do not match";
-     }
-     
-     indices += [idx];
-  }
-  
-  return indices;
-}
-
-map[Index, map[str, Formula]] createAttributeLookup(relationWithAttributes(str _, int arityOfIds, list[AttributeHeader] headers, RelationalBound bounds), map[Index, map[str, Formula]] currentLookup) {
-  map[Index, map[str, Formula]] partial = createPartialAttributeLookup(arityOfIds, headers, bounds);
-  
-  for (Index idx <- partial) {
-    if (idx in currentLookup) {
-      currentLookup[idx] += partial[idx];
-    } else {
-      currentLookup[idx] = partial[idx];
-    }
-  }     
-  
-  return currentLookup;
-} 
-
-map[Index, map[str, Formula]] createPartialAttributeLookup(int arityOfIds, list[AttributeHeader] headers, exact(list[Tuple] tuples)) = createPartialAttributeLookup(arityOfIds, headers, convertTuples(tuples));
-map[Index, map[str, Formula]] createPartialAttributeLookup(int arityOfIds, list[AttributeHeader] headers, atMost(list[Tuple] upper)) = createPartialAttributeLookup(arityOfIds, headers, convertTuples(upper));
-map[Index, map[str, Formula]] createPartialAttributeLookup(int arityOfIds, list[AttributeHeader] headers, atLeastAtMost(list[Tuple] _, list[Tuple] upper)) = createPartialAttributeLookup(arityOfIds, headers, convertTuples(upper));
-
-private map[Index, map[str, Formula]] createPartialAttributeLookup(int arityOfIds, list[AttributeHeader] headers, list[Tuple] tuples) {
-  map[Index, map[str, Formula]] result = ();
-  
-  for (Tuple t <- tuples) {
-    Index idx = [id | id(Id id) <- t.values];
-    if (arityOfIds + size(headers) != size(t.values)) {
-      throw "Total arity of relation and size of the defined tuples differ";
-    }
-
-    map[str, Formula] attributes = ();
-        
-    for (int i <- [0..size(headers)], AttributeHeader h := headers[i], Value v := t.values[arityOfIds + i]) {
-      attributes[h.name] = createAttribute(idx, h.name, h.dom, v);  
-    }
-    
-    result[idx] = attributes;  
-  }
-  
-  return result;
-}      
-       
-default Formula createAttribute(Index idx, str name, Domain d, Value v) { throw "No attribute creator found for domain \'<d>\' with value \'<v>\'"; } 
+//map[Index, map[str, Formula]] createAttributeLookup(relationWithAttributes(str _, int arityOfIds, list[AttributeHeader] headers, RelationalBound bounds), map[Index, map[str, Formula]] currentLookup) {
+//  map[Index, map[str, Formula]] partial = createPartialAttributeLookup(arityOfIds, headers, bounds);
+//  
+//  for (Index idx <- partial) {
+//    if (idx in currentLookup) {
+//      currentLookup[idx] += partial[idx];
+//    } else {
+//      currentLookup[idx] = partial[idx];
+//    }
+//  }     
+//  
+//  return currentLookup;
+//} 
+//
+//map[Index, map[str, Formula]] createPartialAttributeLookup(int arityOfIds, list[AttributeHeader] headers, exact(list[RelTuple] tuples)) = createPartialAttributeLookup(arityOfIds, headers, convertTuples(tuples));
+//map[Index, map[str, Formula]] createPartialAttributeLookup(int arityOfIds, list[AttributeHeader] headers, atMost(list[RelTuple] upper)) = createPartialAttributeLookup(arityOfIds, headers, convertTuples(upper));
+//map[Index, map[str, Formula]] createPartialAttributeLookup(int arityOfIds, list[AttributeHeader] headers, atLeastAtMost(list[RelTuple] _, list[RelTuple] upper)) = createPartialAttributeLookup(arityOfIds, headers, convertTuples(upper));
+//
+//private map[Index, map[str, Formula]] createPartialAttributeLookup(int arityOfIds, list[AttributeHeader] headers, list[RelTuple] tuples) {
+//  map[Index, map[str, Formula]] result = ();
+//  
+//  for (Tuple t <- tuples) {
+//    Index idx = [id | id(Id id) <- t.values];
+//    if (arityOfIds + size(headers) != size(t.values)) {
+//      throw "Total arity of relation and size of the defined tuples differ";
+//    }
+//
+//    map[str, Formula] attributes = ();
+//        
+//    for (int i <- [0..size(headers)], AttributeHeader h := headers[i], Value v := t.values[arityOfIds + i]) {
+//      attributes[h.name] = createAttribute(idx, h.name, h.dom, v);  
+//    }
+//    
+//    result[idx] = attributes;  
+//  }
+//  
+//  return result;
+//}      
+//       
+//default Formula createAttribute(Index idx, str name, Domain d, Value v) { throw "No attribute creator found for domain \'<d>\' with value \'<v>\'"; } 

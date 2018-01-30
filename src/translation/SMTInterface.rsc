@@ -1,11 +1,11 @@
 module translation::SMTInterface
 
 import translation::AST;
-import translation::Binder;
+import translation::Relation;
 import translation::Environment;
 import translation::SMTValueSyntax;
 
-import logic::Propositional;
+import smtlogic::Core;
 
 import util::Maybe;  
 import String;

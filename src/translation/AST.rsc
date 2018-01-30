@@ -3,12 +3,11 @@ module translation::AST
 data Problem = problem(list[RelationDef] relations, list[AlleFormula] constraints);
 
 data RelationDef
-  = relation(str name, list[HeaderAttribute] headers, RelationalBound bounds)
+  = relation(str name, list[HeaderAttribute] heading, RelationalBound bounds)
   ;
 
 data HeaderAttribute
   = header(str name, Domain dom)
-  | idHeader(Domain dom)
   ;
 
 data RelationalBound
@@ -45,7 +44,7 @@ data Domain
 data AlleLiteral; 
 
 data AlleFormula(loc origLoc = |unknown://|)
-  = \filter(AlleExpr expr, Restriction restriction)
+  = \filter(AlleExpr expr, Criteria criteria)
   | empty(AlleExpr expr)
   | atMostOne(AlleExpr expr)
   | exactlyOne(AlleExpr expr)
@@ -65,22 +64,17 @@ data AlleFormula(loc origLoc = |unknown://|)
  
 data AlleExpr
   = relvar(str name)
-  | lit(AlleLiteral l)
   | rename(AlleExpr expr, list[Rename] renames)
-  | projection(AlleExpr expr, list[str] attributes)
-  | restriction(AlleExpr expr, Restriction restriction)
-  | transpose(TupleAttributeSelection tas, AlleExpr expr)
-  | transpose(AlleExpr expr)
-  | closure(TupleAttributeSelection tas, AlleExpr r)
-  | closure(AlleExpr r)
-  | reflexClosure(TupleAttributeSelection tas, AlleExpr r)
-  | reflexClosure(AlleExpr r)
-  | naturalJoin(AlleExpr lhs, AlleExpr rhs)
-  | dotJoin(AlleExpr lhs, AlleExpr rhs)
+  | project(AlleExpr expr, list[str] attributes)
+  | select(AlleExpr expr, Criteria criteria)
   | union(AlleExpr lhs, AlleExpr rhs)
   | intersection(AlleExpr lhs, AlleExpr rhs)
   | difference(AlleExpr lhs, AlleExpr rhs)
   | product(AlleExpr lhs, AlleExpr rhs)
+  | naturalJoin(AlleExpr lhs, AlleExpr rhs)
+  | transpose(TupleAttributeSelection tas, AlleExpr expr)
+  | closure(TupleAttributeSelection tas, AlleExpr r)
+  | reflexClosure(TupleAttributeSelection tas, AlleExpr r)
   ;
 
 data VarDeclaration = varDecl(str name, AlleExpr binding);
@@ -93,15 +87,15 @@ data Rename
   = rename(str new, str orig)
   ;
 
-data Restriction
-  = equal(RestrictionExpr lhsExpr, RestrictionExpr rhsExpr)
-  | and(Restriction lhs, Restriction rhs)
-  | or(Restriction lhs, Restriction rhs)
-  | not(Restriction)
+data Criteria
+  = equal(CriteriaExpr lhsExpr, CriteriaExpr rhsExpr)
+  | and(Criteria lhs, Criteria rhs)
+  | or(Criteria lhs, Criteria rhs)
+  | not(Criteria)
   ;
 
 
-data RestrictionExpr
+data CriteriaExpr
   = att(str name) 
   | lit(AlleLiteral l)
   ;

@@ -1,12 +1,11 @@
 module translation::Translator
 
-import logic::Propositional;
+import smtlogic::Core;
 import translation::AST;
 import translation::Environment;
-import translation::Binder; 
-import translation::Unparser;
+import translation::Relation; 
 
-//import logic::CBCFactory;
+//import translation::Unparser;
 
 import IO; 
 import List;
@@ -14,230 +13,248 @@ import List;
 import util::Maybe;
 import util::Benchmark;
 
-alias TranslationResult = tuple[Formula relationalFormula, Formula attributeFormula, set[Formula] intermediateVars, list[Command] additionalCommands];
-                                                                                             
-TranslationResult translateProblem(Problem p, Environment env, bool logIndividualFormula = true) {
-  set[Formula] attributeConstraints = {};
-  void addAttributeConstraint(Formula constraint) {
-    attributeConstraints += constraint;
-  }
-  
-  list[Command] additionalCommands = [];
-  void addAdditionalCommand(Command command) {
-    additionalCommands += command;  
-  }
-  
-  set[Formula] intermediateVars = {};
-  void addIntermediateVar(Formula val) {
-    intermediateVars += val;
-  }
-   
-  int tmpNr = 0;  
-  Id freshIntermediateId() {
-    tmpNr += 1;
-    return "_tmp_<tmpNr>";
-  }
-   
-  Formula relForm;
+Formula translateProblem(Problem p, Environment env, bool logIndividualFormula = true) {
+  Formula form;
+
   if (logIndividualFormula) {
-    relForm = and({r | AlleFormula f <- p.constraints, bprint("\nTranslating \'<unparse(f)>\' ..."), <Formula r, int time> := bm(f, env, <addAttributeConstraint, addAdditionalCommand, addIntermediateVar, freshIntermediateId>), bprint("in <time / 1000000> ms.")}); //, cache(formulaLookup, storeFormula, exprLookup, storeExpr)
+    form = and({r | AlleFormula f <- p.constraints, bprint("\nTranslating \'<unparse(f)>\' ..."), <Formula r, int time> := bm(f, env, <addAttributeConstraint, addAdditionalCommand, addIntermediateVar, freshIntermediateId>), bprint("in <time / 1000000> ms.")}); //, cache(formulaLookup, storeFormula, exprLookup, storeExpr)
   } else {
-    relForm = and({translateFormula(f, env, <addAttributeConstraint, addAdditionalCommand, addIntermediateVar, freshIntermediateId>) | AlleFormula f <- p.constraints}); //, cache(formulaLookup, storeFormula, exprLookup, storeExpr)
+    form = and({translateFormula(f, env, <addAttributeConstraint, addAdditionalCommand, addIntermediateVar, freshIntermediateId>) | AlleFormula f <- p.constraints}); //, cache(formulaLookup, storeFormula, exprLookup, storeExpr)
   }    
-  Formula attForm = and(attributeConstraints);
   
-  return <relForm, attForm, intermediateVars, additionalCommands>; 
+  return form; 
 }
 
 bool bprint(str line) { 
   print(line);
   return true;
-}
+} 
 
-private tuple[Formula, int] bm(AlleFormula f, Environment env, AdditionalConstraintFunctions acf) {
+private tuple[Formula, int] bm(AlleFormula f, Environment env) {
   int startTime = cpuTime();
-  Formula result = translateFormula(f, env, acf);
+  Formula result = translateFormula(f, env);
   return <result, cpuTime() - startTime>;
 }
 
-map[str, RelationMatrix] constructSingleton(str newVarName, Index idx) = (newVarName : (idx : relOnly(\true())));
+//map[str, RelationMatrix] constructSingleton(str newVarName, Index idx) = (newVarName : (idx : relOnly(\true())));
 
 
-Formula translateFormula(empty(AlleExpr expr), Environment env, AdditionalConstraintFunctions acf) 
-  = \not(translateFormula(nonEmpty(expr), env, acf));
+Formula translateFormula(empty(AlleExpr expr), Environment env) 
+  = \not(translateFormula(nonEmpty(expr), env));
 
 
-Formula translateFormula(atMostOne(AlleExpr expr), Environment env, AdditionalConstraintFunctions acf) {
-  Formula empty = translateFormula(empty(expr), env, acf);
+Formula translateFormula(atMostOne(AlleExpr expr), Environment env) {
+  Formula empty = translateFormula(empty(expr), env);
   if (empty == \true()) {
     return \true();
   }  
   
-  return or(empty, translateFormula(exactlyOne(expr), env, acf));
+  return or(empty, translateFormula(exactlyOne(expr), env));
 }
 
 
-Formula translateFormula(exactlyOne(AlleExpr expr), Environment env, AdditionalConstraintFunctions acf) {
-  RelationMatrix m = translateExpression(expr, env, acf);
+Formula translateFormula(exactlyOne(AlleExpr expr), Environment env) {
+  Relation r = translateExpression(expr, env);
   
-  if (m == ()) {
+  if (isEmpty(r)) {
     return \false();
   }
   
   set[Formula] clauses = {};
+  set[Formula] attConstraints = {};
   
   Formula partial = \false();
   
-  for (Index x <- m) {
-    Formula clause = or(\not(m[x].relForm), not(partial));
+  for (Tuple idx <- r.rows) {
+    Formula clause = or(\not(r.rows[idx].exists), not(partial));
     if (clause == \false()) {
       return \false();
     }
+    
     clauses += clause;  
-    partial = \or(partial, m[x].relForm);
+    attConstraints += getAttributeConstraints(r.rows[idx]);
+    
+    partial = \or(partial, r.rows[idx].exists);
   }
   
   clauses += partial;
   
-  return \and(clauses);
+  return \and(clauses + attConstraints);
 }
  
 
-Formula translateFormula(nonEmpty(AlleExpr expr), Environment env, AdditionalConstraintFunctions acf) {
-  RelationMatrix m = translateExpression(expr, env, acf);
+Formula translateFormula(nonEmpty(AlleExpr expr), Environment env) {
+  Relation r = translateExpression(expr, env);
   
   set[Formula] clauses = {};
+  set[Formula] attConstraints = {};
   
-  for (Index idx <- m) {
-    if (m[idx].relForm == \true()) {
+  for (Tuple idx <- r.rows) {
+    if (r.rows[idx].exists == \true()) {
       return \true();
     }
     
-    clauses += m[idx].relForm;
+    clauses += r.rows[idx].exists;
+    attConstraints += getAttributeConstraints(r.rows[idx]);
   } 
   
-  return \or(clauses);
+  return \and(\or(clauses), \and(attConstraints));
 }
 
 
-Formula translateFormula(subset(AlleExpr lhsExpr, AlleExpr rhsExpr), Environment env, AdditionalConstraintFunctions acf) {
-  RelationMatrix lhs = translateExpression(lhsExpr, env, acf);
-  RelationMatrix rhs = translateExpression(rhsExpr, env, acf);
+Formula translateFormula(subset(AlleExpr lhsExpr, AlleExpr rhsExpr), Environment env) {
+  Relation lhsFull = translateExpression(lhsExpr, env);
+  Relation rhsFull = translateExpression(rhsExpr, env);
+
+  if (!unionCompatible(lhsFull,rhsFull)) {
+    throw "SUBSET requires union compatible relations";
+  }
+    
+  IndexedRows lhs = index(lhsFull);
+  IndexedRows rhs = index(rhsFull);
+
+  set[str] openAttributes = lhsFull.heading<0> - lhs.partialKey;
   
   set[Formula] clauses = {};
-  for (Index idx <- lhs) {
-    Formula partial = \or(not(lhs[idx].relForm), (idx in rhs ? rhs[idx].relForm : \false()));
-    if (partial == \false()) {
-      return \false();
+  set[Formula] attConstraints = {};
+  
+  for (Tuple key <- lhs.indexedRows<0>, Row lRow <- lhs.indexedRows[key]) {
+    Formula partial = not(lRow.constraints.exists); 
+    attConstraints += getAttributeConstraints(lRow.constraints);
+        
+    if (key in rhs.indexedRows<0>) {
+      for (Row rRow <- rhs.indexedRows[key]) {
+        Formula tmpAttForm = \true();
+        
+        for (str att <- openAttributes) {
+          if (term(lTerm) := lRow.values[att], term(rTerm) := rRow.values[att]) {
+            tmpAttForm = \and(tmpAttForm, equal(lTerm,rTerm));
+          } else {
+            throw "Attribute \'<att>\' is not a term? Should not happen";
+          } 
+        }
+        
+        partial = \or(partial, \and(rRow.constraints.exists, tmpAttForm));
+        if (partial == \false()) {
+          return \false();
+        }
+        
+        clauses += partial;
+        attConstraints += getAttributeConstraints(rRow.constraints);
+      }
+    } else {
+      if (partial == \false()) {
+        return \false();
+      }
+      
+      clauses += partial;
     }
-    
-    clauses += partial;   
   }
   
-  return \and(clauses);
+  return \and(clauses + attConstraints);
 }
-     
+      
 
-Formula translateFormula(equal(AlleExpr lhsExpr, AlleExpr rhsExpr), Environment env, AdditionalConstraintFunctions acf) {
-  Formula l = translateFormula(subset(lhsExpr, rhsExpr), env, acf);
+Formula translateFormula(equal(AlleExpr lhsExpr, AlleExpr rhsExpr), Environment env) {
+  Formula l = translateFormula(subset(lhsExpr, rhsExpr), env);
   if (l == \false()) {
     return \false();
   }
   
-  return \and(l, translateFormula(subset(rhsExpr, lhsExpr), env, acf));
+  return \and(l, translateFormula(subset(rhsExpr, lhsExpr), env));
 }
 
-Formula translateFormula(inequal(AlleExpr lhsExpr, AlleExpr rhsExpr), Environment env, AdditionalConstraintFunctions acf) 
-  = translateFormula(negation(equal(lhsExpr, rhsExpr)), env, acf);
+Formula translateFormula(inequal(AlleExpr lhsExpr, AlleExpr rhsExpr), Environment env) 
+  = translateFormula(negation(equal(lhsExpr, rhsExpr)), env);
   
 
-Formula translateFormula(negation(AlleFormula form), Environment env, AdditionalConstraintFunctions acf) 
-  = \not(translateFormula(form, env, acf));
+Formula translateFormula(negation(AlleFormula form), Environment env) 
+  = \not(translateFormula(form, env));
 
 
-Formula translateFormula(conjunction(AlleFormula lhsForm, AlleFormula rhsForm), Environment env, AdditionalConstraintFunctions acf) {
-  Formula l = translateFormula(lhsForm, env, acf);
+Formula translateFormula(conjunction(AlleFormula lhsForm, AlleFormula rhsForm), Environment env) {
+  Formula l = translateFormula(lhsForm, env);
   if (l == \false()) {
     return \false();
   }
   
-  return \and(l, translateFormula(rhsForm, env, acf));
+  return \and(l, translateFormula(rhsForm, env));
 }
 
 
-Formula translateFormula(disjunction(AlleFormula lhsForm, AlleFormula rhsForm), Environment env, AdditionalConstraintFunctions acf) {
-  Formula l = translateFormula(lhsForm, env, acf);
+Formula translateFormula(disjunction(AlleFormula lhsForm, AlleFormula rhsForm), Environment env) {
+  Formula l = translateFormula(lhsForm, env);
   if (l == \true()) {
      return \true();
   }
   
-  return \or(l, translateFormula(rhsForm, env, acf));
+  return \or(l, translateFormula(rhsForm, env));
 }
 
 
-Formula translateFormula(implication(AlleFormula lhsForm, AlleFormula rhsForm), Environment env, AdditionalConstraintFunctions acf) {
-  Formula l = translateFormula(lhsForm, env, acf);
+Formula translateFormula(implication(AlleFormula lhsForm, AlleFormula rhsForm), Environment env) {
+  Formula l = translateFormula(lhsForm, env);
   if (l == \false()) {
     return \true();
   }
   
-  return \or(\not(l), translateFormula(rhsForm, env, acf));
+  return \or(\not(l), translateFormula(rhsForm, env));
 }
 
 
-Formula translateFormula(equality(AlleFormula lhsForm, AlleFormula rhsForm), Environment env, AdditionalConstraintFunctions acf) {
-  Formula l = translateFormula(lhsForm, env, acf);
-  Formula r = translateFormula(rhsForm, env, acf);
+Formula translateFormula(equality(AlleFormula lhsForm, AlleFormula rhsForm), Environment env) {
+  Formula l = translateFormula(lhsForm, env);
+  Formula r = translateFormula(rhsForm, env);
   
   return \or(\and(l,r), \and(\not(l), \not(r)));
 }
 
-private Environment extEnv(Environment orig, map[str, RelationMatrix] newRelations) = <orig.relations + newRelations, orig.attributes, orig.idDomain>; 
-
-Formula translateFormula(let(list[VarDeclaration] decls, AlleFormula form), Environment env, AdditionalConstraintFunctions acf) {
-  Environment extendedEnv = env;
-  
+Formula translateFormula(let(list[VarDeclaration] decls, AlleFormula form), Environment env) {
   for (VarDeclaration decl <- decls) {
-    RelationMatrix b = translateExpression(decl.binding, extendedEnv, acf);
-    extendedEnv = extEnv(extendedEnv, (decl.name : b));
+    Relation r = translateExpression(decl.binding, env);
+    env.relations[decl.name] = r;
   }
   
-  return translateFormula(form, extendedEnv, acf);
+  return translateFormula(form, env);
 }
 
-
-Formula translateFormula(universal(list[VarDeclaration] decls, AlleFormula form), Environment env, AdditionalConstraintFunctions acf) {
+Formula translateFormula(universal(list[VarDeclaration] decls, AlleFormula form), Environment env) {
   bool shortCircuited = false;
   
   set[Formula] clauses = {};
   void accumulate(Formula clause) {
-    clauses += clause;
     if (clause == \false()) {
       shortCircuited = true;
     }
+
+    clauses += clause;
   }
   
   bool isShortCircuited() = shortCircuited;
   
-  forall(decls, 0, \false(), accumulate, isShortCircuited, form, env, acf);
+  forall(decls, 0, \false(), accumulate, isShortCircuited, form, env);
   
-  return \and(clauses);
+  if (shortCircuited) {
+    return \false();
+  } else {
+    return \and(clauses);
+  }
 }
 
-private void forall(list[VarDeclaration] decls, int currentDecl, Formula declConstraints, void (Formula) accumulate, bool () isShortCircuited, AlleFormula form, Environment env, AdditionalConstraintFunctions acf) {
+private void forall(list[VarDeclaration] decls, int currentDecl, Formula declConstraints, void (Formula) accumulate, bool () isShortCircuited, AlleFormula form, Environment env) {
   if (isShortCircuited()) {
     return;
   }
   
   if (currentDecl == size(decls)) {
-    return accumulate(\or(declConstraints, translateFormula(form, env, acf)));
+    return accumulate(\or(declConstraints, translateFormula(form, env)));
   }
   
-  RelationMatrix m = translateExpression(decls[currentDecl].binding, env, acf);
+  Relation r = translateExpression(decls[currentDecl].binding, env);
 
-  set[Formula] clauses = {};  
-  for (Index idx <- m) {
-    forall(decls, currentDecl + 1, \or(not(m[idx].relForm), declConstraints),  accumulate, isShortCircuited, form, extEnv(env, constructSingleton(decls[currentDecl].name, idx)), acf);
+  for (Tuple t <- r.rows) {
+    env.relations[decls[currentDecl].name] = <r.heading,(t:<\true(),r.rows[t].attConstraints>),r.partialKey>;
+    forall(decls, currentDecl + 1, \or(not(\and(r.rows[t].exists, r.rows[t].attConstraints)), declConstraints),  accumulate, isShortCircuited, form, env);
 
     if (isShortCircuited()) {
       return;
@@ -246,7 +263,7 @@ private void forall(list[VarDeclaration] decls, int currentDecl, Formula declCon
 }
 
 
-Formula translateFormula(existential(list[VarDeclaration] decls, AlleFormula form), Environment env, AdditionalConstraintFunctions acf) {
+Formula translateFormula(existential(list[VarDeclaration] decls, AlleFormula form), Environment env) {
   bool shortCircuited = false;
   
   set[Formula] clauses = {};
@@ -259,25 +276,29 @@ Formula translateFormula(existential(list[VarDeclaration] decls, AlleFormula for
   
   bool isShortCircuited() = shortCircuited;
   
-  exists(decls, 0, \true(), accumulate, isShortCircuited, form, env, acf);
+  exists(decls, 0, \true(), accumulate, isShortCircuited, form, env);
   
-  return \or(clauses);
+  if (shortCircuited) {
+    return \true();
+  } else {
+    return \or(clauses);
+  }
 }
 
-private void exists(list[VarDeclaration] decls, int currentDecl, Formula declConstraints, void (Formula) accumulate, bool () isShortCircuited, AlleFormula form, Environment env, AdditionalConstraintFunctions acf) {
+private void exists(list[VarDeclaration] decls, int currentDecl, Formula declConstraints, void (Formula) accumulate, bool () isShortCircuited, AlleFormula form, Environment env) {
   if (isShortCircuited()) {
     return;
   }
   
   if (currentDecl == size(decls)) {
-    return accumulate(\and(declConstraints, translateFormula(form, env, acf)));
+    return accumulate(\and(declConstraints, translateFormula(form, env)));
   }
   
-  RelationMatrix m = translateExpression(decls[currentDecl].binding, env, acf);
+  Relation r = translateExpression(decls[currentDecl].binding, env);
 
-  set[Formula] clauses = {};  
-  for (Index idx <- m) {
-    exists(decls, currentDecl + 1, \and(m[idx].relForm, declConstraints),  accumulate, isShortCircuited, form, extEnv(env, constructSingleton(decls[currentDecl].name, idx)), acf);
+  for (Tuple t <- r.rows) {
+    env.relations[decls[currentDecl].name] = <r.heading,(t:<\true(),r.rows[t].attConstraints>),r.partialKey>;
+    exists(decls, currentDecl + 1, \and(\and(r.rows[t].exists, r.rows[t].attConstraints), declConstraints),  accumulate, isShortCircuited, form, env);
 
     if (isShortCircuited()) {
       return;
@@ -285,111 +306,24 @@ private void exists(list[VarDeclaration] decls, int currentDecl, Formula declCon
   } 
 }
 
-default Formula translateFormula(AlleFormula f, Environment env, AdditionalConstraintFunctions acf) { throw "Translation of formula \'<f>\' not supported"; }
+default Formula translateFormula(AlleFormula f, Environment env) { throw "Translation of formula \'<f>\' not supported"; }
 
+  //| rename(AlleExpr expr, list[Rename] renames)
+  //| project(AlleExpr expr, list[str] attributes)
+  //| select(AlleExpr expr, Criteria criteria)
+  //| union(AlleExpr lhs, AlleExpr rhs)
+  //| intersection(AlleExpr lhs, AlleExpr rhs)
+  //| difference(AlleExpr lhs, AlleExpr rhs)
+  //| product(AlleExpr lhs, AlleExpr rhs)
+  //| naturalJoin(AlleExpr lhs, AlleExpr rhs)
+  //| transpose(TupleAttributeSelection tas, AlleExpr expr)
+  //| closure(TupleAttributeSelection tas, AlleExpr r)
+  //| reflexClosure(TupleAttributeSelection tas, AlleExpr r)
 
-RelationMatrix translateExpression(variable(str name), Environment env, AdditionalConstraintFunctions acf) = env.relations[name];
+Relation translateExpression(relvar(str name), Environment env) = env.relations[name];
 
+Relation translateExpression(rename(AlleExpr expr, list[Rename] renames), Environment env) = rename(translateExpression(expr, env), (rn.orig:rn.new | Rename rn <- renames));
 
-RelationMatrix translateExpression(attributeLookup(AlleExpr e, str name), Environment env, AdditionalConstraintFunctions acf) {
-  RelationMatrix m = translateExpression(e, env, acf);
-  
-  if (m == ()) {
-    return ();
-  }
-  
-  RelationMatrix result = ();
-  
-  for (Index idx <- m) {
+Relation translateExpression(project(AlleExpr expr, list[str] attributes), Environment env) = project(translateExpression(expr, env), toSet(attributes));
 
-    if (idx in env.attributes && name in env.attributes[idx]) {
-      result[idx] = relAndAtt(m[idx].relForm, env.attributes[idx][name]);
-    }
-  }
-  
-  return result;
-}
-
-
-@memo 
-RelationMatrix universe(Environment env) = ([id] : relOnly(\true()) | Id id <- env.idDomain);
-
-@memo
-RelationMatrix identity(Environment env) = ([id,id] : relOnly(\true()) | Id id <- env.idDomain);
-
-
-RelationMatrix translateExpression(transpose(AlleExpr expr), Environment env, AdditionalConstraintFunctions acf) = transpose(m)
-  when RelationMatrix m := translateExpression(expr, env, acf); 
-
-
-RelationMatrix translateExpression(closure(AlleExpr expr), Environment env, AdditionalConstraintFunctions acf) = transitiveClosure(m)
-  when RelationMatrix m := translateExpression(expr, env, acf);
-
-
-RelationMatrix translateExpression(reflexClosure(AlleExpr expr), Environment env, AdditionalConstraintFunctions acf) = reflexiveTransitiveClosure(m, identity(env))
-  when RelationMatrix m := translateExpression(expr, env, acf);
-
-
-RelationMatrix translateExpression(union(AlleExpr lhsExpr, AlleExpr rhsExpr), Environment env, AdditionalConstraintFunctions acf) = or(lhs,rhs)  
-  when RelationMatrix lhs := translateExpression(lhsExpr, env, acf),
-       RelationMatrix rhs := translateExpression(rhsExpr, env, acf);
-
-RelationMatrix translateExpression(override(AlleExpr lhsExpr, AlleExpr rhsExpr), Environment env, AdditionalConstraintFunctions acf) = override(lhs,rhs)  
-  when RelationMatrix lhs := translateExpression(lhsExpr, env, acf),
-       RelationMatrix rhs := translateExpression(rhsExpr, env, acf);
-
-RelationMatrix translateExpression(intersection(AlleExpr lhsExpr, AlleExpr rhsExpr), Environment env, AdditionalConstraintFunctions acf) = and(lhs, rhs)
-  when RelationMatrix lhs := translateExpression(lhsExpr, env, acf),
-       RelationMatrix rhs := translateExpression(rhsExpr, env, acf);
-
-
-RelationMatrix translateExpression(difference(AlleExpr lhsExpr, AlleExpr rhsExpr), Environment env, AdditionalConstraintFunctions acf) = difference(lhs, rhs)
-  when RelationMatrix lhs := translateExpression(lhsExpr, env, acf),
-       RelationMatrix rhs := translateExpression(rhsExpr, env, acf);
-
-
-RelationMatrix translateExpression(\join(AlleExpr lhsExpr, AlleExpr rhsExpr), Environment env, AdditionalConstraintFunctions acf) = dotJoin(lhs, rhs)
-  when RelationMatrix lhs := translateExpression(lhsExpr, env, acf), 
-       RelationMatrix rhs := translateExpression(rhsExpr, env, acf);
-
-
-RelationMatrix translateExpression(accessorJoin(AlleExpr lhsExpr, AlleExpr rhsExpr), Environment env, AdditionalConstraintFunctions acf) = translateExpression(\join(rhsExpr, lhsExpr), env, acf);
-
-
-RelationMatrix translateExpression(product(AlleExpr lhsExpr, AlleExpr rhsExpr), Environment env, AdditionalConstraintFunctions acf) = product(lhs, rhs)
-  when RelationMatrix lhs := translateExpression(lhsExpr, env, acf), 
-       RelationMatrix rhs := translateExpression(rhsExpr, env, acf);
-
-
-RelationMatrix translateExpression(ifThenElse(AlleFormula caseForm, AlleExpr thenExpr, AlleExpr elseExpr), Environment env, AdditionalConstraintFunctions acf) = ite(\case, then, \else)
-  when Formula \case := translateFormula(caseForm, env, acf),
-       RelationMatrix then := translateExpression(thenExpr, env, acf),
-       RelationMatrix \else := translateExpression(elseExpr, env, acf);
-
-
-RelationMatrix translateExpression(comprehension(list[VarDeclaration] decls, AlleFormula form), Environment env, AdditionalConstraintFunctions acf) {
-  RelationMatrix calculate(Index idx, [], Environment extendedEnv, Formula partialRelForm) {
-    if (partialRelForm == \false()) {
-      return (idx:relOnly(\false()));
-    }
-    
-    return (idx : relOnly(and(partialRelForm, translateFormula(form, extendedEnv, acf))));
-  }
-  
-  RelationMatrix calculate(Index currentIdx, [VarDeclaration hd, *VarDeclaration tl], Environment extendedEnv, Formula partialRelForm) {
-    RelationMatrix relResult = ();
-    
-    RelationMatrix decl = translateExpression(hd.binding, extendedEnv, acf);
-    if (arity(decl) > 1) { throw "Higher order comprehensions are not allowed"; }
-    
-    for (Index idx <- decl) {
-      relResult += calculate(currentIdx + idx, tl, extEnv(extendedEnv, constructSingleton(hd.name, idx)), \and(partialRelForm, decl[idx].relForm));
-    } 
-    
-    return relResult;
-  }
-  
-  return calculate([], decls, env, \true());
-}
-
-default RelationMatrix translateExpression(AlleExpr expr, Environment env, AdditionalConstraintFunctions acf) { throw "Translation of expression \'<expr>\' not supported"; }
+default Relation translateExpression(AlleExpr expr, Environment env) { throw "Translation of expression \'<expr>\' not supported"; }

@@ -29,6 +29,10 @@ data Cell
 
 bool isPresent(Constraints c) = c.exists != \false() && c.attConstraints != \false(); 
 
+//Formula asForm(Constraint c) = \and(c.exists,c.attConstraints);
+
+Formula getAttributeConstraints(Constraints c) = implies(c.exists, c.attConstraints);
+
 bool isFixed(var(_,_)) = false;
 default bool isFixed(Term _) = true;
 
