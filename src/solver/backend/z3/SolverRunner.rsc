@@ -8,8 +8,6 @@ import Boolean;
 import IO;
 import Map;
 
-import logic::Integer;
-
 alias SolverPID = int;
 
 SolverPID startSolver() {

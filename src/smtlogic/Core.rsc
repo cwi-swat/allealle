@@ -23,7 +23,10 @@ data Term
   | var(str name, Sort s)
   ; 
 
-data Literal;
+data Literal
+  = ttrue()
+  | ffalse()
+  ;
   
 data Command;
 

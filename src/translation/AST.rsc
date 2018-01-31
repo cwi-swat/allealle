@@ -91,7 +91,7 @@ data Criteria
   = equal(CriteriaExpr lhsExpr, CriteriaExpr rhsExpr)
   | and(Criteria lhs, Criteria rhs)
   | or(Criteria lhs, Criteria rhs)
-  | not(Criteria)
+  | not(Criteria crit)
   ;
 
 

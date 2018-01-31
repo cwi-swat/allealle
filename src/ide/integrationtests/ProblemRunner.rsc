@@ -6,11 +6,12 @@ import ide::CombinedModelFinder;
 
 import translation::SMTInterface;
 
-import logic::Propositional;
+import smtlogic::Core;
   
 import IO;
 import List;
 import Set;
+import String;
 
 tuple[void () next, void (Domain) nextWithDom, void () stop] translateAndSolve(loc problem) {
   Problem p = implodeProblem(problem);
@@ -49,13 +50,16 @@ tuple[void () next, void (Domain) nextWithDom, void () stop] translateAndSolve(l
 void printModel(empty()) { println("no more models"); }
 
 void printModel(Model model) {
-  str printValue(lit(posInt(int i))) ="<i>";
-  str printValue(lit(negInt(int i))) = "< -i>";
+  int pad = 8;
 
-  str printAttribute(ModelAttribute at) = "<at.name>:<printValue(at.val)>";
+  str printAttribute(idAttribute(str name, str id)) = " <left("<id>", pad-2)> ";
+  str printAttribute(fixedAttribute(str name, Term val)) = " <left("<printTerm(val)> (*)", pad-2)> ";
+  str printAttribute(varAttribute(str name, Term val, str smtVarName)) = " <left("<printTerm(val)>", pad-2)> ";
 
-  str printTuple(ModelTuple t) = "\<<intercalate(",", [id | Id id <- t.idx.idx])>\>" when t.attributes == []; 
-  str printTuple(ModelTuple t) = "\<<intercalate(",", [id | Id id <- t.idx.idx])>,<intercalate(",", [printAttribute(at) | ModelAttribute at <- t.attributes])>\>" when t.attributes != []; 
+  str printTuple(fixedTuple(set[ModelAttribute] attributes), list[str] heading) = "<intercalate("|", [printAttribute(at) | str h <- heading, ModelAttribute at <- attributes, at.name == h])> (+)"; 
+  str printTuple(varTuple(set[ModelAttribute] attributes, str name), list[str] heading) = intercalate("|", [printAttribute(at) | str h <- heading, ModelAttribute at <- attributes, at.name == h]);
+
+  str printHeading(list[str] heading) = "<intercalate("|", [" <left(h, pad-2)> " | h <- heading])>";
 
   println("-----------"); 
 
@@ -63,7 +67,16 @@ void printModel(Model model) {
     println("No visible relations");
   } else {
     for (ModelRelation r <- model.relations) {
-      println("<r.name>: {<intercalate(",", [printTuple(t) | ModelTuple t <- r.tuples])>}");
+      list[str] heading = [h | str h <- r.heading];
+      println("<r.name>:");
+      println(printHeading(heading));
+      println(left("", size(heading) * pad + size(heading), "="));
+      
+      for (ModelTuple t <- r.tuples) {
+        println(printTuple(t, heading));
+      } 
+      
+      println("");
     }
   }
   

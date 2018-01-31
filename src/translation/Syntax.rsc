@@ -99,16 +99,16 @@ syntax TupleAttributeSelection
 
 syntax Rename = AttributeName new "/" AttributeName orig;
 
-syntax Restriction
-  = bracket "(" Restriction ")"
-  > "not" Restriction
-  > RestrictionExpr lhs "=" RestrictionExpr rhs
-  > left ( Restriction lhs "&&" Restriction rhs
-         | Restriction lhs "||" Restriction rhs
+syntax Criteria
+  = bracket "(" Criteria ")"
+  > "not" Criteria
+  > CriteriaExpr lhs "=" CriteriaExpr rhs
+  > left ( Criteria lhs "&&" Criteria rhs
+         | Criteria lhs "||" Criteria rhs
          )
   ;
 
-syntax RestrictionExpr
+syntax CriteriaExpr
   = AttributeName att
   | Literal l
   ;

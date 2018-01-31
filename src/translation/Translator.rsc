@@ -5,7 +5,7 @@ import translation::AST;
 import translation::Environment;
 import translation::Relation; 
 
-//import translation::Unparser;
+import translation::Unparser;
 
 import IO; 
 import List;
@@ -17,9 +17,9 @@ Formula translateProblem(Problem p, Environment env, bool logIndividualFormula =
   Formula form;
 
   if (logIndividualFormula) {
-    form = and({r | AlleFormula f <- p.constraints, bprint("\nTranslating \'<unparse(f)>\' ..."), <Formula r, int time> := bm(f, env, <addAttributeConstraint, addAdditionalCommand, addIntermediateVar, freshIntermediateId>), bprint("in <time / 1000000> ms.")}); //, cache(formulaLookup, storeFormula, exprLookup, storeExpr)
+    form = and({r | AlleFormula f <- p.constraints, bprint("\nTranslating \'<unparse(f)>\' ..."), <Formula r, int time> := bm(f, env), bprint("in <time / 1000000> ms.")}); //, cache(formulaLookup, storeFormula, exprLookup, storeExpr)
   } else {
-    form = and({translateFormula(f, env, <addAttributeConstraint, addAdditionalCommand, addIntermediateVar, freshIntermediateId>) | AlleFormula f <- p.constraints}); //, cache(formulaLookup, storeFormula, exprLookup, storeExpr)
+    form = and({translateFormula(f, env) | AlleFormula f <- p.constraints}); //, cache(formulaLookup, storeFormula, exprLookup, storeExpr)
   }    
   
   return form; 
@@ -308,17 +308,6 @@ private void exists(list[VarDeclaration] decls, int currentDecl, Formula declCon
 
 default Formula translateFormula(AlleFormula f, Environment env) { throw "Translation of formula \'<f>\' not supported"; }
 
-  //| rename(AlleExpr expr, list[Rename] renames)
-  //| project(AlleExpr expr, list[str] attributes)
-  //| select(AlleExpr expr, Criteria criteria)
-  //| union(AlleExpr lhs, AlleExpr rhs)
-  //| intersection(AlleExpr lhs, AlleExpr rhs)
-  //| difference(AlleExpr lhs, AlleExpr rhs)
-  //| product(AlleExpr lhs, AlleExpr rhs)
-  //| naturalJoin(AlleExpr lhs, AlleExpr rhs)
-  //| transpose(TupleAttributeSelection tas, AlleExpr expr)
-  //| closure(TupleAttributeSelection tas, AlleExpr r)
-  //| reflexClosure(TupleAttributeSelection tas, AlleExpr r)
 
 Relation translateExpression(relvar(str name), Environment env) = env.relations[name];
 
@@ -326,4 +315,24 @@ Relation translateExpression(rename(AlleExpr expr, list[Rename] renames), Enviro
 
 Relation translateExpression(project(AlleExpr expr, list[str] attributes), Environment env) = project(translateExpression(expr, env), toSet(attributes));
 
+Relation translateExpression(select(AlleExpr expr, Criteria criteria), Environment env) = select(translateExpression(expr, env), translateCriteria(criteria));
+
+Relation translateExpression(union(AlleExpr lhs, AlleExpr rhs), Environment env) = union(translateExpression(lhs,env),translateExpression(rhs,env));
+
+Relation translateExpression(intersection(AlleExpr lhs, AlleExpr rhs), Environment env) = intersect(translateExpression(lhs,env),translateExpression(rhs,env));
+
+Relation translateExpression(difference(AlleExpr lhs, AlleExpr rhs), Environment env) = difference(translateExpression(lhs,env),translateExpression(rhs,env));
+
+Relation translateExpression(product(AlleExpr lhs, AlleExpr rhs), Environment env) = product(translateExpression(lhs,env),translateExpression(rhs,env));
+
+Relation translateExpression(naturalJoin(AlleExpr lhs, AlleExpr rhs), Environment env) = naturalJoin(translateExpression(lhs,env),translateExpression(rhs,env));
+
+  //| transpose(TupleAttributeSelection tas, AlleExpr expr)
+  //| closure(TupleAttributeSelection tas, AlleExpr r)
+  //| reflexClosure(TupleAttributeSelection tas, AlleExpr r)
+
 default Relation translateExpression(AlleExpr expr, Environment env) { throw "Translation of expression \'<expr>\' not supported"; }
+
+
+default Formula (Tuple, Formula) translateCriteria(Criteria criteria) { throw "Not yet implemented \'<criteria>\'";} 
+

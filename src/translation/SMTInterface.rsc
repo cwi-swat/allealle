@@ -9,31 +9,26 @@ import smtlogic::Core;
 
 import util::Maybe;  
 import String;
-
 import IO;
 import List;
 import Map;
 
-alias SMTVar = tuple[str name, Domain domain];
-alias SMTModel = map[SMTVar, Formula];
+alias SMTVar = tuple[str name, Sort sort];
+alias SMTModel = map[SMTVar, Term];
 
 data ModelAttribute
-  = fixedAttribute(str name, Domain dom, Value val)
-  | varAttribute(str name, Domain dom, Value val, str smtVarName)
-  ;
-
-data ModelIndex
-  = fixedIndex(Index idx)
-  | varIndex(Index idx, str smtVarName)
+  = idAttribute(str name, str id)
+  | fixedAttribute(str name, Term val)
+  | varAttribute(str name, Term val, str smtVarName)
   ;
   
 data ModelTuple
-  = mTuple(ModelIndex idx, list[ModelAttribute] attributes)
+  = fixedTuple(set[ModelAttribute] attributes)
+  | varTuple(set[ModelAttribute] attribute, str smtVarName)
   ;  
 
 data ModelRelation 
-  = unary(str name, set[ModelTuple] tuples)
-  | nary(str name, set[ModelTuple] tuples)
+  = mRelation(str name, Heading heading, set[ModelTuple] tuples)
   ;
     
 data Model 
@@ -44,65 +39,49 @@ data Model
 set[SMTVar] collectSMTVars(Environment env)  {
   set[SMTVar] result = {};
 
-  for (str varName <- env.relations, RelationMatrix m := env.relations[varName], Index idx <- m, var(str name) := m[idx].relForm) {
-      result += <name, id()>;
+  for (str varName <- env.relations, Relation r := env.relations[varName], Tuple t <- r.rows) {
+    result += {<name, sort> | /var(str name, Sort sort) := t};
+    
+    if (pvar(str name) := r.rows[t].exists) {
+      result += <name, \bool()>;
+    }
   }    
     
-  for (Index idx <- env.attributes, str attName <- env.attributes[idx], just(SMTVar var) := constructAttributeVar(env.attributes[idx][attName])) {
-    result += var;
-  }
-  
   return result;
 }
-
-set[SMTVar] collectIntermediateSMTVars(set[Formula] intermediates) = {v | Formula f <- intermediates, just(SMTVar v) := constructAttributeVar(f)};
-
-default Maybe[SMTVar] constructAttributeVar(Formula f) { throw "Unable to construct a variable for formula \'<f>\'"; } 
 
 str compileSMTVariableDeclarations(set[SMTVar] vars) = "<for (SMTVar var <- vars) {>
                                                        '<compileVariableDeclaration(var)><}>";
 
-str compileVariableDeclaration(<str name, id()>) = "(declare-const <name> Bool)";
-default str compileVariableDeclaration(SMTVar var) { throw "Unable to compile variable <var> to SMT, no SMT compiler available for theory \'<var.domain>\'"; }
+str compileVariableDeclaration(<str name, \bool()>) = "(declare-const <name> Bool)";
+default str compileVariableDeclaration(SMTVar var) { throw "Unable to compile variable <var> to SMT, no SMT compiler available for sort \'<var.sort>\'"; }
 
-@memo
-str compile(\and(set[Formula] forms)) {
-   str clauses = "";
-   for (f <- forms) {
-    clauses += compile(f) + " ";
-   }
-   
-   return "(and " + clauses + ")\n";
-}   
-@memo
-str compile(\or(set[Formula] forms))  { 
-   str clauses = "";
-   for (f <- forms) {
-    clauses += compile(f) + " ";
-   }
-   
-   return "(or " + clauses + ")\n";
-}
+str compile(\and(set[Formula] forms))         = "(and <for (f <- forms) {>
+                                                '  <compile(f)><}>
+                                                ')";
 
-@memo
-str compile(\not(formula))            = "(not " + compile(formula) + ")";
-@memo
-str compile(ite(Formula c, Formula t, Formula e)) = "(ite " + compile(c) + " " + compile(t) + " " + compile(e) + ")\n";
-                                                                                                         
-@memo
-str compile(\false())                 = "false"; 
-@memo
-str compile(\true())                  = "true";
-@memo
-str compile(\var(name))               = name; 
+str compile(\or(set[Formula] forms))          = "(or <for (f <- forms) {>
+                                                '  <compile(f)><}>
+                                                ')";
+
+str compile(\not(Formula f))                  = "(not <compile(f)>)"; 
+str compile(ite(Formula c, Term t, Term e))   = "(ite " + compile(c) + " " + compile(t) + " " + compile(e) + ")\n";
+str compile(\false())                         = "false"; 
+str compile(\true())                          = "true";
+str compile(\pvar(name))                      = name; 
+str compile(equal(set[Formula] fs))           = "(= <for (Formula f <- fs) {> <compile(f)><}>)"; 
+str compile(equal(set[Term] ts))              = "(= <for (Term t <- ts) {> <compile(t)><}>)";
 
 default str compile(Formula f) { throw "Unable to compile <f> to SMT, no SMT compiler available"; }
+
+str compile(lit(Literal l))         = compile(l);
+str compile(var(str name, Sort s))  = name;
 
 str compileAssert(Formula f) = "\n(assert 
                                '  <compile(f)>
                                ')"; 
-                               
-str compileAdditionalCommands(list[Command] commands) = "<for (Command c <- commands) {>
+                                 
+str compileCommands(list[Command] commands) = "<for (Command c <- commands) {>
                                                              '<compileCommand(c)><}>";                               
 
 default str compileCommand(Command c) { throw "Unable to compile command \'<c>\'. No compile function defined.";}
@@ -111,69 +90,54 @@ SMTModel getValues(str smtResult, set[SMTVar] vars) {
   SmtValues foundValues = [SmtValues]"<smtResult>"; 
   map[str,SmtValue] rawSmtVals = (() | it + ("<varAndVal.name>":varAndVal.val) | VarAndValue varAndVal <- foundValues.values);
 
-  SMTModel m = (var : form | str varName <- rawSmtVals, SMTVar var:<varName, Domain _> <- vars, Formula form := getValue(rawSmtVals[varName], var));
+  SMTModel m = (var : val | str varName <- rawSmtVals, SMTVar var:<varName, Sort _> <- vars, Term val := getValue(rawSmtVals[varName], var));
   
   return m;
-}   
+}    
 
-Formula toFormula((SmtValue)`true`) = \true();
-Formula toFormula((SmtValue)`false`) = \false();
-default Formula toFormula(SmtValue someVal) { throw "Unable to construct Boolean formula with value \'<someVal>\'"; }
+Term getValue((SmtValue)`true`, <str _, \bool()>) = lit(ttrue());
+Term getValue((SmtValue)`false`, <str _, \bool()>) = lit(ffalse());
+default Term getValue(SmtValue smtValue, SMTVar var) { throw "Unable to get the value for SMT value \'<smtValue>\', for variable <var>"; }
 
-Formula getValue(SmtValue smtValue, <str _, id()>) = toFormula(smtValue);
-default Formula getValue(SmtValue smtValue, SMTVar var) { throw "Unable to get the value for SMT value \'<smtValue>\', for variable <var>"; }
+str negateVariable(str var, ttrue()) = "(not <var>)";
+str negateVariable(str var, ffalse()) = var;
 
-str negateVariable(str var, \true()) = "(not <var>)";
-str negateVariable(str var, \false()) = var;
-
-default str negateVariable(str v, Formula f) { throw "Unable to negate variable <v> with current value <f>"; }
+default str negateVariable(str v, Term t) { throw "Unable to negate variable <v> with current value <t>"; }
 
 Model constructRelationalModel(SMTModel smtModel, Environment env) { 
+  set[ModelAttribute] constructAttributes(Tuple t) {
+    set[ModelAttribute] attributes = {};
+    for (str att <- t) {
+      if (key(str k) := t[att]) {
+        attributes += idAttribute(att,k);
+      } else if (term(l:lit(Literal _)) := t[att]) {
+        attributes += fixedAttribute(att, l); 
+      } else if (term(v:var(str name, Sort s)) := t[att]) {
+        attributes += varAttribute(att, smtModel[<name,s>], name);
+      }
+    } 
+     
+    return attributes; 
+  }
+  
   set[ModelRelation] relations = {};
   
   for (str relName <- env.relations) {
     set[ModelTuple] tuples = {};
-    RelationMatrix m = env.relations[relName];
+    Relation r = env.relations[relName];
      
-    for (Index idx <- m, !(var(str n) := m[idx].relForm && smtModel[<n, id()>] == \false())) {
-      ModelIndex mIdx;
-      list[ModelAttribute] attributes = [];
-      
-      if (var(str name) := m[idx].relForm, smtModel[<name, id()>] == \true() ) {
-        mIdx = varIndex(idx, name);
+    for (Tuple t <- r.rows) {
+      if (r.rows[t].exists == \true()) {
+        tuples += fixedTuple(constructAttributes(t));
+      } else if (pvar(str name) := r.rows[t].exists && smtModel[<name,\bool()>] == lit(ttrue())) {
+        tuples += varTuple(constructAttributes(t), name);
       }
-      else if (\true() := m[idx].relForm) {
-        mIdx = fixedIndex(idx);
-      }  
-      
-      if (idx in env.attributes) {
-        for (str attName <- env.attributes[idx]) {
-          tuple[Domain attDom, Value attVal] val = getAttributeValue(env.attributes[idx][attName], smtModel);
-          
-          if (just(str smtVarName) := getAttributeVarName(env.attributes[idx][attName])) {
-            attributes += varAttribute(attName, val.attDom, val.attVal, smtVarName);
-          } else {
-            attributes += fixedAttribute(attName, val.attDom, val.attVal); 
-          }     
-        }  
-      }
-      
-      tuples += mTuple(mIdx, attributes); 
     }
     
-    if (env.relations[relName] != ()) {
-      if (size(getOneFrom(env.relations[relName])) == 1) {
-        relations += unary(relName, tuples);
-      } else {
-        relations += nary(relName, tuples);
-      }
-    }  
+    relations += mRelation(relName, env.relations[relName].heading, tuples);
   }
   
   return model(relations);
 } 
 
-default Maybe[str] getAttributeVarName(Formula attForm) { throw "Unable to check what the var name is of attribute with value \'<attForm>\' "; }
-default tuple[Domain, Value] getAttributeValue(Formula attForm, SMTModel _) { throw "Unable to find attribute value for attribute formula \'<attForm>\'";}
-
-default str negateAttribute(Domain dom, str varName, Value currentVal) { throw "Unable to negate \'<varName>\' for domain \'<dom>\', no negation function found"; }
+default str negateAttribute(Domain dom, str varName, Term currentVal) { throw "Unable to negate \'<varName>\' for domain \'<dom>\', no negation function found"; }
