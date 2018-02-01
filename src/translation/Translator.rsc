@@ -327,12 +327,21 @@ Relation translateExpression(product(AlleExpr lhs, AlleExpr rhs), Environment en
 
 Relation translateExpression(naturalJoin(AlleExpr lhs, AlleExpr rhs), Environment env) = naturalJoin(translateExpression(lhs,env),translateExpression(rhs,env));
 
-  //| transpose(TupleAttributeSelection tas, AlleExpr expr)
-  //| closure(TupleAttributeSelection tas, AlleExpr r)
-  //| reflexClosure(TupleAttributeSelection tas, AlleExpr r)
+Relation translateExpression(transpose(TupleAttributeSelection tas, AlleExpr expr), Environment env) = transpose(translateExpression(expr,env),tas.first, tas.second);
+
+Relation translateExpression(closure(TupleAttributeSelection tas, AlleExpr expr), Environment env) = transitiveClosure(translateExpression(expr,env),tas.first, tas.second);
+
+Relation translateExpression(reflexClosure(TupleAttributeSelection tas, AlleExpr expr), Environment env) = reflexiveTransitiveClosure(translateExpression(expr,env), tas.first, tas.second, identity(env, tas.first, tas.second));
 
 default Relation translateExpression(AlleExpr expr, Environment env) { throw "Translation of expression \'<expr>\' not supported"; }
 
+@memo
+Relation identity(Environment env, str first, str second) {
+  Heading h = (first:id(),second:id());
+  Rows r = ((first:key(k),second:key(k)):<\true(),\true()> | str k <- env.idDomain);
+  
+  return <h,r,{first,second}>;
+}
 
 default Formula (Tuple, Formula) translateCriteria(Criteria criteria) { throw "Not yet implemented \'<criteria>\'";} 
 

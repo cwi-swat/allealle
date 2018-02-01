@@ -313,32 +313,53 @@ Relation naturalJoin(Relation lhs, Relation rhs) {
   return toRelation(result, lhs.heading + rhs.heading);
 }
 
-//@memo
-//Relation transitiveClosure(Relation m, str from, str to) {
-//  if (arity(m) != 2) {
-//    throw "TRANSITIVE CLOSURE only works on binary relations";
-//  }
-//  
-//  int rows = size({idx[0] | Index idx <- m}); 
-//
-//  Relation ret = m;
-//  int i = 1;
-//  while(i < rows) {
-//    ret = or(ret, dotJoin(ret,ret));
-//    i *= 2;
-//  } 
-//  
-//  return ret; 
-//}
-//
-//@memo
-//Relation reflexiveTransitiveClosure(Relation m, Relation iden) {
-//  if (arity(m) != 2) {
-//    throw "REFLEXIVE TRANSITIVE CLOSURE only works on binary relations";
-//  }
-//  
-//  return or(transitiveClosure(m), iden); 
-//} 
+@memo
+Relation transpose(Relation r, str first, str second) {
+  if (size(r.heading) != 2 || r.heading[first] != id() || r.heading[second] != id()) {
+    throw "TRANSPOSE only works for a binary relation with two id fields";
+  }
+ 
+  Rows result = ();
+  for (Tuple t <- r.rows) {
+    Tuple transposed = (first : t[second], second : t[first]);  
+    result[transposed] = r.rows[t];
+  } 
+  
+  return <r.heading, result, r.partialKey>;
+}
+
+@memo
+Relation transitiveClosure(Relation r, str from, str to) {
+  if (size(r.heading) != 2 || r.heading[from] != id() || r.heading[to] != id()) {
+    throw "TRANSITIVE CLOSURE only works for a binary relation with two id fields";
+  }
+  
+  int rows = size(r.rows); 
+
+  Relation result = r;
+  
+  int i = 1;
+  while(i < rows) {
+    Relation tmp = rename(result, (from:to, to:"_tmp"));
+    
+    result = union(result, rename(project(naturalJoin(result, tmp),{from,"_tmp"}), ("_tmp":to)));
+    
+    i *= 2;
+  } 
+  
+  return result; 
+}
+
+@memo
+Relation reflexiveTransitiveClosure(Relation r, str from, str to, Relation iden) {
+  if (size(r.heading) != 2 || r.heading[from] != id() || r.heading[to] != id()) {
+    throw "REFLEXIVE TRANSITIVE CLOSURE only works for a binary relation with two id fields";
+  }
+  
+  Relation result = union(transitiveClosure(r,from,to), iden);
+  
+  return result; 
+} 
 //
 //@memo
 //Relation dotJoin(Relation lhs, Relation rhs) {

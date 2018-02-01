@@ -102,8 +102,8 @@ translation::AST::AlleFormula implode(f:(AlleFormula)`<AlleFormula lhsExpr> ⇒ 
 translation::AST::AlleFormula implode(f:(AlleFormula)`<AlleFormula lhsExpr> ⇔ <AlleFormula rhsExpr>`)
   = equality(implode(lhsExpr),implode(rhsExpr), origLoc=f@\loc);
 
-translation::AST::AlleFormula implode(f:(AlleFormula)`let <{VarDeclaration ","}+ decls> | <AlleFormula form>`)
-  = let([implode(d) | d <- decls], implode(form), origLoc=f@\loc);
+translation::AST::AlleFormula implode(f:(AlleFormula)`let <{VarBinding ","}+ bindings> | <AlleFormula form>`)
+  = let([implode(b) | b <- bindings], implode(form), origLoc=f@\loc);
 
 translation::AST::AlleFormula implode(f:(AlleFormula)`∀ <{VarDeclaration ","}+ decls> | <AlleFormula form>`)
   = universal([implode(d) | d <- decls], implode(form), origLoc=f@\loc);
@@ -113,6 +113,9 @@ translation::AST::AlleFormula implode(f:(AlleFormula)`∃ <{VarDeclaration ","}+
 
 translation::AST::VarDeclaration implode((VarDeclaration)`<RelVar var> ∈ <AlleExpr expr>`)
   = varDecl("<var>", implode(expr)); 
+
+translation::AST::VarBinding implode((VarBinding)`<RelVar var> = <AlleExpr expr>`)
+  = varBinding("<var>", implode(expr)); 
   
 translation::AST::AlleExpr implode((AlleExpr)`( <AlleExpr expr> )`)
   = implode(expr);
@@ -132,8 +135,6 @@ translation::AST::AlleExpr implode((AlleExpr)`<AlleExpr expr>[<{AttributeName ",
 translation::AST::AlleExpr implode((AlleExpr)`<AlleExpr expr> where <Criteria criteria>`)
   = restriction(implode(expr), implode(restriction));
   
-translation::AST::AlleExpr implode((AlleExpr)`~<AlleExpr expr>`)
-  = transpose(implode(expr));
 translation::AST::AlleExpr implode((AlleExpr)`~<TupleAttributeSelection tas> <AlleExpr expr>`)
   = transpose(implode(tas), implode(expr));
     

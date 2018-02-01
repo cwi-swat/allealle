@@ -50,7 +50,7 @@ syntax Literal = "none";
   
 syntax AlleFormula
   = bracket "(" AlleFormula form ")"
-  > \filter:            AlleExpr expr "::" "[" Restriction restrictions "]"
+  > \filter:            AlleExpr expr "::" "[" Criteria criteria "]"
   > negation:           ("not"|"¬") AlleFormula form
   > empty:              "no" AlleExpr expr
   | atMostOne:          "lone" AlleExpr expr
@@ -78,10 +78,10 @@ syntax AlleExpr
   | lit:                Literal l
   > rename:             "[" {Rename ","}+ "]" AlleExpr
   | projection:         AlleExpr r "[" {AttributeName ","}+ "]"
-  | restriction:        AlleExpr r "where" Restriction restriction
-  > transpose:          "~" TupleAttributeSelection? tas AlleExpr r
-  | closure:            "^" TupleAttributeSelection? tas AlleExpr r
-  | reflexClosure:      "*" TupleAttributeSelection? tas AlleExpr r
+  | restriction:        AlleExpr r "where" Criteria criteria
+  > transpose:          "~" TupleAttributeSelection tas AlleExpr r
+  | closure:            "^" TupleAttributeSelection tas AlleExpr r
+  | reflexClosure:      "*" TupleAttributeSelection tas AlleExpr r
   > left naturalJoin:   AlleExpr lhs ("|x|" | "⨝") AlleExpr rhs
   | left dotJoin:       AlleExpr lhs "."   AlleExpr rhs
   > left (union:        AlleExpr lhs ("+" | "∪")   AlleExpr rhs

@@ -1,32 +1,15 @@
-//File (id:id)             >= {<f0>} <= {<f0>..<f2>}
-//Dir (id:id)              <= {<d0>,<d1>}
-//Root (id:id)              = {<d0>}
-//contents (dId:id,cId:id) >= {<d0,d1>} <= {<d0,d0>..<d1,d1>,<d0,f0>,<d1,f2>}
-//					 
-//// Only dirs can contain other dirs and files
-//contents in ([dId/id]Dir x [cId/id](Dir+File))
-//
-//// A dir cannot contain itself
-//forall d: Dir | not (d in [id/cId]([dId/id]d.^<dId,cId>contents))
-//// Root is a Dir
-//Root in Dir
-//// All files and dirs are (reflexive-transitive) 'content' of the Root dir 
-//(File+Dir) in [id/cId]([dId/id]Root.(*<dId,cId>contents))
-//// All files and dirs can only be contained by one dir
-//forall f:[cId/id](File+Dir) | lone contents.f
-
 File (id:id)             >= {<f0>} <= {<f0>..<f2>}
 Dir (id:id)              <= {<d0>,<d1>}
 Root (id:id)              = {<d0>}
-contents (from:id,to:id)    >= {<d0,d1>} <= {<d0,d0>..<d1,d1>,<d0,f0>,<d1,f2>}
+contents (from:id,to:id) >= {<d0,d1>,<d1,f2>} <= {<d0,d0>..<d1,d1>,<d0,f0>..<d1,f2>}
            
 // Only dirs can contain other dirs and files
 contents ⊆ [from/id]Dir ⨯ [to/id](Dir ∪ File)
 // A dir cannot contain itself
-//∀ d ∈ Dir | ¬ (d ⊆ d.^contents)  
+∀ d ∈ Dir | ¬ ([to/id]d ⊆ ([from/id]d ⨝ ^<from,to>contents)[to])  
 // Root is a Dir 
 Root ⊆ Dir
 // All files and dirs are (reflexive-transitive) 'content' of the Root dir 
-[to/id](File ∪ Dir) ⊆ (Root ⨝ *<from,to>contents)[to]
+[to/id](File ∪ Dir) ⊆ ([from/id]Root ⨝ *<from,to>contents)[to]
 // All files and dirs can only be contained by one dir
 ∀ f ∈ (File ∪ Dir) | lone contents ⨝ [to/id]f

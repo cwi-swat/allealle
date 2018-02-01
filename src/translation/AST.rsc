@@ -57,7 +57,7 @@ data AlleFormula(loc origLoc = |unknown://|)
   | disjunction(AlleFormula lhsForm, AlleFormula rhsForm)
   | implication(AlleFormula lhsForm, AlleFormula rhsForm)
   | equality(AlleFormula lhsForm, AlleFormula rhsForm)
-  | let(list[VarDeclaration] decls, AlleFormula form)
+  | let(list[VarBinding] bindings, AlleFormula form)
   | universal(list[VarDeclaration] decls, AlleFormula form)
   | existential(list[VarDeclaration] decls, AlleFormula form) 
   ; 
@@ -78,6 +78,8 @@ data AlleExpr
   ;
 
 data VarDeclaration = varDecl(str name, AlleExpr binding);
+
+data VarBinding = varBinding(str name, AlleExpr binding);
 
 data TupleAttributeSelection 
   = order(str first, str second)
