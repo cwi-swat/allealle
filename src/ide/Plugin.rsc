@@ -7,20 +7,38 @@ import ide::CombinedImploder;
 import ide::CombinedModelFinder;
 import ide::vis::ModelVisualizer;
 import ide::UnicodeRewriter;
+import ide::UnionCompatibilityChecker;
 
 import translation::Translator;
-import translation::Binder;
+//import translation::Relation;
 
 import util::IDE;
 import util::Prompt;
 import IO; 
+import List;
 
 import ParseTree;
+
+anno map[loc,str] Tree@docs;
  
 void main(){
 	str lang = "AlleAlle";
 
 	registerLanguage(lang,"alle", parseFile); 
+	
+	UnionCompatibilityResult cachedCompResult = <(),{}>;
+	ide::CombinedSyntax::Problem cachedProblem = [ide::CombinedSyntax::Problem]""; 
+	
+	UnionCompatibilityResult getLatestCompatibilityResult(ide::CombinedSyntax::Problem p) {
+    if (p == cachedProblem) {
+      return cachedCompResult;
+    } else {
+      return checkUnionCompatibilty(p);
+    }
+  } 
+  
+  str getHover(heading(map[str,str] attributes)) = "<intercalate(", ", ["<a> : <attributes[a]>" | str a <- attributes])>";
+  str getHover(incompatible()) = "?";
 	
 	contribs = {
 		popup(
@@ -29,7 +47,20 @@ void main(){
 			})
 		),
 		syntaxProperties(#start[Problem]),
-		liveUpdater(unicodeRewrite)
+		liveUpdater(unicodeRewrite),
+		builder(set[Message] ((&T<:Tree) current) {
+		  if (/ide::CombinedSyntax::Problem p := current) {
+		    UnionCompatibilityResult r = getLatestCompatibilityResult(p);
+		    return r.messages;
+		  } 
+		}),
+		annotator((&T<:Tree) (&T<:Tree current) {
+      if (/ide::CombinedSyntax::Problem p := current) {
+        UnionCompatibilityResult r = getLatestCompatibilityResult(p);
+        
+        return current[@docs = (l : getHover(r.headings[l]) | l <- r.headings)];
+      }  
+		})
 	};
 	
 	registerContributions(lang, contribs);

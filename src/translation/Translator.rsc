@@ -209,10 +209,10 @@ Formula translateFormula(equality(AlleFormula lhsForm, AlleFormula rhsForm), Env
   return \or(\and(l,r), \and(\not(l), \not(r)));
 }
 
-Formula translateFormula(let(list[VarDeclaration] decls, AlleFormula form), Environment env) {
-  for (VarDeclaration decl <- decls) {
-    Relation r = translateExpression(decl.binding, env);
-    env.relations[decl.name] = r;
+Formula translateFormula(let(list[VarBinding] bindings, AlleFormula form), Environment env) {
+  for (VarBinding b <- bindings) {
+    Relation r = translateExpression(b.binding, env);
+    env.relations[b.name] = r;
   }
   
   return translateFormula(form, env);

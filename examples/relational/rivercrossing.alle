@@ -16,7 +16,7 @@ ordering ⊆ [current/sId]State ⨯ [next/sId]State
 near ⊆ State ⨯ Passenger
 far ⊆ State ⨯ Passenger
 
-State ⊆ [current/sId]InitialState ⨝ *<current,next>ordering
+State ⊆ [sId/next](([current/sId]InitialState ⨝ *<current,next>ordering)[next])
 
 // a Passenger can only be on one shore in each state
 ∀ s ∈ State | no (s ⨝ near ∩ s ⨝ far)

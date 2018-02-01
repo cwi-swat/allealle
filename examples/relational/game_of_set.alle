@@ -1,46 +1,50 @@
-Card (1)            = {<c1>..<c12>}
+Card (cId:id)                       = {<c1>..<c12>}
 
 // Color property
-Color (1)           = {<red>,<green>,<purple>}
-cardColor (2)      <= {<c1,red>..<c12,red>,<c1,green>..<c12,green>,<c1,purple>..<c12,purple>}
+Color (coId:id)                     = {<red>,<green>,<purple>}
+cardColor (cId:id,coId:id)         <= {<c1,red>..<c12,red>,<c1,green>..<c12,green>,<c1,purple>..<c12,purple>}
  
 // Symbol property
-Symbol (1)          = {<squiggle>,<oval>,<diamond>}
-cardSymbol (2)     <= {<c1,squiggle>..<c12,squiggle>,<c1,oval>..<c12,oval>,<c1,diamond>..<c12,diamond>} 
+Symbol (syId:id)                    = {<squiggle>,<oval>,<diamond>}
+cardSymbol (cId:id, syId:id)       <= {<c1,squiggle>..<c12,squiggle>,<c1,oval>..<c12,oval>,<c1,diamond>..<c12,diamond>} 
 
 // Nr of shapes property
-NrOfShapes (1)      = {<onee>,<two>,<three>}
-cardNrOfShapes (2) <= {<c1,onee>..<c12,onee>,<c1,two>..<c12,two>,<c1,three>..<c12,three>}
+NrOfShapes (nrShId:id)              = {<onee>,<two>,<three>}
+cardNrOfShapes (cId:id, nrShId:id) <= {<c1,onee>..<c12,onee>,<c1,two>..<c12,two>,<c1,three>..<c12,three>}
 
 // Shadings property
-Shading (1)         = {<open>,<striped>,<solid>}
-cardShading (2)    <= {<c1,open>..<c12,open>,<c1,striped>..<c12,striped>,<c1,solid>..<c12,solid>}
+Shading (shId:id)                   = {<open>,<striped>,<solid>}
+cardShading (cId:id, shId:id)      <= {<c1,open>..<c12,open>,<c1,striped>..<c12,striped>,<c1,solid>..<c12,solid>}
 
 // There can be 12!/(3!*9!) = 220 unique set card layouts (order does not mather)
-Set (3)            <= {<c1,c2,c3>..<c1,c2,c12>,<c1,c3,c4>..<c1,c3,c12>,<c1,c4,c5>..<c1,c4,c12>,<c1,c5,c6>..<c1,c5,c12>,<c1,c6,c7>..<c1,c6,c12>,<c1,c7,c8>..<c1,c7,c12>,<c1,c8,c9>..<c1,c8,c12>,<c1,c9,c10>..<c1,c9,c12>,<c1,c10,c11>..<c1,c10,c12>,<c1,c11,c12>,
-                       <c2,c3,c4>..<c2,c3,c12>,<c2,c4,c5>..<c2,c4,c12>,<c2,c5,c6>..<c2,c5,c12>,<c2,c6,c7>..<c2,c6,c12>,<c2,c7,c8>..<c2,c7,c12>,<c2,c8,c9>..<c2,c8,c12>,<c2,c9,c10>..<c2,c9,c12>,<c2,c10,c11>..<c2,c10,c12>,<c2,c11,c12>,
-                       <c3,c4,c5>..<c3,c4,c12>,<c3,c5,c6>..<c3,c5,c12>,<c3,c6,c7>..<c3,c6,c12>,<c3,c7,c8>..<c3,c7,c12>,<c3,c8,c9>..<c3,c8,c12>,<c3,c9,c10>..<c3,c9,c12>,<c3,c10,c11>..<c3,c10,c12>,<c3,c11,c12>, 
-                       <c4,c5,c6>..<c4,c5,c12>,<c4,c6,c7>..<c4,c6,c12>,<c4,c7,c8>..<c4,c7,c12>,<c4,c8,c9>..<c4,c8,c12>,<c4,c9,c10>..<c4,c9,c12>,<c4,c10,c11>..<c4,c10,c12>,<c4,c11,c12>,
-                       <c5,c6,c7>..<c5,c6,c12>,<c5,c7,c8>..<c5,c7,c12>,<c5,c8,c9>..<c5,c8,c12>,<c5,c9,c10>..<c5,c9,c12>,<c5,c10,c11>..<c5,c10,c12>,<c5,c11,c12>,
-                       <c6,c7,c8>..<c6,c7,c12>,<c6,c8,c9>..<c6,c8,c12>,<c6,c9,c10>..<c6,c9,c12>,<c6,c10,c12>..<c6,c11,c12>,<c6,c11,c12>,
-                       <c7,c8,c9>..<c7,c8,c12>,<c7,c9,c10>..<c7,c9,c12>,<c7,c10,c11>..<c7,c11,c12>,<c7,c11,c12>,
-                       <c8,c9,c10>..<c8,c9,c12>,<c8,c10,c12>..<c8,c11,c12>,<c8,c11,c12>,
-                       <c9,c10,c11>..<c9,c10,c12>,<c9,c11,c12>,
-                       <c10,c11,c12>}
+Set (c1:id,c2:id,c3:id) <= {<c1,c2,c3>..<c1,c2,c12>,<c1,c3,c4>..<c1,c3,c12>,<c1,c4,c5>..<c1,c4,c12>,<c1,c5,c6>..<c1,c5,c12>,<c1,c6,c7>..<c1,c6,c12>,<c1,c7,c8>..<c1,c7,c12>,<c1,c8,c9>..<c1,c8,c12>,<c1,c9,c10>..<c1,c9,c12>,<c1,c10,c11>..<c1,c10,c12>,<c1,c11,c12>,
+                            <c2,c3,c4>..<c2,c3,c12>,<c2,c4,c5>..<c2,c4,c12>,<c2,c5,c6>..<c2,c5,c12>,<c2,c6,c7>..<c2,c6,c12>,<c2,c7,c8>..<c2,c7,c12>,<c2,c8,c9>..<c2,c8,c12>,<c2,c9,c10>..<c2,c9,c12>,<c2,c10,c11>..<c2,c10,c12>,<c2,c11,c12>,
+                            <c3,c4,c5>..<c3,c4,c12>,<c3,c5,c6>..<c3,c5,c12>,<c3,c6,c7>..<c3,c6,c12>,<c3,c7,c8>..<c3,c7,c12>,<c3,c8,c9>..<c3,c8,c12>,<c3,c9,c10>..<c3,c9,c12>,<c3,c10,c11>..<c3,c10,c12>,<c3,c11,c12>, 
+                            <c4,c5,c6>..<c4,c5,c12>,<c4,c6,c7>..<c4,c6,c12>,<c4,c7,c8>..<c4,c7,c12>,<c4,c8,c9>..<c4,c8,c12>,<c4,c9,c10>..<c4,c9,c12>,<c4,c10,c11>..<c4,c10,c12>,<c4,c11,c12>,
+                            <c5,c6,c7>..<c5,c6,c12>,<c5,c7,c8>..<c5,c7,c12>,<c5,c8,c9>..<c5,c8,c12>,<c5,c9,c10>..<c5,c9,c12>,<c5,c10,c11>..<c5,c10,c12>,<c5,c11,c12>,
+                            <c6,c7,c8>..<c6,c7,c12>,<c6,c8,c9>..<c6,c8,c12>,<c6,c9,c10>..<c6,c9,c12>,<c6,c10,c12>..<c6,c11,c12>,<c6,c11,c12>,
+                            <c7,c8,c9>..<c7,c8,c12>,<c7,c9,c10>..<c7,c9,c12>,<c7,c10,c11>..<c7,c11,c12>,<c7,c11,c12>,
+                            <c8,c9,c10>..<c8,c9,c12>,<c8,c10,c12>..<c8,c11,c12>,<c8,c11,c12>,
+                            <c9,c10,c11>..<c9,c10,c12>,<c9,c11,c12>,
+                            <c10,c11,c12>}
                        
 // Cards can have only one color, symbol, nr of shapes and shading
-forall c:Card | one c.cardColor && one c.cardSymbol && one c.cardNrOfShapes && one c.cardShading
+∀ c ∈ Card | one c ⨝ cardColor ∧ one c ⨝ cardSymbol ∧ one c ⨝ cardNrOfShapes ∧ one c ⨝ cardShading
 
 // Make sure that all the cards on the table are distinct
-forall c1:Card, c2:Card\c1 | no (c1.cardColor & c2.cardColor) || no (c1.cardSymbol & c2.cardSymbol) || no (c1.cardNrOfShapes & c2.cardNrOfShapes) || no (c1.cardShading & c2.cardShading) 
+∀ c1 ∈ Card, c2 ∈ Card ∖ c1 | no (c1 ⨝ cardColor ∩ c2 ⨝ cardColor) ∨ 
+                              no (c1 ⨝ cardSymbol ∩ c2 ⨝ cardSymbol) ∨ 
+                              no (c1 ⨝ cardNrOfShapes ∩ c2 ⨝ cardNrOfShapes) ∨ 
+                              no (c1 ⨝ cardShading ∩ c2 ⨝ cardShading) 
               
 // In a set, for all three cards, for all the properties it must hold that or the property is equal for all or it is all different              
-forall s:Set | let c1:Card.(Card.s), c2:(Card.s).Card, c3:(s.Card).Card |
-   (one (c1+c2+c3).cardColor      || (c1+c2+c3).cardColor = Color)  &&
-   (one (c1+c2+c3).cardSymbol     || (c1+c2+c3).cardSymbol = Symbol) && 
-   (one (c1+c2+c3).cardNrOfShapes || (c1+c2+c3).cardNrOfShapes = NrOfShapes) &&
-   (one (c1+c2+c3).cardShading    || (c1+c2+c3).cardShading = Shading)
+∀ s ∈ Set | let c1 = [cId/c1](s[c1]), c2 = [cId/c2](s[c2]), c3 = [cId/c3](s[c3]) |
+   (one ((c1 ∪ c2 ∪ c3) ⨝ cardColor)[coId] ∨ ((c1 ∪ c2 ∪ c3) ⨝ cardColor)[coId] = Color) ∧ 
+   (one ((c1 ∪ c2 ∪ c3) ⨝ cardSymbol)[syId] ∨ ((c1 ∪ c2 ∪ c3) ⨝ cardSymbol)[syId] = Symbol) ∧ 
+   (one ((c1 ∪ c2 ∪ c3) ⨝ cardNrOfShapes)[nrShId] ∨ ((c1 ∪ c2 ∪ c3) ⨝ cardNrOfShapes)[nrShId] = NrOfShapes) ∧ 
+   (one ((c1 ∪ c2 ∪ c3) ⨝ cardShading)[shId] ∨ ((c1 ∪ c2 ∪ c3) ⨝ cardShading)[shId] = Shading)
 
 // The below rule forces all the cards on the table to be part of exactly one set. In essence this means that the whole dealing on the table can be cleaned up in exactly one way  
-forall c:Card | one ((c->Card->Card) + (Card->c->Card) + (Card->Card->c)) & Set
+∀ c ∈ Card | one (([c1/cId]c ⨯ [c2/cId]Card ⨯ [c3/cId]Card) ∪ ([c1/cId]Card ⨯ [c2/cId]c ⨯ [c3/cId]Card) ∪ ([c1/cId]Card ⨯ [c2/cId]Card ⨯ [c3/cId]c)) ∩ Set
 
+ 

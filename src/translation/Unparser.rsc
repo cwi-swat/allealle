@@ -61,7 +61,7 @@ str unparse(implication(AlleFormula lhsForm, AlleFormula rhsForm))              
 str unparse(equality(AlleFormula lhsForm, AlleFormula rhsForm))                     = "(<unparse(lhsForm)> \<=\> <unparse(rhsForm)>)";  
 str unparse(universal(list[VarDeclaration] decls, AlleFormula form))                = "(forall <intercalate(", ", [unparse(d) | VarDeclaration d <- decls])> | <unparse(form)>)";
 str unparse(existential(list[VarDeclaration] decls, AlleFormula form))              = "(exists <intercalate(", ", [unparse(d) | VarDeclaration d <- decls])> | <unparse(form)>)";
-str unparse(let(list[VarDeclaration] decls, AlleFormula form))                      = "(let <intercalate(", ", [unparse(d) | VarDeclaration d <- decls])> | <unparse(form)>)";
+str unparse(let(list[VarBinding] bindings, AlleFormula form))                       = "(let <intercalate(", ", [unparse(b) | VarBinding b <- bindings])> | <unparse(form)>)";
 default str unparse(AlleFormula f) { throw "No unparse function for formula \'<f>\'"; }
 
 str unparse(relvar(str name))                                                       = name;
@@ -80,6 +80,7 @@ str unparse(reflexClosure(TupleAttributeSelection tas, AlleExpr expr))          
 default str unparse(AlleExpr exp) { throw "No unparser implemented for \'<exp>\'"; }
 
 str unparse(varDecl(str name, AlleExpr binding)) = "<name>:<unparse(binding)>";
+str unparse(varBinding(str name, AlleExpr binding)) = "<name> = <unparse(binding)>";
 
 str unparse(equal(CriteriaExpr lhs, CriteriaExpr rhs)) = "(<unparse(lhs)> = <unparse(rhs)>)";
 str unparse(and(Criteria lhs, Criteria rhs))           = "(<unparse(lhs)> && <unparse(rhs)>)";
