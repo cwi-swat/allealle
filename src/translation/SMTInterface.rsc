@@ -99,8 +99,8 @@ Term getValue((SmtValue)`true`, <str _, \bool()>) = lit(ttrue());
 Term getValue((SmtValue)`false`, <str _, \bool()>) = lit(ffalse());
 default Term getValue(SmtValue smtValue, SMTVar var) { throw "Unable to get the value for SMT value \'<smtValue>\', for variable <var>"; }
 
-str negateVariable(str var, ttrue()) = "(not <var>)";
-str negateVariable(str var, ffalse()) = var;
+str negateVariable(str var, lit(ttrue())) = "(not <var>)";
+str negateVariable(str var, lit(ffalse())) = var;
 
 default str negateVariable(str v, Term t) { throw "Unable to negate variable <v> with current value <t>"; }
 

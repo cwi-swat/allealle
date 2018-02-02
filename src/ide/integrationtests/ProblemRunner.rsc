@@ -12,6 +12,7 @@ import IO;
 import List;
 import Set;
 import String;
+import Map;
 
 tuple[void () next, void (Domain) nextWithDom, void () stop] translateAndSolve(loc problem) {
   Problem p = implodeProblem(problem);
@@ -66,13 +67,13 @@ void printModel(Model model) {
   if (model.relations == {}) {
     println("No visible relations");
   } else {
-    for (ModelRelation r <- model.relations) {
-      list[str] heading = [h | str h <- r.heading];
+    for (ModelRelation r <- sort(model.relations)) {
+      list[str] heading = sort([h | str h <- r.heading]);
       println("<r.name>:");
       println(printHeading(heading));
       println(left("", size(heading) * pad + size(heading), "="));
       
-      for (ModelTuple t <- r.tuples) {
+      for (ModelTuple t <- sort(r.tuples)) {
         println(printTuple(t, heading));
       } 
       

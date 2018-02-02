@@ -134,7 +134,7 @@ Relation intersect(Relation lhs, Relation rhs) {
     return lhs;
   }
 
-  set[str] partialKey = lhs.partialKey & rhs.partialKey;
+  set[str] partialKey = lhs.partialKey;
   set[str] openAttributes = lhs.heading<0> - partialKey;
   
   IndexedRows lhsIndexed = index(lhs.rows, partialKey);

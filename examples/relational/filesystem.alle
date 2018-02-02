@@ -14,4 +14,4 @@ Root ⊆ Dir
 // All files and dirs are (reflexive-transitive) 'content' of the Root dir 
 [to/id](File ∪ Dir) ⊆ ([from/id]Root ⨝ *<from,to>contents)[to]
 // All files and dirs can only be contained by one dir
-∀ f ∈ (File ∪ Dir) | lone contents ⨝ [to/id]f 
+∀ f ∈ (File ∪ Dir) | lone contents ⨝ [to/id]f

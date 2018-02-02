@@ -41,11 +41,15 @@ void addIfCompatible(loc base, AlleExpr lhs, AlleExpr rhs, Environment env, Chec
   check(lhs, env, cf);
   check(rhs, env, cf);
 
-  if (isUnionCompatible(cf.lookup(lhs@\loc), cf.lookup(rhs@\loc))) {
-    cf.add(base, cf.lookup(lhs@\loc));
+  if (heading(map[str,str] lhsAtts) := cf.lookup(lhs@\loc), heading(map[str,str] rhsAtts) := cf.lookup(rhs@\loc)) {
+    if (lhsAtts == rhsAtts) {
+      cf.add(base, cf.lookup(lhs@\loc));
+    } else {
+      cf.add(base, incompatible());
+      cf.addMessage(error("\'<lhsAtts>\' is not union compatible with \'<rhsAtts>\'", base));
+    }
   } else {
     cf.add(base, incompatible());
-    cf.addMessage(error("\'<lhs>\' is not union compatible with \'<rhs>\'", base));
   }
 }
 
@@ -60,11 +64,6 @@ map[str,UnionResult] buildEnvironment(Problem p) {
   return env;
 }
  
-bool isUnionCompatible(incompatible(), UnionResult _) = false;
-bool isUnionCompatible(UnionResult _, incompatible()) = false;
-bool isUnionCompatible(heading(map[str,str] attsLhs), heading(map[str,str] attsRhs)) = true when attsLhs == attsRhs;
-default bool isUnionCompatible(UnionResult _, UnionResult _) = false;
-
 void check((AlleFormula)`( <AlleFormula form> )`, Environment env, CheckFunctions cf) { check(form, env, cf); } 
 void check((AlleFormula)`¬ <AlleFormula form>`, Environment env, CheckFunctions cf) { check(form, env, cf); }
 void check((AlleFormula)`no <AlleExpr expr>`, Environment env, CheckFunctions cf)  { check(expr, env, cf); }

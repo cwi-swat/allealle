@@ -21,11 +21,11 @@ State ⊆ [sId/next](([current/sId]InitialState ⨝ *<current,next>ordering)[nex
 // a Passenger can only be on one shore in each state
 ∀ s ∈ State | no (s ⨝ near ∩ s ⨝ far)
 
-// All states should have all passengers on one side or another 
+// All states should have all passengers on one side or the other 
 ∀ s ∈ State | (s ⨝ near ∪ s ⨝ far)[pId] = Passenger
 
 // The goal is to get all Passengers to the other side compared to the start state
-∃ s ∈ State | Passenger ⊆ (s ⨝ far)[pId] 
+∃ s ∈ State | Passenger = (s ⨝ far)[pId] 
 
 // The farmer is always in the boat going from one shore to the other
 //forall s1:State, s2: State | s1->s2 in ordering => (Farmer in s1.near => Farmer in s2.far) || (Farmer in s1.far => Farmer in s2.near)
