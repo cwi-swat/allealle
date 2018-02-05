@@ -127,11 +127,7 @@ Formula translateFormula(subset(AlleExpr lhsExpr, AlleExpr rhsExpr), Environment
         Formula tmpAttForm = \true();
         
         for (str att <- openAttributes) {
-          if (term(lTerm) := lRow.values[att], term(rTerm) := rRow.values[att]) {
-            tmpAttForm = \and(tmpAttForm, equal(lTerm,rTerm));
-          } else {
-            throw "Attribute \'<att>\' is not a term? Should not happen";
-          } 
+          tmpAttForm = \and(tmpAttForm, equal(lRow.values[att],rRow.values[att]));
         }
         
         partial = \or(partial, \and(rRow.constraints.exists, tmpAttForm));
@@ -315,7 +311,7 @@ Relation translateExpression(rename(AlleExpr expr, list[Rename] renames), Enviro
 
 Relation translateExpression(project(AlleExpr expr, list[str] attributes), Environment env) = project(translateExpression(expr, env), toSet(attributes));
 
-Relation translateExpression(select(AlleExpr expr, Criteria criteria), Environment env) = select(translateExpression(expr, env), translateCriteria(criteria));
+Relation translateExpression(select(AlleExpr expr, Criteria criteria), Environment env) = select(translateExpression(expr, env), translateCriteria(criteria, env));
 
 Relation translateExpression(union(AlleExpr lhs, AlleExpr rhs), Environment env) = union(translateExpression(lhs,env),translateExpression(rhs,env));
 
@@ -338,10 +334,63 @@ default Relation translateExpression(AlleExpr expr, Environment env) { throw "Tr
 @memo
 Relation identity(Environment env, str first, str second) {
   Heading h = (first:id(),second:id());
-  Rows r = ((first:key(k),second:key(k)):<\true(),\true()> | str k <- env.idDomain);
+  Rows r = ((first:lit(id(k)),second:lit(id(k))):<\true(),\true()> | str k <- env.idDomain);
   
   return <h,r,{first,second}>;
 }
 
-default Formula (Tuple, Formula) translateCriteria(Criteria criteria) { throw "Not yet implemented \'<criteria>\'";} 
+Formula (Tuple, Formula) translateCriteria(equal(CriteriaExpr lhsExpr, CriteriaExpr rhsExpr), Environment env) { 
+  Term (Tuple,Formula) lhsCrit = translateCriteriaExpr(lhsExpr, env);
+  Term (Tuple,Formula) rhsCrit = translateCriteriaExpr(rhsExpr, env);
+
+  Formula translate(Tuple t, Formula f) = equal(lhsCrit(t,f),rhsCrit(t,f));     
+  
+  return translate; 
+} 
+
+Formula (Tuple, Formula) translateCriteria(and(Criteria lhs, Criteria rhs), Environment env) { 
+  Formula (Tuple,Formula) lhsCrit = translateCriteria(lhs, env);
+  Formula (Tuple,Formula) rhsCrit = translateCriteria(rhs, env);
+
+  Formula translate(Tuple t, Formula f) = and(lhsCrit(t,f),rhsCrit(t,f));     
+  
+  return translate; 
+} 
+
+Formula (Tuple, Formula) translateCriteria(or(Criteria lhs, Criteria rhs), Environment env) { 
+  Formula (Tuple,Formula) lhsCrit = translateCriteria(lhs, env);
+  Formula (Tuple,Formula) rhsCrit = translateCriteria(rhs, env);
+
+  Formula translate(Tuple t, Formula f) = or(lhsCrit(t,f),rhsCrit(t,f));     
+  
+  return translate; 
+}
+
+Formula (Tuple, Formula) translateCriteria(not(Criteria crit), Environment env) { 
+  Formula (Tuple,Formula) crt = translateCriteria(crit, env);
+
+  Formula translate(Tuple t, Formula f) = not(crt(t,f));     
+  
+  return translate; 
+} 
+
+default Formula (Tuple, Formula) translateCriteria(Criteria criteria, Environment env) { throw "Not yet implemented \'<criteria>\'";} 
+
+//data CriteriaExpr
+//  | lit(AlleLiteral l)
+//  ;
+
+Term (Tuple, Formula) translateCriteriaExpr(att(str name), Environment env) { 
+  Term trans(Tuple t, Formula f) {
+    if (name notin t) {
+      throw "Attribute \'<name>\' not in relation";
+    }
+    
+    return t[name];
+  }
+  
+  return trans; 
+} 
+
+default Term (Tuple, Formula) translateCriteriaExpr(CriteriaExpr criteriaExpr, Environment env) { throw "Not yet implemented \'<criteriaExpr>\'";} 
 

@@ -7,6 +7,8 @@ import ide::CombinedModelFinder;
 import ide::CombinedImploder;
 import ide::vis::ModelVisualizer; 
 
+import translation::SMTInterface;
+
 import IO; 
 
 void translateAndVis(loc problem) { 

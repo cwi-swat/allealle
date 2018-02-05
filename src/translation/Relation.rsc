@@ -16,16 +16,16 @@ alias Rows = map[Tuple, Constraints];
 alias Row = tuple[Tuple values, Constraints constraints];
 alias Constraints = tuple[Formula exists, Formula attConstraints];
 
-alias Tuple = map[str,Cell];
+alias Tuple = map[str,Term];
 
 alias Relation = tuple[Heading heading, Rows rows, set[str] partialKey];
 
 alias IndexedRows = tuple[set[str] partialKey, lrel[Tuple partialKey, Row row] indexedRows];
 
-data Cell 
-  = key(str k)
-  | term(Term t)
-  ;
+//data Cell 
+//  = key(str k)
+//  | term(Term t)
+//  ;
 
 bool isPresent(Constraints c) = c.exists != \false() && c.attConstraints != \false(); 
 
@@ -74,11 +74,7 @@ IndexedRows addRow(IndexedRows current, Row new) {
     Formula tmpAttForm = \true();
     
     for (str att <- openAttributes) {
-      if (term(lhs) := r.values[att], term(rhs) := new.values[att]) {
-        tmpAttForm = \and(tmpAttForm, equal(lhs,rhs));
-      } else {
-        throw "Attribute \'<att>\' is not a term? Should not happen";
-      } 
+      tmpAttForm = \and(tmpAttForm, equal(r.values[att], new.values[att]));
     }
     
     if (tmpAttForm != \true()) {
@@ -146,11 +142,7 @@ Relation intersect(Relation lhs, Relation rhs) {
     Formula tmpAttForm = \true();
     
     for (str att <- openAttributes) {
-      if (term(lTerm) := l.values[att], term(rTerm) := r.values[att]) {
-        tmpAttForm = \and(tmpAttForm, equal(lTerm,rTerm));
-      } else {
-        throw "Attribute \'<att>\' is not a term? Should not happen";
-      } 
+      tmpAttForm = \and(tmpAttForm, equal(l.values[att], r.values[att]));
     }
     
     result.indexedRows = result.indexedRows + <key, <l.values, <\and(l.constraints.exists, r.constraints.exists), tmpAttForm>>>;   
@@ -181,11 +173,7 @@ Relation difference(Relation lhs, Relation rhs) {
     Formula tmpAttForm = \true();
 
     for (str att <- openAttributes) {
-      if (term(lTerm) := l.values[att], term(rTerm) := r.values[att]) {
-        tmpAttForm = \and(tmpAttForm, equal(lTerm,rTerm));
-      } else {
-        throw "Attribute \'<att>\' is not a term? Should not happen";
-      } 
+      tmpAttForm = \and(tmpAttForm, equal(l.values[att], r.values[att]));
     }
     
     if (tmpAttForm == \true()) {
@@ -299,10 +287,8 @@ Relation naturalJoin(Relation lhs, Relation rhs) {
 
     if (!joinOnKeysOnly) {
       for (str att <- joinAtts) {
-        if (term(lTerm) := lr.values[att] && term(rTerm) := rr.values[att]) {
-         attForm = \and(attForm, equal(lTerm,rTerm));
-       } 
-      }
+        attForm = \and(attForm, equal(lr.values[att], rr.values[att]));
+      }  
     }
 
     if (exists != \false() && attForm != \false()) {

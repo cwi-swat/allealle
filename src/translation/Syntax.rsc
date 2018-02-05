@@ -10,7 +10,6 @@ syntax Relation
 
 syntax HeaderAttribute
   = AttributeName name ":" Domain dom
-  | "_" ":" Domain dom
   ;
 
 syntax AttributeHeader
@@ -46,7 +45,9 @@ syntax Domain
   | "FAIL"
   ;  
   
-syntax Literal = "none"; 
+syntax Literal 
+  = idLit: "\'" Idd id "\'" 
+  ; 
   
 syntax AlleFormula
   = bracket "(" AlleFormula form ")"
@@ -124,5 +125,5 @@ lexical Arity = [0-9]+;
 
 lexical RelVar = ([a-zA-Z] !<< [a-zA-Z_][a-zA-Z0-9_\']* !>> [a-zA-Z0-9_]) \ Keywords;
 
-keyword Keywords = "none" | "|x|" | "⨝";
+keyword Keywords = "none" | "|x|" | "where";
 keyword Keywords = "no" | "lone" | "one" | "some" | "not" | "forall" | "exists" | "let";

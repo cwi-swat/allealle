@@ -15,9 +15,6 @@ translation::AST::RelationDef implode((Relation)`<RelVar v> (<{HeaderAttribute "
 translation::AST::HeaderAttribute implode((HeaderAttribute)`<AttributeName name> : <Domain d>`)
   = header("<name>", implode(d));
 
-translation::AST::HeaderAttribute implode((HeaderAttribute)`_ : <Domain d>`)
-  = header("_", implode(d));
-
 translation::AST::RelationalBound implode((RelationalBound)`= { <{Tuple ","}* tuples>}`) 
   = exact([implode(t) | t <- tuples]);
 
@@ -34,7 +31,7 @@ translation::AST::AlleTuple implode((Tuple)`\< <{RangedValue ","}+ from> \>..\<<
   = range([implode(rv) | rv <- from], [implode(rv) | rv <- to]); 
 
 translation::AST::AlleValue implode((Value)`<Idd i>`)
-  = id("<i>");   
+  = idd("<i>");   
 
 translation::AST::AlleValue implode((Value)`<Literal l>`)
   = lit(implode(l));  
@@ -57,11 +54,8 @@ translation::AST::RangedValue implode((RangedValue)`?`)
 translation::AST::Domain implode((Domain)`id`)
   = id();  
 
-translation::AST::Domain implode((Domain)`FAIL`)
-  = \fail();    
-
-translation::AST::AlleLiteral implode((Literal)`none`)
-  = none();
+translation::AST::AlleLiteral implode((Literal)`'<Idd id>'`)
+  = idLit(id);
 
 translation::AST::AlleFormula implode((AlleFormula)`( <AlleFormula form> )`) 
   = implode(form);
@@ -123,9 +117,6 @@ translation::AST::AlleExpr implode((AlleExpr)`( <AlleExpr expr> )`)
 translation::AST::AlleExpr implode((AlleExpr)`<RelVar v>`)
   = relvar("<v>");
  
-translation::AST::AlleExpr implode((AlleExpr)`<Literal l>`)
-  = lit(implode(l));
-
 translation::AST::AlleExpr implode((AlleExpr)`[<{Rename ","}+ ren>] <AlleExpr expr>`)
   = rename(implode(expr), [implode(r) | r <- ren]);
 
@@ -184,6 +175,6 @@ translation::AST::CriteriaExpr implode((CriteriaExpr)`<AttributeName att>`)
   = att("<att>");
 
 translation::AST::CriteriaExpr implode((CriteriaExpr)`<Literal l>`) 
-  = lit(implode(l));
+  = litt(implode(l));
    
 default &T implode(&R production) { throw "Unable to implode production \'<production>\'. No implode function implemented"; }

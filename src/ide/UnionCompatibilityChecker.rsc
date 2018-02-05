@@ -58,7 +58,7 @@ map[str,UnionResult] buildEnvironment(Problem p) {
   Environment env = ();
 
   visit(p.relations) {
-    case (Relation)`<RelVar v> (<{HeaderAttribute ","}+ header>) <RelationalBound bounds>`: env["<v>"] = heading(("<ha.name>":"<ha.dom>" | HeaderAttribute ha <- header));
+    case (Relation)`<RelVar v> (<{HeaderAttribute ","}+ header>) <RelationalBound bounds>`: env["<v>"] = heading(("<ha.name>":"<ha.dom>()" | HeaderAttribute ha <- header));
   }
   
   return env;
@@ -99,7 +99,7 @@ void check(f:(AlleFormula)`∀ <{VarDeclaration ","}+ decls> | <AlleFormula form
     env += checkDeclaration(vd, env, cf);
   }
   check(form, env, cf);
-}
+} 
 
 void check(f:(AlleFormula)`∃ <{VarDeclaration ","}+ decls> | <AlleFormula form>`, Environment env, CheckFunctions cf)  {
   for (VarDeclaration vd <- decls) {
@@ -116,7 +116,15 @@ Environment checkDeclaration(VarDeclaration decl, Environment env, CheckFunction
 }
  
 void check(e:(AlleExpr)`(<AlleExpr expr>)`, Environment env, CheckFunctions cf)  { check(expr, env, cf); cf.add(e@\loc, cf.lookup(expr@\loc));}
-void check((AlleExpr)`<RelVar v>`, Environment env, CheckFunctions cf)  { cf.add(v@\loc, env["<v>"]); }
+void check((AlleExpr)`<RelVar v>`, Environment env, CheckFunctions cf)  { 
+  if ("<v>" in env) {
+    cf.add(v@\loc, env["<v>"]); 
+  } else {
+    cf.add(v@\loc, incompatible());
+    cf.addMessage(error("Unknown relational variable", v@\loc));
+  }
+}
+
 void check((AlleExpr)`<Literal l>`, Environment env, CheckFunctions cf) {}
 
 void check(e:(AlleExpr)`[<{Rename ","}+ ren>] <AlleExpr expr>`, Environment env, CheckFunctions cf) {

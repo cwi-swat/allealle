@@ -32,10 +32,10 @@ Set (c1:id,c2:id,c3:id) <= {<c1,c2,c3>..<c1,c2,c12>,<c1,c3,c4>..<c1,c3,c12>,<c1,
 ∀ c ∈ Card | one c ⨝ cardColor ∧ one c ⨝ cardSymbol ∧ one c ⨝ cardNrOfShapes ∧ one c ⨝ cardShading
 
 // Make sure that all the cards on the table are distinct
-∀ c1 ∈ Card, c2 ∈ Card ∖ c1 | no (c1 ⨝ cardColor ∩ c2 ⨝ cardColor) ∨ 
-                              no (c1 ⨝ cardSymbol ∩ c2 ⨝ cardSymbol) ∨ 
-                              no (c1 ⨝ cardNrOfShapes ∩ c2 ⨝ cardNrOfShapes) ∨ 
-                              no (c1 ⨝ cardShading ∩ c2 ⨝ cardShading) 
+∀ c1 ∈ Card, c2 ∈ Card ∖ c1 | no ((c1 ⨝ cardColor)[coId] ∩ (c2 ⨝ cardColor)[coId]) ∨ 
+                              no ((c1 ⨝ cardSymbol)[syId] ∩ (c2 ⨝ cardSymbol)[syId]) ∨ 
+                              no ((c1 ⨝ cardNrOfShapes)[nrShId] ∩ (c2 ⨝ cardNrOfShapes)[nrShId]) ∨ 
+                              no ((c1 ⨝ cardShading)[shId] ∩ (c2 ⨝ cardShading)[shId]) 
               
 // In a set, for all three cards, for all the properties it must hold that or the property is equal for all or it is all different              
 ∀ s ∈ Set | let c1 = [cId/c1](s[c1]), c2 = [cId/c2](s[c2]), c3 = [cId/c3](s[c3]) |
@@ -45,6 +45,7 @@ Set (c1:id,c2:id,c3:id) <= {<c1,c2,c3>..<c1,c2,c12>,<c1,c3,c4>..<c1,c3,c12>,<c1,
    (one ((c1 ∪ c2 ∪ c3) ⨝ cardShading)[shId] ∨ ((c1 ∪ c2 ∪ c3) ⨝ cardShading)[shId] = Shading)
 
 // The below rule forces all the cards on the table to be part of exactly one set. In essence this means that the whole dealing on the table can be cleaned up in exactly one way  
-∀ c ∈ Card | one (([c1/cId]c ⨯ [c2/cId]Card ⨯ [c3/cId]Card) ∪ ([c1/cId]Card ⨯ [c2/cId]c ⨯ [c3/cId]Card) ∪ ([c1/cId]Card ⨯ [c2/cId]Card ⨯ [c3/cId]c)) ∩ Set
+//∀ c ∈ Card | one (([c1/cId]c ⨯ [c2/cId]Card ⨯ [c3/cId]Card) ∪ ([c1/cId]Card ⨯ [c2/cId]c ⨯ [c3/cId]Card) ∪ ([c1/cId]Card ⨯ [c2/cId]Card ⨯ [c3/cId]c)) ∩ Set
 
+some Set
  

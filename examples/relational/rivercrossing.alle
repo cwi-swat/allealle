@@ -33,7 +33,7 @@ State ⊆ [sId/next](([current/sId]InitialState ⨝ *<current,next>ordering)[nex
   (Farmer ⊆ (s1 ⨝ near)[pId] ⇒ Farmer ⊆ (s2 ⨝ far)[pId]) ∨ (Farmer ⊆ (s1 ⨝ far)[pId] ⇒ Farmer ⊆ (s2 ⨝ near)[pId])
  
 // During a transition the boat can only have at max one passenger
-∀ o ∈ ordering, p1 ∈ Passenger∖Farmer, p2 ∈ Passenger∖(Farmer ∪ p1) | let s1 = [sId/current](o[current]), s2 = [sId/next](o[next]) |
+∀ o ∈ ordering, p1 ∈ Passenger ∖ Farmer, p2 ∈ Passenger ∖ (Farmer ∪ p1) | let s1 = [sId/current](o[current]), s2 = [sId/next](o[next]) |
   (¬ (p1 ∪ p2 ⊆ (s1 ⨝ near)[pId] ∩ (s2 ⨝ far)[pId] ∨ 
       p1 ∪ p2 ⊆ (s1 ⨝ far)[pId] ∩ (s2 ⨝ near)[pId]))
 
@@ -43,8 +43,8 @@ State ⊆ [sId/next](([current/sId]InitialState ⨝ *<current,next>ordering)[nex
     ((p ⊆ (s1 ⨝ far)[pId] ∩ (s2 ⨝ near)[pId]) ⇒ Farmer ⊆ (s1 ⨝ far)[pId] ∩ (s2 ⨝ near)[pId]) )
 
 // The Wolf can never be on the same shore then the Goat and the Cabbage can never be on the same shore then the Goat unless the Farmer is there as well
-∀ s ∈ State, p1 ∈ Passenger, p2 ∈ Passenger | 
-  ((p1 ⨯ [eat/pId]p2 ⊆ eats) ⇒ ((p1 ⊆ (s ⨝ near)[pId] ∧ p2 ⊆ (s ⨝ far)[pId]) ∨ 
-                                (p1 ⊆ (s ⨝ far)[pId] ∧ p2 ⊆ (s ⨝ near)[pId]) ∨ 
-                                (p1 ∪ p2 ∪ Farmer ⊆ (s ⨝ near)[pId]) ∨ 
-                                (p1 ∪ p2 ∪ Farmer ⊆ (s ⨝ far)[pId])))
+∀ s ∈ State, e ∈ eats | let p1 = e[pId], p2 = [pId/eat](e[eat]) | 
+   (p1 ⊆ (s ⨝ near)[pId] ∧ p2 ⊆ (s ⨝ far)[pId]) ∨ 
+   (p1 ⊆ (s ⨝ far)[pId] ∧ p2 ⊆ (s ⨝ near)[pId]) ∨ 
+   (p1 ∪ p2 ∪ Farmer ⊆ (s ⨝ near)[pId]) ∨ 
+   (p1 ∪ p2 ∪ Farmer ⊆ (s ⨝ far)[pId])

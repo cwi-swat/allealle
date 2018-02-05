@@ -33,7 +33,7 @@ str unparse(tup(list[AlleValue] values)) =
 str unparse(range(list[RangedValue] from, list[RangedValue] to)) =
   "\<<intercalate(",",[unparse(rv) | RangedValue rv <- from])>..<intercalate(",",[unparse(rv) | RangedValue rv <- to])>\>";
 
-str unparse(id(Id id)) = id;
+str unparse(idd(Id id)) = id;
 str unparse(alleLit(AlleLiteral lit)) = unparse(lit);
 str unparse(hole()) = "?";
 
@@ -44,7 +44,7 @@ str unparse(templateHole())               = "?";
 
 default str unparse(AlleLiteral l) { throw "No uparse function for literal \'<l>\'"; }
   
-str unparse(id()) = "";
+str unparse(id()) = "id";
 default str unparse(Domain d) { throw "No unparse function for domain \'<d>\'"; }
 
 str unparse(empty(AlleExpr expr))                                                   = "(no <unparse(expr)>)";
@@ -79,7 +79,7 @@ str unparse(reflexClosure(TupleAttributeSelection tas, AlleExpr expr))          
 
 default str unparse(AlleExpr exp) { throw "No unparser implemented for \'<exp>\'"; }
 
-str unparse(varDecl(str name, AlleExpr binding)) = "<name>:<unparse(binding)>";
+str unparse(varDecl(str name, AlleExpr binding))    = "<name>:<unparse(binding)>";
 str unparse(varBinding(str name, AlleExpr binding)) = "<name> = <unparse(binding)>";
 
 str unparse(equal(CriteriaExpr lhs, CriteriaExpr rhs)) = "(<unparse(lhs)> = <unparse(rhs)>)";
@@ -88,7 +88,7 @@ str unparse(or(Criteria lhs, Criteria rhs))            = "(<unparse(lhs)> || <un
 str unparse(not(Criteria crit))                        = "(!<unparse(crit)>)";
 
 str unparse(att(str name))      = name;
-str unparse(lit(AlleLiteral l)) = unparse(l);
+str unparse(litt(AlleLiteral l)) = unparse(l);
 
 default str unparse(CriteriaExpr expr) { throw "No unparse function for Criteria Expression \'<expr>\'";}
 

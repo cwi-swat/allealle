@@ -1,7 +1,6 @@
 module ide::UnicodeRewriter
 
 import ide::CombinedSyntax;
-import ide::rewrite::PTDiff;
 
 import ParseTree;
 import IO;

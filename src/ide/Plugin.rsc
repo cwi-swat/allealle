@@ -10,7 +10,7 @@ import ide::UnicodeRewriter;
 import ide::UnionCompatibilityChecker;
 
 import translation::Translator;
-//import translation::Relation;
+import translation::SMTInterface;
 
 import util::IDE;
 import util::Prompt;

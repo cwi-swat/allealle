@@ -26,6 +26,7 @@ data Term
 data Literal
   = ttrue()
   | ffalse()
+  | id(str id)
   ;
   
 data Command;

@@ -22,7 +22,7 @@ data AlleTuple
   ;  
 
 data AlleValue
-  = id(Id id)
+  = idd(Id id)
   | alleLit(AlleLiteral lit)
   | hole()
   ;
@@ -38,10 +38,11 @@ alias Id = str;
 
 data Domain 
   = id()
-  | \fail()
   ;
     
-data AlleLiteral; 
+data AlleLiteral
+  = idLit(Id id)
+  ; 
 
 data AlleFormula(loc origLoc = |unknown://|)
   = \filter(AlleExpr expr, Criteria criteria)
@@ -99,5 +100,5 @@ data Criteria
 
 data CriteriaExpr
   = att(str name) 
-  | lit(AlleLiteral l)
+  | litt(AlleLiteral l)
   ;

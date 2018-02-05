@@ -1,13 +1,13 @@
-Car  (_:id,price:int) = {<car1,20000>,<car2,30000>,<car3,50000>}
-Boat (_:id,price:int) = {<boat1,10000>,<boat2,40000>,<boat3,60000>}
- 
-sale (_:id,_:id)<= {<car1,boat1>..<car3,boat3>}
-
-sale = ([cPrice/price]Car x [bPrice/price]Boat) where cPrice >= bPrice
-
-//Car  (id1:id,cPrice:int) = {<car1,20000>,<car2,30000>,<car3,50000>}
-//Boat (id1:id,bPrice:int) = {<boat1,10000>,<boat2,40000>,<boat3,60000>}
+//Car  (_:id,price:int) = {<car1,20000>,<car2,30000>,<car3,50000>}
+//Boat (_:id,price:int) = {<boat1,10000>,<boat2,40000>,<boat3,60000>}
 // 
-//sale (id1:id,id2:id)<= {<car1,boat1>..<car3,boat3>}
-//
-//sale = ((Car x [id2/id1]Boat) where cPrice>= bPrice)[id1,id2]
+//sale (_:id,_:id)<= {<car1,boat1>..<car3,boat3>}
+
+//sale = ([cPrice/price]Car x [bPrice/price]Boat) where cPrice >= bPrice
+
+Car  (cId:id, cPrice:int) = {<car1,20000>,<car2,30000>,<car3,50000>}
+Boat (bId:id, bPrice:int) = {<boat1,10000>,<boat2,40000>,<boat3,60000>}
+ 
+sale (cId:id,bId:id)<= {<car1,boat1>..<car3,boat3>}
+
+sale = ((Car x Boat) where cPrice>= bPrice)[cId,bId]

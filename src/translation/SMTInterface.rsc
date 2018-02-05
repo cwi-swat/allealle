@@ -23,12 +23,12 @@ data ModelAttribute
   ;
   
 data ModelTuple
-  = fixedTuple(set[ModelAttribute] attributes)
-  | varTuple(set[ModelAttribute] attribute, str smtVarName)
+  = fixedTuple(list[ModelAttribute] attributes)
+  | varTuple(list[ModelAttribute] attributes, str smtVarName)
   ;  
 
 data ModelRelation 
-  = mRelation(str name, Heading heading, set[ModelTuple] tuples)
+  = mRelation(str name, Heading heading, list[ModelTuple] tuples)
   ;
     
 data Model 
@@ -77,6 +77,10 @@ default str compile(Formula f) { throw "Unable to compile <f> to SMT, no SMT com
 str compile(lit(Literal l))         = compile(l);
 str compile(var(str name, Sort s))  = name;
 
+str compilt(ttrue())                = "true";
+str compilt(ffalse())               = "false";
+str compile(id(str i))              { throw "Unable to compile id \'<i>\' to SMT"; }
+
 str compileAssert(Formula f) = "\n(assert 
                                '  <compile(f)>
                                ')"; 
@@ -105,14 +109,14 @@ str negateVariable(str var, lit(ffalse())) = var;
 default str negateVariable(str v, Term t) { throw "Unable to negate variable <v> with current value <t>"; }
 
 Model constructRelationalModel(SMTModel smtModel, Environment env) { 
-  set[ModelAttribute] constructAttributes(Tuple t) {
-    set[ModelAttribute] attributes = {};
+  list[ModelAttribute] constructAttributes(Tuple t) {
+    list[ModelAttribute] attributes = [];
     for (str att <- t) {
-      if (key(str k) := t[att]) {
+      if (lit(id(str k)) := t[att]) {
         attributes += idAttribute(att,k);
-      } else if (term(l:lit(Literal _)) := t[att]) {
+      } else if (l:lit(Literal _) := t[att]) {
         attributes += fixedAttribute(att, l); 
-      } else if (term(v:var(str name, Sort s)) := t[att]) {
+      } else if (v:var(str name, Sort s) := t[att]) {
         attributes += varAttribute(att, smtModel[<name,s>], name);
       }
     } 
@@ -123,7 +127,7 @@ Model constructRelationalModel(SMTModel smtModel, Environment env) {
   set[ModelRelation] relations = {};
   
   for (str relName <- env.relations) {
-    set[ModelTuple] tuples = {};
+    list[ModelTuple] tuples = [];
     Relation r = env.relations[relName];
      
     for (Tuple t <- r.rows) {
