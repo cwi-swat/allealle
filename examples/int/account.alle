@@ -1,35 +1,35 @@
-State (1 :: amount:int)     >= {<s1,0>} <= {<s1,0>,<s2,?>..<s5,?>}
-InitialState (1)             = {<s1>}
-ordering (2)                <= {<s1,s2>,<s2,s3>,<s3,s4>,<s4,s5>}
-Account (1 :: balance:int)  >= {<ac1,?>} <= {<ac1,?>..<ac5,?>}
-accountInState (2)          >= {<s1,ac1>} <= {<s1,ac1>,<s2,ac2>,<s3,ac3>,<s4,ac4>,<s5,ac5>}
+State (sId:id, amount:int)     >= {<s1,0>} <= {<s1,0>,<s2,?>..<s5,?>}
+InitialState (sId:id)           = {<s1>}
+ordering (from:id,to:id)       <= {<s1,s2>,<s2,s3>,<s3,s4>,<s4,s5>}
+Account (aId:id, balance:int)  >= {<ac1,?>} <= {<ac1,?>..<ac5,?>}
+accountInState (sId:id,aId:id) >= {<s1,ac1>} <= {<s1,ac1>,<s2,ac2>,<s3,ac3>,<s4,ac4>,<s5,ac5>}
 
-Withdraw (1)                = {<withdraw>}
-Deposit (1)                 = {<deposit>}
-triggeredEvent (2)          <= {<s2,withdraw>..<s5,withdraw>,<s2,deposit>..<s5,deposit>}
+Withdraw (eId:id)               = {<withdraw>}
+Deposit (eId:id)                = {<deposit>}
+triggeredEvent (sId:id,eId:id) <= {<s2,withdraw>..<s5,withdraw>,<s2,deposit>..<s5,deposit>}
 
-ordering in State -> State
-accountInState in State->Account 
-triggeredEvent in State->(Withdraw+Deposit)
+ordering ⊆ [from/sId](State[sId]) ⨯ [to/sId](State[sId])
+accountInState ⊆ State[sId] ⨯ Account[aId]
+triggeredEvent ⊆ State[sId] ⨯ (Withdraw ∪ Deposit)
 
 // Entity constraints
-forall s:State | some s.accountInState
-State in InitialState.*ordering
-Account in (InitialState.*ordering).accountInState
+∀ s ∈ State | some s ⨝ accountInState
+State[sId] ⊆ [sId/to](([from/sId](InitialState[sId]) ⨝ *<from,to>ordering)[to])
+Account[aId] ⊆ ([sId/to](([from/sId]InitialState ⨝ *<from,to>ordering)[to]) ⨝ accountInState)[aId]
 
-(State\InitialState)::amount > 0 && State::amount < 11
+∀ s ∈ (State[sId] ∖ InitialState) ⨝ State | some (s where amount > 0 && amount < 11)
 
 // Initial state
-(InitialState.accountInState)::balance = 0
+some ((InitialState ⨝ accountInState ⨝ Account) where balance = 0)
 
 // Transition function
-forall s1: State, s2:State | s1 -> s2 in ordering => 
+∀ o ∈ ordering | let s1 = [sId/from](o[from]), s2 = [sId/to](o[to]), 
+                      b = [newBalance/balance]((s2 ⨝ accountInState ⨝ Account ⨝ State)[balance, amount]) ⨯ (s1 ⨝ accountInState ⨝ Account)[balance] | 
   (
-    ((s2.accountInState)::balance = (s1.accountInState)::balance + s2::amount && s2.triggeredEvent = Deposit) ||
-    ((s1.accountInState::balance >= s2::amount &&  (s2.accountInState)::balance = (s1.accountInState)::balance - s2::amount) && s2.triggeredEvent = Withdraw)
+    ((some b where newBalance = (balance + amount)) ∧ (s2 ⨝ triggeredEvent)[eId] = Deposit) ∨ 
+    ((some b where ((balance - amount) >= 0 && (newBalance = (balance - amount)))) ∧ (s2 ⨝ triggeredEvent)[eId] = Withdraw)
   )
  
 // Goal state 
-exists s:State | (s.accountInState)::balance = 40
+∃ s ∈ State | some (s ⨝ accountInState ⨝ Account) where balance = 40
 
-minimize #State

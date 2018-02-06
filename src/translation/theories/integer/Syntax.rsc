@@ -4,32 +4,27 @@ extend translation::Syntax;
 
 syntax Domain = "int";
 
+syntax Criteria
+  = left lt:    CriteriaExpr lhs "\<" CriteriaExpr rhs
+  | left lte:   CriteriaExpr lhs "\<=" CriteriaExpr rhs
+  | left gt:    CriteriaExpr lhs "\>" CriteriaExpr rhs
+  | left gte:   CriteriaExpr lhs "\>=" CriteriaExpr rhs
+  ; 
+
+syntax CriteriaExpr
+  = "(" CriteriaExpr expr ")"
+  > abs:        "|" CriteriaExpr expr "|"
+  | neg:        "-" CriteriaExpr expr
+  > left mult:  CriteriaExpr lhs "*" CriteriaExpr rhs
+  | div:        CriteriaExpr lhs "/" CriteriaExpr rhs
+  | \mod:       CriteriaExpr lhs "%" CriteriaExpr rhs
+  > left add:   CriteriaExpr "+" CriteriaExpr rhs 
+  | left sub:   CriteriaExpr "-" CriteriaExpr rhs
+  ;
+ 
 syntax Literal 
-  = IntLit i
-  ;
-  
-syntax AlleExpr
-  = neg:                  "-" AlleExpr
-  > sum:                  "sum" "(" AlleExpr expr ")"
-  | car:                  "#" AlleExpr expr
+  = intLit: IntLit i
   ; 
-
-syntax Restriction
-  = distinct:   "distinct" RestrictionExpr expr
-  > left lt:    RestrictionExpr lhs "\<" RestrictionExpr rhs
-  | left lte:   RestrictionExpr lhs "\<=" RestrictionExpr rhs
-  | left gt:    RestrictionExpr lhs "\>" RestrictionExpr rhs
-  | left gte:   RestrictionExpr lhs "\>=" RestrictionExpr rhs
-  ; 
-
-syntax RestrictionExpr
-  = abs:        "|" RestrictionExpr expr "|"
-  > left mult:  RestrictionExpr lhs "*" RestrictionExpr rhs
-  | div:        RestrictionExpr lhs "/" RestrictionExpr rhs
-  | \mod:       RestrictionExpr lhs "%" RestrictionExpr rhs
-  > left add:   RestrictionExpr "+" RestrictionExpr rhs 
-  | left sub:   RestrictionExpr "-" RestrictionExpr rhs
-  ;
   
 lexical IntLit = [0-9]+;
 

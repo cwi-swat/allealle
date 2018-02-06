@@ -1,6 +1,6 @@
 module ide::UnionCompatibilityChecker
 
-import translation::Syntax;
+import ide::CombinedSyntax;
 
 import ParseTree;
 import Message;
@@ -115,7 +115,11 @@ Environment checkDeclaration(VarDeclaration decl, Environment env, CheckFunction
   return env;
 }
  
-void check(e:(AlleExpr)`(<AlleExpr expr>)`, Environment env, CheckFunctions cf)  { check(expr, env, cf); cf.add(e@\loc, cf.lookup(expr@\loc));}
+void check(e:(AlleExpr)`(<AlleExpr expr>)`, Environment env, CheckFunctions cf)  { 
+  check(expr, env, cf); 
+  cf.add(e@\loc, cf.lookup(expr@\loc));
+}
+
 void check((AlleExpr)`<RelVar v>`, Environment env, CheckFunctions cf)  { 
   if ("<v>" in env) {
     cf.add(v@\loc, env["<v>"]); 
@@ -167,8 +171,10 @@ void check(e:(AlleExpr)`<AlleExpr expr>[<{AttributeName ","}+ atts>]`, Environme
 }
 
 void check((AlleExpr)`<AlleExpr expr> where <Criteria criteria>`, Environment env, CheckFunctions cf) {
-  // Should also check the criteria but skipping for now
   check(expr,env,cf);
+  if (heading(map[str,str] atts) := cf.lookup(expr@\loc)) {
+    check(criteria, atts, cf);
+  }
 }
   
 void check(e:(AlleExpr)`~<TupleAttributeSelection tas> <AlleExpr expr>`, Environment env, CheckFunctions cf) { 
@@ -235,10 +241,31 @@ void check(e:(AlleExpr)`<AlleExpr lhs> ⨯ <AlleExpr rhs>`, Environment env, Che
   } 
 }
 
-//void check((Criteria)`( <Criteria cr> )`) 
-//void check((Criteria)`not <Criteria r>`) 
-//void check((Criteria)`<CriteriaExpr lhs> = <CriteriaExpr rhs>`) 
-//void check((Criteria)`<Criteria lhs> && <Criteria rhs>`) 
-//void check((Criteria)`<Criteria lhs> || <Criteria rhs>`) 
-//void check((CriteriaExpr)`<AttributeName att>`) 
-//void check((CriteriaExpr)`<Literal l>`) 
+void check((Criteria)`( <Criteria cr> )`, map[str,str] attributes, CheckFunctions cf) { check(cr, attributes, cf); } 
+void check((Criteria)`not <Criteria cr>`, map[str,str] attributes, CheckFunctions cf) { check(cr, attributes, cf); } 
+void check((Criteria)`<CriteriaExpr lhs> = <CriteriaExpr rhs>`, map[str,str] attributes, CheckFunctions cf) { check(lhs, attributes, cf); check(rhs, attributes, cf); }
+void check((Criteria)`<CriteriaExpr lhs> != <CriteriaExpr rhs>`, map[str,str] attributes, CheckFunctions cf) { check(lhs, attributes, cf); check(rhs, attributes, cf); }
+void check((Criteria)`<Criteria lhs> && <Criteria rhs>`, map[str,str] attributes, CheckFunctions cf) { check(lhs, attributes, cf); check(rhs, attributes, cf); }
+void check((Criteria)`<Criteria lhs> || <Criteria rhs>`, map[str,str] attributes, CheckFunctions cf) { check(lhs, attributes, cf); check(rhs, attributes, cf); } 
+void check((Criteria)`<CriteriaExpr lhs> \< <CriteriaExpr rhs>`, map[str,str] attributes, CheckFunctions cf) { check(lhs, attributes, cf); check(rhs, attributes, cf); } 
+void check((Criteria)`<CriteriaExpr lhs> \<= <CriteriaExpr rhs>`, map[str,str] attributes, CheckFunctions cf) { check(lhs, attributes, cf); check(rhs, attributes, cf); } 
+void check((Criteria)`<CriteriaExpr lhs> \> <CriteriaExpr rhs>`, map[str,str] attributes, CheckFunctions cf) { check(lhs, attributes, cf); check(rhs, attributes, cf); } 
+void check((Criteria)`<CriteriaExpr lhs> \>= <CriteriaExpr rhs>`, map[str,str] attributes, CheckFunctions cf) { check(lhs, attributes, cf); check(rhs, attributes, cf); } 
+
+void check(c:(CriteriaExpr)`<AttributeName att>`, map[str,str] attributes, CheckFunctions cf) {
+  if ("<att>" notin attributes) {
+    cf.addMessage(error("Attribute \'<att>\' not part of relation", c@\loc));
+  }
+}
+void check((CriteriaExpr)`<Literal l>`, map[str,str] attributes, CheckFunctions cf) {} 
+void check((CriteriaExpr)`( <CriteriaExpr expr> )`, map[str,str] attributes, CheckFunctions cf) { check(expr, attributes, cf); }
+void check((CriteriaExpr)`| <CriteriaExpr expr> |`, map[str,str] attributes, CheckFunctions cf) { check(expr, attributes, cf); }
+void check((CriteriaExpr)`- <CriteriaExpr expr>`, map[str,str] attributes, CheckFunctions cf) { check(expr, attributes, cf); }
+void check((CriteriaExpr)`<CriteriaExpr lhs> * <CriteriaExpr rhs>`, map[str,str] attributes, CheckFunctions cf) { check(lhs, attributes, cf); check(rhs, attributes, cf); } 
+void check((CriteriaExpr)`<CriteriaExpr lhs> / <CriteriaExpr rhs>`, map[str,str] attributes, CheckFunctions cf) { check(lhs, attributes, cf); check(rhs, attributes, cf); } 
+void check((CriteriaExpr)`<CriteriaExpr lhs> % <CriteriaExpr rhs>`, map[str,str] attributes, CheckFunctions cf) { check(lhs, attributes, cf); check(rhs, attributes, cf); } 
+void check((CriteriaExpr)`<CriteriaExpr lhs> + <CriteriaExpr rhs>`, map[str,str] attributes, CheckFunctions cf) { check(lhs, attributes, cf); check(rhs, attributes, cf); } 
+void check((CriteriaExpr)`<CriteriaExpr lhs> - <CriteriaExpr rhs>`, map[str,str] attributes, CheckFunctions cf) { check(lhs, attributes, cf); check(rhs, attributes, cf); } 
+
+void check((Literal)`<IntLit i>`, map[str,str] attributes, CheckFunctions cf) {}
+void check((Literal)`'<Idd i>'`, map[str,str] attributes, CheckFunctions cf) {}

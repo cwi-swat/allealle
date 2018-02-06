@@ -34,7 +34,7 @@ translation::AST::AlleValue implode((Value)`<Idd i>`)
   = idd("<i>");   
 
 translation::AST::AlleValue implode((Value)`<Literal l>`)
-  = lit(implode(l));  
+  = alleLit(implode(l));  
  
 translation::AST::AlleValue implode((Value)`?`)
   = hole();  
@@ -124,7 +124,7 @@ translation::AST::AlleExpr implode((AlleExpr)`<AlleExpr expr>[<{AttributeName ",
   = project(implode(expr), ["<a>" | a <- atts]);
 
 translation::AST::AlleExpr implode((AlleExpr)`<AlleExpr expr> where <Criteria criteria>`)
-  = restriction(implode(expr), implode(restriction));
+  = select(implode(expr), implode(criteria));
   
 translation::AST::AlleExpr implode((AlleExpr)`~<TupleAttributeSelection tas> <AlleExpr expr>`)
   = transpose(implode(tas), implode(expr));
@@ -165,14 +165,17 @@ translation::AST::Criteria implode((Criteria)`not <Criteria r>`)
 translation::AST::Criteria implode((Criteria)`<CriteriaExpr lhs> = <CriteriaExpr rhs>`) 
   = equal(implode(lhs),implode(rhs));
 
+translation::AST::Criteria implode((Criteria)`<CriteriaExpr lhs> != <CriteriaExpr rhs>`) 
+  = inequal(implode(lhs),implode(rhs));
+
 translation::AST::Criteria implode((Criteria)`<Criteria lhs> && <Criteria rhs>`) 
   = and(implode(lhs),implode(rhs));
   
 translation::AST::Criteria implode((Criteria)`<Criteria lhs> || <Criteria rhs>`) 
   = or(implode(lhs),implode(rhs));
  
-translation::AST::CriteriaExpr implode((CriteriaExpr)`<AttributeName att>`) 
-  = att("<att>");
+translation::AST::CriteriaExpr implode((CriteriaExpr)`<AttributeName at>`) 
+  = att("<at>");
 
 translation::AST::CriteriaExpr implode((CriteriaExpr)`<Literal l>`) 
   = litt(implode(l));

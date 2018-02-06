@@ -7,7 +7,7 @@ grid (x:id,y:id,val:id)>= {<n2,n5,n6>,<n9,n9,n7>,<n8,n2,n2>,<n3,n7,n4>,<n4,n7,n8
 
 let X = [x/nId]num, Y = [y/nId]num, r1X = [x/nId]r1, r2X = [x/nId]r2, r3X = [x/nId]r3, r1Y = [y/nId]r1, r2Y = [y/nId]r2, r3Y = [y/nId]r3 |          
   // Every cell has some value
-  (∀ x ∈ X, y ∈ Y     | one (x ⨯ y) ⨝ grid) ∧ 
+  (∀ x ∈ X, y ∈ Y     | some (x ⨯ y) ⨝ grid) ∧ 
   // All the values on the y-axis are distinct
   (∀ x ∈ X, y ∈ Y     | no   ((x ⨯ y) ⨝ grid)[val] ∩ ((x ⨯ (Y ∖ y)) ⨝ grid)[val]) ∧ 
   // All the values on the x-axis are distinct 

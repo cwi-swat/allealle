@@ -92,6 +92,7 @@ data Rename
 
 data Criteria
   = equal(CriteriaExpr lhsExpr, CriteriaExpr rhsExpr)
+  | inequal(CriteriaExpr lhsExpr, CriteriaExpr rhsExpr)
   | and(Criteria lhs, Criteria rhs)
   | or(Criteria lhs, Criteria rhs)
   | not(Criteria crit)

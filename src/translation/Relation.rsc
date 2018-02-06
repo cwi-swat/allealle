@@ -29,7 +29,7 @@ alias IndexedRows = tuple[set[str] partialKey, lrel[Tuple partialKey, Row row] i
 
 bool isPresent(Constraints c) = c.exists != \false() && c.attConstraints != \false(); 
 
-//Formula asForm(Constraint c) = \and(c.exists,c.attConstraints);
+Formula together(Constraints c) = \and(c.exists,c.attConstraints);
 
 Formula getAttributeConstraints(Constraints c) = implies(c.exists, c.attConstraints);
 
@@ -230,15 +230,17 @@ Relation rename(Relation relation, map[str,str] renamings) {
 }
 
 @memo
-Relation select(Relation relation, Formula (Tuple, Formula) criteria) {
+Relation select(Relation relation, Formula (Tuple) criteria) {
   Rows result = (); 
   
   for (Tuple t <- relation.rows) {
-    Formula attConstraints = criteria(t, relation.rows[t].attConstraints);
+    Formula attConstraints = \and(relation.rows[t].attConstraints, criteria(t)); 
     if (attConstraints != \false()) {
       result[t] = <relation.rows[t].exists, attConstraints>;
     }
   }
+  
+  println(result);
   
   return <relation.heading, result, relation.partialKey>;
 }

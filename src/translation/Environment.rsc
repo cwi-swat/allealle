@@ -57,10 +57,10 @@ Tuple convertAlleTuple(AlleTuple alleTuple, str relName, str varPostfix, list[st
 }
 
 Term convertToTerm(idd(Id i), str _, Domain _) = lit(id(i));
-Term convertToTerm(alleLit(AlleLiteral lit), str attVarName, Domain _) = convertToLit(lit);
+Term convertToTerm(alleLit(AlleLiteral l), str attVarName, Domain _) = lit(convertToLit(l));
 Term convertToTerm(hole(), str attVarName, Domain d) = convertToVar(attVarName, d); 
 
-default Term convertToLit(AlleLiteral l) { throw "Can not convert literal \'<l>\', no conversion function found"; }
+default Literal convertToLit(AlleLiteral l) { throw "Can not convert literal \'<l>\', no conversion function found"; }
 default Term convertToVar(str varName, Domain d) { throw "Can not create a var with name \'<varName>\' for domain \'<d>\', no conversion function found";}
 
 @memo

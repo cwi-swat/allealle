@@ -48,7 +48,7 @@ void renderModel(Model model, Model (Domain) nextModel, void () stop) {
   set[Domain] domainsInModel = {delAnnotations(d) | /Domain d := currentModel}; 
  
   str toStr(id()) = "id";
-  str toStr(\int()) = "integer";
+  str toStr(\intDom()) = "integer";
    
 	Figure showButtons() = currentModel != empty() ?
 		hcat(
@@ -182,7 +182,9 @@ Figure displayEdgeNode(VisEdge e, DisplayOptions disOpt)
 	    FProperty::id("<e.naryRel>_<e.from>_<e.to>_<e.pos>"), lineWidth(0));
 	 
 
-str term2Str(Term val) { throw "Not yet implemented"; }
+
+str term2Str(lit(\int(int i))) = "<i>";
+default str term2Str(Term val) { throw "Not yet implemented"; }
 
 Figure textualizeModel(Model model) {
   if (model == empty()) {
@@ -231,12 +233,12 @@ Figure textualizeModel(Model model) {
   int rowWidth = 80;
   int nrOfCols = 5;
 
-  Figure att2Fig(idAttribute(str name, str id), FProperty props ...) = box(text(id, props + [myLeft()]), lineWidth(1), height(rowHeight), width(rowWidth));
-  Figure att2Fig(fixedAttribute(str name, Term val), FProperty props ...) = text(term2Str(val), props + [fontBold(true)]);
-  Figure att2Fig(varAttribute(str name, Term val, str smtVarName), FProperty props ...) = text(term2Str(val), props);
+  Figure att2Fig(idAttribute(str name, str id), FProperty props ...) = box(text(id, props), lineWidth(1), height(rowHeight), width(rowWidth));
+  Figure att2Fig(fixedAttribute(str name, Term val), FProperty props ...) = box(text(term2Str(val), props + [fontBold(true)]), lineWidth(1), height(rowHeight), width(rowWidth));
+  Figure att2Fig(varAttribute(str name, Term val, str smtVarName), FProperty props ...) = box(text(term2Str(val), props), lineWidth(1), height(rowHeight), width(rowWidth));
 
-  Figures tuple2Figs(fixedTuple(list[ModelAttribute] attributes), list[str] heading) = [att2Fig(at, fontItalic(true), fontBold(true)) | str h <- heading, ModelAttribute at <- attributes, at.name == h]; 
-  Figures tuple2Figs(varTuple(list[ModelAttribute] attributes, str name), list[str] heading) = [att2Fig(at) | str h <- heading, ModelAttribute at <- attributes, at.name == h];
+  Figures tuple2Figs(fixedTuple(list[ModelAttribute] attributes), list[str] heading) = [att2Fig(at, fontItalic(true), fontBold(true), myLeft()) | str h <- heading, ModelAttribute at <- attributes, at.name == h]; 
+  Figures tuple2Figs(varTuple(list[ModelAttribute] attributes, str name), list[str] heading) = [att2Fig(at, myLeft()) | str h <- heading, ModelAttribute at <- attributes, at.name == h];
 
   Figure headingAttribute2Fig(str relName, str attribute) = box(text(attribute, fontBold(true), myLeft(), fontColor("white")), lineWidth(1), fillColor("gray"), height(rowHeight), width(rowWidth), onMouseUp(bool (int _, map[KeyModifier,bool] keysPressed) { sortOnHeading(relName, attribute, keysPressed);}));
   Figures heading2Figs(str relName, list[str] heading) = [headingAttribute2Fig(relName, h) | h <- heading];

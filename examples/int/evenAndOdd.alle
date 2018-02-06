@@ -1,19 +1,21 @@
-Num (1 :: val:int) <= {<n1,?>..<n5,?>}
-Even(1)            <={<n1>..<n5>}
-Odd (1)            <={<n1>..<n5>}
-twice (2)          <={<n1,n1>..<n5,n5>}
+Num (nId:id, val:int)     <= {<n1,?>..<n5,?>}
+Even(nId:id, val:int)     <= {<n1,?>..<n5,?>}
+Odd (nId:id, val:int)     <= {<n1,?>..<n5,?>}
+//twice (nId1:id, nId2:id)  <= {<n1,n1>..<n5,n5>}
 
-Even in Num
-Odd in Num
+Even ⊆ Num
+Odd ⊆ Num
+//twice ⊆ [nId1/nId](Num[nId]) ⨯ [nId2/nId](Num[nId])
+Num = Num where val > 0 && val < 50
+//∀ n ∈ Num | some n where val > 0 && val < 50
+∃ n ∈ Num | some n where val > 50 
+no Even ∩ Odd
+Even ∪ Odd = Num
 
-Num::val > 0 && Num::val < 50
+∀ n1 ∈ Num, n2 ∈ Num ∖ n1 | some (n1 ⨯ [nnId/nId, vval/val]n2) where val != vval  
 
-no Even&Odd
-Even+Odd = Num
+∀ n ∈ Num | (some n where (val % 2) = 0) ⇔ n ⊆ Even
 
-distinct(Num::val)
- 
-forall n:Num | ((n::val % 2) = 0) <=> n in Even
+//some ([nId1/nId]n1 ⨯ [nId2/nId, val2/val]Num) where val2 = (val * 2)  
 
-twice = {n1: Num, n2:Num\n1 | n2::val = n1::val * 2}
-
+//some twice

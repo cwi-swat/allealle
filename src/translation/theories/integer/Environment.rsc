@@ -2,10 +2,8 @@ module translation::theories::integer::Environment
 
 extend translation::Environment;
 
-import translation::theories::integer::Binder;
 import translation::theories::integer::AST;
-import logic::Integer; 
+import smtlogic::Ints; 
  
-Formula createAttribute(Index idx, str name, \int(), hole()) = toIntVar(idx, name);  
-Formula createAttribute(Index idx, str name, \int(), lit(posInt(int i))) = \int(i);  
-Formula createAttribute(Index idx, str name, \int(), lit(negInt(int i))) = neg(\int(i));  
+Literal convertToLit(intLit(int i)) = \int(i);
+Term convertToVar(str varName, intDom()) = var(varName, \int());

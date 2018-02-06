@@ -2,116 +2,115 @@ module translation::theories::integer::Translator
 
 extend translation::Translator;
 
-import logic::Integer;
-import logic::Boolean;
+import smtlogic::Ints;
+import smtlogic::Core;
 
 import translation::theories::integer::AST;
-import translation::theories::integer::Binder;
 import translation::AST; 
- 
-import List;   
-import Set;
-import Map;
-import IO;
 
-Formula translateFormula(gt(AlleExpr lhsExpr, AlleExpr rhsExpr), Environment env, AdditionalConstraintFunctions acf) = translateIntCompFormula(lhs, rhs, Formula (Formula l, Formula r) { return gt(l, r);}, acf)
-  when RelationMatrix lhs := translateExpression(lhsExpr, env, acf),
-       RelationMatrix rhs := translateExpression(rhsExpr, env, acf);
-
-Formula translateFormula(gte(AlleExpr lhsExpr, AlleExpr rhsExpr), Environment env, AdditionalConstraintFunctions acf) = translateIntCompFormula(lhs, rhs, Formula (Formula l, Formula r) { return gte(l, r);}, acf)
-  when RelationMatrix lhs := translateExpression(lhsExpr, env, acf),
-       RelationMatrix rhs := translateExpression(rhsExpr, env, acf);
-
-Formula translateFormula(lt(AlleExpr lhsExpr, AlleExpr rhsExpr), Environment env, AdditionalConstraintFunctions acf) = translateIntCompFormula(lhs, rhs, Formula (Formula l, Formula r) { return lt(l, r);}, acf)
-  when RelationMatrix lhs := translateExpression(lhsExpr, env, acf),
-       RelationMatrix rhs := translateExpression(rhsExpr, env, acf);
-
-Formula translateFormula(lte(AlleExpr lhsExpr, AlleExpr rhsExpr), Environment env, AdditionalConstraintFunctions acf) = translateIntCompFormula(lhs, rhs, Formula (Formula l, Formula r) { return lte(l, r);}, acf)
-  when RelationMatrix lhs := translateExpression(lhsExpr, env, acf),
-       RelationMatrix rhs := translateExpression(rhsExpr, env, acf);
-
-Formula translateFormula(intEqual(AlleExpr lhsExpr, AlleExpr rhsExpr), Environment env, AdditionalConstraintFunctions acf) = translateIntCompFormula(lhs, rhs, Formula (Formula l, Formula r) { return equal(l, r);}, acf) 
-  when RelationMatrix lhs := translateExpression(lhsExpr, env, acf),
-       RelationMatrix rhs := translateExpression(rhsExpr, env, acf);
-
-Formula translateFormula(intInequal(AlleExpr lhsExpr, AlleExpr rhsExpr), Environment env, AdditionalConstraintFunctions acf) = translateIntCompFormula(lhs, rhs, Formula (Formula l, Formula r) { return inequal(l, r);}, acf) 
-  when RelationMatrix lhs := translateExpression(lhsExpr, env, acf),
-       RelationMatrix rhs := translateExpression(rhsExpr, env, acf);
-
-@memo
-Formula translateIntCompFormula(RelationMatrix lhs, RelationMatrix rhs, Formula (Formula lhsElement, Formula rhsElement) operation, AdditionalConstraintFunctions acf) {
-  if (lhs == () || rhs == ()) { return \false(); }
-    
-  Formula result = \true();
-
-  for(Index lhsIdx <- lhs) {
-    if (relAndAtt(Formula _, Formula lhsAtt) !:= lhs[lhsIdx], !isIntForm(lhsAtt)) {
-      throw "Can not perform an integer equation on non integer attributes";
-    }
-    
-    set[Formula] ors = {};
- 
-    for (Index rhsIdx <- rhs) {
-      if (relAndAtt(Formula _, Formula rhsAtt) !:= rhs[rhsIdx], !isIntForm(rhsAtt)) {
-        throw "Can not perform an integer equation on non integer attributes";
-      }
-
-      ors += \or(\not(lhs[lhsIdx].relForm), \or(\not(rhs[rhsIdx].relForm), operation(lhs[lhsIdx].attForm, rhs[rhsIdx].attForm))); 
-    }
-
-    result = \and(result, \and(ors));
-  }    
+Formula (Tuple) translateCriteria(gt(CriteriaExpr lhsExpr, CriteriaExpr rhsExpr), Environment env) {
+  Term (Tuple) lhs = translateCriteriaExpr(lhsExpr, env);
+  Term (Tuple) rhs = translateCriteriaExpr(rhsExpr, env);
   
-  return result; 
-} 
-
-Formula translateFormula(distinct(AlleExpr expr), Environment env, AdditionalConstraintFunctions acf) {
-  RelationMatrix m = translateExpression(expr, env, acf);
-   
-  list[Formula] terms = [];
-  for (Index idx <- m) {
-    if (relAndAtt(Formula relForm, Formula attForm) := m[idx], isIntForm(attForm)) {
-      Index tmpIdx = [acf.freshIntermediateId()];
-      Formula tmpVar = toIntVar(tmpIdx, "val");
-      acf.addIntermediateVar(tmpVar);       
-      
-      terms += ite(relForm, attForm, tmpVar);
-    } else {
-      throw "Can not perform integer distinct on non integer attribute";
-    }
+  Formula trans(Tuple t) {
+    return gt(lhs(t),rhs(t));
   } 
   
-  return distinct(terms);
-}       
+  return trans;
+}
 
-RelationMatrix translateExpression(intLit(int i), Environment env, AdditionalConstraintFunctions acf) = (["_c<i>"] : relAndAtt(\true(), \int(i))); 
+Formula (Tuple) translateCriteria(gte(CriteriaExpr lhsExpr, CriteriaExpr rhsExpr), Environment env) {
+  Term (Tuple) lhs = translateCriteriaExpr(lhsExpr, env);
+  Term (Tuple) rhs = translateCriteriaExpr(rhsExpr, env);
   
-RelationMatrix translateExpression(neg(AlleExpr expr), Environment env, AdditionalConstraintFunctions acf) = unary(m, Formula (Formula f) { return neg(f); }, acf)
-  when RelationMatrix m := translateExpression(expr, env, acf);
+  Formula trans(Tuple t) {
+    return gte(lhs(t),rhs(t));
+  } 
+  
+  return trans;
+}
 
-RelationMatrix translateExpression(abs(AlleExpr expr), Environment env, AdditionalConstraintFunctions acf) = unary(m, Formula (Formula f) { return abs(f); }, acf)
-  when RelationMatrix m := translateExpression(expr, env, acf);
+Formula (Tuple) translateCriteria(lt(CriteriaExpr lhsExpr, CriteriaExpr rhsExpr), Environment env) {
+  Term (Tuple) lhs = translateCriteriaExpr(lhsExpr, env);
+  Term (Tuple) rhs = translateCriteriaExpr(rhsExpr, env);
+  
+  Formula trans(Tuple t) {
+    return lt(lhs(t),rhs(t));
+  } 
+  
+  return trans;
+}
 
-RelationMatrix translateExpression(addition(list[AlleExpr] termExprs), Environment env, AdditionalConstraintFunctions acf) = nary(terms, Formula (Formula lhs, Formula rhs) { return addition(lhs, rhs); }, \int(0), acf)
-  when list[RelationMatrix] terms := [translateExpression(t, env, acf) | AlleExpr t <- termExprs];  
+Formula (Tuple)  translateCriteria(lte(CriteriaExpr lhsExpr, CriteriaExpr rhsExpr), Environment env) {
+  Term (Tuple) lhs = translateCriteriaExpr(lhsExpr, env);
+  Term (Tuple) rhs = translateCriteriaExpr(rhsExpr, env);
+  
+  Formula trans(Tuple t) {
+    return lte(lhs(t),rhs(t));
+  } 
+  
+  return trans;
+}
 
-RelationMatrix translateExpression(multiplication(list[AlleExpr] termExprs), Environment env, AdditionalConstraintFunctions acf) = nary(terms, Formula (Formula lhs, Formula rhs) { return multiplication(lhs, rhs); }, \int(1), acf)
-  when list[RelationMatrix] terms := [translateExpression(t, env, acf) | AlleExpr t <- termExprs];
+Literal translateLiteral(intLit(int i)) = \int(i);
+  
+Term (Tuple) translateCriteriaExpr(neg(CriteriaExpr expr), Environment env) {
+  Term (Tuple) negExpr = translateCriteriaExpr(expr, env);
+  
+  Term trans(Tuple t) {
+    return neg(negExpr(t));
+  } 
+  
+  return trans;
+}
 
-RelationMatrix translateExpression(subtraction(AlleExpr lhsExpr, AlleExpr rhsExpr), Environment env, AdditionalConstraintFunctions acf) = binary(lhs, rhs, Formula (Formula l, Formula r) {return addition(l,neg(r));}, acf)
-  when RelationMatrix lhs := translateExpression(lhsExpr, env, acf),
-       RelationMatrix rhs := translateExpression(rhsExpr, env, acf);
- 
-RelationMatrix translateExpression(division(AlleExpr lhsExpr, AlleExpr rhsExpr), Environment env, AdditionalConstraintFunctions acf) = binary(lhs, rhs, Formula (Formula l, Formula r) {return division(l,r);}, acf)
-  when RelationMatrix lhs := translateExpression(lhsExpr, env, acf),
-       RelationMatrix rhs := translateExpression(rhsExpr, env, acf);
+Term (Tuple) translateCriteriaExpr(abs(CriteriaExpr expr), Environment env) {
+  Term (Tuple) absExpr = translateCriteriaExpr(expr, env);
+  
+  Term trans(Tuple t) {
+    return abs(absExpr(t));
+  } 
+  
+  return trans;
+}
 
-RelationMatrix translateExpression(modulo(AlleExpr lhsExpr, AlleExpr rhsExpr), Environment env, AdditionalConstraintFunctions acf) = binary(lhs, rhs, Formula (Formula l, Formula r) {return modulo(l,r);}, acf)
-  when RelationMatrix lhs := translateExpression(lhsExpr, env, acf),
-       RelationMatrix rhs := translateExpression(rhsExpr, env, acf);
+Term (Tuple) translateCriteriaExpr(addition(list[CriteriaExpr] termExprs), Environment env) {
+  Term trans(Tuple t) {
+    return addition([translateCriteriaExpr(term,env)(t) | CriteriaExpr term <- termExprs]);
+  } 
+  
+  return trans;
+}
 
-RelationMatrix translateExpression(sum(AlleExpr e), Environment env, AdditionalConstraintFunctions acf) = sum(m, acf)
-  when RelationMatrix m := translateExpression(e, env, acf);
+Term (Tuple) translateCriteriaExpr(multiplication(list[CriteriaExpr] termExprs), Environment env) {
+  Term trans(Tuple t) {
+    return multiplication([translateCriteriaExpr(term,env)(t) | CriteriaExpr term <- termExprs]);
+  } 
+  
+  return trans;
+}
 
-RelationMatrix translateExpression(car(AlleExpr e), Environment env, AdditionalConstraintFunctions acf) = cardinality(m, acf)
-  when RelationMatrix m := translateExpression(e, env, acf);
+Term (Tuple) translateCriteriaExpr(subtraction(CriteriaExpr lhs, CriteriaExpr rhs), Environment env) 
+  = translateCriteriaExpr(addition(lhs, neg(rhs)), env);
+
+Term (Tuple) translateCriteriaExpr(division(CriteriaExpr lhsExpr, CriteriaExpr rhsExpr), Environment env) {
+  Term (Tuple) lhs = translateCriteriaExpr(lhsExpr, env);
+  Term (Tuple) rhs = translateCriteriaExpr(rhsExpr, env);
+  
+  Term trans(Tuple t) {
+    return division(lhs(t), rhs(t));
+  } 
+  
+  return trans;
+}
+
+Term (Tuple) translateCriteriaExpr(modulo(CriteriaExpr lhsExpr, CriteriaExpr rhsExpr), Environment env) {
+  Term (Tuple) lhs = translateCriteriaExpr(lhsExpr, env);
+  Term (Tuple) rhs = translateCriteriaExpr(rhsExpr, env);
+  
+  Term trans(Tuple t) {
+    return modulo(lhs(t), rhs(t));
+  } 
+  
+  return trans;
+}

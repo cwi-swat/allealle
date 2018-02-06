@@ -1,47 +1,37 @@
 module translation::theories::integer::AST
 
-import translation::AST;
+extend translation::AST;
 import IO;
 
 // Integer theory extensions
-data Domain = \int();
+data Domain = intDom();
 
-data RelLiteral 
-  = \int(int i)
+data AlleLiteral 
+  = intLit(int i)
   ;
 	
-data AlleFormula
-	= lt(AlleExpr lhsExpr, AlleExpr rhsExpr)
-	| lte(AlleExpr lhExprs, AlleExpr rhsExpr)
-	| gt(AlleExpr lhsExpr, AlleExpr rhsExpr)
-	| gte(AlleExpr lhsExpr, AlleExpr rhsExpr)
-	| intEqual(AlleExpr lhsExpr, AlleExpr rhsExpr)
-	| intInequal(AlleExpr lhsExpr, AlleExpr rhsExpr)
-	| distinct(AlleExpr terms)
-	;	
-	
-data AlleExpr
-	= intLit(int i)
-	| neg(AlleExpr expr)
-	| abs(AlleExpr expr)
-  | multiplication(list[AlleExpr] terms)
-	| division(AlleExpr lhs, AlleExpr rhs)
-	| modulo(AlleExpr lhs, AlleExpr rhs)
-  | addition(list[AlleExpr] terms)
-	| subtraction(AlleExpr lhs, AlleExpr rhs)
-  | sum(AlleExpr expr)
-  | car(AlleExpr expr)
+data Criteria
+  = lt(CriteriaExpr lhsExpr, CriteriaExpr rhsExpr)
+  | lte(CriteriaExpr lhExprs, CriteriaExpr rhsExpr)
+  | gt(CriteriaExpr lhsExpr, CriteriaExpr rhsExpr)
+  | gte(CriteriaExpr lhsExpr, CriteriaExpr rhsExpr)
+  ;
+
+
+data CriteriaExpr
+	= abs(CriteriaExpr expr)
+	| neg(CriteriaExpr expr)
+  | multiplication(list[CriteriaExpr] terms)
+	| division(CriteriaExpr lhs, CriteriaExpr rhs)
+	| modulo(CriteriaExpr lhs, CriteriaExpr rhs)
+  | addition(list[CriteriaExpr] terms)
+	| subtraction(CriteriaExpr lhs, CriteriaExpr rhs)
 	;
 	
-	
-AlleExpr addition(addition(list[AlleExpr] terms), AlleExpr rhs) = addition([*terms, rhs]);
-AlleExpr addition(AlleExpr lhs, addition(list[AlleExpr] terms)) = addition([lhs, *terms]);
-AlleExpr addition(AlleExpr lhs, AlleExpr rhs) = addition([lhs,rhs]) when addition(_) !:= lhs && addition(_) !:= rhs;
+CriteriaExpr addition(addition(list[CriteriaExpr] terms), CriteriaExpr rhs) = addition([*terms, rhs]);
+CriteriaExpr addition(CriteriaExpr lhs, addition(list[CriteriaExpr] terms)) = addition([lhs, *terms]);
+CriteriaExpr addition(CriteriaExpr lhs, CriteriaExpr rhs) = addition([lhs,rhs]) when addition(_) !:= lhs && addition(_) !:= rhs;
 
-AlleExpr multiplication(list[AlleExpr] terms, AlleExpr rhs) = multiplication([*terms, rhs]);
-AlleExpr multiplication(AlleExpr lhs, multiplication(list[AlleExpr] terms)) = multiplication([lhs, *terms]);
-AlleExpr multiplication(AlleExpr lhs, AlleExpr rhs) = multiplication([lhs,rhs]) when multiplication(_) !:= lhs && multiplication(_) !:= rhs;
-
-//Expr rewrite(addition(addition(list[Expr] terms), Expr rhs)) = addition([*terms, rhs]);
-//Expr rewrite(addition(Expr lhs, addition(list[Expr] terms))) = addition([lhs, *terms]);
-//Expr rewrite(addition(Expr lhs, Expr rhs)) = addition([lhs,rhs]);
+CriteriaExpr multiplication(list[CriteriaExpr] terms, CriteriaExpr rhs) = multiplication([*terms, rhs]);
+CriteriaExpr multiplication(CriteriaExpr lhs, multiplication(list[CriteriaExpr] terms)) = multiplication([lhs, *terms]);
+CriteriaExpr multiplication(CriteriaExpr lhs, CriteriaExpr rhs) = multiplication([lhs,rhs]) when multiplication(_) !:= lhs && multiplication(_) !:= rhs;

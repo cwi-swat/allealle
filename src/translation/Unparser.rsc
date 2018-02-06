@@ -82,10 +82,11 @@ default str unparse(AlleExpr exp) { throw "No unparser implemented for \'<exp>\'
 str unparse(varDecl(str name, AlleExpr binding))    = "<name>:<unparse(binding)>";
 str unparse(varBinding(str name, AlleExpr binding)) = "<name> = <unparse(binding)>";
 
-str unparse(equal(CriteriaExpr lhs, CriteriaExpr rhs)) = "(<unparse(lhs)> = <unparse(rhs)>)";
-str unparse(and(Criteria lhs, Criteria rhs))           = "(<unparse(lhs)> && <unparse(rhs)>)";
-str unparse(or(Criteria lhs, Criteria rhs))            = "(<unparse(lhs)> || <unparse(rhs)>)";
-str unparse(not(Criteria crit))                        = "(!<unparse(crit)>)";
+str unparse(equal(CriteriaExpr lhs, CriteriaExpr rhs))   = "(<unparse(lhs)> = <unparse(rhs)>)";
+str unparse(inequal(CriteriaExpr lhs, CriteriaExpr rhs)) = "(<unparse(lhs)> != <unparse(rhs)>)";
+str unparse(and(Criteria lhs, Criteria rhs))             = "(<unparse(lhs)> && <unparse(rhs)>)";
+str unparse(or(Criteria lhs, Criteria rhs))              = "(<unparse(lhs)> || <unparse(rhs)>)";
+str unparse(not(Criteria crit))                          = "(!<unparse(crit)>)";
 
 str unparse(att(str name))      = name;
 str unparse(litt(AlleLiteral l)) = unparse(l);

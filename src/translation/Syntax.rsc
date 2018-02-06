@@ -42,7 +42,6 @@ syntax RangedValue
 
 syntax Domain 
   = "id"
-  | "FAIL"
   ;  
   
 syntax Literal 
@@ -78,8 +77,8 @@ syntax AlleExpr
   > variable:           RelVar v
   | lit:                Literal l
   > rename:             "[" {Rename ","}+ "]" AlleExpr
-  | projection:         AlleExpr r "[" {AttributeName ","}+ "]"
-  | restriction:        AlleExpr r "where" Criteria criteria
+  | project:            AlleExpr r "[" {AttributeName ","}+ "]"
+  | select:             AlleExpr r "where" Criteria criteria
   > transpose:          "~" TupleAttributeSelection tas AlleExpr r
   | closure:            "^" TupleAttributeSelection tas AlleExpr r
   | reflexClosure:      "*" TupleAttributeSelection tas AlleExpr r
@@ -103,7 +102,8 @@ syntax Rename = AttributeName new "/" AttributeName orig;
 syntax Criteria
   = bracket "(" Criteria ")"
   > "not" Criteria
-  > CriteriaExpr lhs "=" CriteriaExpr rhs
+  > left CriteriaExpr lhs "=" CriteriaExpr rhs
+  | left CriteriaExpr lhs "!=" CriteriaExpr rhs
   > left ( Criteria lhs "&&" Criteria rhs
          | Criteria lhs "||" Criteria rhs
          )

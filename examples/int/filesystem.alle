@@ -1,26 +1,26 @@
-File (1 :: size:int, depth:int) >= {<f1,1000,3>} <= {<f1,1000,3>,<f2,?,?>..<f5,?,?>}
-Dir (1 :: size:int, depth:int)  <= {<d0,?,?>..<d5,?,?>}
-Root (1)                         = {<d0>}
-contents (2)                    >= {<d0,d1>} <= {<d0,d0>..<d5,d5>,<d0,f1>..<d5,f5>}
+File (id:id, depth:int)           >= {<f1,3>} <= {<f1,3>,<f2,?>,<f3,?>}
+Dir (id:id, depth:int)            <= {<d0,?>..<d2,?>}
+Root (id:id)                       = {<d0>}
+contents (from:id, to:id)         >= {<d0,d1>} <= {<d0,d0>..<d2,d2>,<d0,f1>..<d2,f3>}
 
 // BASIC RELATIONAL CONSTRAINTS
 // Only dirs can contain other dirs and files
-contents in Dir -> (Dir+File)
+contents ⊆ [from/id](Dir[id]) ⨯ [to/id](Dir[id] ∪ File[id])
 // A dir cannot contain itself
-forall d: Dir | not (d in d.^contents)
-// Root is a Dir
-Root in Dir
+∀ d ∈ Dir[id] | ¬ ([to/id]d ⊆ ([from/id]d ⨝ ^<from,to>contents)[to])
+// Root is a Dir 
+Root ⊆ Dir[id]
 // All files and dirs are (reflexive-transitive) 'content' of the Root dir 
-(File+Dir) in Root.*contents
+[to/id](File[id] ∪ Dir[id]) ⊆ ([from/id]Root ⨝ *<from,to>contents)[to]
 // All files and dirs can only be contained by one dir
-forall f:(File+Dir) | lone contents.f
+∀ f ∈ (File ∪ Dir)[id] | lone contents ⨝ [to/id]f
 
 // INTEGER CONSTRAINTS
 // All files have a positive size
-File::size > 0
+//∀ f ∈ File | some f where size > 0
 // The size of a dir is the sum of all the files that are directly or transitively part of this directory
-forall d:Dir | d::size = sum(((d.^contents) & File)::size)
+//forall d:Dir | d::size = sum(((d.^contents) & File)::size)
 // The depth of the dir and file is the depth of its parent dir + 1
-forall d:Dir, o:(Dir+File) | o in d.contents => o::depth = d::depth + 1
+∀ d ∈ Dir, o ∈ (Dir ∪ File) | [to/id](o[id]) ⊆ ([from/id](d[id]) ⨝ contents)[to] ⇒ some ((([d1/depth,to/id]o) ⨯ ([d2/depth]d)) where d1 = (d2 + 1))
 // The depth of Root is 0
-Root::depth = 0
+some (Root ⨝ Dir) where depth = 0
