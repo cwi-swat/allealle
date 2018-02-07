@@ -131,7 +131,7 @@ void check((AlleExpr)`<RelVar v>`, Environment env, CheckFunctions cf)  {
 
 void check((AlleExpr)`<Literal l>`, Environment env, CheckFunctions cf) {}
 
-void check(e:(AlleExpr)`[<{Rename ","}+ ren>] <AlleExpr expr>`, Environment env, CheckFunctions cf) {
+void check(e:(AlleExpr)`<AlleExpr expr>[<{Rename ","}+ ren>]`, Environment env, CheckFunctions cf) {
   check(expr, env, cf);
   
   map[str,str] renamings = ("<r.orig>":"<r.new>" | r <- ren);

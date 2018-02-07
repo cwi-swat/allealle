@@ -76,7 +76,7 @@ syntax AlleExpr
   = bracket "(" AlleExpr expr ")"
   > variable:           RelVar v
   | lit:                Literal l
-  > rename:             "[" {Rename ","}+ "]" AlleExpr
+  > rename:             AlleExpr r "[" {Rename ","}+ "]"
   | project:            AlleExpr r "[" {AttributeName ","}+ "]"
   | select:             AlleExpr r "where" Criteria criteria
   > transpose:          "~" TupleAttributeSelection tas AlleExpr r

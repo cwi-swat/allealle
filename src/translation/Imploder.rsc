@@ -117,7 +117,7 @@ translation::AST::AlleExpr implode((AlleExpr)`( <AlleExpr expr> )`)
 translation::AST::AlleExpr implode((AlleExpr)`<RelVar v>`)
   = relvar("<v>");
  
-translation::AST::AlleExpr implode((AlleExpr)`[<{Rename ","}+ ren>] <AlleExpr expr>`)
+translation::AST::AlleExpr implode((AlleExpr)`<AlleExpr expr>[<{Rename ","}+ ren>]`)
   = rename(implode(expr), [implode(r) | r <- ren]);
 
 translation::AST::AlleExpr implode((AlleExpr)`<AlleExpr expr>[<{AttributeName ","}+ atts>]`)
