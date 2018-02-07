@@ -8,14 +8,14 @@ Withdraw (eId:id)               = {<withdraw>}
 Deposit (eId:id)                = {<deposit>}
 triggeredEvent (sId:id,eId:id) <= {<s2,withdraw>..<s5,withdraw>,<s2,deposit>..<s5,deposit>}
 
-ordering ⊆ [from/sId](State[sId]) ⨯ [to/sId](State[sId])
+ordering ⊆ State[sId][from/sId] ⨯ State[sId][to/sId]
 accountInState ⊆ State[sId] ⨯ Account[aId]
 triggeredEvent ⊆ State[sId] ⨯ (Withdraw ∪ Deposit)
 
 // Entity constraints
 ∀ s ∈ State | some s ⨝ accountInState
-State[sId] ⊆ [sId/to](([from/sId](InitialState[sId]) ⨝ *<from,to>ordering)[to])
-Account[aId] ⊆ ([sId/to](([from/sId]InitialState ⨝ *<from,to>ordering)[to]) ⨝ accountInState)[aId]
+State[sId] ⊆ (InitialState[sId][from/sId] ⨝ *<from,to>ordering)[to][sId/to]
+Account[aId] ⊆ ((InitialState[from/sId] ⨝ *<from,to>ordering)[to][sId/to] ⨝ accountInState)[aId]
 
 ∀ s ∈ (State[sId] ∖ InitialState) ⨝ State | some (s where amount > 0 && amount < 11)
 
@@ -23,8 +23,8 @@ Account[aId] ⊆ ([sId/to](([from/sId]InitialState ⨝ *<from,to>ordering)[to]) 
 some ((InitialState ⨝ accountInState ⨝ Account) where balance = 0)
 
 // Transition function
-∀ o ∈ ordering | let s1 = [sId/from](o[from]), s2 = [sId/to](o[to]), 
-                      b = [newBalance/balance]((s2 ⨝ accountInState ⨝ Account ⨝ State)[balance, amount]) ⨯ (s1 ⨝ accountInState ⨝ Account)[balance] | 
+∀ o ∈ ordering | let s1 = o[from][sId/from], s2 = o[to][sId/to], 
+                      b = (s2 ⨝ accountInState ⨝ Account ⨝ State)[balance, amount][newBalance/balance] ⨯ (s1 ⨝ accountInState ⨝ Account)[balance] | 
   (
     ((some b where newBalance = (balance + amount)) ∧ (s2 ⨝ triggeredEvent)[eId] = Deposit) ∨ 
     ((some b where ((balance - amount) >= 0 && (newBalance = (balance - amount)))) ∧ (s2 ⨝ triggeredEvent)[eId] = Withdraw)

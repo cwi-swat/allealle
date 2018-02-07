@@ -4,21 +4,21 @@ parent (parent:id, child:id)	  <= {<p1,p1>..<p4,p4>}
 anchestor(asc:id, pred:id)    <= {<p1,p1>..<p4,p4>}
 
 Adam ⊆ Person
-parent ⊆ [parent/pId]Person ⨯ [child/pId]Person
-anchestor ⊆ [asc/pId]Person ⨯ [pred/pId]Person
+parent ⊆ Person[parent/pId] ⨯ Person[child/pId]
+anchestor ⊆ Person[asc/pId] ⨯ Person[pred/pId]
 
 // Everybody has a parent except Adam
-∀ p ∈ Person ∖ Adam | one parent ⨝ [child/pId]p
-no parent ⨝ [child/pId]Adam
+∀ p ∈ Person ∖ Adam | one parent ⨝ p[child/pId]
+no parent ⨝ Adam[child/pId]
 
 // Nobody is its own parent
-∀ p ∈ Person | ¬ (p = [pId/parent]((parent ⨝ [child/pId]p)[parent])) 
+∀ p ∈ Person | ¬ (p = (parent ⨝ p[child/pId])[parent][pId/parent]) 
 
 // Nobody is the parent of an anchestor
-∀ p ∈ Person | ¬ ([parent/pId]p ⊆ ((^<parent,child>parent) ⨝ [child/pId]p)[parent])
+∀ p ∈ Person | ¬ (p[parent/pId] ⊆ (^<parent,child>parent ⨝ p[child/pId])[parent])
 
 // Everybody is a decendant of Adam
-[child/pId]Person ⊆ ([parent/pId]Adam ⨝ *<parent,child>parent)[child]
+Person[child/pId] ⊆ (Adam[parent/pId] ⨝ *<parent,child>parent)[child]
 
 // Anchestor is the transposed transitive closure of the parent relation (if you are somebodies parent, grandparent, etc you are an anchestor
-anchestor = [asc/child,pred/parent](^<parent,child>parent)
+anchestor = (^<parent,child>parent)[asc/child,pred/parent]

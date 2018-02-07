@@ -38,7 +38,7 @@ Set (c1:id,c2:id,c3:id) <= {<c1,c2,c3>..<c1,c2,c12>,<c1,c3,c4>..<c1,c3,c12>,<c1,
                               no ((c1 ⨝ cardShading)[shId] ∩ (c2 ⨝ cardShading)[shId]) 
               
 // In a set, for all three cards, for all the properties it must hold that or the property is equal for all or it is all different              
-∀ s ∈ Set | let c1 = [cId/c1](s[c1]), c2 = [cId/c2](s[c2]), c3 = [cId/c3](s[c3]) |
+∀ s ∈ Set | let c1 = s[c1][cId/c1], c2 = s[c2][cId/c2], c3 = s[c3][cId/c3] |
    (one ((c1 ∪ c2 ∪ c3) ⨝ cardColor)[coId] ∨ ((c1 ∪ c2 ∪ c3) ⨝ cardColor)[coId] = Color) ∧ 
    (one ((c1 ∪ c2 ∪ c3) ⨝ cardSymbol)[syId] ∨ ((c1 ∪ c2 ∪ c3) ⨝ cardSymbol)[syId] = Symbol) ∧ 
    (one ((c1 ∪ c2 ∪ c3) ⨝ cardNrOfShapes)[nrShId] ∨ ((c1 ∪ c2 ∪ c3) ⨝ cardNrOfShapes)[nrShId] = NrOfShapes) ∧ 

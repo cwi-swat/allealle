@@ -1,21 +1,24 @@
-Num (nId:id, val:int)     <= {<n1,?>..<n5,?>}
-Even(nId:id, val:int)     <= {<n1,?>..<n5,?>}
-Odd (nId:id, val:int)     <= {<n1,?>..<n5,?>}
-//twice (nId1:id, nId2:id)  <= {<n1,n1>..<n5,n5>}
+Num (nId:id, val:int)         <= {<n1,?>..<n5,?>}
+Even(nId:id, val:int)         <= {<n1,?>..<n5,?>}
+Odd (nId:id, val:int)         <= {<n1,?>..<n5,?>}
+twice (single:id, double:id)  <= {<n1,n1>..<n5,n5>}
 
 Even ⊆ Num
 Odd ⊆ Num
-//twice ⊆ [nId1/nId](Num[nId]) ⨯ [nId2/nId](Num[nId])
+twice ⊆ Num[nId][single/nId] ⨯ Num[nId][double/nId]
+
 Num = Num where val > 0 && val < 50
 //∀ n ∈ Num | some n where val > 0 && val < 50
-∃ n ∈ Num | some n where val > 50 
+ 
 no Even ∩ Odd
 Even ∪ Odd = Num
 
-∀ n1 ∈ Num, n2 ∈ Num ∖ n1 | some (n1 ⨯ [nnId/nId, vval/val]n2) where val != vval  
+∀ n ∈ Num, n' ∈ Num ∖ n | some (n ⨯ n'[nId'/nId, val'/val]) where val != val'  
 
 ∀ n ∈ Num | (some n where (val % 2) = 0) ⇔ n ⊆ Even
 
-//some ([nId1/nId]n1 ⨯ [nId2/nId, val2/val]Num) where val2 = (val * 2)  
+∀ n ∈ Num, n' ∈ Num | 
+  (some ((n[single/nId] ⨯ n'[double/nId,val2/val]) where val2 = (val * 2))[single,double]) ⇔ 
+    n[nId][single/nId] ⨯ n'[nId][double/nId] ⊆ twice
 
 //some twice

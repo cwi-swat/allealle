@@ -1,10 +1,10 @@
 State (sId:id)		              = {<wa>,<nt>,<sa>,<q>,<nsw>,<v>,<t>}
 Color (cId:id) 	              = {<green>,<yellow>,<blue>}
 connect (from:id,with:id)	    = {<wa,sa>,<wa,nt>,<nt,wa>,<nt,sa>,<nt,q>,<sa,wa>,<sa,nt>,<sa,q>,<sa,nsw>,<sa,v>,<q,nt>,<q,sa>,<q,nsw>,<nsw,q>,<nsw,sa>,<nsw,v>,<v,sa>,<v,nsw>}
-stateColor (sId:id,cId:id)      <= {<wa,green>,<wa,yellow>,<wa,blue>,<nt,green>,<nt,yellow>,<nt,blue>,<sa,green>,<sa,yellow>,<sa,blue>,<q,green>,<q,yellow>,<q,blue>,<nsw,green>,<nsw,yellow>,<nsw,blue>,<v,green>,<v,yellow>,<v,blue>,<t,green>,<t,yellow>,<t,blue>}
+stateColor (sId:id,cId:id)   <= {<wa,green>,<wa,yellow>,<wa,blue>,<nt,green>,<nt,yellow>,<nt,blue>,<sa,green>,<sa,yellow>,<sa,blue>,<q,green>,<q,yellow>,<q,blue>,<nsw,green>,<nsw,yellow>,<nsw,blue>,<v,green>,<v,yellow>,<v,blue>,<t,green>,<t,yellow>,<t,blue>}
 
 stateColor ⊆ State ⨯ Color
 
 ∀ s ∈ State | one s ⨝ stateColor
 
-∀ s1 ∈ State, s2 ∈ State | [from/sId]s1 ⨯ [with/sId]s2 ⊆ connect ⇒ (s1 ⨝ stateColor)[cId] ≠ (s2 ⨝ stateColor)[cId]
+∀ s1 ∈ State, s2 ∈ State | s1[from/sId] ⨯ s2[with/sId] ⊆ connect ⇒ (s1 ⨝ stateColor)[cId] ≠ (s2 ⨝ stateColor)[cId]

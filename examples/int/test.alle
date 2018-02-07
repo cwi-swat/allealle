@@ -1,0 +1,7 @@
+Num (id:id, val:int) = {<n1,1>,<n2,2>}
+twice (single:id, double:id) <= {<n1,n1>,<n1,n2>}
+
+∀ n ∈ Num, n' ∈ Num | 
+  (some ((n[single/id] ⨯ n'[double/id,val2/val]) where val2 = (val * 2))[single,double]) ⇔ 
+    n[id][single/id] ⨯ n'[id][double/id] ⊆ twice
+    

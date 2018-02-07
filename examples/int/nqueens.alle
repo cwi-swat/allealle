@@ -1,9 +1,9 @@
-// N == 10
+// N == 8
 
-Queen (1 :: x:int, y:int) = {<q1,?,?>..<q10,?,?>}
+Queen (qId:id, x:int, y:int) = {<q1,?,?>..<q8,?,?>}
 
-Queen::x >= 1 && Queen::x <=10
-Queen::y >= 1 && Queen::y <=10
+Queen = Queen where x >= 1 && x <= 8 && y >= 1 && y <= 8
 
 // Queens cannot be on the same row, column or diagonal
-forall q:Queen, q':Queen\q | q::x != q'::x && q::y != q'::y && |q::x - q'::x| != |q::y - q'::y|
+∀ q ∈ Queen, q' ∈ (Queen ∖ q)[qId'/qId, x'/x, y'/y] | 
+  some ((q ⨯ q') where x != x' && y != y' && |x - x'| != |y - y'|)
