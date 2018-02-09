@@ -10,13 +10,20 @@ data AlleLiteral
   = intLit(int i)
   ;
 	
+data AggregateFunction
+  = count()
+  | sum(str att)
+  | max(str att)
+  | min(str att)
+  | avg(str att)
+  ;	
+	
 data Criteria
   = lt(CriteriaExpr lhsExpr, CriteriaExpr rhsExpr)
   | lte(CriteriaExpr lhExprs, CriteriaExpr rhsExpr)
   | gt(CriteriaExpr lhsExpr, CriteriaExpr rhsExpr)
   | gte(CriteriaExpr lhsExpr, CriteriaExpr rhsExpr)
   ;
-
 
 data CriteriaExpr
 	= abs(CriteriaExpr expr)

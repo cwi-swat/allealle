@@ -57,15 +57,17 @@ ModelFinderResult runInSolver(Problem problem, Formula form, Environment env) {
 	} 
 	
 	print("Translating to SMT-LIB...");
-  tuple[set[SMTVar] vars, int time] smtVarCollectResult = bm(collectSMTVars, env);
+  tuple[set[SMTVar] vars, int time] smtVarCollectResult = bm(collectSMTVars, form);
 	tuple[str smt, int time] smtVarDeclResult = bm(compileSMTVariableDeclarations, smtVarCollectResult.vars);
 	tuple[str smt, int time] smtCompileFormResult = bm(compileAssert, form);
 //	tuple[str smt, int time] smtCompileAdditionalComands = bm(compileAdditionalCommands, tr.additionalCommands);
 	
-	print("done, took: <(smtVarCollectResult.time + smtVarDeclResult.time + smtCompileFormResult.time) /1000000> ms in total (variable collection fase: <smtVarCollectResult.time / 1000000>, variable declaration fase: <smtVarDeclResult.time / 1000000>, formula compilation fase: <smtCompileFormResult.time / 1000000>\n");
+	print("done, took: <(smtVarCollectResult.time + smtVarDeclResult.time + smtCompileFormResult.time) /1000000> ms in total (variable collection fase: <smtVarCollectResult.time / 1000000>, variable declaration fase: <smtVarDeclResult.time / 1000000>, formula compilation fase: <smtCompileFormResult.time / 1000000>)\n");
   //println("Total nr of clauses in formula: <countClauses(\and(tr.relationalFormula, tr.attributeFormula))>, total nr of variables in formula: <countVars(smtVarCollectResult.vars)>"); 
 	
-	str fullSmtProblem = "<smtVarDeclResult.smt>\n<smtCompileFormResult.smt>\n";
+	str preambl = intercalate("\n", [pa | Sort s <- collectSorts(smtVarCollectResult.vars), str pa := preamble(s), pa != ""]);
+	
+	str fullSmtProblem = "<preambl>\n<smtVarDeclResult.smt>\n<smtCompileFormResult.smt>\n";
 	
 	writeFile(|project://allealle/bin/latestSmt.smt2|, "<fullSmtProblem>\n(check-sat)");
 	  
@@ -124,7 +126,7 @@ SMTModel nextSmtModel(SolverPID pid, Domain dom, SMTModel currentSmtModel, Model
     smt = ("" | it + " <negateVariable(name, currentSmtModel[v])>" | v:<str name, \bool()> <- currentSmtModel);
   } 
   else {
-    smt = ("" | it + " <negateAttribute(dom, smtVarName, val)>" | ModelRelation r <- currentRelationalModel.relations, ModelTuple t <- r.tuples, varAttribute(str _, dom, Value val, str smtVarName) <- t.attributes); 
+    smt = ""; //("" | it + " <negateAttribute(dom, smtVarName, val)>" | ModelRelation r <- currentRelationalModel.relations, ModelTuple t <- r.tuples, varAttribute(str _, dom, Value val, str smtVarName) <- t.attributes); 
   }  
   
   println(smt);  

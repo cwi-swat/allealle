@@ -22,11 +22,6 @@ alias Relation = tuple[Heading heading, Rows rows, set[str] partialKey];
 
 alias IndexedRows = tuple[set[str] partialKey, lrel[Tuple partialKey, Row row] indexedRows];
 
-//data Cell 
-//  = key(str k)
-//  | term(Term t)
-//  ;
-
 bool isPresent(Constraints c) = c.exists != \false() && c.attConstraints != \false(); 
 
 Formula together(Constraints c) = \and(c.exists,c.attConstraints);
@@ -240,9 +235,18 @@ Relation select(Relation relation, Formula (Tuple) criteria) {
     }
   }
   
-  println(result);
-  
   return <relation.heading, result, relation.partialKey>;
+}
+
+@memo 
+Relation aggregate(Relation relation, str bindTo, Domain bindToDomain, Term resultVar, Term (Row, Term) aggregateFunc, Term initialTerm) {
+  Term aggregatedTerm = initialTerm;
+  
+  for (Tuple t <- relation.rows) {
+    aggregatedTerm = aggregateFunc(<t, relation.rows[t]>, aggregatedTerm);
+  }
+  
+  return <(bindTo:bindToDomain),((bindTo:resultVar):<\true(), equal(resultVar, aggregatedTerm)>), {}>; 
 }
 
 @memo
@@ -348,53 +352,7 @@ Relation reflexiveTransitiveClosure(Relation r, str from, str to, Relation iden)
   
   return result; 
 } 
-//
-//@memo
-//Relation dotJoin(Relation lhs, Relation rhs) {
-//  int arityLhs = arity(lhs);
-//  int arityRhs = arity(rhs);
-//    
-//  if (arityLhs == 1 && arityRhs == 1) { 
-//    throw "JOIN only works on two non-unary relations"; 
-//  }
-//  
-//  if (lhs == () || rhs == ()) {
-//    return ();
-//  }
-//
-//  set[Index] indicesEndingWith(Id a, Relation b) = {idx | Index idx <- b, idx[-1] == a};
-//  set[Index] indicesStartingWith(Id a, Relation b) = {idx | Index idx <- b, idx[0] == a};
-//  
-//  set[Id] joiningIds;
-//  if (size(lhs) < size(rhs)) {
-//    joiningIds = {idx[-1] | Index idx <- lhs};
-//  } else {
-//    joiningIds = {idx[0] | Index idx <- rhs};
-//  }
-//  map[Id, set[Index]] lhsEndingWith = (b : indicesEndingWith(b,lhs) | Id b <- joiningIds);    
-//  map[Id, set[Index]] rhsStartingWith = (b : indicesStartingWith(b,rhs) | Id b <- joiningIds);    
-//
-//  Relation relResult = ();
-//  for (Id current <- joiningIds, Index lhsIdx <- lhsEndingWith[current], lhs[lhsIdx].relForm != \false(), Index rhsIdx <- rhsStartingWith[current], rhs[rhsIdx].relForm != \false()) {
-//    Formula val = and(lhs[lhsIdx].relForm, rhs[rhsIdx].relForm);
-//    
-//    if (val != \false()) {
-//      Index joinIdx = (lhsIdx - lhsIdx[-1]) + (rhsIdx - rhsIdx[0]);
-//      if (val == \true()) {
-//        relResult[joinIdx] = relOnly(\true());
-//      } else if (joinIdx in relResult) {
-//          if (relResult[joinIdx].relForm != \true()) {
-//            relResult[joinIdx] = relOnly(\or(relResult[joinIdx].relForm, val));
-//          }
-//      } else {        
-//        relResult[joinIdx] = relOnly(val);
-//      }
-//    }
-//  }
-//
-//  return relResult;
-//}
-//
+
 //@memo
 //Relation ite(Formula \case, Relation \then, Relation \else) {
 //  if (arity(then) != arity(\else)) {

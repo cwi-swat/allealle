@@ -1,5 +1,5 @@
-File (id:id, depth:int)           >= {<f1,3>} <= {<f1,3>,<f2,?>,<f3,?>}
-Dir (id:id, depth:int)            <= {<d0,?>..<d2,?>}
+File (id:id, depth:int, size:int) >= {<f1,3,100>} <= {<f1,3,100>,<f2,?,?>,<f3,?,?>}
+Dir (id:id, depth:int, size:int)  <= {<d0,?,?>..<d2,?,?>}
 Root (id:id)                       = {<d0>}
 contents (from:id, to:id)         >= {<d0,d1>} <= {<d0,d0>..<d2,d2>,<d0,f1>..<d2,f3>}
 
@@ -17,11 +17,11 @@ Root ⊆ Dir[id]
 
 // INTEGER CONSTRAINTS
 // All files have a positive size
-//∀ f ∈ File | some f where size > 0
+∀ f ∈ File | some f where size > 0
 // The size of a dir is the sum of all the files that are directly or transitively part of this directory
-//forall d:Dir | d::size = sum(((d.^contents) & File)::size)
-// The depth of the dir and file is the depth of its parent dir + 1
-∀ d ∈ Dir, o ∈ (Dir ∪ File) | o[id][to/id] ⊆ (d[id][from/id] ⨝ contents)[to] ⇒ 
-                                some ((o[d1/depth,to/id] ⨯ d[d2/depth]) where d1 = (d2 + 1))
+∀ d ∈ Dir | some (d ⨯ ((d[id][from/id] ⨝ ^<from,to>contents)[to][id/to] ⨝ File)[totalSizeOfReachableFiles/sum(size)]) where size = totalSizeOfReachableFiles   
+
+∀ d ∈ Dir[id,depth], o ∈ (Dir ∪ File)[id,depth] | o[id][to/id] ⊆ (d[id][from/id] ⨝ contents)[to] ⇒ 
+                                                  some ((o[d1/depth,to/id] ⨯ d[d2/depth]) where (d1 = d2 + 1))  
 // The depth of Root is 0
-some (Root ⨝ Dir) where depth = 0
+some (Root ⨝ Dir) where depth = 0 

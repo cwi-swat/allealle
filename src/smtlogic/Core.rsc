@@ -15,12 +15,14 @@ data Formula
 	| equal(set[Formula] fs) 
 	| equal(set[Term] ts)
 	| distinct(set[Term] terms)
-	| ite(Formula c, Term t, Term e)
 	;
 
 data Term
   = lit(Literal l)
   | var(str name, Sort s)
+  | ite(Formula c, Term t, Term e)
+  | aggregateFunc(str name, Formula exists, Term t, Term accum)
+  | aggregateFunc(str name, Formula exists, Term accum) 
   ; 
 
 data Literal
@@ -119,9 +121,9 @@ Formula \not(not(Formula g)) 					                = g;
 Formula \not(\true())        					                = \false();
 Formula \not(\false())       					                = \true();
 
-Formula \ite(\true(), Formula t, Formula _)           = t;
-Formula \ite(\false(), Formula _, Formula e)          = e;
-Formula \ite(Formula _, Formula t, t)                 = t;
+Term \ite(\true(), Term t, Term _)                    = t;
+Term \ite(\false(), Term _, Term e)                   = e;
+Term \ite(Formula _, Term t, t)                       = t;
 //default Formula \ite(Formula c, Formula t, Formula e) = \or(\iff(c,t),\iff(\not(c),e));
 
 //Formula \if(Formula l, Formula r)           	        = \or(\not(l),r);

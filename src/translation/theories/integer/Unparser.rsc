@@ -8,6 +8,12 @@ import List;
 
 str unparse(intDom()) = "int";
 
+str unparse(count())                                                = "count()";
+str unparse(sum(str att))                                           = "sum(<att>)";
+str unparse(max(str att))                                           = "max(<att>)";
+str unparse(min(str att))                                           = "min(<att>)";
+str unparse(avg(str att))                                           = "avg(<att>)";
+
 str unparse(lt(CriteriaExpr lhsExpr, CriteriaExpr rhsExpr))         = "(<unparse(lhsExpr)> \< <unparse(rhsExpr)>)";
 str unparse(lte(CriteriaExpr lhsExpr, CriteriaExpr rhsExpr))        = "(<unparse(lhsExpr)> \<= <unparse(rhsExpr)>)";
 str unparse(gt(CriteriaExpr lhsExpr, CriteriaExpr rhsExpr))         = "(<unparse(lhsExpr)> \> <unparse(rhsExpr)>)";

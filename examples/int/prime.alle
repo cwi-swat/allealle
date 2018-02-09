@@ -1,9 +1,9 @@
-PossiblePrime (1 :: val:int) = {<n,1333333333333333333333333333333333333333333331>}
-Other (1 :: val:int)         = {<other,?>}
-Prime (1)                   <= {<n>}
+PossiblePrime (pId:id, val:int) = {<n,1000002727>}
+Other (oId:id, otherVal:int)    = {<other,?>}
+Prime (pId:id)                 <= {<n>}
 
-Other::val > 1 && (Other::val) < PossiblePrime::val
+∀ o ∈ Other | some ((o ⨯ PossiblePrime) where otherVal > 1 && otherVal < val) 
 
-PossiblePrime::val % Other::val = 0 <=> not (PossiblePrime in Prime)
+(some (PossiblePrime ⨯ Other) where (val % otherVal) = 0) ⇔ ¬ (PossiblePrime[pId] ⊆ Prime)
  
 no Prime

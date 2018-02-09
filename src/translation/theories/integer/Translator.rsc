@@ -114,3 +114,17 @@ Term (Tuple) translateCriteriaExpr(modulo(CriteriaExpr lhsExpr, CriteriaExpr rhs
   
   return trans;
 }
+
+//alias AggregateFunctionResult = tuple[Domain bindToDomain, Term resultVar, Term initialTerm, Term (Row, Term) accumelate];
+
+AggregateFunctionResult translateAggregateFunction(count(), str bindTo, Relation r, Environment env) { 
+  Term accum(Row row, Term term) = aggregateFunc("_count", together(row.constraints), term);
+  
+  return <intDom(), var(env.newVar(bindTo), \int()), lit(\int(0)), accum>;
+}
+
+AggregateFunctionResult translateAggregateFunction(sum(str att), str bindTo, Relation r, Environment env) { 
+  Term accum(Row row, Term term) = aggregateFunc("_iSum", together(row.constraints), row.values[att], term);
+  
+  return <intDom(), var(env.newVar(bindTo), \int()), lit(\int(0)), accum>;
+}

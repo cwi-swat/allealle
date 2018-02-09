@@ -1,19 +1,21 @@
-letter (1 ::v:int) = {<d,?>,<e,?>,<m,?>,<n,?>,<o,?>,<r,?>,<s,?>,<y,?>}
-d (1) = {<d>}
-e (1) = {<e>}
-m (1) = {<m>}
-n (1) = {<n>}
-o (1) = {<o>}
-r (1) = {<r>}
-s (1) = {<s>}
-y (1) = {<y>}
+d (id:id, val:int) = {<d,?>}
+e (id:id, val:int) = {<e,?>}
+m (id:id, val:int) = {<m,?>}
+n (id:id, val:int) = {<n,?>}
+o (id:id, val:int) = {<o,?>}
+r (id:id, val:int) = {<r,?>}
+s (id:id, val:int) = {<s,?>}
+y (id:id, val:int) = {<y,?>}
 
-letter::v >= 0 && letter ::v <= 9
 
-(m+s)::v  > 0
+let letters = d ∪ e ∪ m ∪ n ∪ o ∪ r ∪ s ∪ y |
+  (∀ l ∈ letters | some l where val >= 0 && val <= 9) ∧ // all values between 0 and 10
+  (∀ l ∈ letters, l' ∈ letters ∖ l | some ((l ⨯ l'[id'/id,val'/val]) where val != val')) // all values are distinct     
 
-           1000*s::v+100*e::v+10*n::v+d::v + 
-           1000*m::v+100*o::v+10*r::v+e::v = 
-10000*m::v+1000*o::v+100*n::v+10*e::v+y::v
+some ((m ∪ s) where val > 0)
 
-distinct(letter::v)
+let letters = d[dId/id,d/val] ⨯ e[eId/id,e/val] ⨯ m[mId/id,m/val] ⨯ n[nId/id,n/val] ⨯ o[oId/id,o/val] ⨯ r[rId/id,r/val] ⨯ s[sId/id,s/val] ⨯ y[yId/id,y/val] |
+  some letters where
+              (1000*s + 100*e + 10*n + d +
+               1000*m + 100*o + 10*r + e =
+     10000*m + 1000*o + 100*n + 10*e + y)    

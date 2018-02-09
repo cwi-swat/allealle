@@ -57,8 +57,8 @@ syntax AlleFormula
   | exactlyOne:         "one" AlleExpr expr
   | nonEmpty:           "some" AlleExpr expr
   | subset:             AlleExpr lhsExpr ("in" | "⊆") AlleExpr rhsExpr
-  | equal:              AlleExpr lhsExpr "=" AlleExpr rhsExpr
-  | inequal:            AlleExpr lhsExpr ("!=" | "≠") AlleExpr rhsExpr
+  | left equal:         AlleExpr lhsExpr "=" AlleExpr rhsExpr
+  | left inequal:       AlleExpr lhsExpr ("!=" | "≠") AlleExpr rhsExpr
   > left conjunction:   AlleFormula lhsForm ("&&" | "∧") AlleFormula rhsForm
   | left disjunction:   AlleFormula lhsForm ("||" | "∨") AlleFormula rhsForm  
   > implication:        AlleFormula lhsForm ("=\>" | "⇒") AlleFormula rhsForm
@@ -79,11 +79,11 @@ syntax AlleExpr
   > rename:             AlleExpr r "[" {Rename ","}+ "]"
   | project:            AlleExpr r "[" {AttributeName ","}+ "]"
   | select:             AlleExpr r "where" Criteria criteria
+  | aggregate:          AlleExpr r "[" {AggregateFunctionDef ","}+ "]"
   > transpose:          "~" TupleAttributeSelection tas AlleExpr r
   | closure:            "^" TupleAttributeSelection tas AlleExpr r
   | reflexClosure:      "*" TupleAttributeSelection tas AlleExpr r
   > left naturalJoin:   AlleExpr lhs ("|x|" | "⨝") AlleExpr rhs
-  | left dotJoin:       AlleExpr lhs "."   AlleExpr rhs
   > left (union:        AlleExpr lhs ("+" | "∪")   AlleExpr rhs
          |intersection: AlleExpr lhs ("&" | "∩")  AlleExpr rhs
          |difference:   AlleExpr lhs ("-" | "∖")   AlleExpr rhs
@@ -99,18 +99,31 @@ syntax TupleAttributeSelection
 
 syntax Rename = AttributeName new "/" AttributeName orig;
 
+syntax AggregateFunctionDef 
+  = AttributeName bindTo "/" AggregateFunction func
+  ;
+
+syntax AggregateFunction
+  = dummy: " " !>> " "
+  ;
+  
+//lexical FunctionName = dummy: " " !>> " ";  
+
 syntax Criteria
   = bracket "(" Criteria ")"
   > "not" Criteria
-  > left CriteriaExpr lhs "=" CriteriaExpr rhs
-  | left CriteriaExpr lhs "!=" CriteriaExpr rhs
+  > non-assoc 
+    ( CriteriaExpr lhs "=" CriteriaExpr rhs
+    | CriteriaExpr lhs "!=" CriteriaExpr rhs
+    )
   > left ( Criteria lhs "&&" Criteria rhs
          | Criteria lhs "||" Criteria rhs
          )
   ;
 
 syntax CriteriaExpr
-  = AttributeName att
+  = bracket "(" CriteriaExpr ")"
+  | AttributeName att
   | Literal l
   ;
 

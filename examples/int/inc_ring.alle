@@ -1,22 +1,22 @@
-Elem (1 :: num:int) <= {<n1,?>..<n10,?>}
-Start (1)           <= {<n1>..<n10>}
-ring (2)            <= {<n1,n1>..<n10,n10>}
+Elem (eId:id, val:int) <= {<n1,?>..<n3,?>}
+Start (eId:id)         <= {<n1>..<n3>}
+ring (from:id,to:id)   <= {<n1,n1>..<n3,n3>}
 
-ring in Elem -> Elem
-Start in Elem
+ring ⊆ Elem[eId][from/eId] ⨯ Elem[eId][to/eId]
+Start ⊆ Elem[eId] 
 
-Elem::num > 0
+∀ e ∈ Elem | some e where val > 0
 
 // One of the elements in the ring is considered the start element
 one Start
 
 // The ring is cyclic, all elements should be reachable from the start element (including itself) 
-Elem in Start.*ring
+Elem[eId] ⊆ (Start[from/eId] ⨝ *<from,to>ring)[to][eId/to]
 
 // Only one element leads to an other element
-forall e:Elem | one e.ring && one ring.e
+∀ e ∈ Elem | one e[from/eId] ⨝ ring ∧ one e[to/eId] ⨝ ring
 
 // All elements in the ring have incrementing values starting from the Start ring
-forall e1: Elem, e2: Elem\Start | e1->e2 in ring => e2::num = e1::num + 1
-
-#Elem >= 2
+∀ r ∈ ring | let e = r[from][eId/from] ⨝ Elem, e' = r[to][eId/to] ⨝ Elem | 
+  ¬ (e'[eId] ⊆ Start) ⇒ some (e ⨯ e'[eId'/eId,val'/val]) where val' = (val + 1)
+  

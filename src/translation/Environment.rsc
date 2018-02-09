@@ -7,14 +7,20 @@ import translation::Relation;
 
 import List;
 
-alias Environment = tuple[map[str, Relation] relations, list[Id] idDomain]; 
+alias Environment = tuple[map[str, Relation] relations, list[Id] idDomain, str (str) newVar]; 
 
 Environment createInitialEnvironment(Problem p) {
+  int latest = 0;
+  str newVar(str varName) {
+    latest += 1;
+    return "_<varName>_<latest>";
+  }
+  
   list[Id] idDomain = extractIdDomain(p);
  
   map[str, Relation] relations = (r.name:createRelation(r) | RelationDef r <- p.relations);
    
-  return <relations, idDomain>;
+  return <relations, idDomain, newVar>;
 }   
                       
 list[Id] extractIdDomain(Problem p) =

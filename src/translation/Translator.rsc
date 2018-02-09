@@ -314,6 +314,20 @@ Relation translateExpression(rename(AlleExpr expr, list[Rename] renames), Enviro
 
 Relation translateExpression(project(AlleExpr expr, list[str] attributes), Environment env) = project(translateExpression(expr, env), toSet(attributes));
 
+Relation translateExpression(aggregate(AlleExpr expr, list[AggregateFunctionDef] funcs), Environment env) { 
+  Relation cross([Relation r]) = r;
+  default Relation cross([Relation head, *Relation tail]) = product(head, cross(tail));
+  
+  Relation r = translateExpression(expr, env);
+  
+  list[Relation] aggregatedResults = [];
+  for (AggregateFunctionDef def <- funcs) {
+    aggregatedResults += translateAggregateFunctionDef(def, r, env);
+  }
+  
+  return cross(aggregatedResults);
+}
+
 Relation translateExpression(select(AlleExpr expr, Criteria criteria), Environment env) = select(translateExpression(expr, env), translateCriteria(criteria, env));
 
 Relation translateExpression(union(AlleExpr lhs, AlleExpr rhs), Environment env) = union(translateExpression(lhs,env),translateExpression(rhs,env));
@@ -333,6 +347,19 @@ Relation translateExpression(closure(TupleAttributeSelection tas, AlleExpr expr)
 Relation translateExpression(reflexClosure(TupleAttributeSelection tas, AlleExpr expr), Environment env) = reflexiveTransitiveClosure(translateExpression(expr,env), tas.first, tas.second, identity(env, tas.first, tas.second));
 
 default Relation translateExpression(AlleExpr expr, Environment env) { throw "Translation of expression \'<expr>\' not supported"; }
+
+alias AggregateFunctionResult = tuple[Domain bindToDomain, Term resultVar, Term initialTerm, Term (Row, Term) accumelate];
+
+Relation translateAggregateFunctionDef(AggregateFunctionDef def, Relation r, Environment env) { 
+  AggregateFunctionResult agr = translateAggregateFunction(def.func, def.bindTo, r, env);
+  return aggregate(r, def.bindTo, agr.bindToDomain, agr.resultVar, agr.accumelate, agr.initialTerm);
+}
+
+default AggregateFunctionResult translateAggregateFunction(AggregateFunction f, str bindTo, Relation r, Environment env) { throw "Translation of aggregate function \'<f>\' not supported"; }
+
+AggregateFunctionAttribute translateAggregateFunctionAttribute(aggAtt(str name)) = name;
+
+AggregateFunctionAttribute translateAggregateFunctionAttribute(func(AggregateFunction f)) { throw "No idea what to do here yet..."; }
 
 @memo
 Relation identity(Environment env, str first, str second) {

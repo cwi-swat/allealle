@@ -65,8 +65,9 @@ str unparse(let(list[VarBinding] bindings, AlleFormula form))                   
 default str unparse(AlleFormula f) { throw "No unparse function for formula \'<f>\'"; }
 
 str unparse(relvar(str name))                                                       = name;
-str unparse(rename(AlleExpr expr, list[Rename] renames))                            = "([<intercalate(",",["<r.new>//<r.orig>" | Rename r <- renames])>]<unparse(expr)>";
+str unparse(rename(AlleExpr expr, list[Rename] renames))                            = "(<unparse(expr)>[<intercalate(",",["<r.new>//<r.orig>" | Rename r <- renames])>])";
 str unparse(project(AlleExpr expr, list[str] attributes))                           = "(<unparse(expr)>[<intercalate(",",attributes)>]";
+str unparse(aggregate(AlleExpr expr, list[AggregateFunctionDef] funcs))             = "(<unparse(expr)>[<intercalate(",",[unparse(f) | AggregateFunctionDef f <- funcs])>]";
 str unparse(select(AlleExpr expr, Criteria criteria))                               = "(<unparse(expr)> where <unparse(criteria)>";
 str unparse(union(AlleExpr lhs, AlleExpr rhs))                                      = "(<unparse(lhs)>+<unparse(rhs)>)";
 str unparse(intersection(AlleExpr lhs, AlleExpr rhs))                               = "(<unparse(lhs)>&<unparse(rhs)>)";
@@ -78,6 +79,10 @@ str unparse(closure(TupleAttributeSelection tas, AlleExpr expr))                
 str unparse(reflexClosure(TupleAttributeSelection tas, AlleExpr expr))              = "(*<unparse(tas)><unparse(expr)>)";
 
 default str unparse(AlleExpr exp) { throw "No unparser implemented for \'<exp>\'"; }
+
+str unparse(aggFuncDef(AggregateFunction fun, str bindTo))                          = "<bindTo>//<unparse(fun)>";
+
+default str unparse(AggregateFunction f) { throw "No unparser implemented for \'<f>\'"; }
 
 str unparse(varDecl(str name, AlleExpr binding))    = "<name>:<unparse(binding)>";
 str unparse(varBinding(str name, AlleExpr binding)) = "<name> = <unparse(binding)>";

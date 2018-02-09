@@ -11,6 +11,21 @@ import String;
 translation::AST::Domain implode((Domain)`int`) = intDom();  
 
 translation::AST::AlleLiteral implode((Literal)`<IntLit i>`) = intLit(toInt("<i>"));  
+
+translation::AST::AggregateFunction implode((AggregateFunction)`count()`)
+  = count();
+
+translation::AST::AggregateFunction implode((AggregateFunction)`sum(<AttributeName att>)`)
+  = sum("<att>");
+
+translation::AST::AggregateFunction implode((AggregateFunction)`min(<AttributeName att>)`)
+  = min("<att>");
+
+translation::AST::AggregateFunction implode((AggregateFunction)`max(<AttributeName att>)`)
+  = max("<att>");
+
+translation::AST::AggregateFunction implode((AggregateFunction)`avg(<AttributeName att>)`)
+  = avg("<att>");
  
 translation::AST::Criteria implode((Criteria)`<CriteriaExpr lhs> \< <CriteriaExpr rhs>`)
   = lt(implode(lhs),implode(rhs));
@@ -24,12 +39,6 @@ translation::AST::Criteria implode((Criteria)`<CriteriaExpr lhs> \> <CriteriaExp
 translation::AST::Criteria implode((Criteria)`<CriteriaExpr lhs> \>= <CriteriaExpr rhs>`)
   = gte(implode(lhs),implode(rhs));
 
-translation::AST::AlleLiteral implode((Literal)`<IntLit i>`)
-  = intLit(toInt("<i>"));
-
-translation::AST::CriteriaExpr implode((CriteriaExpr)`( <CriteriaExpr expr> )`)
-  = implode(expr);
-  
 translation::AST::CriteriaExpr implode((CriteriaExpr)`- <CriteriaExpr expr>`)
   = neg(implode(expr));
 

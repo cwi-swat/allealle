@@ -7,6 +7,8 @@ import smtlogic::Ints;
 import List;
 import String; 
 
+str preamble(\int()) = aggregateIntFunctions();  
+
 str compileVariableDeclaration(<str name, \int()>) = "(declare-const <name> Int)";
 
 str compile(\int(int i))                          = "<i>"; 
@@ -26,6 +28,28 @@ str compile(gte(Term lhs, Term rhs))              = "(\>= <compile(lhs)> <compil
 
 
 Term getValue((SmtValue)`<Val v>`, <str _, \int()>) = lit(\int(toInt("<v>")));
+Term getValue((SmtValue)`(- <Val v>)`, <str _, \int()>) = neg(lit(\int(toInt("<v>"))));
  
 str negateAttribute(str varName, lit(\int(int i))) = "(not (= <varName> <i>))";
 str negateAttribute(str varName, neg(lit(\int(int i)))) = "(not (= <varName> (- <i>)))";
+
+str aggregateIntFunctions() =
+  "(define-fun _iSum ((exsts Bool) (val Int) (accum Int)) Int
+  '  (ite exsts (+ val accum) accum)
+  ')
+  '
+  '(define-fun _startVal ((exsts Bool) (val Int) (accum Int)) Int
+  ' (ite exsts val accum)
+  ')
+  '
+  '(define-fun _iMax ((exsts Bool) (val Int) (accum Int)) Int
+  ' (ite (\> accum val) accum (ite exsts val accum))
+  ')
+  '
+  '(define-fun _iMin ((exsts Bool) (val Int) (accum Int)) Int
+  ' (ite (\< accum val) accum (ite exsts val accum))
+  ')
+  '
+  '(define-fun _count ((exsts Bool) (accum Int)) Int
+  ' (ite exsts (+ accum 1) accum)
+  ')";

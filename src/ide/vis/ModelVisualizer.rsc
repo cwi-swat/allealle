@@ -47,13 +47,12 @@ void renderModel(Model model, Model (Domain) nextModel, void () stop) {
   
   set[Domain] domainsInModel = {delAnnotations(d) | /Domain d := currentModel}; 
  
-  str toStr(id()) = "id";
   str toStr(\intDom()) = "integer";
    
 	Figure showButtons() = currentModel != empty() ?
 		hcat(
 		  [button("Next relational model", void () { currentModel = nextModel(id()); r();})] + 
-		  [button("Next <toStr(d)> model", void () { currentModel = nextModel(d); r();}) | Domain d <- domainsInModel] +
+		  [button("Next <toStr(d)> model", void () { currentModel = nextModel(d); r();}) | Domain d <- domainsInModel, d != id()] +
 			[button("Stop", stop)]
 		) :
 		hcat([
@@ -184,6 +183,8 @@ Figure displayEdgeNode(VisEdge e, DisplayOptions disOpt)
 
 
 str term2Str(lit(\int(int i))) = "<i>";
+str term2Str(neg(lit(\int(int i)))) = "-<i>";
+
 default str term2Str(Term val) { throw "Not yet implemented"; }
 
 Figure textualizeModel(Model model) {

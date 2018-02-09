@@ -72,8 +72,8 @@ void check((AlleFormula)`one <AlleExpr expr>`, Environment env, CheckFunctions c
 void check((AlleFormula)`some <AlleExpr expr>`, Environment env, CheckFunctions cf)  { check(expr, env, cf); }
 
 void check(f:(AlleFormula)`<AlleExpr lhs> ⊆ <AlleExpr rhs>`, Environment env, CheckFunctions cf) { addIfCompatible(f@\loc, lhs, rhs, env, cf); }
-void check(f:(AlleFormula)`<AlleExpr lhs> = <AlleExpr rhs>`, Environment env, CheckFunctions cf)  { addIfCompatible(f@\loc, lhs, rhs, env, cf); }
-void check(f:(AlleFormula)`<AlleExpr lhs> ≠ <AlleExpr rhs>`, Environment env, CheckFunctions cf)  { addIfCompatible(f@\loc, lhs, rhs, env, cf); }
+void check(f:(AlleFormula)`<AlleExpr lhs> = <AlleExpr rhs>`, Environment env, CheckFunctions cf) { addIfCompatible(f@\loc, lhs, rhs, env, cf); }
+void check(f:(AlleFormula)`<AlleExpr lhs> ≠ <AlleExpr rhs>`, Environment env, CheckFunctions cf) { addIfCompatible(f@\loc, lhs, rhs, env, cf); }
 
 void check(f:(AlleFormula)`<AlleFormula lhs> ∧ <AlleFormula rhs>`, Environment env, CheckFunctions cf)  { check(lhs, env, cf); check(rhs, env, cf); }
 void check(f:(AlleFormula)`<AlleFormula lhs> ∨ <AlleFormula rhs>`, Environment env, CheckFunctions cf)  { check(lhs, env, cf); check(rhs, env, cf); }
@@ -170,10 +170,24 @@ void check(e:(AlleExpr)`<AlleExpr expr>[<{AttributeName ","}+ atts>]`, Environme
   }  
 }
 
-void check((AlleExpr)`<AlleExpr expr> where <Criteria criteria>`, Environment env, CheckFunctions cf) {
+void check(e:(AlleExpr)`<AlleExpr expr>[<{AggregateFunctionDef ","}+ aggFuncs>]`, Environment env, CheckFunctions cf) {
+  check(expr, env, cf);
+  
+  if (heading(map[str,str] attributes) := cf.lookup(expr@\loc)) {  
+    for (AggregateFunctionDef def <- aggFuncs) {
+      check(def, attributes, cf);
+    }
+  } else {
+    cf.add(e@\loc, incompatible());
+  } 
+}
+
+void check(e:(AlleExpr)`<AlleExpr expr> where <Criteria crit>`, Environment env, CheckFunctions cf) {
   check(expr,env,cf);
-  if (heading(map[str,str] atts) := cf.lookup(expr@\loc)) {
-    check(criteria, atts, cf);
+  
+  if (h:heading(map[str,str] atts) := cf.lookup(expr@\loc)) {
+    cf.add(e@\loc,h);
+    check(crit, atts, cf);
   }
 }
   
@@ -240,6 +254,11 @@ void check(e:(AlleExpr)`<AlleExpr lhs> ⨯ <AlleExpr rhs>`, Environment env, Che
     cf.add(e@\loc, incompatible());
   } 
 }
+
+void check(e:(AggregateFunctionDef)`<AttributeName bindTo> / <AggregateFunction func>`, map[str,str] attributes, CheckFunctions cf) {
+    
+}
+
 
 void check((Criteria)`( <Criteria cr> )`, map[str,str] attributes, CheckFunctions cf) { check(cr, attributes, cf); } 
 void check((Criteria)`not <Criteria cr>`, map[str,str] attributes, CheckFunctions cf) { check(cr, attributes, cf); } 

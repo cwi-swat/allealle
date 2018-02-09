@@ -123,6 +123,9 @@ translation::AST::AlleExpr implode((AlleExpr)`<AlleExpr expr>[<{Rename ","}+ ren
 translation::AST::AlleExpr implode((AlleExpr)`<AlleExpr expr>[<{AttributeName ","}+ atts>]`)
   = project(implode(expr), ["<a>" | a <- atts]);
 
+translation::AST::AlleExpr implode((AlleExpr)`<AlleExpr expr>[<{AggregateFunctionDef ","}+ funcs>]`)
+  = aggregate(implode(expr), [implode(f) | f <- funcs]);
+
 translation::AST::AlleExpr implode((AlleExpr)`<AlleExpr expr> where <Criteria criteria>`)
   = select(implode(expr), implode(criteria));
   
@@ -156,6 +159,15 @@ translation::AST::TupleAttributeSelection implode ((TupleAttributeSelection)`\<<
 translation::AST::Rename implode((Rename)`<AttributeName new> / <AttributeName orig>`) 
   = rename("<new>","<orig>");
 
+translation::AST::AggregateFunctionDef implode((AggregateFunctionDef)`<AttributeName bindTo> / <AggregateFunction func>`)
+  = aggFuncDef(implode(func), "<bindTo>");
+
+translation::AST::AggregateFunctionAttribute implode((AggregateFunctionAttribute)`<AttributeName att>`)
+  = aggAtt("<att>");
+
+translation::AST::AggregateFunctionAttribute implode((AggregateFunctionAttribute)`<AggregateFunction f>`)
+  = func(implode(f));
+
 translation::AST::Criteria implode((Criteria)`( <Criteria cr> )`) 
   = implode(cr);    
  
@@ -173,6 +185,9 @@ translation::AST::Criteria implode((Criteria)`<Criteria lhs> && <Criteria rhs>`)
   
 translation::AST::Criteria implode((Criteria)`<Criteria lhs> || <Criteria rhs>`) 
   = or(implode(lhs),implode(rhs));
+
+translation::AST::CriteriaExpr implode((CriteriaExpr)`(<CriteriaExpr expr>)`) 
+  = implode(expr);
  
 translation::AST::CriteriaExpr implode((CriteriaExpr)`<AttributeName at>`) 
   = att("<at>");

@@ -5,26 +5,36 @@ extend translation::Syntax;
 syntax Domain = "int";
 
 syntax Criteria
-  = left lt:    CriteriaExpr lhs "\<" CriteriaExpr rhs
-  | left lte:   CriteriaExpr lhs "\<=" CriteriaExpr rhs
-  | left gt:    CriteriaExpr lhs "\>" CriteriaExpr rhs
-  | left gte:   CriteriaExpr lhs "\>=" CriteriaExpr rhs
+  = non-assoc  (lt:    CriteriaExpr lhs "\<" CriteriaExpr rhs
+              | lte:   CriteriaExpr lhs "\<=" CriteriaExpr rhs
+              | gt:    CriteriaExpr lhs "\>" CriteriaExpr rhs
+              | gte:   CriteriaExpr lhs "\>=" CriteriaExpr rhs
+              )
   ; 
 
 syntax CriteriaExpr
-  = "(" CriteriaExpr expr ")"
-  > abs:        "|" CriteriaExpr expr "|"
-  | neg:        "-" CriteriaExpr expr
-  > left mult:  CriteriaExpr lhs "*" CriteriaExpr rhs
-  | div:        CriteriaExpr lhs "/" CriteriaExpr rhs
-  | \mod:       CriteriaExpr lhs "%" CriteriaExpr rhs
-  > left add:   CriteriaExpr "+" CriteriaExpr rhs 
-  | left sub:   CriteriaExpr "-" CriteriaExpr rhs
+  = abs:              "|" CriteriaExpr expr "|"
+  | neg:               "-" CriteriaExpr expr
+  > left mult:         CriteriaExpr lhs "*" CriteriaExpr rhs
+  | non-assoc ( div:   CriteriaExpr lhs "/" CriteriaExpr rhs
+              | \mod:  CriteriaExpr lhs "%" CriteriaExpr rhs
+              )
+  > left ( add:        CriteriaExpr "+" CriteriaExpr rhs 
+         | sub:        CriteriaExpr "-" CriteriaExpr rhs
+         )
   ;
  
 syntax Literal 
   = intLit: IntLit i
   ; 
+
+syntax AggregateFunction 
+  = car: "count" "()"
+  | sum: "sum" "(" AttributeName att ")"
+  | min: "min" "(" AttributeName att ")"
+  | max: "max" "(" AttributeName att ")"
+  | avg: "avg" "(" AttributeName att ")"
+  ;  
   
 lexical IntLit = [0-9]+;
 

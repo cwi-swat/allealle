@@ -36,19 +36,24 @@ data Model
   | empty()
   ;
 
-set[SMTVar] collectSMTVars(Environment env)  {
-  set[SMTVar] result = {};
+set[SMTVar] collectSMTVars(Formula form)  {
+  set[SMTVar] result = {<name, \bool()> | /pvar(str name) := form} + {<name, sort> | /var(str name, Sort sort) := form};
 
-  for (str varName <- env.relations, Relation r := env.relations[varName], Tuple t <- r.rows) {
-    result += {<name, sort> | /var(str name, Sort sort) := t};
-    
-    if (pvar(str name) := r.rows[t].exists) {
-      result += <name, \bool()>;
-    }
-  }    
+
+  //for (str varName <- env.relations, Relation r := env.relations[varName], Tuple t <- r.rows) {
+  //  result += {<name, sort> | /var(str name, Sort sort) := t};
+  //  
+  //  if (pvar(str name) := r.rows[t].exists) {
+  //    result += <name, \bool()>;
+  //  }
+  //}    
     
   return result;
 }
+
+set[Sort] collectSorts(set[SMTVar] vars) = {v.sort | SMTVar v <- vars}; 
+
+default str preamble(Sort srt) = "";
 
 str compileSMTVariableDeclarations(set[SMTVar] vars) = "<for (SMTVar var <- vars) {>
                                                        '<compileVariableDeclaration(var)><}>";
@@ -77,9 +82,16 @@ default str compile(Formula f) { throw "Unable to compile <f> to SMT, no SMT com
 str compile(lit(Literal l))         = compile(l);
 str compile(var(str name, Sort s))  = name;
 
-str compilt(ttrue())                = "true";
-str compilt(ffalse())               = "false";
+str compile(ttrue())                = "true";
+str compile(ffalse())               = "false";
 str compile(id(str i))              { throw "Unable to compile id \'<i>\' to SMT"; }
+
+  //| aggregateFunc(str name, Formula exists, Term t, Term accum)
+  //| aggregateFunc(str name, Formula exists, Term accum) 
+
+str compile(aggregateFunc(str name, Formula exists, Term t, Term accum)) = "(<name> <compile(exists)> <compile(t)> <compile(accum)>)";
+str compile(aggregateFunc(str name, Formula exists, Term accum)) = "(<name> <compile(exists)> <compile(accum)>)";
+
 
 str compileAssert(Formula f) = "\n(assert 
                                '  <compile(f)>

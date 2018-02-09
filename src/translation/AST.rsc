@@ -68,6 +68,7 @@ data AlleExpr
   | rename(AlleExpr expr, list[Rename] renames)
   | project(AlleExpr expr, list[str] attributes)
   | select(AlleExpr expr, Criteria criteria)
+  | aggregate(AlleExpr expr, list[AggregateFunctionDef] functionDefs)
   | union(AlleExpr lhs, AlleExpr rhs)
   | intersection(AlleExpr lhs, AlleExpr rhs)
   | difference(AlleExpr lhs, AlleExpr rhs)
@@ -88,6 +89,17 @@ data TupleAttributeSelection
 
 data Rename 
   = rename(str new, str orig)
+  ;
+
+data AggregateFunctionDef
+  = aggFuncDef(AggregateFunction func, str bindTo)
+  ;
+
+data AggregateFunction;
+
+data AggregateFunctionAttribute
+  = aggAtt(str name)
+  | func(AggregateFunction f)
   ;
 
 data Criteria
