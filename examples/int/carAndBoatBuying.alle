@@ -3,3 +3,5 @@ Boat (bId:id, bPrice:int) = {<boat1,10000>,<boat2,40000>,<boat3,60000>}
 sale (cId:id,bId:id)     <= {<car1,boat1>..<car3,boat3>}
  
 sale = ((Car ⨯ Boat) where cPrice >= bPrice)[cId,bId]
+
+∀ c ∈ Car | some (c where cPrice >= 20000)

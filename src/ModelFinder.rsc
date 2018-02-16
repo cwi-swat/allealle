@@ -35,41 +35,41 @@ ModelFinderResult checkInitialSolution(Problem problem) {
 	print("done, took: <(ie.time/1000000)> ms\n");
  
 	println("Translating problem to SMT formula...");
-	tuple[Formula form, int time] t = bm(translateProblem, problem, ie.env);
+	tuple[TranslationResult tr, int time] t = bm(translateProblem, problem, ie.env);
 	println("\n\nDone translating, took: <(t.time/1000000)> ms");
 	
 	//countDeepestNesting(t.r.relationalFormula);
 	 
-	if (t.form == \false()) {
+	if (t.tr.form == \false()) {
 		return trivialUnsat();
-	} else if (t.form == \true()) {
+	} else if (t.tr.form == \true()) {
 		return trivialSat(empty());
 	} 
  
-	return runInSolver(problem, t.form, ie.env); 
+	return runInSolver(problem, t.tr, ie.env); 
 }
 
 
-ModelFinderResult runInSolver(Problem problem, Formula form, Environment env) {
+ModelFinderResult runInSolver(Problem problem, TranslationResult tr, Environment env) {
 	PID solverPid = startSolver(); 
   void stop() {
 		stopSolver(solverPid);
 	} 
 	
 	print("Translating to SMT-LIB...");
-  tuple[set[SMTVar] vars, int time] smtVarCollectResult = bm(collectSMTVars, form);
+  tuple[set[SMTVar] vars, int time] smtVarCollectResult = bm(collectSMTVars, env);
 	tuple[str smt, int time] smtVarDeclResult = bm(compileSMTVariableDeclarations, smtVarCollectResult.vars);
-	tuple[str smt, int time] smtCompileFormResult = bm(compileAssert, form);
-//	tuple[str smt, int time] smtCompileAdditionalComands = bm(compileAdditionalCommands, tr.additionalCommands);
+	tuple[str smt, int time] smtCompileFormResult = bm(compileAssert, tr.form);
+	tuple[str smt, int time] smtCompileCommands = bm(compileCommands, tr.cmds);
 	
-	print("done, took: <(smtVarCollectResult.time + smtVarDeclResult.time + smtCompileFormResult.time) /1000000> ms in total (variable collection fase: <smtVarCollectResult.time / 1000000>, variable declaration fase: <smtVarDeclResult.time / 1000000>, formula compilation fase: <smtCompileFormResult.time / 1000000>)\n");
+	print("done, took: <(smtVarCollectResult.time + smtVarDeclResult.time + smtCompileFormResult.time + smtCompileCommands.time) /1000000> ms in total (variable collection fase: <smtVarCollectResult.time / 1000000>, variable declaration fase: <smtVarDeclResult.time / 1000000>, formula compilation fase: <smtCompileFormResult.time / 1000000>, commands compilation fase: <smtCompileCommands.time / 1000000>)\n");
   //println("Total nr of clauses in formula: <countClauses(\and(tr.relationalFormula, tr.attributeFormula))>, total nr of variables in formula: <countVars(smtVarCollectResult.vars)>"); 
 	
 	str preambl = intercalate("\n", [pa | Sort s <- collectSorts(smtVarCollectResult.vars), str pa := preamble(s), pa != ""]);
 	
-	str fullSmtProblem = "<preambl>\n<smtVarDeclResult.smt>\n<smtCompileFormResult.smt>\n";
+	str fullSmtProblem = preambl + "\n" + smtVarDeclResult.smt + "\n" + smtCompileFormResult.smt + "\n" + smtCompileCommands.smt;
 	
-	writeFile(|project://allealle/bin/latestSmt.smt2|, "<fullSmtProblem>\n(check-sat)");
+	writeFile(|project://allealle/bin/latestSmt.smt2|, fullSmtProblem + "\n(check-sat)");
 	  
 	print("Solving by Z3...");
 	bool satisfiable = isSatisfiable(solverPid, fullSmtProblem); 
@@ -120,16 +120,23 @@ SMTModel getValues(SolverPID pid, set[SMTVar] vars) {
 SMTModel firstSmtModel(SolverPID pid, set[SMTVar] vars) = getValues(pid, vars);
 
 SMTModel nextSmtModel(SolverPID pid, Domain dom, SMTModel currentSmtModel, Model currentRelationalModel, set[SMTVar] vars) { //Model currentRelationalModel, Domain dom, set[SMTVar] vars) { 
+  Sort srt = domain2Sort(dom);
   str smt = "";
+
+  if (srt == \bool()) {
+    // If we want to get a new relational model we have to look at the current values of all the relational (boolean) variables
+    smt = ("" | it + " <negateVariable(name, currentSmtModel[v])>" | SMTVar v:<str name, srt> <- currentSmtModel);
+  } else {
+    // If we want to get a new model for another theory we should only look at tuples which are currently visible and negate the attributes in those tuples of the given sort 
+    for (ModelRelation r <- currentRelationalModel.relations, ModelTuple t <- r.tuples, varAttribute(str attName, Term val, str smtVarName) <- t.attributes) {
+      smt += " <negateVariable(smtVarName, val)>";
+    }
+  }
    
-  if (dom == id()) {
-    smt = ("" | it + " <negateVariable(name, currentSmtModel[v])>" | v:<str name, \bool()> <- currentSmtModel);
-  } 
-  else {
-    smt = ""; //("" | it + " <negateAttribute(dom, smtVarName, val)>" | ModelRelation r <- currentRelationalModel.relations, ModelTuple t <- r.tuples, varAttribute(str _, dom, Value val, str smtVarName) <- t.attributes); 
-  }  
-  
-  println(smt);  
+  if (smt == "") {
+    // No variables to negate so the presented model is the only possible model
+    return ();
+  }
   
   if ("" !:= runSolver(pid, "(assert (or <smt>))")) {
     throw "Unable to declare needed variables in SMT";

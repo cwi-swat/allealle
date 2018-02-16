@@ -7,20 +7,28 @@ import translation::Relation;
 
 import List;
 
-alias Environment = tuple[map[str, Relation] relations, list[Id] idDomain, str (str) newVar]; 
+alias Environment = tuple[map[str, Relation] relations, list[Id] idDomain, Term (str, Sort) newVar, map[str,Sort] () createdVars]; 
 
 Environment createInitialEnvironment(Problem p) {
-  int latest = 0;
-  str newVar(str varName) {
-    latest += 1;
-    return "_<varName>_<latest>";
+  map[str,Sort] newVars = ();
+  Term newVar(str varName, Sort s) {
+    int latest = 0;
+    str renamedVar = varName;
+    while (renamedVar in newVars) {
+      latest += 1;
+      renamedVar = "<varName>_<latest>";
+    }
+    
+    newVars[renamedVar] = s;
+    
+    return var(renamedVar, s);
   }
   
   list[Id] idDomain = extractIdDomain(p);
  
   map[str, Relation] relations = (r.name:createRelation(r) | RelationDef r <- p.relations);
    
-  return <relations, idDomain, newVar>;
+  return <relations, idDomain, newVar, map[str,Sort] () { return newVars; }>;
 }   
                       
 list[Id] extractIdDomain(Problem p) =
@@ -38,11 +46,14 @@ Relation createRelation(RelationDef r) {
   
   tuple[list[AlleTuple] lb, list[AlleTuple] ub] bounds = getAlleTuples(r.bounds);
   
+  set[str] idsInLowerBound = {};
+  
   for (AlleTuple t <- bounds.lb) {
     rows = addRow(rows, <convertAlleTuple(t, r.name, idToStr(t.values), orderedHeading, orderedDomains), <\true(), \true()>>);
+    idsInLowerBound += idToStr(t.values);
   }
 
-  for (AlleTuple t <- bounds.ub, t notin bounds.lb) {
+  for (AlleTuple t <- bounds.ub, idToStr(t.values) notin idsInLowerBound) {
     rows = addRow(rows, <convertAlleTuple(t, r.name, idToStr(t.values), orderedHeading, orderedDomains), <pvar("<r.name>_<idToStr(t.values)>"), \true()>>);
   }
  
@@ -68,6 +79,9 @@ Term convertToTerm(hole(), str attVarName, Domain d) = convertToVar(attVarName, 
 
 default Literal convertToLit(AlleLiteral l) { throw "Can not convert literal \'<l>\', no conversion function found"; }
 default Term convertToVar(str varName, Domain d) { throw "Can not create a var with name \'<varName>\' for domain \'<d>\', no conversion function found";}
+
+Sort domain2Sort(id()) = \bool();
+default Sort domain2Sort(Domain d) { throw "Can not convert domain \'<d>\' to a sort, no conversion function found"; } 
 
 @memo
 list[AlleTuple] convertRangedDefinitions(list[AlleTuple] tuples) = [*convertRangedDefinition(t) | AlleTuple t <- tuples];

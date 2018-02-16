@@ -9,6 +9,8 @@ import ide::vis::ModelVisualizer;
 
 import translation::SMTInterface;
 
+import smtlogic::Core;
+
 import IO; 
 
 void translateAndVis(loc problem) { 

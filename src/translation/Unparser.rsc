@@ -4,12 +4,15 @@ import translation::AST;
 import List;
 
 
-str unparse(problem(list[RelationDef] relations, list[AlleFormula] constraints)) = 
+str unparse(problem(list[RelationDef] relations, list[AlleFormula] constraints, list[Objective] objectives)) = 
   "<for (RelationDef r <- relations) {><unparse(r)>
   '<}>
   '
   '<for(AlleFormula f <- constraints) {><unparse(f)>
   '<}>
+  '
+  '<if(objectives != []) {> 
+  'objectives: <intercalate(", ", [unparse(obj) | obj <- objectives])> <}> 
   '";
 
 str unparse(relation(str name, list[HeaderAttribute] heading, RelationalBound bounds)) =
@@ -87,15 +90,19 @@ default str unparse(AggregateFunction f) { throw "No unparser implemented for \'
 str unparse(varDecl(str name, AlleExpr binding))    = "<name>:<unparse(binding)>";
 str unparse(varBinding(str name, AlleExpr binding)) = "<name> = <unparse(binding)>";
 
-str unparse(equal(CriteriaExpr lhs, CriteriaExpr rhs))   = "(<unparse(lhs)> = <unparse(rhs)>)";
-str unparse(inequal(CriteriaExpr lhs, CriteriaExpr rhs)) = "(<unparse(lhs)> != <unparse(rhs)>)";
-str unparse(and(Criteria lhs, Criteria rhs))             = "(<unparse(lhs)> && <unparse(rhs)>)";
-str unparse(or(Criteria lhs, Criteria rhs))              = "(<unparse(lhs)> || <unparse(rhs)>)";
-str unparse(not(Criteria crit))                          = "(!<unparse(crit)>)";
+str unparse(equal(CriteriaExpr lhs, CriteriaExpr rhs))                   = "(<unparse(lhs)> = <unparse(rhs)>)";
+str unparse(inequal(CriteriaExpr lhs, CriteriaExpr rhs))                 = "(<unparse(lhs)> != <unparse(rhs)>)";
+str unparse(and(Criteria lhs, Criteria rhs))                             = "(<unparse(lhs)> && <unparse(rhs)>)";
+str unparse(or(Criteria lhs, Criteria rhs))                              = "(<unparse(lhs)> || <unparse(rhs)>)";
+str unparse(not(Criteria crit))                                          = "(!<unparse(crit)>)";
 
 str unparse(att(str name))      = name;
 str unparse(litt(AlleLiteral l)) = unparse(l);
+str unparse(ite(Criteria condition, CriteriaExpr thn, CriteriaExpr els)) = "(<unparse(condition)> ? <unparse(thn)> : <unparse(els)>)";
 
 default str unparse(CriteriaExpr expr) { throw "No unparse function for Criteria Expression \'<expr>\'";}
+
+str unparse(maximize(AlleExpr expr)) = "maximize <unparse(expr)>";
+str unparse(minimize(AlleExpr expr)) = "minimize <unparse(expr)>";
 
 str unparse(order(str first, str second)) = "\<<first>,<second>\>";

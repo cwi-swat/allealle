@@ -1,20 +1,16 @@
-Party (1 :: seats:int) =  {<vvd,33>,<pvv,20>,<cda,19>,<d66,19>,<groenlinks,14>,<sp,14>,<pvda,9>,<christenunie,5>,<pvdd,5>,<vijftigplus,4>,<sgp,3>,<denk,3>,<fvd,2>}
-Goverment (1)          <= {<vvd>,<cda>,<pvv>,<d66>,<groenlinks>,<sp>,<pvda>,<christenunie>,<pvdd>,<vijftigplus>,<sgp>,<denk>,<fvd>}
-Opposition (1)         <= {<vvd>,<pvv>,<cda>,<d66>,<groenlinks>,<sp>,<pvda>,<christenunie>,<pvdd>,<vijftigplus>,<sgp>,<denk>,<fvd>}
-Total (1 :: val:int)   =  {<total,?>}
-exclusion (2)          =  {<vvd,pvv>,<cda,pvv>,<d66,pvv>,<groenlinks,pvv>,<sp,pvv>,<pvda,pvv>,<christenunie,pvv>,<pvdd,pvv>,<sp,vvd>}
-inclusion (2)          =  {<pvdd,groenlinks>,<pvdd,christenunie>}
+Party (pId:id, seats:int)        =  {<vvd,33>,<pvv,20>,<cda,19>,<d66,19>,<groenlinks,14>,<sp,14>,<pvda,9>,<christenunie,5>,<pvdd,5>,<vijftigplus,4>,<sgp,3>,<denk,3>,<fvd,2>}
+Goverment (pId:id)               <= {<vvd>,<cda>,<pvv>,<d66>,<groenlinks>,<sp>,<pvda>,<christenunie>,<pvdd>,<vijftigplus>,<sgp>,<denk>,<fvd>}
+Opposition (pId:id)              <= {<vvd>,<pvv>,<cda>,<d66>,<groenlinks>,<sp>,<pvda>,<christenunie>,<pvdd>,<vijftigplus>,<sgp>,<denk>,<fvd>}
+Total (tId:id, totalSeats:int)   =  {<total,?>}
+exclusion (pId:id, excludes:id)  =  {<vvd,pvv>,<cda,pvv>,<d66,pvv>,<groenlinks,pvv>,<sp,pvv>,<pvda,pvv>,<christenunie,pvv>,<pvdd,pvv>,<sp,vvd>}
+inclusion (pId:id, includes:id)  =  {<pvdd,groenlinks>,<pvdd,christenunie>}
 
-Goverment + Opposition = Party
-no Goverment&Opposition
+Goverment ∪ Opposition = Party[pId]
+no Goverment ∩ Opposition
 
-forall p1:Party, p2:Party\p1 | p1->p2 in exclusion => (p1 in Goverment => not (p2 in Goverment))
-forall p1:Party, p2:Party\p1 | p1->p2 in inclusion => (p1 in Goverment => p2 in Goverment)
+∀ p1 ∈ Party[pId], p2 ∈ Party[pId] ∖ p1 | p1 ⨯ p2[excludes/pId] ⊆ exclusion ⇒ (p1 ⊆ Goverment ⇒ ¬ (p2 ⊆ Goverment))
+∀ p1 ∈ Party[pId], p2 ∈ Party[pId] ∖ p1 | p1 ⨯ p2[includes/pId] ⊆ inclusion ⇒ (p1 ⊆ Goverment ⇒ p2 ⊆ Goverment)
 
-Total::val = sum(Goverment::seats)
-Total::val > 75
+some (Total ⨯ (Goverment ⨝ Party)[total/sum(seats), nrOfGovermentParties/count()]) where totalSeats = total && totalSeats > 75 && nrOfGovermentParties <= 5
 
-#Goverment <= 5
-
-minimize #Goverment
-maximize Total::val
+objectives: minimize Goverment[cnt/count()], maximize Total[totalSeats]

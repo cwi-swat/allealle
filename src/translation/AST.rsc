@@ -1,6 +1,6 @@
 module translation::AST
 
-data Problem = problem(list[RelationDef] relations, list[AlleFormula] constraints);
+data Problem = problem(list[RelationDef] relations, list[AlleFormula] constraints, list[Objective] objectives);
 
 data RelationDef
   = relation(str name, list[HeaderAttribute] heading, RelationalBound bounds)
@@ -114,4 +114,10 @@ data Criteria
 data CriteriaExpr
   = att(str name) 
   | litt(AlleLiteral l)
+  | ite(Criteria condition, CriteriaExpr thn, CriteriaExpr els)
   ;
+
+data Objective
+  = maximize(AlleExpr expr)
+  | minimize(AlleExpr expr)  
+  ; 

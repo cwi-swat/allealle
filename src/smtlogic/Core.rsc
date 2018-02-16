@@ -31,7 +31,10 @@ data Literal
   | id(str id)
   ;
   
-data Command;
+data Command
+  = maximize(Term t)
+  | minimize(Term t)
+  ;
 
 Sort sortOfLit(var(_,Sort s)) = s;
 default Sort sortOfLit(Literal l) { throw "Unable to obtain sort of literal \'<l>\'"; }
@@ -42,15 +45,14 @@ Formula \or({Formula x}) 						                  = x;
 Formula \or({\false(), *Formula r})   			          = \or(r);
 Formula \or({\true(), *Formula _})   			            = \true();
 
-//Formula \or({Formula a, \or(set[Formula] c)})         = \or({a,*c});
-//Formula \or({*Formula a, \or(set[Formula] c)})       = \or({*a,*c});
+Formula \or({*Formula a, \or(set[Formula] b)})         = \or(a + b);
 
 //Formula \or({Formula g,\not(g),*Formula r}) 	  = \true();
 //
 //Formula \or({Formula g, \and({not(g), *Formula ra}), *Formula ro}) = \or({\and({not(g)} + ra)} + ro);
 //Formula \or({not(Formula g), \and({g, *Formula ra}), *Formula ro}) = \or({\and({g} + ra)} + ro);
 
-//Formula \and({*Formula a, and(set[Formula] b)}) = \and(a + b);
+Formula \and({*Formula a, and(set[Formula] b)}) = \and(a + b);
 //Formula \and({Formula g,\not(g),*Formula r}) 	  = \false();
 //
 //Formula \and({Formula g, \or({not(g), *Formula ro}), *Formula ra}) = \and({g,\or(ro)} + ra);  

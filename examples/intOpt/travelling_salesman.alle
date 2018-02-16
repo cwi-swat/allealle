@@ -1,13 +1,17 @@
-City (1) = {<a>,<b>,<c>,<d>,<e>,<f>}
-StartingPoint (1) <= {<a>,<b>,<c>,<d>,<e>,<f>}
-route (2 :: length:int) <= {<a,b,9>,<a,e,3>,<a,f,5>,<b,a,9>,<b,c,5>,<b,f,4>,<c,b,5>,<c,d,2>,<c,f,8>,<d,c,2>,<d,e,1>,<d,f,7>,<e,a,3>,<e,d,1>,<e,f,5>,<f,a,5>}
-TotalLength (1 :: length:int) = {<total,?>}
+// Example comes from http://www.ams.org/publicoutreach/feature-column/fcarc-tsp
+City (cId:id)                       = {<a>,<b>,<c>,<home>}
+StartingPoint (cId:id)              = {<home>}
+route (from:id, to:id, length:int) <= {<home,a,80>,<a,home,80>,<home,b,69>,<b,home,69>,<home,c,50>,<c,home,50>,<a,b,140>,<b,a,140>,<a,c,100>,<c,a,100>,<b,c,90>,<c,b,90>}
+TotalLength (tId:id, length:int)    = {<total,?>}
 
-forall c:City | one c.route && one route.c
+// The salesman only vists a city once
+∀ c ∈ City | one (c[from/cId] ⨝ route) ∧ one (c[to/cId] ⨝ route)
 
-one StartingPoint
-City in StartingPoint.*route
+// The salesman must visit each city
+City ⊆ (StartingPoint[from/cId] ⨝ *<from,to>(route[from,to]))[to][cId/to]
 
-TotalLength::length = sum(route::length)
+// Convenient condition to capture the shorted route length
+some (TotalLength ⨯ route[totalLength/sum(length)]) where length = totalLength
 
-minimize TotalLength::length
+// We want the route with the shortest overall length
+objectives: minimize TotalLength[length]

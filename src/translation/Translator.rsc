@@ -9,20 +9,37 @@ import translation::Unparser;
 
 import IO; 
 import List;
+import Map;
+import Set;
 
 import util::Maybe;
 import util::Benchmark;
 
-Formula translateProblem(Problem p, Environment env, bool logIndividualFormula = true) {
-  Formula form;
+alias TranslationResult = tuple[Formula form, list[Command] cmds];
 
+TranslationResult translateProblem(Problem p, Environment env, bool logIndividualFormula = true) {
+  Formula form;
+  list[Command] cmds = [];
+  
   if (logIndividualFormula) {
-    form = and({r | AlleFormula f <- p.constraints, bprint("\nTranslating \'<unparse(f)>\' ..."), <Formula r, int time> := bm(f, env), bprint("in <time / 1000000> ms.")}); //, cache(formulaLookup, storeFormula, exprLookup, storeExpr)
+    form = and({r | AlleFormula f <- p.constraints, bprint("\nTranslating \'<unparse(f)>\' ..."), <Formula r, int time> := bm(f, env), bprint("in <time / 1000000> ms.")}); 
   } else {
-    form = and({translateFormula(f, env) | AlleFormula f <- p.constraints}); //, cache(formulaLookup, storeFormula, exprLookup, storeExpr)
+    form = and({translateFormula(f, env) | AlleFormula f <- p.constraints}); 
+  }
+  
+  for (Objective obj <- p.objectives) {
+    map[Command,Formula] trans = translateObjective(obj,env);
+    for (Command c <- trans) {
+      if (logIndividualFormula) {
+        println("Translating \'<unparse(obj)>\'");
+      }
+      
+      form = and(form, trans[c]);
+      cmds += c;
+    } 
   }    
   
-  return form; 
+  return <form, cmds>; 
 }
 
 bool bprint(str line) { 
@@ -36,8 +53,11 @@ private tuple[Formula, int] bm(AlleFormula f, Environment env) {
   return <result, cpuTime() - startTime>;
 }
 
-//map[str, RelationMatrix] constructSingleton(str newVarName, Index idx) = (newVarName : (idx : relOnly(\true())));
-
+private tuple[map[Command,Formula], int] bmObj(Objective obj, Environment env) {
+  int startTime = cpuTime();
+  map[Command,Formula] result = translateObjective(obj, env);
+  return <result, cpuTime() - startTime>;
+}
 
 Formula translateFormula(empty(AlleExpr expr), Environment env) 
   = \not(translateFormula(nonEmpty(expr), env));
@@ -348,18 +368,11 @@ Relation translateExpression(reflexClosure(TupleAttributeSelection tas, AlleExpr
 
 default Relation translateExpression(AlleExpr expr, Environment env) { throw "Translation of expression \'<expr>\' not supported"; }
 
-alias AggregateFunctionResult = tuple[Domain bindToDomain, Term resultVar, Term initialTerm, Term (Row, Term) accumelate];
+alias AggregateFunctionResult = tuple[Domain bindToDomain, Term resultVar, bool hasStaticInitial, Term initialTerm, Term (Row, Term) buildInitialTerm, Term (Row, Term) buildAggregateTerm, Formula (Formula) buildExists];
+ 
+Relation translateAggregateFunctionDef(AggregateFunctionDef def, Relation r, Environment env) = translateAggregateFunction(def.func, def.bindTo, r, env); 
 
-Relation translateAggregateFunctionDef(AggregateFunctionDef def, Relation r, Environment env) { 
-  AggregateFunctionResult agr = translateAggregateFunction(def.func, def.bindTo, r, env);
-  return aggregate(r, def.bindTo, agr.bindToDomain, agr.resultVar, agr.accumelate, agr.initialTerm);
-}
-
-default AggregateFunctionResult translateAggregateFunction(AggregateFunction f, str bindTo, Relation r, Environment env) { throw "Translation of aggregate function \'<f>\' not supported"; }
-
-AggregateFunctionAttribute translateAggregateFunctionAttribute(aggAtt(str name)) = name;
-
-AggregateFunctionAttribute translateAggregateFunctionAttribute(func(AggregateFunction f)) { throw "No idea what to do here yet..."; }
+default Relation translateAggregateFunction(AggregateFunction f, str bindTo, Relation r, Environment env) { throw "Translation of aggregate function \'<f>\' not supported"; }
 
 @memo
 Relation identity(Environment env, str first, str second) {
@@ -380,7 +393,6 @@ Formula (Tuple) translateCriteria(equal(CriteriaExpr lhsExpr, CriteriaExpr rhsEx
 
 Formula (Tuple) translateCriteria(inequal(CriteriaExpr lhsExpr, CriteriaExpr rhsExpr), Environment env) 
   = translateCriteria(not(equal(lhsExpr, rhsExpr)), env);
-
 
 Formula (Tuple) translateCriteria(and(Criteria lhs, Criteria rhs), Environment env) { 
   Formula (Tuple) lhsCrit = translateCriteria(lhs, env);
@@ -428,7 +440,36 @@ Term (Tuple) translateCriteriaExpr(litt(AlleLiteral l), Environment env) {
   return trans;
 }
 
+Term (Tuple) translateCriteriaExpr(ite(Criteria condition, CriteriaExpr thn, CriteriaExpr els), Environment env) { 
+  Formula (Tuple) condCrit = translateCriteria(condition, env);
+  Term (Tuple) thnCrit     = translateCriteriaExpr(thn, env);
+  Term (Tuple) elsCrit     = translateCriteriaExpr(els, env);
+
+  Term translate(Tuple t) = ite(condCrit(t), thnCrit(t), elsCrit(t));     
+  
+  return translate; 
+} 
+
 default Term (Tuple) translateCriteriaExpr(CriteriaExpr criteriaExpr, Environment env) { throw "Not yet implemented \'<criteriaExpr>\'";} 
+
+map[Command,Formula] translateObjective(Objective obj, Environment env) {
+  Relation r = translateExpression(obj.expr,env);
+  
+  if (size(r.heading) != 1) {
+    throw "Can only maximize on a relation with one attribute";
+  }
+  
+  map[Command,Formula] cmds = ();
+  
+  for (Tuple t <- r.rows, str attName := getOneFrom(t<0>)) {
+    cmds[translateObjectiveFunction(obj, t[attName])] = r.rows[t].attConstraints;
+  }
+  
+  return cmds;
+}
+
+Command translateObjectiveFunction(maximize(AlleExpr _), Term t) = maximize(t);
+Command translateObjectiveFunction(minimize(AlleExpr _), Term t) = minimize(t);
 
 Literal translateLiteral(idLit(Id i)) = id(i);
 

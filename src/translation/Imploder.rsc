@@ -7,7 +7,12 @@ import ParseTree;
 import String;
 
 translation::AST::Problem implodeProblem(translation::Syntax::Problem p) 
-  = problem([implode(r) | r <- p.relations], [implode(c) | c <- p.constraints]); 
+  = problem([implode(r) | r <- p.relations], [implode(c) | c <- p.constraints], [])
+  when /ObjectiveSection _ !:= p; 
+
+translation::AST::Problem implodeProblem(translation::Syntax::Problem p) 
+  = problem([implode(r) | r <- p.relations], [implode(c) | c <- p.constraints], [implode(obj) | obj <- objSec.objectives])
+  when /ObjectiveSection objSec := p, bprintln("With objectives: <objSec>"); 
 
 translation::AST::RelationDef implode((Relation)`<RelVar v> (<{HeaderAttribute ","}+ header>) <RelationalBound bounds>`) 
   = relation("<v>", [implode(h) | h <- header], implode(bounds));
@@ -162,12 +167,6 @@ translation::AST::Rename implode((Rename)`<AttributeName new> / <AttributeName o
 translation::AST::AggregateFunctionDef implode((AggregateFunctionDef)`<AttributeName bindTo> / <AggregateFunction func>`)
   = aggFuncDef(implode(func), "<bindTo>");
 
-translation::AST::AggregateFunctionAttribute implode((AggregateFunctionAttribute)`<AttributeName att>`)
-  = aggAtt("<att>");
-
-translation::AST::AggregateFunctionAttribute implode((AggregateFunctionAttribute)`<AggregateFunction f>`)
-  = func(implode(f));
-
 translation::AST::Criteria implode((Criteria)`( <Criteria cr> )`) 
   = implode(cr);    
  
@@ -194,5 +193,14 @@ translation::AST::CriteriaExpr implode((CriteriaExpr)`<AttributeName at>`)
 
 translation::AST::CriteriaExpr implode((CriteriaExpr)`<Literal l>`) 
   = litt(implode(l));
+
+translation::AST::CriteriaExpr implode((CriteriaExpr)`<Criteria condition> ? <CriteriaExpr thn> : <CriteriaExpr els>`) 
+  = ite(implode(condition),implode(thn),implode(els));
+
+translation::AST::Objective implode((Objective)`maximize <AlleExpr expr>`)
+  = maximize(implode(expr));
+
+translation::AST::Objective implode((Objective)`minimize <AlleExpr expr>`)
+  = minimize(implode(expr));
    
 default &T implode(&R production) { throw "Unable to implode production \'<production>\'. No implode function implemented"; }

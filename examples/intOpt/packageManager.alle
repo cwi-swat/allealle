@@ -1,21 +1,24 @@
-Package (1 :: size:int) = {<a,1>,<b,1>,<c,0>,<d,1>,<e,0>,<f,0>,<g,1>,<h,0>,<y,0>,<z,0>}
+Package (pId:id, size:int)              = {<a,1>,<b,1>,<c,0>,<d,1>,<e,0>,<f,0>,<g,1>,<h,0>,<y,0>,<z,0>}
 
-InstallProfile (1) <= {<a>,<b>,<c>,<d>,<e>,<f>,<g>,<h>,<y>,<z>}
+InstallProfile (pId:id)                <= {<a>,<b>,<c>,<d>,<e>,<f>,<g>,<h>,<y>,<z>}
 
-Installed (1) = {<z>,<c>,<e>,<y>,<f>,<h>}
-UninstallProfile (1) <= {<z>,<c>,<e>,<y>,<f>,<h>}
-InstallPackage (1) = {<a>}
+Installed (pId:id)                      = {<z>,<c>,<e>,<y>,<f>,<h>}
+UninstallProfile (pId:id)              <= {<z>,<c>,<e>,<y>,<f>,<h>}
+InstallPackage (pId:id)                 = {<a>}
 
-depends (2) = {<a,b>,<a,c>,<a,z>,<b,d>,<c,d>,<c,e>,<c,f>,<c,g>,<y,z>,<f,h>}
-dependChoice (3) = {<c,d,e>,<c,e,d>,<c,f,g>,<c,g,f>}
+depends (pId:id, dependsOn:id)          = {<a,b>,<a,c>,<a,z>,<b,d>,<c,d>,<c,e>,<c,f>,<c,g>,<y,z>,<f,h>}
+dependChoice (pId:id, either:id, or:id) = {<c,d,e>,<c,e,d>,<c,f,g>,<c,g,f>}
 
-conflicts (2) = {<d,e>,<d,f>}
+conflicts (pId:id, with:id)             = {<d,e>,<d,f>}
 
 // If the package to install is not yet installed then it should be in the installation profile
 no (InstallPackage & Installed) => InstallPackage in InstallProfile
 
 // If Package p' depends on package p and p' is reachable from a dependency from the package to install and p' is not yet installed 
-forall p:Package, p':Package\p | (p->p') in depends && p' in InstallPackage.*depends && no p' & Installed && not ((p.dependChoice).p' in Installed) =>
+forall p:Package[pId], p':Package[pId]-p | (p x p'[dependsOn/pId]) in depends && 
+                                            p' in (InstallPackage |x| *<pId,dependsOn>depends) && 
+                                            no p' & Installed && 
+                                            not ((p |x| dependChoice |x| p'[either/pId] in Installed) =>
   (exists p'':Package\(p++p') | (p->p'->p'' in dependChoice) && (p' in InstallProfile || p'' in InstallProfile)) ||
   (no (p.dependChoice).p' && p' in InstallProfile)
 

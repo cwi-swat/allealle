@@ -4,17 +4,12 @@
 // repmin ( Pair ( Leaf (3) , Pair ( Leaf (1) , Leaf (10))))
 // == Pair ( Leaf (1) , Pair ( Leaf (1) , Leaf (1)))
 
-Node (1 :: globMin:int, locMin:int) = {<p1,?,?>,<p2,?,?>,<l1,?,3>,<l2,?,1>,<l3,?,10>}
-Root (1)                            = {<p1>}
-Pair (1)                            = {<p1>,<p2>}
-Leaf (1)                            = {<l1>,<l2>,<l3>}
-tree (2)                            = {<p1,l1>,<p1,p2>,<p2,l2>,<p2,l3>}
+Node (nId:id, globMin:int, locMin:int)   = {<p1,?,?>,<p2,?,?>,<l1,?,3>,<l2,?,1>,<l3,?,10>}
+Pair (nId:id, left:id, right:id)         = {<p1,l1,p2>,<p2,l2,l3>}
 
-forall p:Pair, c1:Node, c2:Node\c1 | c1 in p.tree && c2 in p.tree => 
-  (c1::locMin < c2::locMin => p::locMin = c1::locMin) && 
-  (c1::locMin >= c2::locMin => p::locMin = c2::locMin)
-  
-Root::globMin = Root::locMin
-
-forall p:Pair | (p.tree)::globMin = p::globMin
-  
+// On every Pair the locMin of the parent is equal to the left locMin if the left locMin is smaller then the right locMin otherwise its equal to the right locMin 
+∀ p ∈ Pair | some (p ⨝ Node[pLocMin/locMin,pGlobMin/globMin] ⨝ Node[left/nId,leftLocMin/locMin,leftGlobMin/globMin] ⨝ Node[right/nId,rightLocMin/locMin,rightGlobMin/globMin]) 
+    where (pLocMin = (leftLocMin < rightLocMin) ? leftLocMin : rightLocMin && leftGlobMin = pGlobMin && rightGlobMin = pGlobMin)
+ 
+// At the root globMin is equal to locMin
+∃ p ∈ Pair[nId] | no (Pair ⨝ p[left/nId]) ∪ (Pair ⨝ p[right/nId]) ∧ some (p ⨝ Node) where globMin = locMin

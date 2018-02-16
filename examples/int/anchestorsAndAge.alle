@@ -1,40 +1,43 @@
-Person (_:id, age:int) >={<p1,?>} <= {<p1,?>,<p2,?>,<p3,?>,<p4,?>}
-Adam (_:id, age:int)   = {<p1,?>}
-parent (_:id,_:id)    <= {<p1,p2>,<p1,p3>,<p1,p4>,<p2,p3>,<p2,p4>,<p3,p2>,<p3,p4>,<p4,p2>,<p4,p3>}
-anchestor (_:id,_:id) <= {<p2,p1>,<p2,p3>,<p2,p4>,<p3,p1>,<p3,p2>,<p3,p4>,<p4,p1>,<p4,p2>,<p4,p3>}
-twin (_:id,_:id)      <= {<p2,p3>,<p3,p2>,<p2,p4>,<p4,p2>,<p3,p4>,<p4,p3>}
- 
-Adam in Person
-parent in Person x Person
-anchestor in Person x Person
-twin in Person x Person
+Person (pId:id, age:int)      <= {<p1,?>..<p6,?>}
+Adam (pId:id)                 =  {<p1>}
+parent (parent:id, child:id)  <= {<p1,p1>..<p6,p6>}
+anchestor(asc:id, pred:id)    <= {<p1,p1>..<p6,p6>}
+twin(p1Id:id, p2Id:id)        <= {<p1,p1>..<p6,p6>}
+
+Adam ⊆ Person[pId]
+parent ⊆ Person[parent/pId][parent] ⨯ Person[child/pId][child]
+anchestor ⊆ Person[asc/pId][asc] ⨯ Person[pred/pId][pred]
+twin ⊆ Person[p1Id/pId][p1Id] ⨯ Person[p2Id/pId][p2Id]
 
 // Everybody has a parent except Adam
-forall p:Person-Adam | one parent.p
- 
-no parent.Adam
+∀ p ∈ Person[pId] ∖ Adam | one parent ⨝ p[child/pId]
+no parent ⨝ Adam[child/pId]
 
 // Nobody is its own parent
-forall p:Person | not (p = parent.p) 
+∀ p ∈ Person | ¬ (p[pId] = (parent ⨝ p[child/pId])[parent][pId/parent]) 
 
 // Nobody is the parent of an anchestor
-forall p:Person | not (p in (^parent).p)
+∀ p ∈ Person | ¬ (p[parent/pId][parent] ⊆ (^<parent,child>parent ⨝ p[child/pId])[parent])
 
 // Everybody is a decendant of Adam
-Person in Adam.(*parent)
+Person[child/pId][child] ⊆ (Adam[parent/pId] ⨝ *<parent,child>parent)[child]
 
-// Anchestor is the transposed transitive closure of the parent relation (if you are somebodies parent, grandparent, etc you are an anchestor)
-anchestor = ~(^parent) 
-//
+// Anchestor is the transposed transitive closure of the parent relation (if you are somebodies parent, grandparent, etc you are an anchestor
+anchestor = (^<parent,child>parent)[asc/child,pred/parent]
+
 // Nobody, even Adam, is older then 149
-
-Person::[age > 0 && age < 150]
+∀ p ∈ Person | some (p where age > 0 && age < 150)
 
 // Nobody is older than Adam
-forall p:Person-Adam | some ((p x [adamAge/age]Adam) where age < adamAge)
-
+∀ p ∈ (Person ∖ (Adam ⨝ Person))| some ((p ⨯ (Adam ⨝ Person)[aId/pId,adamAge/age]) where age < adamAge)
+ 
 // If p is c's parent then p must have been an adult when c was born 
-forall p: Person, c: Person-p | p x c in parent => some ([pAge/age]p x [cAge/age]c) where pAge - cAge > 17
+∀ p ∈ Person[parent/pId], c ∈ (Person ∖ p[pId/parent])[child/pId] | p[parent] ⨯ c[child] ⊆ parent ⇒ some (p[pAge/age] ⨯ c[cAge/age]) where pAge - cAge > 17
 
 // If two persons have the same parent and the same age, they must be twins
-forall p1:Person, p2:Person-p1 | (parent.p1 = parent.p2 && some ([p1Age/age]p1 x [p2Age/age]p2) where p1Age = p2Age) <=> p1 x p2 in twin
+∀ p1 ∈ Person[p1Id/pId], p2 ∈ Person[p2Id/pId] | (p1[pId/p1Id] ≠ p2[pId/p2Id] ∧ ((p1[child/p1Id] ⨝ parent)[parent] = (p2[child/p2Id] ⨝ parent)[parent] ∧ 
+                                  some (p1[p1Age/age] ⨯ p2[p2Age/age]) where p1Age = p2Age)) ⇔ p1[p1Id] ⨯ p2[p2Id] ⊆ twin
+                                  
+some (Person[minAge/min(age)] where minAge = 10)
+
+some twin 

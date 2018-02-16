@@ -34,6 +34,10 @@ UnionCompatibilityResult checkUnionCompatibilty(Problem p) {
     check(f,env,<add,lookup,addMsg>);
   }
   
+  for (/AlleExpr e := p.objSection) {
+    check(e,env,<add,lookup,addMsg>);
+  }
+  
   return <headings,messages>; 
 } 
 
@@ -278,6 +282,8 @@ void check(c:(CriteriaExpr)`<AttributeName att>`, map[str,str] attributes, Check
 }
 void check((CriteriaExpr)`<Literal l>`, map[str,str] attributes, CheckFunctions cf) {} 
 void check((CriteriaExpr)`( <CriteriaExpr expr> )`, map[str,str] attributes, CheckFunctions cf) { check(expr, attributes, cf); }
+void check((CriteriaExpr)`<Criteria cond> ? <CriteriaExpr thn> : <CriteriaExpr els>`, map[str,str] attributes, CheckFunctions cf) { check(cond, attributes, cf); check(thn, attributes, cf); check(els, attributes, cf); }
+
 void check((CriteriaExpr)`| <CriteriaExpr expr> |`, map[str,str] attributes, CheckFunctions cf) { check(expr, attributes, cf); }
 void check((CriteriaExpr)`- <CriteriaExpr expr>`, map[str,str] attributes, CheckFunctions cf) { check(expr, attributes, cf); }
 void check((CriteriaExpr)`<CriteriaExpr lhs> * <CriteriaExpr rhs>`, map[str,str] attributes, CheckFunctions cf) { check(lhs, attributes, cf); check(rhs, attributes, cf); } 

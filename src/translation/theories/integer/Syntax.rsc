@@ -38,4 +38,4 @@ syntax AggregateFunction
   
 lexical IntLit = [0-9]+;
 
-keyword Keywords = "int" | "sum" | "distinct";
+keyword Keywords = "int";

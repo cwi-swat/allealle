@@ -2,7 +2,7 @@ module translation::Syntax
 
 extend translation::Layout;
 
-start syntax Problem = problem: Relation* relations AlleFormula* constraints;
+start syntax Problem = problem: Relation* relations AlleFormula* constraints ObjectiveSection? objSection;
 
 syntax Relation 
   = RelVar v "(" {HeaderAttribute ","}+ header ")" RelationalBound bounds
@@ -125,8 +125,17 @@ syntax CriteriaExpr
   = bracket "(" CriteriaExpr ")"
   | AttributeName att
   | Literal l
+  > left Criteria condition "?" CriteriaExpr thn ":" CriteriaExpr els
   ;
-
+  
+syntax ObjectiveSection
+  = "objectives: " {Objective ","}+ objectives;  
+  
+syntax Objective  
+ = maximize: "maximize" AlleExpr expr
+ | minimize: "minimize" AlleExpr expr
+ ;
+ 
 lexical RangedId = ([a-z_] !<< [a-z_][a-zA-Z_]* !>> [a-zA-Z_]) \ Keywords;
 lexical RangedNr = [0-9]+;
 
@@ -138,5 +147,5 @@ lexical Arity = [0-9]+;
 
 lexical RelVar = ([a-zA-Z] !<< [a-zA-Z_][a-zA-Z0-9_\']* !>> [a-zA-Z0-9_]) \ Keywords;
 
-keyword Keywords = "none" | "|x|" | "where";
+keyword Keywords = "none" | "|x|" | "where" | "objectives";
 keyword Keywords = "no" | "lone" | "one" | "some" | "not" | "forall" | "exists" | "let";

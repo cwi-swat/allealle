@@ -36,17 +36,16 @@ data Model
   | empty()
   ;
 
-set[SMTVar] collectSMTVars(Formula form)  {
-  set[SMTVar] result = {<name, \bool()> | /pvar(str name) := form} + {<name, sort> | /var(str name, Sort sort) := form};
-
-
-  //for (str varName <- env.relations, Relation r := env.relations[varName], Tuple t <- r.rows) {
-  //  result += {<name, sort> | /var(str name, Sort sort) := t};
-  //  
-  //  if (pvar(str name) := r.rows[t].exists) {
-  //    result += <name, \bool()>;
-  //  }
-  //}    
+set[SMTVar] collectSMTVars(Environment env)  {
+  set[SMTVar] result = {<var, env.createdVars()[var]> | str var <- env.createdVars()};
+  
+  for (str varName <- env.relations, Relation r := env.relations[varName], Tuple t <- r.rows) {
+    result += {<name, sort> | /var(str name, Sort sort) := t};
+    
+    if (pvar(str name) := r.rows[t].exists) {
+      result += <name, \bool()>;
+    }
+  }    
     
   return result;
 }
@@ -61,44 +60,120 @@ str compileSMTVariableDeclarations(set[SMTVar] vars) = "<for (SMTVar var <- vars
 str compileVariableDeclaration(<str name, \bool()>) = "(declare-const <name> Bool)";
 default str compileVariableDeclaration(SMTVar var) { throw "Unable to compile variable <var> to SMT, no SMT compiler available for sort \'<var.sort>\'"; }
 
+@memo
 str compile(\and(set[Formula] forms))         = "(and <for (f <- forms) {>
                                                 '  <compile(f)><}>
                                                 ')";
-
+@memo
 str compile(\or(set[Formula] forms))          = "(or <for (f <- forms) {>
                                                 '  <compile(f)><}>
                                                 ')";
 
-str compile(\not(Formula f))                  = "(not <compile(f)>)"; 
-str compile(ite(Formula c, Term t, Term e))   = "(ite " + compile(c) + " " + compile(t) + " " + compile(e) + ")\n";
-str compile(\false())                         = "false"; 
-str compile(\true())                          = "true";
-str compile(\pvar(name))                      = name; 
-str compile(equal(set[Formula] fs))           = "(= <for (Formula f <- fs) {> <compile(f)><}>)"; 
-str compile(equal(set[Term] ts))              = "(= <for (Term t <- ts) {> <compile(t)><}>)";
+@memo str compile(\not(Formula f))                  = "(not <compile(f)>)"; 
+@memo str compile(ite(Formula c, Term t, Term e))   = "(ite " + compile(c) + " " + compile(t) + " " + compile(e) + ")\n";
+@memo str compile(\false())                         = "false"; 
+@memo str compile(\true())                          = "true";
+@memo str compile(\pvar(name))                      = name; 
+@memo str compile(equal(set[Formula] fs))           = "(= <for (Formula f <- fs) {> <compile(f)><}>)"; 
+@memo str compile(equal(set[Term] ts))              = "(= <for (Term t <- ts) {> <compile(t)><}>)";
 
-default str compile(Formula f) { throw "Unable to compile <f> to SMT, no SMT compiler available"; }
+default str compile(Formula f)                { throw "Unable to compile Formula <f> to SMT, no SMT compile function available"; }
 
-str compile(lit(Literal l))         = compile(l);
-str compile(var(str name, Sort s))  = name;
+@memo str compile(lit(Literal l))                   = compile(l);
+@memo str compile(var(str name, Sort s))            = name;
 
-str compile(ttrue())                = "true";
-str compile(ffalse())               = "false";
-str compile(id(str i))              { throw "Unable to compile id \'<i>\' to SMT"; }
+@memo str compile(ttrue())                          = "true";
+@memo str compile(ffalse())                         = "false";
+@memo str compile(id(str i))                        { throw "Unable to compile id \'<i>\' to SMT"; }
 
-  //| aggregateFunc(str name, Formula exists, Term t, Term accum)
-  //| aggregateFunc(str name, Formula exists, Term accum) 
+@memo str compile(aggregateFunc(str name, Formula exists, Term t, Term accum)) = "(<name> <compile(exists)> <compile(t)> <compile(accum)>)";
+@memo str compile(aggregateFunc(str name, Formula exists, Term accum)) = "(<name> <compile(exists)> <compile(accum)>)";
 
-str compile(aggregateFunc(str name, Formula exists, Term t, Term accum)) = "(<name> <compile(exists)> <compile(t)> <compile(accum)>)";
-str compile(aggregateFunc(str name, Formula exists, Term accum)) = "(<name> <compile(exists)> <compile(accum)>)";
+default str compile(Term t)                   { throw "Unable to compile Term <t> to SMT, no SMT compile function available"; }
 
+@memo
+str compileWithoutIden(\and(set[Formula] forms)) {
+   str clauses = "";
+   for (f <- forms) {
+    clauses += compileWithoutIden(f) + " ";
+   }
+   
+   return "(and " + clauses + ")\n";
+}   
 
-str compileAssert(Formula f) = "\n(assert 
-                               '  <compile(f)>
-                               ')"; 
+@memo
+str compileWithoutIden(\or(set[Formula] forms))  { 
+   str clauses = "";
+   for (f <- forms) {
+    clauses += compileWithoutIden(f) + " ";
+   }
+   
+   return "(or " + clauses + ")\n";
+}
+
+@memo
+str compileWithoutIden(\not(Formula f))                  = "(not " + compileWithoutIden(f) + ")"; 
+@memo
+str compileWithoutIden(ite(Formula c, Term t, Term e))   = "(ite " + compileWithoutIden(c) + " " + compileWithoutIden(t) + " " + compileWithoutIden(e) + ")\n";
+@memo
+str compileWithoutIden(\false())                         = "false"; 
+@memo
+str compileWithoutIden(\true())                          = "true";
+@memo
+str compileWithoutIden(\pvar(name))                      = name; 
+
+@memo
+str compileWithoutIden(equal(set[Formula] fs)) { 
+   str clauses = "";
+   for (f <- fs) {
+    clauses += compileWithoutIden(f) + " ";
+   }
+   
+  return "(= " + clauses + ")";
+}
+
+@memo
+str compileWithoutIden(equal(set[Term] ts)) {
+   str clauses = "";
+   for (t <- ts) {
+    clauses += compileWithoutIden(t) + " ";
+   }
+   
+  return "(= " + clauses + ")";
+}
+
+@memo
+str compileWithoutIden(lit(Literal l))                   = compileWithoutIden(l);
+@memo
+str compileWithoutIden(var(str name, Sort s))            = name;
+@memo
+str compileWithoutIden(ttrue())                          = "true";
+@memo
+str compileWithoutIden(ffalse())                         = "false";
+@memo
+str compileWithoutIden(id(str i))                        { throw "Unable to compileWithoutIden id \'<i>\' to SMT"; }
+@memo
+str compileWithoutIden(aggregateFunc(str name, Formula exists, Term t, Term accum)) = "(" + name + " " + compileWithoutIden(exists) + " " + compileWithoutIden(t) + " " + compileWithoutIden(accum) + ")";
+@memo
+str compileWithoutIden(aggregateFunc(str name, Formula exists, Term accum)) = "(" + name + " " + compileWithoutIden(exists) + " " + compileWithoutIden(accum) + ")";
+
+default str compileWithoutIden(Formula f) { throw "Unable to compileWithIden <f> to SMT, no SMT compileWithIdenr available"; }
+
+str compileAssert(Formula f, bool prettyPrint = false) {
+  if (!prettyPrint) {
+    return "\n(assert " + compileWithoutIden(f) + ")";
+  } else {
+    return "\n(assert 
+           '  <compile(f)>
+           ')";
+  }
+} 
                                  
 str compileCommands(list[Command] commands) = "<for (Command c <- commands) {>
-                                                             '<compileCommand(c)><}>";                               
+                                              '<compileCommand(c)><}>";                               
+
+str compileCommand(minimize(Term t)) = "(minimize <compile(t)>)";
+str compileCommand(maximize(Term t)) = "(maximize <compile(t)>)";
 
 default str compileCommand(Command c) { throw "Unable to compile command \'<c>\'. No compile function defined.";}
 
@@ -155,5 +230,3 @@ Model constructRelationalModel(SMTModel smtModel, Environment env) {
   
   return model(relations);
 } 
-
-default str negateAttribute(Domain dom, str varName, Term currentVal) { throw "Unable to negate \'<varName>\' for domain \'<dom>\', no negation function found"; }

@@ -7,6 +7,7 @@ import List;
 import Map;
 import Set;
 import IO;
+import util::Math;
 
 import util::Benchmark;
 
@@ -238,17 +239,6 @@ Relation select(Relation relation, Formula (Tuple) criteria) {
   return <relation.heading, result, relation.partialKey>;
 }
 
-@memo 
-Relation aggregate(Relation relation, str bindTo, Domain bindToDomain, Term resultVar, Term (Row, Term) aggregateFunc, Term initialTerm) {
-  Term aggregatedTerm = initialTerm;
-  
-  for (Tuple t <- relation.rows) {
-    aggregatedTerm = aggregateFunc(<t, relation.rows[t]>, aggregatedTerm);
-  }
-  
-  return <(bindTo:bindToDomain),((bindTo:resultVar):<\true(), equal(resultVar, aggregatedTerm)>), {}>; 
-}
-
 @memo
 Relation product(Relation lhs, Relation rhs) {
   // Headings must be disjoint
@@ -283,9 +273,9 @@ Relation naturalJoin(Relation lhs, Relation rhs) {
   // Index on joining attributes
   IndexedRows indexedLhs = index(lhs.rows, joinAtts & joinPartialKey);
   IndexedRows indexedRhs = index(rhs.rows, joinAtts & joinPartialKey);
-
-  bool joinOnKeysOnly = joinAtts & joinPartialKey == joinAtts;
   
+  bool joinOnKeysOnly = joinAtts & joinPartialKey == joinAtts;
+
   IndexedRows result = <joinPartialKey,[]>; 
   for (Tuple key <- indexedLhs.indexedRows<0>, key in indexedRhs.indexedRows<0>, Row lr <- indexedLhs.indexedRows[key], Row rr <- indexedRhs.indexedRows[key]) {
     Formula exists = \and(lr.constraints.exists,rr.constraints.exists);
@@ -326,17 +316,44 @@ Relation transitiveClosure(Relation r, str from, str to) {
     throw "TRANSITIVE CLOSURE only works for a binary relation with two id fields";
   }
   
-  int rows = size(r.rows); 
+  int nrOfRows = size({tpl[from] | Tuple tpl <- r.rows}); 
 
   Relation result = r;
   
-  int i = 1;
-  while(i < rows) {
+  //int i = 1;
+  
+  int nrOfLoopsNeeded = floor(sqrt(nrOfRows));
+  for (int i <- [0..nrOfLoopsNeeded]) {
+    println("Performing loop <i+1> of <nrOfLoopsNeeded>");
     Relation tmp = rename(result, (from:to, to:"_tmp"));
-    
-    result = union(result, rename(project(naturalJoin(result, tmp),{from,"_tmp"}), ("_tmp":to)));
-    
-    i *= 2;
+    Relation afterJoin = naturalJoin(result, tmp);
+
+//    IndexedRows indexedResult = index(result.rows, {to});
+//    IndexedRows indexedTmp = index(tmp.rows, {to});
+//    
+//    IndexedRows joinResult = <{to},[]>; 
+//    for (Tuple key <- indexedResult.indexedRows<0>, key in indexedTmp.indexedRows<0>, Row lr <- indexedResult.indexedRows[key], Row rr <- indexedTmp.indexedRows[key]) {
+//      Formula exists = \and(lr.constraints.exists,rr.constraints.exists);
+//      Formula attForm = \and(lr.constraints.attConstraints,rr.constraints.attConstraints);
+//
+//      if (exists != \false() && attForm != \false()) {
+//        if (key in joinResult.indexedRows<0>) {
+//          for (Row resultRow <- joinResult.indexedRows[key]) {
+//            exists = \or(exists, resultRow.constraints.exists);
+//            attForm = \or(attForm, resultRow.constraints.attConstraints);
+//            joinResult.indexedRows = joinResult.indexedRows - <key,resultRow>;
+//          }
+//        } 
+//          
+//        joinResult.indexedRows = joinResult.indexedRows + <key, <lr.values+rr.values, <exists, attForm>>>;
+//      }
+//    }
+//    Relation afterJoin = toRelation(joinResult, result.heading + tmp.heading);
+
+    Relation afterProject= project(afterJoin,{from,"_tmp"});
+    Relation afterSndRename = rename(afterProject,("_tmp":to));
+    result = union(result, afterSndRename);
+   // i *= 2;
   } 
   
   return result; 
@@ -352,27 +369,3 @@ Relation reflexiveTransitiveClosure(Relation r, str from, str to, Relation iden)
   
   return result; 
 } 
-
-//@memo
-//Relation ite(Formula \case, Relation \then, Relation \else) {
-//  if (arity(then) != arity(\else)) {
-//    throw "Arity of relation in THEN must be equal to the arity of the relation in ELSE for the ITE to work";
-//  }
-//
-//  if (\case == \true()) {
-//    return then;
-//  } else if (\case == \false()) {
-//    return \else;
-//  } 
-//  
-//  Relation relResult = ();
-//  
-//  for (Index idx <- (then + \else)) {
-//    Formula thenRel = ((idx in then) ? then[idx].relForm : \false());
-//    Formula elseRel = ((idx in \else) ? \else[idx].relForm : \false()); 
-//    
-//    relResult[idx] = relOnly(ite(\case, thenRel, elseRel));
-//  } 
-//  
-//  return relResult;
-//}

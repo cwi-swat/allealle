@@ -48,11 +48,22 @@ void renderModel(Model model, Model (Domain) nextModel, void () stop) {
   set[Domain] domainsInModel = {delAnnotations(d) | /Domain d := currentModel}; 
  
   str toStr(\intDom()) = "integer";
+  str toStr(id()) = "relational";
+ 
+  Figures createNextDomainModelButtons() {
+    Figures nextModelButtons = [];
+    
+    for (Domain d <- domainsInModel) {
+      Domain dom = d;
+      nextModelButtons += button("Next <toStr(d)> model", void () { currentModel = nextModel(dom); r();});
+    }
+
+    return nextModelButtons; 
+  }
    
 	Figure showButtons() = currentModel != empty() ?
 		hcat(
-		  [button("Next relational model", void () { currentModel = nextModel(id()); r();})] + 
-		  [button("Next <toStr(d)> model", void () { currentModel = nextModel(d); r();}) | Domain d <- domainsInModel, d != id()] +
+		  createNextDomainModelButtons() +
 			[button("Stop", stop)]
 		) :
 		hcat([
@@ -116,8 +127,7 @@ void renderModel(Model model, Model (Domain) nextModel, void () stop) {
 
 }
 
-str val2Str(lit(posInt(int i))) = "<i>";
-str val2Str(lit(negInt(int i))) = "-<i>";
+bool isUnaryRel(Relation r) = size({att | str att <- r.heading, r.heading[att] == id()}) == 1; 
 
 Figure visualizeModel(Model model, DisplayOptions disOpt) {
 	if (model == empty()) { 
@@ -125,9 +135,9 @@ Figure visualizeModel(Model model, DisplayOptions disOpt) {
 	}
 
   set[VisNode] buildVisNodes() {
-    map[Id, VisNode] nodes = ();
+    map[str, VisNode] nodes = ();
     
-    for (unary(str relName, set[ModelTuple] tuples) <- model.relations, ModelTuple t <- tuples, [Id id] := t.idx.idx) {
+    for (ModelRelation r <- model.relations, isUnaryRel(r)) {
       map[str,str] attVals = (att.name : val2Str(att.val) | ModelAttribute att <- t.attributes);
       
       if (id in nodes) {
