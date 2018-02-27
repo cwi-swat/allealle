@@ -62,6 +62,7 @@ str unparse(conjunction(AlleFormula lhsForm, AlleFormula rhsForm))              
 str unparse(disjunction(AlleFormula lhsForm, AlleFormula rhsForm))                  = "(<unparse(lhsForm)> || <unparse(rhsForm)>)";
 str unparse(implication(AlleFormula lhsForm, AlleFormula rhsForm))                  = "(<unparse(lhsForm)> =\> <unparse(rhsForm)>)";
 str unparse(equality(AlleFormula lhsForm, AlleFormula rhsForm))                     = "(<unparse(lhsForm)> \<=\> <unparse(rhsForm)>)";  
+str unparse(\filter(AlleExpr expr, Criteria crit))                                  = "(<unparse(expr)>::[<unparse(crit)>])";  
 str unparse(universal(list[VarDeclaration] decls, AlleFormula form))                = "(forall <intercalate(", ", [unparse(d) | VarDeclaration d <- decls])> | <unparse(form)>)";
 str unparse(existential(list[VarDeclaration] decls, AlleFormula form))              = "(exists <intercalate(", ", [unparse(d) | VarDeclaration d <- decls])> | <unparse(form)>)";
 str unparse(let(list[VarBinding] bindings, AlleFormula form))                       = "(let <intercalate(", ", [unparse(b) | VarBinding b <- bindings])> | <unparse(form)>)";

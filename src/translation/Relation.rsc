@@ -42,6 +42,7 @@ IndexedRows index(Relation r) = index(r.rows, r.partialKey);
 Relation toRelation(IndexedRows rows, Heading heading)
   = <heading, (k.row.values : k.row.constraints | k <- rows.indexedRows), rows.partialKey>;
   
+@memo  
 Tuple getPartialKeyTuple(Tuple row, set[str] partialKey) = (att : row[att] | str att <- row, att in partialKey);
 
 set[str] getIdFields(Heading h) = {f | str f <- h, h[f] == id()}; 
@@ -264,6 +265,7 @@ Relation product(Relation lhs, Relation rhs) {
 Relation naturalJoin(Relation lhs, Relation rhs) {
   // Must have attributes with the same name and domain
   set[str] joinAtts = (lhs.heading & rhs.heading)<0>;
+  
   if (joinAtts == {}) {
     throw "No overlapping attributes to join";
   }
@@ -273,7 +275,7 @@ Relation naturalJoin(Relation lhs, Relation rhs) {
   // Index on joining attributes
   IndexedRows indexedLhs = index(lhs.rows, joinAtts & joinPartialKey);
   IndexedRows indexedRhs = index(rhs.rows, joinAtts & joinPartialKey);
-  
+
   bool joinOnKeysOnly = joinAtts & joinPartialKey == joinAtts;
 
   IndexedRows result = <joinPartialKey,[]>; 
@@ -320,11 +322,12 @@ Relation transitiveClosure(Relation r, str from, str to) {
 
   Relation result = r;
   
-  //int i = 1;
+  int i = 1;
   
   int nrOfLoopsNeeded = floor(sqrt(nrOfRows));
-  for (int i <- [0..nrOfLoopsNeeded]) {
-    println("Performing loop <i+1> of <nrOfLoopsNeeded>");
+  //for (int i <- [0..nrOfLoopsNeeded]) {
+  while (i < nrOfRows) {
+    //println("Performing loop <i+1> of <nrOfLoopsNeeded>");
     Relation tmp = rename(result, (from:to, to:"_tmp"));
     Relation afterJoin = naturalJoin(result, tmp);
 
@@ -353,7 +356,7 @@ Relation transitiveClosure(Relation r, str from, str to) {
     Relation afterProject= project(afterJoin,{from,"_tmp"});
     Relation afterSndRename = rename(afterProject,("_tmp":to));
     result = union(result, afterSndRename);
-   // i *= 2;
+    i *= 2;
   } 
   
   return result; 

@@ -1,0 +1,32 @@
+Disc (dId:id, size:int)         = {<d3,3>,<d2,2>,<d1,1>}
+
+Rod  (rId:id)                   = {<r1>,<r2>,<r3>}
+GoalRod (rId:id)                = {<r3>}
+
+State (sId:id)                 <= {<s1>..<s8>}
+InitialState (sId:id)           = {<s1>}
+ordering (cur:id, next:id)     <= {<s1,s2>,<s2,s3>,<s3,s4>,<s4,s5>,<s5,s6>,<s6,s7>,<s7,s8>}
+
+place (sId:id,rId:id,dId:id)   >= {<s1,r1,d1>,<s1,r1,d2>,<s1,r1,d3>} <= {<s1,r1,d1>,<s1,r1,d2>,<s1,r1,d3>,<s2,r1,d1>..<s8,r3,d3>} 
+
+place ⊆ State ⨯ Rod ⨯ Disc[dId]
+ordering ⊆ State[cur/sId] ⨯ State[next/sId]
+// All states should be reachable from the initial state 
+State ⊆ (InitialState[cur/sId] ⨝ *<cur,next>ordering)[next][sId/next]
+
+// Every disc can only be on one rod per state
+∀ s ∈ State, d ∈ Disc | one (s ⨝ place ⨝ d) 
+// There is a state on which all discs are on the goal rod
+∃ s ∈ State | Disc[dId] = (GoalRod ⨝ place ⨝ s)[dId]
+∀ o ∈ ordering | let s = o[cur][sId/cur], s' = o[next][sId/next] | 
+  // Only one disc can move per step
+  one ((s' ⨝ place)[rId,dId] ∖ (s ⨝ place)[rId,dId]) ∧ 
+  // Only the top disc can move, and it can only move on top of other discs (expressed using 'size' constraints)
+  (∃ d ∈ Disc | let currentRod = (s ⨝ place ⨝ d)[rId], nextRod = (s' ⨝ place ⨝ d)[rId], discsOnCurRod = (s ⨝ place ⨝ currentRod ⨝ Disc)[dId,size], discsOnNxtRod = (s' ⨝ place ⨝ nextRod ⨝ Disc)[dId,size] |
+               currentRod ≠ nextRod ∧ // This is the disc that moves
+               (d ⨯ (discsOnCurRod ∖ d)[dId'/dId,size'/size])::[size' > size] ∧ // When it comes from a rod with more discs, it can only be the smallest disc (that is the disc on top, cannot move a disc in the middle of the stack) 
+               (d ⨯ (discsOnNxtRod ∖ d)[dId'/dId,size'/size])::[size' > size] // When it goes to a rod with more discs, it can only be the smallest disc on the new rod (otherwise there would be a smaller disc below and that is not allowed)
+  )
+
+// We want the optimal solutions, no unnecessary steps allowed  
+objectives: minimize State[cnt/count()]

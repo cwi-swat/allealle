@@ -5,10 +5,10 @@ extend translation::Syntax;
 syntax Domain = "int";
 
 syntax Criteria
-  = non-assoc  (lt:    CriteriaExpr lhs "\<" CriteriaExpr rhs
-              | lte:   CriteriaExpr lhs "\<=" CriteriaExpr rhs
-              | gt:    CriteriaExpr lhs "\>" CriteriaExpr rhs
-              | gte:   CriteriaExpr lhs "\>=" CriteriaExpr rhs
+  = non-assoc  (lt:    CriteriaExpr lhsExpr "\<" CriteriaExpr rhsExpr
+              | lte:   CriteriaExpr lhsExpr "\<=" CriteriaExpr rhsExpr
+              | gt:    CriteriaExpr lhsExpr "\>" CriteriaExpr rhsExpr
+              | gte:   CriteriaExpr lhsExpr "\>=" CriteriaExpr rhsExpr
               )
   ; 
 

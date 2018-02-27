@@ -59,8 +59,9 @@ private tuple[map[Command,Formula], int] bmObj(Objective obj, Environment env) {
   return <result, cpuTime() - startTime>;
 }
 
-Formula translateFormula(empty(AlleExpr expr), Environment env) 
-  = \not(translateFormula(nonEmpty(expr), env));
+Formula translateFormula(empty(AlleExpr expr), Environment env) {
+   return \not(translateFormula(nonEmpty(expr), env));
+}
 
 
 Formula translateFormula(atMostOne(AlleExpr expr), Environment env) {
@@ -227,6 +228,9 @@ Formula translateFormula(equality(AlleFormula lhsForm, AlleFormula rhsForm), Env
   
   return \or(\and(l,r), \and(\not(l), \not(r)));
 }
+
+Formula translateFormula(\filter(AlleExpr expr, Criteria crit), Environment env) 
+  = translateFormula(universal([varDecl("_elem", expr)], nonEmpty(select(relvar("_elem"), crit))), env);
 
 Formula translateFormula(let(list[VarBinding] bindings, AlleFormula form), Environment env) {
   for (VarBinding b <- bindings) {
@@ -473,4 +477,4 @@ Command translateObjectiveFunction(minimize(AlleExpr _), Term t) = minimize(t);
 
 Literal translateLiteral(idLit(Id i)) = id(i);
 
-default Literal tranlsateLiteral(AlleLiteral l) { throw "Unable to translate literal \'<l>\'. Not yet implemented"; }
+default Literal translateLiteral(AlleLiteral l) { throw "Unable to translate literal \'<l>\'. Not yet implemented"; }

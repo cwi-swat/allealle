@@ -67,6 +67,51 @@ map[str,UnionResult] buildEnvironment(Problem p) {
   
   return env;
 }
+
+//syntax RelationalBound
+//  = exact: "=" "{" {Tuple ","}* tuples "}"
+//  | atMost: "\<=" "{" {Tuple ","}+ upper "}"
+//  | atLeastAtMost: "\>=" "{" {Tuple ","}+ lower "}" "\<=" "{" {Tuple ","}+ upper "}"
+//  ;
+
+void check((RelationalBound)`= {<{Tuple ","}* tuples> }`, map[str,str] attributes, CheckFunctions cf) {
+  for (t <- tuples) {
+    check(t, attributes, cf);
+  }
+}
+void check((RelationalBound)`\<= {<{Tuple ","}* upper> }`, map[str,str] attributes, CheckFunctions cf) {
+  for (t <- tuples) {
+    check(t, attributes, cf);
+  }
+}
+
+void check((RelationalBound)`\>= {<{Tuple ","}* lower>} \<= {<{Tuple ","}* upper> }`, map[str,str] attributes, CheckFunctions cf) { checkTuples({t | t <- tuples}); }
+
+void checkTuples(set[Tuple] tuples, map[str,str] attributes, CheckFunctions cf) {
+  for (t <- tuples) {
+    check(t, attributes, cf);
+  }
+}
+
+
+//syntax Tuple 
+//  = tup: "\<" {Value ","}+ values "\>"
+//  | range: "\<" {RangedValue ","}+ from "\>" ".." "\<" {RangedValue ","}+ to "\>"
+//  ;  
+//
+//syntax Value
+//  = Idd id
+//  | lit: Literal lit
+//  | "?"
+//  ;
+//
+//syntax RangedValue
+//  = id: RangedId prefix RangedNr numm
+//  | idOnly: RangedId id
+//  | templateLit: Literal lit
+//  | "?"
+//  ;
+
  
 void check((AlleFormula)`( <AlleFormula form> )`, Environment env, CheckFunctions cf) { check(form, env, cf); } 
 void check((AlleFormula)`¬ <AlleFormula form>`, Environment env, CheckFunctions cf) { check(form, env, cf); }
@@ -96,6 +141,15 @@ Environment checkBinding(VarBinding binding, Environment env, CheckFunctions cf)
   
   env["<binding.var>"] = cf.lookup(binding.expr@\loc);
   return env;
+}
+
+void check(f:(AlleFormula)`<AlleExpr expr>::[<Criteria crit>]`, Environment env, CheckFunctions cf) {
+  check(expr, env, cf);
+  
+  if (heading(map[str,str] atts) := cf.lookup(expr@\loc)) {
+    check(crit, atts, cf);
+    cf.add(f@\loc, heading(atts));
+  }
 }
 
 void check(f:(AlleFormula)`∀ <{VarDeclaration ","}+ decls> | <AlleFormula form>`, Environment env, CheckFunctions cf)  {
@@ -178,8 +232,18 @@ void check(e:(AlleExpr)`<AlleExpr expr>[<{AggregateFunctionDef ","}+ aggFuncs>]`
   check(expr, env, cf);
   
   if (heading(map[str,str] attributes) := cf.lookup(expr@\loc)) {  
+    map[str,str] newHeading = ();
     for (AggregateFunctionDef def <- aggFuncs) {
       check(def, attributes, cf);
+      if (heading(map[str,str] newAtts) := cf.lookup(def@\loc)) {
+        newHeading += newAtts;
+      } 
+    }
+    
+    if (newHeading != ()) {
+      cf.add(e@\loc, heading(newHeading));
+    } else {
+      cf.add(e@\loc, incompatible());
     }
   } else {
     cf.add(e@\loc, incompatible());
@@ -260,9 +324,32 @@ void check(e:(AlleExpr)`<AlleExpr lhs> ⨯ <AlleExpr rhs>`, Environment env, Che
 }
 
 void check(e:(AggregateFunctionDef)`<AttributeName bindTo> / <AggregateFunction func>`, map[str,str] attributes, CheckFunctions cf) {
-    
+  check(func, attributes, cf);    
+  
+  cf.add(e@\loc, heading(("<bindTo>":"int()")));
 }
 
+void check(e:(AggregateFunction)`count()`, map[str,str] attributes, CheckFunctions cf) {}
+void check(e:(AggregateFunction)`sum(<AttributeName att>)`, map[str,str] attributes, CheckFunctions cf) {
+  if ("<att>" notin attributes) {
+    cf.addMessage(error("\'<att>\' not part of relation", att@\loc));
+  }
+}
+void check(e:(AggregateFunction)`min(<AttributeName att>)`, map[str,str] attributes, CheckFunctions cf) {
+  if ("<att>" notin attributes) {
+    cf.addMessage(error("\'<att>\' not part of relation", att@\loc));
+  }
+}
+void check(e:(AggregateFunction)`max(<AttributeName att>)`, map[str,str] attributes, CheckFunctions cf) {
+  if ("<att>" notin attributes) {
+    cf.addMessage(error("\'<att>\' not part of relation", att@\loc));
+  }
+}
+void check(e:(AggregateFunction)`avg(<AttributeName att>)`, map[str,str] attributes, CheckFunctions cf) {
+  if ("<att>" notin attributes) {
+    cf.addMessage(error("\'<att>\' not part of relation", att@\loc));
+  }
+}
 
 void check((Criteria)`( <Criteria cr> )`, map[str,str] attributes, CheckFunctions cf) { check(cr, attributes, cf); } 
 void check((Criteria)`not <Criteria cr>`, map[str,str] attributes, CheckFunctions cf) { check(cr, attributes, cf); } 

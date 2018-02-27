@@ -107,14 +107,12 @@ syntax AggregateFunction
   = dummy: " " !>> " "
   ;
   
-//lexical FunctionName = dummy: " " !>> " ";  
-
 syntax Criteria
   = bracket "(" Criteria ")"
   > "not" Criteria
   > non-assoc 
-    ( CriteriaExpr lhs "=" CriteriaExpr rhs
-    | CriteriaExpr lhs "!=" CriteriaExpr rhs
+    ( CriteriaExpr lhsExpr "=" CriteriaExpr rhsExpr
+    | CriteriaExpr lhsExpr "!=" CriteriaExpr rhsExpr
     )
   > left ( Criteria lhs "&&" Criteria rhs
          | Criteria lhs "||" Criteria rhs
@@ -145,7 +143,7 @@ lexical Id = ([a-z_] !<< [a-z][a-zA-Z0-9_]* !>> [a-zA-Z0-9_]) \ Keywords;
 lexical AttributeName = ([a-zA-Z] !<< [a-zA-Z][a-zA-Z0-9_\']* !>> [a-zA-Z0-9_]) \ Keywords;
 lexical Arity = [0-9]+;
 
-lexical RelVar = ([a-zA-Z] !<< [a-zA-Z_][a-zA-Z0-9_\']* !>> [a-zA-Z0-9_]) \ Keywords;
+lexical RelVar = ([a-zA-Z] !<< [a-zA-Z][a-zA-Z0-9_\']* !>> [a-zA-Z0-9_]) \ Keywords;
 
 keyword Keywords = "none" | "|x|" | "where" | "objectives";
 keyword Keywords = "no" | "lone" | "one" | "some" | "not" | "forall" | "exists" | "let";

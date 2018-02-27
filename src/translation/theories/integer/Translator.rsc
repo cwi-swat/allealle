@@ -145,8 +145,9 @@ Relation translateAggregateFunction(count(), str bindTo, Relation r, Environment
   }
   
   Term countVar = env.newVar(bindTo, \int());
+  Term countTerm = terms == [] ? lit(\int(0)) : addition(terms);
   
-  return <(bindTo:intDom()), ((bindTo:countVar):<\true(), equal(countVar, addition(terms))>), {}>;
+  return <(bindTo:intDom()), ((bindTo:countVar):<\true(), equal(countVar, countTerm)>), {}>;
 }
 
 Relation translateAggregateFunction(sum(str att), str bindTo, Relation r, Environment env) { 
