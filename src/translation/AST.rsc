@@ -69,6 +69,7 @@ data AlleExpr
   | project(AlleExpr expr, list[str] attributes)
   | select(AlleExpr expr, Criteria criteria)
   | aggregate(AlleExpr expr, list[AggregateFunctionDef] functionDefs)
+  | groupedAggregate(AlleExpr expr, list[str] groupBy, list[AggregateFunctionDef] functionDefs)
   | union(AlleExpr lhs, AlleExpr rhs)
   | intersection(AlleExpr lhs, AlleExpr rhs)
   | difference(AlleExpr lhs, AlleExpr rhs)

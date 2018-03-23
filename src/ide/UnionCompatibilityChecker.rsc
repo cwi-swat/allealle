@@ -250,6 +250,45 @@ void check(e:(AlleExpr)`<AlleExpr expr>[<{AggregateFunctionDef ","}+ aggFuncs>]`
   } 
 }
 
+void check(e:(AlleExpr)`<AlleExpr expr>[<{AttributeName ","}+ groupBy>,<{AggregateFunctionDef ","}+ aggFuncs>]`, Environment env, CheckFunctions cf) {
+  check(expr, env, cf);
+  
+  if (heading(map[str,str] attributes) := cf.lookup(expr@\loc)) {  
+    bool err = false;
+    
+    for (AttributeName group <- groupBy) {
+      if ("<group>" notin attributes) {
+        cf.addMessage(error("Attribute is not part of relation", group@\loc));
+        cf.add(e@\loc, incompatible()); 
+        err = true;
+      } else if (attributes["<group>"] != "id()") {
+        cf.addMessage(error("Can only group on id attributes", group@\loc));
+        cf.add(e@\loc, incompatible()); 
+        err = true;
+      }
+    }
+    
+    if (!err) {
+      map[str,str] newHeading = ();
+      for (AggregateFunctionDef def <- aggFuncs) {
+        check(def, attributes, cf);
+        if (heading(map[str,str] newAtts) := cf.lookup(def@\loc)) {
+          newHeading += newAtts;
+        } 
+      }
+      
+      if (newHeading != ()) {
+        cf.add(e@\loc, heading(newHeading));
+      } else {
+        cf.add(e@\loc, incompatible());
+      }
+    }
+  } else {
+    cf.add(e@\loc, incompatible());
+  } 
+}
+
+
 void check(e:(AlleExpr)`<AlleExpr expr> where <Criteria crit>`, Environment env, CheckFunctions cf) {
   check(expr,env,cf);
   

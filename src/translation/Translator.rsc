@@ -22,7 +22,7 @@ TranslationResult translateProblem(Problem p, Environment env, bool logIndividua
   list[Command] cmds = [];
   
   if (logIndividualFormula) {
-    form = and({r | AlleFormula f <- p.constraints, bprint("\nTranslating \'<unparse(f)>\' ..."), <Formula r, int time> := bm(f, env), bprint("in <time / 1000000> ms.")}); 
+    form = (\true() | and(it, r) | AlleFormula f <- p.constraints, bprint("\nTranslating \'<unparse(f)>\' ..."), <Formula r, int time> := bm(f, env), bprint("in <time / 1000000> ms.")); 
   } else {
     form = and({translateFormula(f, env) | AlleFormula f <- p.constraints}); 
   }
@@ -275,13 +275,19 @@ private void forall(list[VarDeclaration] decls, int currentDecl, Formula declCon
   
   Relation r = translateExpression(decls[currentDecl].binding, env);
 
+  int nrOfTuples = size(r.rows);
+  int i = 1;
+  
   for (Tuple t <- r.rows) {
+    println("forall <i> of <nrOfTuples>"); 
     env.relations[decls[currentDecl].name] = <r.heading,(t:<\true(),r.rows[t].attConstraints>),r.partialKey>;
     forall(decls, currentDecl + 1, \or(not(together(r.rows[t])), declConstraints),  accumulate, isShortCircuited, form, env);
 
     if (isShortCircuited()) {
       return;
     }
+    
+    i += 1;
   } 
 }
 
@@ -338,11 +344,11 @@ Relation translateExpression(rename(AlleExpr expr, list[Rename] renames), Enviro
 
 Relation translateExpression(project(AlleExpr expr, list[str] attributes), Environment env) = project(translateExpression(expr, env), toSet(attributes));
 
-Relation translateExpression(aggregate(AlleExpr expr, list[AggregateFunctionDef] funcs), Environment env) { 
+Relation translateExpression(aggregate(AlleExpr expr, list[AggregateFunctionDef] funcs), Environment env) = aggregate(translateExpression(expr, env), funcs, env);
+
+private Relation aggregate(Relation r, list[AggregateFunctionDef] funcs, Environment env) {
   Relation cross([Relation r]) = r;
   default Relation cross([Relation head, *Relation tail]) = product(head, cross(tail));
-  
-  Relation r = translateExpression(expr, env);
   
   list[Relation] aggregatedResults = [];
   for (AggregateFunctionDef def <- funcs) {
@@ -350,6 +356,23 @@ Relation translateExpression(aggregate(AlleExpr expr, list[AggregateFunctionDef]
   }
   
   return cross(aggregatedResults);
+}
+
+Relation translateExpression(groupedAggregate(AlleExpr expr, list[str] gb, list[AggregateFunctionDef] funcs), Environment env) { 
+  Relation r = translateExpression(expr, env);
+  
+  map[Relation,Relation] groupedRel = groupBy(r, gb);
+  Rows rows = ();
+  Heading newHeading = ();
+   
+  for (Relation partial <- groupedRel) {
+    Relation p = product(partial, aggregate(groupedRel[partial], funcs, env));
+    
+    rows += p.rows; 
+    newHeading = p.heading;
+  }
+  
+  return <newHeading, rows, toSet(gb)>;
 }
 
 Relation translateExpression(select(AlleExpr expr, Criteria criteria), Environment env) = select(translateExpression(expr, env), translateCriteria(criteria, env));
@@ -402,8 +425,15 @@ Formula (Tuple) translateCriteria(and(Criteria lhs, Criteria rhs), Environment e
   Formula (Tuple) lhsCrit = translateCriteria(lhs, env);
   Formula (Tuple) rhsCrit = translateCriteria(rhs, env);
 
-  Formula translate(Tuple t) = and(lhsCrit(t),rhsCrit(t));     
-  
+  Formula translate(Tuple t) {
+    Formula lhsForm = lhsCrit(t);
+    if (lhsForm == \false()) {
+      return \false();
+    } else {
+      return and(lhsForm,rhsCrit(t));     
+    }
+  }
+    
   return translate; 
 } 
 
@@ -411,7 +441,14 @@ Formula (Tuple) translateCriteria(or(Criteria lhs, Criteria rhs), Environment en
   Formula (Tuple) lhsCrit = translateCriteria(lhs, env);
   Formula (Tuple) rhsCrit = translateCriteria(rhs, env);
 
-  Formula translate(Tuple t) = or(lhsCrit(t),rhsCrit(t));     
+  Formula translate(Tuple t) { 
+    Formula lhsForm = lhsCrit(t);
+    if (lhsForm == \true()) {
+      return \true();
+    } else {
+      return or(lhsForm,rhsCrit(t));     
+    }
+  }
   
   return translate; 
 }
@@ -459,14 +496,18 @@ default Term (Tuple) translateCriteriaExpr(CriteriaExpr criteriaExpr, Environmen
 map[Command,Formula] translateObjective(Objective obj, Environment env) {
   Relation r = translateExpression(obj.expr,env);
   
-  if (size(r.heading) != 1) {
-    throw "Can only maximize on a relation with one attribute";
+  set[str] nonIdFields = getNonIdFields(r.heading);
+  
+  if (size(nonIdFields) != 1) {
+    throw "Can only maximize on a relation with one non-id attribute";
   }
   
   map[Command,Formula] cmds = ();
   
-  for (Tuple t <- r.rows, str attName := getOneFrom(t<0>)) {
-    cmds[translateObjectiveFunction(obj, t[attName])] = r.rows[t].attConstraints;
+  for (Tuple t <- r.rows, str attName := getOneFrom(nonIdFields)) {
+    //Term objectiveVar = env.newVar("_objective_<attName>", domain2Sort(r.heading[attName]));
+    //cmds[translateObjectiveFunction(obj, objectiveVar)] = implies(together(r.rows[t]), equal(objectiveVar, t[attName]));
+    cmds[translateObjectiveFunction(obj, t[attName])] = implies(r.rows[t].exists, r.rows[t].attConstraints);
   }
   
   return cmds;

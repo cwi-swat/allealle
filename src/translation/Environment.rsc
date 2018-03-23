@@ -33,8 +33,10 @@ Environment createInitialEnvironment(Problem p) {
                       
 list[Id] extractIdDomain(Problem p) =
   dup([id | RelationDef r <- p.relations, AlleTuple t <- getAlleTuples(r.bounds)<1>, idd(Id id) <- t.values]);   
-                                                                                                                                                    
+
+@memo                                                                                                                                                    
 Relation createRelation(RelationDef r) {
+  @memo
   str idToStr(list[AlleValue] vals) = intercalate("_", [i | idd(i) <- vals]);
 
   list[str] orderedHeading = [ha.name | HeaderAttribute ha <- r.heading];
@@ -42,22 +44,27 @@ Relation createRelation(RelationDef r) {
   Heading heading = (orderedHeading[i] : orderedDomains[i] | int i <- [0..size(orderedHeading)]);
     
   set[str] partialKey = getIdFields(heading);
-  IndexedRows rows = <partialKey, []>;
+  //IndexedRows rows = <partialKey, {}>;
   
   tuple[list[AlleTuple] lb, list[AlleTuple] ub] bounds = getAlleTuples(r.bounds);
   
+  //println("Constructing relation <r.name>. Upperbound size: size(<bounds.
+   
   set[str] idsInLowerBound = {};
-  
+  Rows rows = ();
   for (AlleTuple t <- bounds.lb) {
-    rows = addRow(rows, <convertAlleTuple(t, r.name, idToStr(t.values), orderedHeading, orderedDomains), <\true(), \true()>>);
+    rows[convertAlleTuple(t, r.name, idToStr(t.values), orderedHeading, orderedDomains)] = <\true(), \true()>;
+    //rows = addRow(rows, <convertAlleTuple(t, r.name, idToStr(t.values), orderedHeading, orderedDomains), <\true(), \true()>>);
     idsInLowerBound += idToStr(t.values);
   }
 
   for (AlleTuple t <- bounds.ub, idToStr(t.values) notin idsInLowerBound) {
-    rows = addRow(rows, <convertAlleTuple(t, r.name, idToStr(t.values), orderedHeading, orderedDomains), <pvar("<r.name>_<idToStr(t.values)>"), \true()>>);
-  }
+    //rows = addRow(rows, <convertAlleTuple(t, r.name, idToStr(t.values), orderedHeading, orderedDomains), <pvar("<r.name>_<idToStr(t.values)>"), \true()>>);
+    rows[convertAlleTuple(t, r.name, idToStr(t.values), orderedHeading, orderedDomains)] = <pvar("<r.name>_<idToStr(t.values)>"), \true()>;
+  } 
  
-  return toRelation(rows,heading);
+  //return toRelation(rows,heading);
+  return <heading, rows, partialKey>;
 } 
 
 tuple[list[AlleTuple], list[AlleTuple]] getAlleTuples(exact(list[AlleTuple] tuples)) = <tups,tups> when list[AlleTuple] tups := convertRangedDefinitions(tuples);

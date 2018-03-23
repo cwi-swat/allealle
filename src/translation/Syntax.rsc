@@ -80,6 +80,7 @@ syntax AlleExpr
   | project:            AlleExpr r "[" {AttributeName ","}+ "]"
   | select:             AlleExpr r "where" Criteria criteria
   | aggregate:          AlleExpr r "[" {AggregateFunctionDef ","}+ "]"
+  | groupedAggregate:   AlleExpr r "[" {AttributeName ","}+ groupBy "," {AggregateFunctionDef ","}+ aggregateFunctions "]"
   > transpose:          "~" TupleAttributeSelection tas AlleExpr r
   | closure:            "^" TupleAttributeSelection tas AlleExpr r
   | reflexClosure:      "*" TupleAttributeSelection tas AlleExpr r
@@ -134,12 +135,12 @@ syntax Objective
  | minimize: "minimize" AlleExpr expr
  ;
  
-lexical RangedId = ([a-z_] !<< [a-z_][a-zA-Z_]* !>> [a-zA-Z_]) \ Keywords;
+lexical RangedId = ([a-zA-Z_] !<< [a-zA-Z_][a-zA-Z_\-.]* !>> [a-zA-Z_\-.]) \ Keywords; //([a-z_] !<< [a-z_][a-zA-Z_]* !>> [a-zA-Z_]) \ Keywords;
 lexical RangedNr = [0-9]+;
 
-lexical Idd = ([a-z_] !<< [a-z_][a-zA-Z0-9_]* !>> [a-zA-Z0-9_]) \ Keywords;
+lexical Idd = ([a-zA-Z_] !<< [a-zA-Z_][a-zA-Z_\-0-9.]* !>> [a-zA-Z_\-0-9.]) \ Keywords;
 
-lexical Id = ([a-z_] !<< [a-z][a-zA-Z0-9_]* !>> [a-zA-Z0-9_]) \ Keywords;
+//lexical Id = ([a-z_] !<< [a-z][a-zA-Z0-9_]* !>> [a-zA-Z0-9_]) \ Keywords;
 lexical AttributeName = ([a-zA-Z] !<< [a-zA-Z][a-zA-Z0-9_\']* !>> [a-zA-Z0-9_]) \ Keywords;
 lexical Arity = [0-9]+;
 

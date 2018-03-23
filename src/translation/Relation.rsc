@@ -21,7 +21,7 @@ alias Tuple = map[str,Term];
 
 alias Relation = tuple[Heading heading, Rows rows, set[str] partialKey];
 
-alias IndexedRows = tuple[set[str] partialKey, lrel[Tuple partialKey, Row row] indexedRows];
+alias IndexedRows = tuple[set[str] partialKey, rel[Tuple partialKey, Row row] indexedRows];
 
 bool isPresent(Constraints c) = c.exists != \false() && c.attConstraints != \false(); 
 
@@ -34,18 +34,19 @@ default bool isFixed(Term _) = true;
 
 bool sameArity(Relation r1, Relation r2) = size(r1.heading) == size(r2.heading); 
 
+@memo
 IndexedRows index(Rows rows, set[str] partialKey)
-  = <partialKey, [<getPartialKeyTuple(row, partialKey), <row, rows[row]>> | Tuple row <- rows]>;
+  = <partialKey, {<getPartialKeyTuple(row, partialKey), <row, rows[row]>> | Tuple row <- rows}>;
 
 IndexedRows index(Relation r) = index(r.rows, r.partialKey);
 
 Relation toRelation(IndexedRows rows, Heading heading)
   = <heading, (k.row.values : k.row.constraints | k <- rows.indexedRows), rows.partialKey>;
-  
-@memo  
+   
 Tuple getPartialKeyTuple(Tuple row, set[str] partialKey) = (att : row[att] | str att <- row, att in partialKey);
 
 set[str] getIdFields(Heading h) = {f | str f <- h, h[f] == id()}; 
+set[str] getNonIdFields(Heading h) = {f | str f <- h, h[f] != id()};
   
 bool unionCompatible(Relation r1, Relation r2) = r1.heading == r2.heading; 
 
@@ -133,7 +134,7 @@ Relation intersect(Relation lhs, Relation rhs) {
   IndexedRows lhsIndexed = index(lhs.rows, partialKey);
   IndexedRows rhsIndexed = index(rhs.rows, partialKey);
 
-  IndexedRows result = <partialKey, []>;
+  IndexedRows result = <partialKey, {}>;
     
   for (Tuple key <- lhsIndexed.indexedRows<0>, key in rhsIndexed.indexedRows<0>, Row l <- lhsIndexed.indexedRows[key], Row r <- rhsIndexed.indexedRows[key]) {
     Formula tmpAttForm = \true();
@@ -199,7 +200,7 @@ Relation project(Relation relation, set[str] attributes) {
   
   set[str] projectedPartialKey = relation.partialKey & getIdFields(projectedHeading);
   
-  IndexedRows projectedRel = <projectedPartialKey, []>;
+  IndexedRows projectedRel = <projectedPartialKey, {}>;
   
   for (Tuple tup <- relation.rows) {
     Tuple projectedTup = (att : tup[att] | str att <- tup, att in attributes);
@@ -249,7 +250,7 @@ Relation product(Relation lhs, Relation rhs) {
   
   set[str] partialKey = lhs.partialKey + rhs.partialKey;
   
-  IndexedRows result = <partialKey, []>;
+  IndexedRows result = <partialKey, {}>;
   
   for (Tuple l <- lhs.rows, Tuple r <- rhs.rows) {
     Constraints joined = <\and(lhs.rows[l].exists, rhs.rows[r].exists), \and(lhs.rows[l].attConstraints, rhs.rows[r].attConstraints)>;
@@ -266,6 +267,8 @@ Relation naturalJoin(Relation lhs, Relation rhs) {
   // Must have attributes with the same name and domain
   set[str] joinAtts = (lhs.heading & rhs.heading)<0>;
   
+  //println("Max iterations: <size(lhs.rows) * size(rhs.rows)>, size lhs: <size(lhs.rows)>, size rhs: <size(rhs.rows)>");
+  
   if (joinAtts == {}) {
     throw "No overlapping attributes to join";
   }
@@ -278,8 +281,12 @@ Relation naturalJoin(Relation lhs, Relation rhs) {
 
   bool joinOnKeysOnly = joinAtts & joinPartialKey == joinAtts;
 
-  IndexedRows result = <joinPartialKey,[]>; 
+  IndexedRows result = <joinPartialKey,{}>; 
+  int i = 1;
   for (Tuple key <- indexedLhs.indexedRows<0>, key in indexedRhs.indexedRows<0>, Row lr <- indexedLhs.indexedRows[key], Row rr <- indexedRhs.indexedRows[key]) {
+  //println("Nr of tuples with same key on lhs: <size(indexedLhs.indexedRows[key])>");
+  //println("Nr of tuples with same key on rhs: <size(indexedRhs.indexedRows[key])>");
+  
     Formula exists = \and(lr.constraints.exists,rr.constraints.exists);
     Formula attForm = \and(lr.constraints.attConstraints,rr.constraints.attConstraints);
 
@@ -292,7 +299,9 @@ Relation naturalJoin(Relation lhs, Relation rhs) {
     if (exists != \false() && attForm != \false()) {
       result = addRow(result, <lr.values+rr.values, <exists, attForm>>);
     }
+    i = i + 1;
   }
+  //println("Total nr of iteration needed: <i>");
   
   return toRelation(result, lhs.heading + rhs.heading);
 }
@@ -372,3 +381,27 @@ Relation reflexiveTransitiveClosure(Relation r, str from, str to, Relation iden)
   
   return result; 
 } 
+
+@memo
+map[Relation, Relation] groupBy(Relation r, list[str] groupBy) {
+  set[str] groupKey = {};
+  
+  Heading groupHeading = ();
+  
+  for (str group <- groupBy) {
+    if (group notin r.heading) {
+      throw "Can not GROUP BY on non existing attribute <group>"; 
+    } else if (r.heading[group] != id()) {
+      throw "Can only GROUP BY on attributes with the \'id\' domain";
+    }
+   
+    groupKey += group;
+    groupHeading[group] = id();
+  }
+
+  IndexedRows grouped = index(r.rows, groupKey);
+  map[Relation, Relation] groupedRels = (<groupHeading, (key : <\or({row.constraints.exists | Row row <- grouped.indexedRows[key]}), \true()>), groupKey> :
+                                         <r.heading, (row.values : row.constraints | Row row <- grouped.indexedRows[key]), r.partialKey> | Tuple key <- grouped.indexedRows<0>);
+  
+  return groupedRels;
+}

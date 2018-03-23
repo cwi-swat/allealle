@@ -70,9 +70,10 @@ default str unparse(AlleFormula f) { throw "No unparse function for formula \'<f
 
 str unparse(relvar(str name))                                                       = name;
 str unparse(rename(AlleExpr expr, list[Rename] renames))                            = "(<unparse(expr)>[<intercalate(",",["<r.new>//<r.orig>" | Rename r <- renames])>])";
-str unparse(project(AlleExpr expr, list[str] attributes))                           = "(<unparse(expr)>[<intercalate(",",attributes)>]";
-str unparse(aggregate(AlleExpr expr, list[AggregateFunctionDef] funcs))             = "(<unparse(expr)>[<intercalate(",",[unparse(f) | AggregateFunctionDef f <- funcs])>]";
-str unparse(select(AlleExpr expr, Criteria criteria))                               = "(<unparse(expr)> where <unparse(criteria)>";
+str unparse(project(AlleExpr expr, list[str] attributes))                           = "(<unparse(expr)>[<intercalate(",",attributes)>])";
+str unparse(aggregate(AlleExpr expr, list[AggregateFunctionDef] funcs))             = "(<unparse(expr)>[<intercalate(",",[unparse(f) | AggregateFunctionDef f <- funcs])>])";
+str unparse(groupedAggregate(AlleExpr expr, list[str] groupBy, list[AggregateFunctionDef] funcs)) = "(<unparse(expr)>[<intercalate(",", groupBy)>,<intercalate(",",[unparse(f) | AggregateFunctionDef f <- funcs])>])";
+str unparse(select(AlleExpr expr, Criteria criteria))                               = "(<unparse(expr)> where <unparse(criteria)>)";
 str unparse(union(AlleExpr lhs, AlleExpr rhs))                                      = "(<unparse(lhs)>+<unparse(rhs)>)";
 str unparse(intersection(AlleExpr lhs, AlleExpr rhs))                               = "(<unparse(lhs)>&<unparse(rhs)>)";
 str unparse(difference(AlleExpr lhs, AlleExpr rhs))                                 = "(<unparse(lhs)>-<unparse(rhs)>)";

@@ -12,7 +12,7 @@ translation::AST::Problem implodeProblem(translation::Syntax::Problem p)
 
 translation::AST::Problem implodeProblem(translation::Syntax::Problem p) 
   = problem([implode(r) | r <- p.relations], [implode(c) | c <- p.constraints], [implode(obj) | obj <- objSec.objectives])
-  when /ObjectiveSection objSec := p, bprintln("With objectives: <objSec>"); 
+  when /ObjectiveSection objSec := p; 
 
 translation::AST::RelationDef implode((Relation)`<RelVar v> (<{HeaderAttribute ","}+ header>) <RelationalBound bounds>`) 
   = relation("<v>", [implode(h) | h <- header], implode(bounds));
@@ -133,6 +133,9 @@ translation::AST::AlleExpr implode((AlleExpr)`<AlleExpr expr>[<{AttributeName ",
 
 translation::AST::AlleExpr implode((AlleExpr)`<AlleExpr expr>[<{AggregateFunctionDef ","}+ funcs>]`)
   = aggregate(implode(expr), [implode(f) | f <- funcs]);
+
+translation::AST::AlleExpr implode((AlleExpr)`<AlleExpr expr>[<{AttributeName ","}+ groupBy>,<{AggregateFunctionDef ","}+ funcs>]`)
+  = groupedAggregate(implode(expr), ["<n>" | AttributeName n <- groupBy], [implode(f) | f <- funcs]);
 
 translation::AST::AlleExpr implode((AlleExpr)`<AlleExpr expr> where <Criteria criteria>`)
   = select(implode(expr), implode(criteria));

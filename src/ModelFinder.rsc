@@ -22,7 +22,7 @@ import Set;
  
 alias PID = int; 
 
-data ModelFinderResult 
+data ModelFinderResult(int translationTime = -1, int solvingTime = -1) 
 	= sat(Model currentModel, Model (Domain) nextModel, void () stop)
 	| unsat(set[Formula] unsatCore)
 	| trivialSat(Model model)
@@ -39,18 +39,20 @@ ModelFinderResult checkInitialSolution(Problem problem) {
 	println("\n\nDone translating, took: <(t.time/1000000)> ms");
 	
 	//countDeepestNesting(t.r.relationalFormula);
+	
+	int totalTime = (ie.time + t.time) / 1000000;
 	 
 	if (t.tr.form == \false()) {
-		return trivialUnsat();
+		return trivialUnsat(translationTime=totalTime);
 	} else if (t.tr.form == \true()) {
-		return trivialSat(empty());
+		return trivialSat(empty(),translationTime=totalTime);
 	} 
  
-	return runInSolver(problem, t.tr, ie.env); 
+	return runInSolver(problem, t.tr, ie.env, totalTime); 
 }
 
 
-ModelFinderResult runInSolver(Problem problem, TranslationResult tr, Environment env) {
+ModelFinderResult runInSolver(Problem problem, TranslationResult tr, Environment env, int translationTime) {
 	PID solverPid = startSolver(); 
   void stop() {
 		stopSolver(solverPid);
@@ -73,7 +75,8 @@ ModelFinderResult runInSolver(Problem problem, TranslationResult tr, Environment
 	  
 	print("Solving by Z3...");
 	bool satisfiable = isSatisfiable(solverPid, fullSmtProblem); 
-	print("done, took: <getSolvingTime(solverPid)> ms\n");
+	int solvingTime = getSolvingTime(solverPid);
+	print("done, took: <solvingTime> ms\n");
 	println("Outcome is \'<satisfiable>\'");
   
 	SMTModel smtModel = ();
@@ -96,9 +99,10 @@ ModelFinderResult runInSolver(Problem problem, TranslationResult tr, Environment
 		smtModel = firstSmtModel(solverPid, smtVarCollectResult.vars);
 		model = constructRelationalModel(smtModel, env);
 		
-		return sat(model, next, stop);
+		return sat(model, next, stop, translationTime = translationTime, solvingTime = solvingTime);
 	} else { 
-		return unsat({});
+	  stopSolver(solverPid);
+		return unsat({}, translationTime = translationTime, solvingTime = solvingTime);
 	}
 }
 

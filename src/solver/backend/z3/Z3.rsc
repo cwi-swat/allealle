@@ -39,7 +39,7 @@ void stopZ3(PID z3) {
 
 str \run(PID z3, str command, bool debug = false, int wait = 0) {
 	printIfDebug(command, debug);
-		
+
 	writeTo(z3, "<command>\n"); // the \n is added because the outcome of the command will otherwise not be flushed
 	str outcome = read(z3, wait);
 	
@@ -56,12 +56,17 @@ str \run(PID z3, str command, bool debug = false, int wait = 0) {
 
 
 private str read(PID z3, int wait) {
-	str output = readWithWait(z3, wait);
-	
-	while(output == "") {
-    output = trim(readWithWait(z3, wait));
-  }
-	return replaceAll(replaceAll(output, "success", ""), "\n", "");
+  if (wait == 0) {
+    return replaceAll(replaceAll(readFrom(z3), "success", ""), "\n", "");
+  } else {
+    str output = readWithWait(z3, wait);
+	  
+	  while(output == "") {
+      output = trim(readWithWait(z3, wait));
+    }
+	  
+	  return replaceAll(replaceAll(output, "success", ""), "\n", "");
+	}
 }
 
 private void printIfDebug(str line, bool debug) {
