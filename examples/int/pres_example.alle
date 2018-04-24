@@ -1,0 +1,20 @@
+Person (pId:id, age:int, height:int) <= {<p1,?,?>..<p6,?,?>}
+
+Nrs (totalHeight:int)                 = {<?>}
+Married (pId:id, to:id, nrOfYears:int) <= {<p1,p1,?>..<p4,p4,?>}
+
+∀ p ∈ Person | some p where (age >= 18 && height > 100 && height < 275)  
+some (Nrs ⨯ Person[total/sum(height)]) where totalHeight = total
+ 
+some Person[totalHeight/sum(height)] where totalHeight < 9300
+
+// All the persons that are married must exist
+Married[pId,to] ⊆ Person[pId] ⨯ Person[pId][to/pId] 
+// Nobody is married to him or herself
+∀ m ∈ Married | no m where pId = to
+// If I am married to you, you are married to me
+Married[to/pId,pId/to] ⊆ Married
+// You can be married to at most one other person
+∀ p ∈ Person | lone p ⨝ Married
+
+some Person[car/count()] where car % 2 != 0

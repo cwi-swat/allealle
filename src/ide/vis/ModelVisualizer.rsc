@@ -25,7 +25,7 @@ import IO;
 data DisplayOptions = options(real scale = 1.0, set[str] filteredEdges = {});
 data DisplayModus = textual() | visual(); 
 
-data VisNode = visNode(str id, set[str] unaryRels, map[str, str] attributeVals);
+data VisNode = visNode(str id, set[str] unaryRels, map[str, map[str, str]] attributeValsPerRel);
 data VisEdge = visEdge(str naryRel, Id from, Id to, int pos, map[str, str] attributeVals);
 
 FProperty myLeft() = halign(0.05);
@@ -86,7 +86,7 @@ void renderModel(Model model, Model (Domain) nextModel, void () stop) {
 						hcat([checkbox(name, name notin disOpt.filteredEdges, void (bool checked) {
 							     disOpt = options(scale = disOpt.scale, filteredEdges = !checked ? disOpt.filteredEdges + edgeName : disOpt.filteredEdges - edgeName); 
 							     r();
-							   }) | str name <- {name | nary(str name, _) <- model.relations}, str edgeName := name]),
+							   }) | str name <- {r.name | ModelRelation r <- model.relations, isNaryRel(r.heading)}, str edgeName := name]),
 						hshrink(0.98), center()),
 					text("Zoom: <precision(disOpt.scale, 2)>"),
 					scaleSlider(int () { return  0; }, int () { return 100; }, int () { return round(disOpt.scale * 50.); }, void (int cur) {
@@ -127,38 +127,56 @@ void renderModel(Model model, Model (Domain) nextModel, void () stop) {
 
 }
 
-bool isUnaryRel(Relation r) = size({att | str att <- r.heading, r.heading[att] == id()}) == 1; 
+bool isUnaryRel(Heading h) = size(getIdFields(h)) == 1; 
+bool isUnaryRel(ModelRelation r) = isUnaryRel(r.heading); 
+
+bool isNaryRel(Heading h) = size(getIdFields(h)) > 1;
 
 Figure visualizeModel(Model model, DisplayOptions disOpt) {
 	if (model == empty()) { 
 		return text("No more models available", size(100));
 	}
 
-  set[VisNode] buildVisNodes() {
-    map[str, VisNode] nodes = ();
+  str getId(Heading h, ModelTuple t) {
+    if (!isUnaryRel(h)) {
+      throw "Cannot get single id field for non-unary relation";
+    } 
     
-    for (ModelRelation r <- model.relations, isUnaryRel(r)) {
-      map[str,str] attVals = (att.name : val2Str(att.val) | ModelAttribute att <- t.attributes);
-      
-      if (id in nodes) {
-        nodes[id] = visNode(id, nodes[id].unaryRels + relName, nodes[id].attributeVals + attVals);
-      } else {
-        nodes[id] = visNode(id, {relName}, attVals);
-      }           
+    for (ModelAttribute a <- t.attributes, idAttribute(str _, str id) := a) {
+      return id;
     }
     
+    throw "Unable to find id value in tuple of unary relation";
+  }
+
+  set[VisNode] buildVisNodes() {
+    map[str, VisNode] nodes = ();
+     
+    for (ModelRelation r <- model.relations, isUnaryRel(r.heading), ModelTuple t <- r.tuples) {
+      str id = getId(r.heading, t);
+      map[str,str] attVals = (att.name : term2Str(att.val) | ModelAttribute att <- t.attributes, idAttribute(_,_) !:= att);
+      
+      if (id in nodes) {
+        nodes[id].unaryRels += {r.name};
+        if (attVals != ()) {
+          nodes[id].attributeValsPerRel[r.name] = attVals;
+        }
+      } else {
+        nodes[id] = visNode(id, {r.name}, attVals != () ? (r.name:attVals) : ());
+      }           
+    }
     return nodes<1>;
   }
 
   set[VisEdge] buildVisEdges() {
     set[VisEdge] edges = {}; 
     
-    for (nary(str relName, set[ModelTuple] tuples) <- model.relations, relName notin disOpt.filteredEdges, ModelTuple t <- tuples) {
-      map[str,str] attVals = (att.name : val2Str(att.val) | ModelAttribute att <- t.attributes);
-      Index idx = t.idx.idx;
-
-      for (int i <- [0..size(idx)-1]) {
-        edges += visEdge(relName, idx[i], idx[i+1], i, attVals);
+    for (ModelRelation r <- model.relations, isNaryRel(r.heading), r.name notin disOpt.filteredEdges, ModelTuple t <- r.tuples) {
+      map[str,str] attVals = (att.name : term2Str(att.val) | ModelAttribute att <- t.attributes, idAttribute(_,_) !:= att);
+      list[str] ids = sort([id | idAttribute(str _, str id) <- t.attributes]);
+            
+      for (int i <- [0..size(ids)-1]) {
+        edges += visEdge(r.name, ids[i], ids[i+1], i, attVals);
       }        
     }  
     
@@ -169,12 +187,12 @@ Figure visualizeModel(Model model, DisplayOptions disOpt) {
   set[VisEdge] en = buildVisEdges();
   
 	Figures nodes = [displayNode(n, disOpt) | VisNode n <- vn] + [displayEdgeNode(e, disOpt) | VisEdge e <- en];
-	Edges edges = [edge(e.from, labelId), edge(labelId, e.to, triangle(round(10 * disOpt.scale), fillColor("black"))) | VisEdge e <- en, str labelId := "<e.naryRel>_<e.from>_<e.to>_<e.pos>"];
+	Edges edges = [edge(e.from, labelId), edge(labelId, e.to) | VisEdge e <- en, str labelId := "<e.naryRel>_<e.from>_<e.to>_<e.pos>"];
 
 	return graph(nodes, edges, gap(round(20 * disOpt.scale)), hint("layered"));
 } 
 
-Figures displayAttributes(map[str,str] attributes) {
+Figures displayNaryAttributes(map[str,str] attributes) {
   if (attributes == ()) {
     return [];
   }
@@ -182,12 +200,26 @@ Figures displayAttributes(map[str,str] attributes) {
   return [text("[<intercalate(",", ["<attName>:<attributes[attName]>" | str attName <- attributes])>]", center())];
 }
 
+Figure displayUnaryAttributes(str relName, map[str,str] attributesPerRel) {
+  int width = size(attributesPerRel) > 1 ? 50 : 100;
+  list[Figure] attributes = [vcat([box(text(att, myLeft()), vsize(20), hsize(width),lineWidth(1)), box(text(attributesPerRel[att], myLeft()),vsize(20),hsize(width),lineWidth(1))]) | str att <- attributesPerRel];
+  
+  FProperty headerWidth = hsize((size(attributesPerRel) == 0) ? 100 : size(attributesPerRel) * width);  
+  
+  return box(vcat([box(text(relName, center(), vsize(30)),top(),headerWidth), hcat(attributes, lineWidth(1.0))],vsize(70)));
+  
+//  return [text("[<intercalate(",", ["<attName>:<attributesPerRel[relName][attName]>" | str relName <- attributesPerRel, str attName <- attributesPerRel[relName]])>]", center())];
+}
+
 Figure displayNode(VisNode n, DisplayOptions disOpt) 
-  = ellipse(vcat([text(n.id, [fontBold(true), center()])] + [text("\<<relName>\>", center()) | str relName <- n.unaryRels] + displayAttributes(n.attributeVals)), 
-            fillColor("white"), size(round(50 * disOpt.scale)), FProperty::id(n.id), lineWidth(1.5));
+  //= ellipse(vcat([text(n.id, [fontBold(true), center()])] + [text("\<<relName>\>", center()) | str relName <- n.unaryRels] + displayUnaryAttributes(n.attributeValsPerRel)), 
+  //          fillColor("white"), size(round(50 * disOpt.scale)), FProperty::id(n.id), lineWidth(1.5));
+  = box(vcat([text(n.id, fontBold(true), fontSize(round(18 * disOpt.scale)), center(),vsize(30))] + hcat([displayUnaryAttributes(relName, atts) | str relName <- n.unaryRels, map[str,str] atts := ((relName in n.attributeValsPerRel) ? n.attributeValsPerRel[relName] : ())])), 
+            fillColor("white"), size(round(75 * disOpt.scale)), FProperty::id(n.id), lineWidth(1.5));
+
 
 Figure displayEdgeNode(VisEdge e, DisplayOptions disOpt)
-	= box(vcat([text(e.naryRel, center())] + displayAttributes(e.attributeVals)), 
+	= box(vcat([text(e.naryRel, center())] + displayNaryAttributes(e.attributeVals)), 
 	    FProperty::id("<e.naryRel>_<e.from>_<e.to>_<e.pos>"), lineWidth(0));
 	 
 

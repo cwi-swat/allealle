@@ -24,17 +24,19 @@ void stopSolver(SolverPID pid) {
 }
 
 bool isSatisfiable(SolverPID pid, str smtFormula) { 
-	list[str] smt = split("\n", smtFormula);
-	for (s <- smt) {
-    str solverResult = trim(runSolver(pid, s)); 
-	  if (solverResult != "") {
-		  throw "Unable to assert clauses: <solverResult>"; 
-	  } 	
-	}
-	
-	// do a 'flush'
-	runSolver(pid, "", wait=5);
-	
+	if (smtFormula != "") {
+    	list[str] smt = split("\n", smtFormula);
+    	for (s <- smt) {
+        str solverResult = trim(runSolver(pid, s)); 
+    	  if (solverResult != "") {
+    		  throw "Unable to assert clauses: <solverResult>"; 
+    	  } 	
+    	}
+    	
+    	// do a 'flush'
+    	runSolver(pid, "", wait=5);
+  }
+  	
 	bool gotAnswer = false;
 	while (!gotAnswer) {
 	  try {
@@ -50,7 +52,9 @@ bool isSatisfiable(SolverPID pid, str smtFormula) {
 }
 
 bool checkSat(SolverPID pid) {
-	str result = runSolver(pid, "(check-sat)", wait = 5);
+	str result = runSolver(pid, "(check-sat)", wait=5);
+	
+	println(result);
 	
 	switch(result) {
 		case /unsat.*/: return false;

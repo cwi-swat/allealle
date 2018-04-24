@@ -7,7 +7,7 @@ contents (from:id, to:id)         >= {<d0,d1>} <= {<d0,d0>..<d2,d2>,<d0,f1>..<d2
 // Only dirs can contain other dirs and files
 contents ⊆ Dir[id][from/id] ⨯ (Dir[id] ∪ File[id])[to/id]
 // A dir cannot contain itself
-∀ d ∈ Dir[id] | ¬ (d[to/id] ⊆ (d[from/id] ⨝ ^<from,to>contents)[to])
+∀ d ∈ Dir[id] | no d[to/id] ∩ (d[from/id] ⨝ ^<from,to>contents)[to]
 // Root is a Dir 
 Root ⊆ Dir[id]
 // All files and dirs are (reflexive-transitive) 'content' of the Root dir 
@@ -21,7 +21,7 @@ File::[size > 0]
 //∀ f ∈ File | some f where size > 0
 
 // The size of a dir is the sum of all the files that are directly or transitively part of this directory
-∀ d ∈ Dir | (d ⨯ (((d[id][from/id] ⨝ ^<from,to>contents)[to][id/to] ⨝ File)[totalSizeOfReachableFiles/sum(size)]))::[size = totalSizeOfReachableFiles]   
+∀ d ∈ Dir | some (d ⨯ (((d[id][from/id] ⨝ ^<from,to>contents)[to][id/to] ⨝ File)[totalSizeOfReachableFiles/sum(size)])) where size = totalSizeOfReachableFiles   
 
 ∀ d ∈ Dir[id,depth], o ∈ (Dir ∪ File)[id,depth] | o[id][to/id] ⊆ (d[id][from/id] ⨝ contents)[to] ⇒ 
                                                   (o[d1/depth,to/id] ⨯ d[d2/depth])::[d1 = d2 + 1]

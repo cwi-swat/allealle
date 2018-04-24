@@ -146,7 +146,7 @@ SMTModel nextSmtModel(SolverPID pid, Domain dom, SMTModel currentSmtModel, Model
     throw "Unable to declare needed variables in SMT";
   }   
   
-  if (checkSat(pid)) {
+  if (isSatisfiable(pid,"")) {
     return getValues(pid, vars);
   } else {
     return ();

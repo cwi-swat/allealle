@@ -169,8 +169,17 @@ str compileAssert(Formula f, bool prettyPrint = false) {
   }
 } 
                                  
-str compileCommands(list[Command] commands) = "<for (Command c <- commands) {>
-                                              '<compileCommand(c)><}>";                               
+str compileCommands(list[Command] commands) {
+  str smt = "";
+  if (commands != []) {
+    smt += "(set-option :opt.priority box)\n";
+  }  
+  for (Command c <- commands) {
+    smt += "<compileCommand(c)>\n";
+  }
+  
+  return smt;
+}                               
 
 str compileCommand(minimize(Term t)) = "(minimize <compile(t)>)";
 str compileCommand(maximize(Term t)) = "(maximize <compile(t)>)";

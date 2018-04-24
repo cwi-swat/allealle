@@ -466,6 +466,7 @@ default Formula (Tuple) translateCriteria(Criteria criteria, Environment env) { 
 Term (Tuple) translateCriteriaExpr(att(str name), Environment env) { 
   Term trans(Tuple t) {
     if (name notin t) {
+      println(t);
       throw "Attribute \'<name>\' not in relation";
     }
     

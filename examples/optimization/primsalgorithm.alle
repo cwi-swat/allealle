@@ -1,0 +1,63 @@
+Time (tId:id)                       <= {<t1>..<t5>}
+first (tId:id)                       = {<t1>}
+order (tId:id, next:id)             <= {<t1,t2>,<t2,t3>,<t3,t4>,<t4,t5>}
+last (tId:id)                       <= {<t1>..<t5>}
+Node (nId:id)                       >= {<n1>..<n5>} <= {<n1>..<n5>}
+
+covered (tId:id, nId:id)            <= {<t1,n1>..<t5,n5>}
+
+edge (from:id, to:id, weight: int)  <= {<n1,n1,?>..<n5,n5,?>}
+chosen (from:id, to:id, tId:id)     <= {<n1,n1,t1>..<n5,n5,t5>}
+//MST (from:id, to:id, weight:int)    <= {<n1,n1,?>..<n5,n5,?>}
+
+nrs (edges:int, nodes:int, totalWeight:int) = {<?,?,?>}
+
+covered ⊆ Time ⨯ Node
+edge[from,to] ⊆ Node[from/nId] ⨯ Node[to/nId]
+chosen ⊆ Node[from/nId] ⨯ Node[to/nId] ⨯ Time
+
+last ⊆ Time
+order ⊆ Time ⨯ Time[next/tId]
+∀ t ∈ Time | t ⊆ (first ⨝ *<tId,next>order)[next][tId/next]
+
+one last
+
+one covered ⨝ first
+no chosen ⨝ first
+
+∀ e ∈ edge | some e where weight >= 0
+
+// non-directed graph, this means that if a->b is in edges then b->a is also in the graph with the same weight 
+∀ e ∈ edge | e[from/to,to/from] ⊆ edge
+// no self-loops
+∀ e ∈ edge | no e where from = to
+
+// to make sure there is only one Minimal Spanning Tree force all edges to have distinct values
+∀ e ∈ edge, e' ∈ edge ∖ e | (e[to,from] ≠ e'[to,from][from/to,to/from] ⇒ some (e ⨯ e'[from2/from,to2/to,weight2/weight]) where weight != weight2)
+
+(covered ⨝ last)[nId] = Node
+
+∀ o ∈ order | let t = o[tId], t' = o[next][tId/next] | 
+  ∃ e ∈ edge | let edgeNodes = (e[from][nId/from] ∪ e[to][nId/to]) | 
+    some edgeNodes ∩ (covered ⨝ t)[nId] ∧ (some (edgeNodes ∩ (Node ∖ (covered ⨝ t)[nId]))) ∧ 
+      ¬ (∃ e2 ∈ edge ∖ e | (let edge2Nodes = (e2[from][nId/from] ∪ e2[to][nId/to]) | 
+        (some edge2Nodes ∩ (covered ⨝ t)[nId] ∧ some (edge2Nodes ∩ (Node ∖ (covered ⨝ t)[nId])))) ∧ some ((e ⨯ e2[from2/from,to2/to,weight2/weight]) where weight2 < weight)) ∧ 
+          (chosen ⨝ t')[from,to] = (chosen ⨝ t)[from,to] ∪ e[from,to] ∧ 
+          (covered ⨝ t')[nId] = (covered ⨝ t)[nId] ∪ e[from][nId/from] ∪ e[to][nId/to]
+
+∀ n ∈ Node | lone (n[from/nId] ⨝ (chosen ⨝ last)) ∧ lone (n[to/nId] ⨝ (chosen ⨝ last))
+
+some ((chosen ⨝ last)[car/count()] ⨯ nrs) where edges = car
+some (Node[car/count()] ⨯ nrs) where nodes = car 
+some ((chosen ⨝ last ⨝ edge)[total/sum(weight)] ⨯ nrs) where totalWeight = total
+
+some nrs where (edges = nodes - 1)
+
+//MST ⊆ edge
+//∀ n ∈ Node, n' ∈ Node ∖ n | (n[from/nId] ⨯ n'[to/nId]) ⊆ *<from,to>(MST[from,to]) ∨ (n'[from/nId] ⨯ n[to/nId]) ⊆ *<from,to>(MST[from,to])
+//some (MST[nrOfEdges/count()] ⨯ Node[nrOfNodes/count()]) where (nrOfEdges = nrOfNodes - 1)
+//some ((MST ⨝ edge)[totalMSTWeight/sum(weight)] ⨯ nrs) where totalMSTWeight < totalWeight 
+
+//objectives: minimize (otherEdges ⨝ edge)[totalOtherWeight/sum(weight)]
+
+

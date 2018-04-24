@@ -1,5 +1,4 @@
 Num (nId:id, val:int)         <= {<n1,?>..<n5,?>}
-NumPlus2 (n2Id:id, val2:int)  <= {<n1,?>..<n5,?>}
 
 Even(nId:id, val:int)         <= {<n1,?>..<n5,?>}
 Odd (nId:id, val:int)         <= {<n1,?>..<n5,?>}
@@ -17,10 +16,6 @@ Even ∪ Odd = Num
 
 // All values are distinct
 ∀ n ∈ Num, n' ∈ Num ∖ n | some (n ⨯ n'[nId'/nId, val'/val]) where val != val'  
-
-NumPlus2 = ((Num ⨯ NumPlus2) where nId = n2Id && (val + 2 = val2))[n2Id,val2] 
-
-∀ n ∈ Num[nId] | n ⊆ NumPlus2[n2Id][nId/n2Id]  
 
 // The number is even iff the remainder is 0 after dividing by 2
 ∀ n ∈ Num | (some n where (val % 2) = 0) ⇔ n ⊆ Even
