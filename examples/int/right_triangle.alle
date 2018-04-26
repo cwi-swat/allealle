@@ -1,12 +1,12 @@
 Point (pId:id)                     = {<p1>,<p2>,<p3>}
 side (from:id, to:id, length:int) <= {<p1,p2,?>,<p1,p3,?>,<p2,p3,?>,<p2,p1,?>,<p3,p1,?>,<p3,p2,?>} // {<p1,p1,?>..<p3,p3,?>} 
 
-side[from,to] ⊆ Point[from/pId] ⨯ Point[to/pId]
+side[from,to] ⊆ Point[pId as from] ⨯ Point[pId as to]
 
-∀ p ∈ Point | one (p[from/pId] ⨝ side) ∧ one (p[to/pId] ⨝ side) 
+∀ p ∈ Point | one (p[pId as from] ⨝ side) ∧ one (p[pId as to] ⨝ side) 
 
 // all sides should be between 1 and 9
 ∀ s ∈ side | some (s where length > 0 && length < 20)
 
-∃ p1 ∈ Point, p2 ∈ Point ∖ p1, p3 ∈ Point ∖ (p1 ∪ p2) | let a = ((p1[from/pId] ⨯ p2[to/pId]) ⨝ side)[lengthA/length], b = (p2[from/pId] ⨯ p3[to/pId]) ⨝ side[lengthB/length], c = (p3[from/pId] ⨯ p1[to/pId]) ⨝ side[lengthC/length] |   
-  some ((a[a1Id/from,a2Id/to] ⨯ b[b1Id/from,b2Id/to] ⨯ c[c1Id/from,c2Id/to]) where lengthC * lengthC = lengthA * lengthA + lengthB * lengthB)
+∃ p1 ∈ Point, p2 ∈ Point ∖ p1, p3 ∈ Point ∖ (p1 ∪ p2) | let a = ((p1[pId as from] ⨯ p2[pId as to]) ⨝ side)[length as lengthA], b = (p2[pId as from] ⨯ p3[pId as to]) ⨝ side[length as lengthB], c = (p3[pId as from] ⨯ p1[pId as to]) ⨝ side[length as lengthC] |   
+  some ((a[from as a1Id,to as a2Id] ⨯ b[from as b1Id,to as b2Id] ⨯ c[from as c1Id,to as c2Id]) where lengthC * lengthC = lengthA * lengthA + lengthB * lengthB)

@@ -2,7 +2,7 @@ Elem (eId:id, val:int) <= {<n1,?>..<n3,?>}
 Start (eId:id)         <= {<n1>..<n3>}
 ring (from:id,to:id)   <= {<n1,n1>..<n3,n3>}
 
-ring ⊆ Elem[eId][from/eId] ⨯ Elem[eId][to/eId]
+ring ⊆ Elem[eId][eId as from] ⨯ Elem[eId][eId as to]
 Start ⊆ Elem[eId] 
 
 ∀ e ∈ Elem | some e where val > 0
@@ -11,12 +11,12 @@ Start ⊆ Elem[eId]
 one Start
 
 // The ring is cyclic, all elements should be reachable from the start element (including itself) 
-Elem[eId] ⊆ (Start[from/eId] ⨝ *<from,to>ring)[to][eId/to]
+Elem[eId] ⊆ (Start[eId as from] ⨝ *<from,to>ring)[to][to as eId]
 
 // Only one element leads to an other element
-∀ e ∈ Elem | one e[from/eId] ⨝ ring ∧ one e[to/eId] ⨝ ring
+∀ e ∈ Elem | one e[eId as from] ⨝ ring ∧ one e[eId as to] ⨝ ring
 
 // All elements in the ring have incrementing values starting from the Start ring
-∀ r ∈ ring | let e = r[from][eId/from] ⨝ Elem, e' = r[to][eId/to] ⨝ Elem | 
-  ¬ (e'[eId] ⊆ Start) ⇒ some (e ⨯ e'[eId'/eId,val'/val]) where val' = (val + 1)
+∀ r ∈ ring | let e = r[from][from as eId] ⨝ Elem, e' = r[to][to as eId] ⨝ Elem | 
+  ¬ (e'[eId] ⊆ Start) ⇒ some (e ⨯ e'[eId as eId',val as val']) where val' = (val + 1)
   

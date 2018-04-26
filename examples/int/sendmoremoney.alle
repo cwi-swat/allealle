@@ -10,11 +10,11 @@ y (id:id, val:int) = {<y,?>}
 
 let letters = d ∪ e ∪ m ∪ n ∪ o ∪ r ∪ s ∪ y |
   (∀ l ∈ letters | some l where val >= 0 && val <= 9) ∧ // all values between 0 and 10
-  (∀ l ∈ letters, l' ∈ letters ∖ l | some ((l ⨯ l'[id'/id,val'/val]) where val != val')) // all values are distinct     
+  (∀ l ∈ letters, l' ∈ letters ∖ l | some ((l ⨯ l'[id as id',val as val']) where val != val')) // all values are distinct     
 
 some ((m ∪ s) where val > 0)
 
-let letters = d[dId/id,d/val] ⨯ e[eId/id,e/val] ⨯ m[mId/id,m/val] ⨯ n[nId/id,n/val] ⨯ o[oId/id,o/val] ⨯ r[rId/id,r/val] ⨯ s[sId/id,s/val] ⨯ y[yId/id,y/val] |
+let letters = d[id as dId, val as d] ⨯ e[id as eId, val as e] ⨯ m[id as mId, val as m] ⨯ n[id as nId,val as n] ⨯ o[id as oId,val as o] ⨯ r[id as rId,val as r] ⨯ s[id as sId,val as s] ⨯ y[id as yId,val as y] |
   some letters where
               (1000*s + 100*e + 10*n + d +
                1000*m + 100*o + 10*r + e =

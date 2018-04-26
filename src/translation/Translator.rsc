@@ -117,11 +117,12 @@ Formula translateFormula(nonEmpty(AlleExpr expr), Environment env) {
       return \true();
     }
     
-    clauses += r.rows[idx].exists;
-    attConstraints += getAttributeConstraints(r.rows[idx]);
+    clauses += together(r.rows[idx]); //r.rows[idx].exists;
+    //attConstraints += getAttributeConstraints(r.rows[idx]);
   } 
   
-  return \and(\or(clauses), \and(attConstraints));
+  //return \and(\or(clauses), \and(attConstraints));
+  return \or(clauses);
 }
 
 

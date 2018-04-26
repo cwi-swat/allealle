@@ -362,7 +362,7 @@ void check(e:(AlleExpr)`<AlleExpr lhs> ⨯ <AlleExpr rhs>`, Environment env, Che
   } 
 }
 
-void check(e:(AggregateFunctionDef)`<AttributeName bindTo> / <AggregateFunction func>`, map[str,str] attributes, CheckFunctions cf) {
+void check(e:(AggregateFunctionDef)`<AggregateFunction func> as <AttributeName bindTo>`, map[str,str] attributes, CheckFunctions cf) {
   check(func, attributes, cf);    
   
   cf.add(e@\loc, heading(("<bindTo>":"int()")));

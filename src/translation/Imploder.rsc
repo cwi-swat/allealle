@@ -167,10 +167,10 @@ translation::AST::AlleExpr implode((AlleExpr)`<AlleExpr lhs> ⨯ <AlleExpr rhs>`
 translation::AST::TupleAttributeSelection implode ((TupleAttributeSelection)`\<<AttributeName first>,<AttributeName second>\>`) 
   = order("<first>","<second>");
   
-translation::AST::Rename implode((Rename)`<AttributeName new> / <AttributeName orig>`) 
+translation::AST::Rename implode((Rename)`<AttributeName orig> as <AttributeName new>`) 
   = rename("<new>","<orig>");
 
-translation::AST::AggregateFunctionDef implode((AggregateFunctionDef)`<AttributeName bindTo> / <AggregateFunction func>`)
+translation::AST::AggregateFunctionDef implode((AggregateFunctionDef)`<AggregateFunction func> as <AttributeName bindTo>`)
   = aggFuncDef(implode(func), "<bindTo>");
 
 translation::AST::Criteria implode((Criteria)`( <Criteria cr> )`) 

@@ -1,7 +1,0 @@
-Num (id:id, val:int) <= {<n1,?>..<n5,?>}
-
-some (Num[minVal/min(val), maxVal/max(val), avg/avg(val), nrOfRows/count(), total/sum(val)] where minVal = 1 && maxVal = (minVal + 9) && avg = 6 && nrOfRows = 5 && total = 30)
-
-objectives: maximize Num[total/sum(val)]
-
-//∀ n ∈ Num, n' ∈ Num ∖ n | some (n ⨯ n'[id'/id,val'/val]) where val != val'

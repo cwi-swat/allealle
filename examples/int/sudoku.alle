@@ -15,15 +15,15 @@ grid (x:id, y:id, val:int) >= {<n1,n1,6>,<n1,n4,2>,<n1,n8,5>,
 
 ∀ g ∈ grid | some (g where val >= 1 && val <= 9)
 
-∀ x ∈ num[x/nId] | some ((x ⨯ num[y/nId]) ⨝ grid)[val][nrOfVals/count()] where nrOfVals = 9
-∀ y ∈ num[y/nId] | some ((y ⨯ num[x/nId]) ⨝ grid)[val][nrOfVals/count()] where nrOfVals = 9
+∀ x ∈ num[nId as x] | some ((x ⨯ num[nId as y]) ⨝ grid)[val][count() as nrOfVals] where nrOfVals = 9
+∀ y ∈ num[nId as y] | some ((y ⨯ num[nId as x]) ⨝ grid)[val][count() as nrOfVals] where nrOfVals = 9
 
-some ((r1[x/nId] ⨯ r1[y/nId]) ⨝ grid)[val][nrOfVals/count()] where nrOfVals = 9
-some ((r1[x/nId] ⨯ r2[y/nId]) ⨝ grid)[val][nrOfVals/count()] where nrOfVals = 9
-some ((r1[x/nId] ⨯ r3[y/nId]) ⨝ grid)[val][nrOfVals/count()] where nrOfVals = 9
-some ((r2[x/nId] ⨯ r1[y/nId]) ⨝ grid)[val][nrOfVals/count()] where nrOfVals = 9
-some ((r2[x/nId] ⨯ r2[y/nId]) ⨝ grid)[val][nrOfVals/count()] where nrOfVals = 9
-some ((r2[x/nId] ⨯ r3[y/nId]) ⨝ grid)[val][nrOfVals/count()] where nrOfVals = 9
-some ((r3[x/nId] ⨯ r1[y/nId]) ⨝ grid)[val][nrOfVals/count()] where nrOfVals = 9
-some ((r3[x/nId] ⨯ r2[y/nId]) ⨝ grid)[val][nrOfVals/count()] where nrOfVals = 9
-some ((r3[x/nId] ⨯ r3[y/nId]) ⨝ grid)[val][nrOfVals/count()] where nrOfVals = 9
+some ((r1[nId as x] ⨯ r1[nId as y]) ⨝ grid)[val][count() as nrOfVals] where nrOfVals = 9
+some ((r1[nId as x] ⨯ r2[nId as y]) ⨝ grid)[val][count() as nrOfVals] where nrOfVals = 9
+some ((r1[nId as x] ⨯ r3[nId as y]) ⨝ grid)[val][count() as nrOfVals] where nrOfVals = 9
+some ((r2[nId as x] ⨯ r1[nId as y]) ⨝ grid)[val][count() as nrOfVals] where nrOfVals = 9
+some ((r2[nId as x] ⨯ r2[nId as y]) ⨝ grid)[val][count() as nrOfVals] where nrOfVals = 9
+some ((r2[nId as x] ⨯ r3[nId as y]) ⨝ grid)[val][count() as nrOfVals] where nrOfVals = 9
+some ((r3[nId as x] ⨯ r1[nId as y]) ⨝ grid)[val][count() as nrOfVals] where nrOfVals = 9
+some ((r3[nId as x] ⨯ r2[nId as y]) ⨝ grid)[val][count() as nrOfVals] where nrOfVals = 9
+some ((r3[nId as x] ⨯ r3[nId as y]) ⨝ grid)[val][count() as nrOfVals] where nrOfVals = 9

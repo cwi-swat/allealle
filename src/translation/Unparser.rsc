@@ -69,7 +69,7 @@ str unparse(let(list[VarBinding] bindings, AlleFormula form))                   
 default str unparse(AlleFormula f) { throw "No unparse function for formula \'<f>\'"; }
 
 str unparse(relvar(str name))                                                       = name;
-str unparse(rename(AlleExpr expr, list[Rename] renames))                            = "(<unparse(expr)>[<intercalate(",",["<r.new>//<r.orig>" | Rename r <- renames])>])";
+str unparse(rename(AlleExpr expr, list[Rename] renames))                            = "(<unparse(expr)>[<intercalate(",",["<r.orig> as <r.new>" | Rename r <- renames])>])";
 str unparse(project(AlleExpr expr, list[str] attributes))                           = "(<unparse(expr)>[<intercalate(",",attributes)>])";
 str unparse(aggregate(AlleExpr expr, list[AggregateFunctionDef] funcs))             = "(<unparse(expr)>[<intercalate(",",[unparse(f) | AggregateFunctionDef f <- funcs])>])";
 str unparse(groupedAggregate(AlleExpr expr, list[str] groupBy, list[AggregateFunctionDef] funcs)) = "(<unparse(expr)>[<intercalate(",", groupBy)>,<intercalate(",",[unparse(f) | AggregateFunctionDef f <- funcs])>])";
@@ -85,7 +85,7 @@ str unparse(reflexClosure(TupleAttributeSelection tas, AlleExpr expr))          
 
 default str unparse(AlleExpr exp) { throw "No unparser implemented for \'<exp>\'"; }
 
-str unparse(aggFuncDef(AggregateFunction fun, str bindTo))                          = "<bindTo>//<unparse(fun)>";
+str unparse(aggFuncDef(AggregateFunction fun, str bindTo))                          = "<unparse(fun)> as <bindTo>";
 
 default str unparse(AggregateFunction f) { throw "No unparser implemented for \'<f>\'"; }
 

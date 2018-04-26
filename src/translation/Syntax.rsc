@@ -98,10 +98,11 @@ syntax TupleAttributeSelection
   = "\<" AttributeName first "," AttributeName second "\>"
   ;
 
-syntax Rename = AttributeName new "/" AttributeName orig;
+//syntax Rename = AttributeName new "/" AttributeName orig;
+syntax Rename = AttributeName orig "as" AttributeName new;
 
 syntax AggregateFunctionDef 
-  = AttributeName bindTo "/" AggregateFunction func
+  = AggregateFunction func "as" AttributeName bindTo
   ;
 
 syntax AggregateFunction
@@ -146,5 +147,5 @@ lexical Arity = [0-9]+;
 
 lexical RelVar = ([a-zA-Z] !<< [a-zA-Z][a-zA-Z0-9_\']* !>> [a-zA-Z0-9_]) \ Keywords;
 
-keyword Keywords = "none" | "|x|" | "where" | "objectives";
+keyword Keywords = "none" | "|x|" | "where" | "objectives" | "as";
 keyword Keywords = "no" | "lone" | "one" | "some" | "not" | "forall" | "exists" | "let";

@@ -5,15 +5,15 @@ contents (from:id, to:id)         >= {<d0,d1>} <= {<d0,d0>..<d2,d2>,<d0,f1>..<d2
 
 // BASIC RELATIONAL CONSTRAINTS
 // Only dirs can contain other dirs and files
-contents ⊆ Dir[id][from/id] ⨯ (Dir[id] ∪ File[id])[to/id]
+contents ⊆ Dir[id][id as from] ⨯ (Dir[id] ∪ File[id])[id as to]
 // A dir cannot contain itself
-∀ d ∈ Dir[id] | no d[to/id] ∩ (d[from/id] ⨝ ^<from,to>contents)[to]
+∀ d ∈ Dir[id] | no d[id as to] ∩ (d[id as from] ⨝ ^<from,to>contents)[to]
 // Root is a Dir 
 Root ⊆ Dir[id]
 // All files and dirs are (reflexive-transitive) 'content' of the Root dir 
-(File[id] ∪ Dir[id])[to/id] ⊆ (Root[from/id] ⨝ *<from,to>contents)[to]
+(File[id] ∪ Dir[id])[id as to] ⊆ (Root[id as from] ⨝ *<from,to>contents)[to]
 // All files and dirs can only be contained by one dir
-∀ f ∈ (File ∪ Dir)[id] | lone contents ⨝ f[to/id]
+∀ f ∈ (File ∪ Dir)[id] | lone contents ⨝ f[id as to]
 
 // INTEGER CONSTRAINTS
 // All files have a positive size
@@ -21,10 +21,10 @@ File::[size > 0]
 //∀ f ∈ File | some f where size > 0
 
 // The size of a dir is the sum of all the files that are directly or transitively part of this directory
-∀ d ∈ Dir | some (d ⨯ (((d[id][from/id] ⨝ ^<from,to>contents)[to][id/to] ⨝ File)[totalSizeOfReachableFiles/sum(size)])) where size = totalSizeOfReachableFiles   
+∀ d ∈ Dir | some (d ⨯ (((d[id][id as from] ⨝ ^<from,to>contents)[to][to as id] ⨝ File)[sum(size) as totalSizeOfReachableFiles])) where size = totalSizeOfReachableFiles   
 
-∀ d ∈ Dir[id,depth], o ∈ (Dir ∪ File)[id,depth] | o[id][to/id] ⊆ (d[id][from/id] ⨝ contents)[to] ⇒ 
-                                                  (o[d1/depth,to/id] ⨯ d[d2/depth])::[d1 = d2 + 1]
+∀ d ∈ Dir[id,depth], o ∈ (Dir ∪ File)[id,depth] | o[id][id as to] ⊆ (d[id][id as from] ⨝ contents)[to] ⇒ 
+                                                  some (o[depth as d1,id as to] ⨯ d[depth as d2]) where (d1 = d2 + 1)
 
 // The depth of Root is 0
 some (Root ⨝ Dir) where depth = 0 

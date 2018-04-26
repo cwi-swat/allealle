@@ -1,0 +1,4 @@
+num (nId:id, val:int) = {<n1,?>,<n2,?>}
+
+∀ n ∈ num | some n where val >= 3
+∃ n ∈ num, n' ∈ num ∖ n | some (n ⨯ n'[nId as oId,val as oVal]) where oVal = val * val 
