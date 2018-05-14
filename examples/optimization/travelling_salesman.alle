@@ -5,13 +5,13 @@ route (from:id, to:id, length:int) <= {<home,a,80>,<a,home,80>,<home,b,69>,<b,ho
 TotalLength (tId:id, length:int)    = {<total,?>}
 
 // The salesman only vists a city once
-∀ c ∈ City | one (c[from/cId] ⨝ route) ∧ one (c[to/cId] ⨝ route)
+∀ c ∈ City | one (c[cId as from] ⨝ route) ∧ one (c[cId as to] ⨝ route)
 
 // The salesman must visit each city
-City ⊆ (StartingPoint[from/cId] ⨝ *<from,to>(route[from,to]))[to][cId/to]
+City ⊆ (StartingPoint[cId as from] ⨝ *<from,to>(route[from,to]))[to][to as cId]
 
 // Convenient condition to capture the shorted route length
-some (TotalLength ⨯ route[totalLength/sum(length)]) where length = totalLength
+some (TotalLength ⨯ route[sum(length) as totalLength]) where length = totalLength
 
 // We want the route with the shortest overall length
 objectives: minimize TotalLength[length]

@@ -171,9 +171,9 @@ str compileAssert(Formula f, bool prettyPrint = false) {
                                  
 str compileCommands(list[Command] commands) {
   str smt = "";
-  if (commands != []) {
-    smt += "(set-option :opt.priority box)\n";
-  }  
+  //if (commands != []) {
+  //  smt += "(set-option :opt.priority box)\n";
+  //}  
   for (Command c <- commands) {
     smt += "<compileCommand(c)>\n";
   }

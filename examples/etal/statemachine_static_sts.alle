@@ -11,23 +11,23 @@ statesInWorld (wId:id, mId:id, sId:id)  >= {<w1,m1,opened>} <= {<w1,m1,opened>..
 
 initialState (wId:id,mId:id,sId:id) <= {<w2,m1,opened>..<w3,m1,opened>,<w2,m1,closed>..<w3,m1,closed>}
 
-//transition (4) >= {<is1,m1,opened,closed>} <= {<is1,m1,opened,closed>..<is3,m1,opened,closed>,<is2,m1,closed>,<is3,m1,closed>}
+///////////////////
 
-ordering ⊆ world[wId] ⨯ world[wId][next/wId]
+ordering ⊆ world[wId] ⨯ world[wId][wId as next]
 
 statesInWorld ⊆ world[wId] ⨯ Machine ⨯ State
 initialState ⊆ world[wId] ⨯ Machine ⨯ State
 
-∀ w ∈ world[wId] | w ⊆ (first ⨝ *<wId,next>ordering)[next][wId/next]
+∀ w ∈ world[wId] | w ⊆ (first ⨝ *<wId,next>ordering)[next][next as wId]
 
 // Conditions that need to be reached in order to call the model consistent
 // There must be a initial state per statemachine
 ∃ w ∈ world | ∀ m ∈ Machine | 
   // Add all the rules of the meta-model here
   one (initialState ⨝ w ⨝ m) ∧ 
-  some (statesInWorld ⨝ w ⨝ m)[nr/count()] where nr = 2
+  some (statesInWorld ⨝ w ⨝ m)[count() as nr] where nr = 2
   
-∀ o ∈ ordering | let cur= o[wId], next = o[next][wId/next] |
+∀ o ∈ ordering | let cur= o[wId], next = o[next][next as wId] |
   (∃ m ∈ Machine | let statesInCur = (statesInWorld ⨝ cur ⨝ m)[sId], statesInNext= (statesInWorld ⨝ next ⨝ m)[sId],
                        initStateInCur = (initialState ⨝ cur ⨝ m)[sId], initStateInNext = (initialState ⨝ next ⨝ m)[sId] |  
     (
@@ -44,5 +44,5 @@ initialState ⊆ world[wId] ⨯ Machine ⨯ State
     (∀ otherM ∈ Machine ∖ m | (statesInWorld ⨝ cur ⨝ otherM)[sId] = (statesInWorld ⨝ next ⨝ otherM)[sId] ∧ (initialState ⨝ cur ⨝ otherM)[sId] = (initialState ⨝ next ⨝ otherM)[sId]) 
   )
 
-objectives: minimize world[nr/count()]
+objectives: minimize world[count() as nr]
 

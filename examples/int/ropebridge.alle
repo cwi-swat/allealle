@@ -1,0 +1,84 @@
+// The rope bridge example is taken from an example problem in mCRL2 and can be found here
+// https://www.mcrl2.org/web/user_manual/tutorial/ropebridge/index.html
+
+// relations needed to model a transition system. Every state in the transition system is called a 'world'
+world (wId:id)                         <= {<w1>..<w6>}
+// the order relation describes the order (total when it is transitively closed) of the different worlds
+// It also contains the time spend. This is needed to solve the puzzle
+order (cur:id, next:id, timeSpend:int) <= {<w1,w2,?>,<w2,w3,?>,<w3,w4,?>,<w4,w5,?>,<w5,w6,?>}//,<w6,w7,?>,<w7,w8,?>,<w8,w9,?>,<w9,w10,?>}
+// First models the first world in our transition system
+first (wId:id)                          = {<w1>}
+// Last models the last world in our transition system and could be any world
+last (wId:id)                          <= {<w1>..<w6>}
+
+// relations needed to model the logical puzzle
+// there is an exact amount of travellers with given times that it takes each traveller to cross the bridge
+Traveller (tId:id, timeToCross:int)    = {<t1,1>,<t2,2>,<t3,5>,<t4,10>}
+// there are two possible positions, either on the near side or on the far side of the bridge
+pos (pId:id)                           = {<near>,<far>}
+near (pId:id)                          = {<near>}
+far (pId:id)                           = {<far>}
+// in every world, every traveller must have a position. Since we know that the travellers are on the near side in the first world we bound the relation as such
+posOfTrav (wId:id,tId:id,pId:id)      >= {<w1,t1,near>..<w1,t4,near>} <= {<w2,t1,near>..<w6,t4,near>,<w2,t1,far>..<w6,t4,far>}
+// the flashlight travels from one side to the next and is carried by a traveller. The flashlight acts as a token
+flashlight (wId:id, pId:id)           >= {<w1,near>} <= {<w2,near>..<w6,near>,<w2,far>..<w6,far>}
+
+// Setup the ordering relation.
+// Make sure that there is only a step for all the tuples in the world relation
+order[cur,next] ⊆ world[wId as cur] ⨯ world[wId as next]
+//first is a world 
+first ⊆ world
+// last is a world
+last ⊆ world
+// there can only be one last world
+one last
+
+// setup other relations
+posOfTrav ⊆ world ⨯ Traveller[tId] ⨯ pos
+flashlight ⊆ world ⨯ pos
+
+// reachability; all worlds that are declared must be reachable from the first world following the ordering relation 
+∀ w ∈ world | w ⊆ (first ⨝ (*<cur,next>order[cur,next])[cur as wId])[next][next as wId] 
+// there can be no world after the last world
+no (last[wId as cur] ⨝ order)
+ 
+// in the first world all travellers are on the near side 
+Traveller[tId] ⊆ (first ⨝ posOfTrav ⨝ near)[tId]
+// in the last world all travellers are on the far side
+Traveller[tId] ⊆ (last ⨝ posOfTrav ⨝ far)[tId]
+
+// travellers can never be both on the near- and the far side at the same time (world) 
+∀ w ∈ world | no (w ⨝ posOfTrav ⨝ far ⨝ near)
+// in all worlds there is only one flashlight and all travellers are present (either on the near or on the far side)
+∀ w ∈ world | one flashlight ⨝ w ∧ Traveller[tId] = (posOfTrav ⨝ (near ∪ far) ⨝ w)[tId]
+
+// transition function; travellers cross the bridge
+∀ o ∈ order | let cur = o[cur][cur as wId], next = o[next][next as wId], curTravNear = posOfTrav ⨝ cur ⨝ near, curTravFar = posOfTrav ⨝ cur ⨝ far, nextTravNear = posOfTrav ⨝ next ⨝ near, nextTravFar = posOfTrav ⨝ next ⨝ far, curPosFl = (flashlight ⨝ cur)[pId], nextPosFl = (flashlight ⨝ next)[pId] |
+  // the flashlight is near so it travels with some traveller to the far side 
+  (curPosFl ⊆ near ⇒ let crossingTravellers = (nextTravFar[tId] ∩ curTravNear[tId]) | (
+    // in the next world the flashlight is on the far side
+    nextPosFl ⊆ far ∧ 
+    // in the next world the remainding travellers on the near side are those that did not travel to the far side
+    nextTravNear[tId] = curTravNear[tId] ∖ crossingTravellers ∧ 
+    // a maximum of two travellers can cross the bridge   
+    some crossingTravellers[count() as crossBridge] where (crossBridge > 0 && crossBridge <= 2)) ∧ 
+    // the time it takes to cross the bridge is dependend on the slowest traveller
+    some (o ⨯ (crossingTravellers ⨝ Traveller)[max(timeToCross) as slowest]) where timeSpend = slowest  
+  ) ∧ 
+  // the flashlight is on the far side so it travels with some traveller to the near side
+  (curPosFl ⊆ far ⇒ let crossingTravellers = (nextTravNear[tId] ∩ curTravFar[tId]) | (
+    // in the next world the flashlight is on the near side
+    nextPosFl ⊆ near ∧  
+    // in the next world the remainding travellers on the far side are those that did not travel to the near side   
+    nextTravFar[tId] = curTravFar[tId] ∖ crossingTravellers ∧ 
+    // a maximum of two travellers can cross the bridge
+    some crossingTravellers[count() as crossBridge] where (crossBridge > 0 && crossBridge <= 2)) ∧ 
+    // the time it takes to cross the bridge is dependend on the slowest traveller   
+    some (o ⨯ (crossingTravellers ⨝ Traveller)[max(timeToCross) as slowest]) where timeSpend = slowest
+  )   
+
+// check that all travellers can cross the bridge in 17 minutes  
+some order[sum(timeSpend) as totalTimeSpend] where totalTimeSpend = 17
+
+// check that it is impossible (unsatisfiable) for all the travellers to cross the bridge in less then 17 minutes  
+//some order[sum(timeSpend) as totalTimeSpend] where totalTimeSpend < 17

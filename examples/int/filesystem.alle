@@ -17,8 +17,7 @@ Root ⊆ Dir[id]
 
 // INTEGER CONSTRAINTS
 // All files have a positive size
-File::[size > 0] 
-//∀ f ∈ File | some f where size > 0
+∀ f ∈ File | some f where size > 0 
 
 // The size of a dir is the sum of all the files that are directly or transitively part of this directory
 ∀ d ∈ Dir | some (d ⨯ (((d[id][id as from] ⨝ ^<from,to>contents)[to][to as id] ⨝ File)[sum(size) as totalSizeOfReachableFiles])) where size = totalSizeOfReachableFiles   
