@@ -34,25 +34,14 @@ bool isSatisfiable(SolverPID pid, str smtFormula) {
     	}
     	
     	// do a 'flush'
-    	runSolver(pid, "", wait=5);
+    	runSolver(pid, "\n");
   }
-  	
-	bool gotAnswer = false;
-	while (!gotAnswer) {
-	  try {
-      println("Starting to check satisfiability");
-	    bool sat = checkSat(pid);
-	    gotAnswer = true;
-	    return sat;
-    } catch ex: {
-      println("Exception while checking satisfiability: <ex>");
-      println("Retrying...");
-    }
-  }
+  
+  return checkSat(pid);
 }
 
 bool checkSat(SolverPID pid) {
-	str result = runSolver(pid, "(check-sat)", wait=5);
+	str result = runSolverAndExpectResult(pid, "(check-sat)");
 	
 	println(result);
 	
@@ -65,7 +54,7 @@ bool checkSat(SolverPID pid) {
 }
 
 int getSolvingTime(SolverPID pid) {
-  str result = runSolver(pid, "(get-info :all-statistics)", wait=5);
+  str result = runSolverAndExpectResult(pid, "(get-info :all-statistics)");
   
   int time;  
   if (/[:]time[ ]*<sec:[0-9]*>[.]<hun:[0-9][0-9]>/ := result) {
@@ -77,9 +66,25 @@ int getSolvingTime(SolverPID pid) {
   return time;
 }
 
-str runSolver(SolverPID pid, str commands, int wait = 0) {
+str runSolverAndExpectResult(SolverPID pid, str commands) { 
+  str result = run(pid,commands, debug=false);
+
+  while (true) {
+    try {
+      if(trim(result) != "") {
+        return result;
+      }
+      result = read(pid);
+    } catch ex: {
+      println("Exception while SMT solver, reason: <er>");
+      println("Retrying...");
+    }
+  }
+}
+
+str runSolver(SolverPID pid, str commands) {
 	try {
-		return run(pid, commands, debug=false, wait = wait);
+		return run(pid, commands, debug=false);
 	}
 	catch er: throw "Error while running SMT solver, reason: <er>"; 	
 }

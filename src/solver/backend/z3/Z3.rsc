@@ -16,7 +16,7 @@ import String;
 import IO;
 import util::SystemAPI;
 
-import util::ShellExec;
+import util::CustomShellExec;
 
 @doc{
 	Starts the Z3 solver.
@@ -37,11 +37,11 @@ void stopZ3(PID z3) {
 	killProcess(z3);
 }
 
-str \run(PID z3, str command, bool debug = false, int wait = 0) {
+str \run(PID z3, str command, bool debug = false) {
 	printIfDebug(command, debug);
 
 	writeTo(z3, "<command>\n"); // the \n is added because the outcome of the command will otherwise not be flushed
-	str outcome = read(z3, wait);
+	str outcome = read(z3);
 	
 	if (outcome != "") {
 	  printIfDebug("Answer: <outcome>", debug);
@@ -55,18 +55,8 @@ str \run(PID z3, str command, bool debug = false, int wait = 0) {
 }
 
 
-private str read(PID z3, int wait) {
-  if (wait == 0) {
-    return replaceAll(replaceAll(readFrom(z3), "success", ""), "\n", "");
-  } else {
-    str output = readWithWait(z3, wait);
-	  
-	  while(output == "") {
-      output = trim(readWithWait(z3, wait));
-    }
-	  
-	  return replaceAll(replaceAll(output, "success", ""), "\n", "");
-	}
+public str read(PID z3) {
+  return replaceAll(replaceAll(readFrom(z3), "success", ""), "\n", "");
 }
 
 private void printIfDebug(str line, bool debug) {
