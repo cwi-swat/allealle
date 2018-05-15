@@ -8,6 +8,8 @@ import Boolean;
 import IO;
 import Map;
 
+import util::Sleeper;
+
 alias SolverPID = int;
 
 SolverPID startSolver() {
@@ -74,6 +76,7 @@ str runSolverAndExpectResult(SolverPID pid, str commands) {
       if(trim(result) != "") {
         return result;
       }
+      sleep(5);
       result = read(pid);
     } catch ex: {
       println("Exception while SMT solver, reason: <er>");

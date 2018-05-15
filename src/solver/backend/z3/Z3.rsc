@@ -16,7 +16,7 @@ import String;
 import IO;
 import util::SystemAPI;
 
-import util::CustomShellExec;
+import util::ShellExec;
 
 @doc{
 	Starts the Z3 solver.
