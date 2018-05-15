@@ -6,6 +6,7 @@ import ParseTree;
 import Message;
 import Map;
 import IO;
+import String;
 
 data UnionResult 
   = heading(map[str,str] attributes)
@@ -360,6 +361,12 @@ void check(e:(AlleExpr)`<AlleExpr lhs> ⨯ <AlleExpr rhs>`, Environment env, Che
   } else {
     cf.add(e@\loc, incompatible());
   } 
+}
+
+void check(e:(AggregateFunctionDef)`<AggregateFunction func>`, map[str,str] attributes, CheckFunctions cf) {
+  check(func, attributes, cf);    
+  
+  cf.add(e@\loc, heading(("<replaceAll(replaceAll("<func>","(","_"),")","")>":"int()")));
 }
 
 void check(e:(AggregateFunctionDef)`<AggregateFunction func> as <AttributeName bindTo>`, map[str,str] attributes, CheckFunctions cf) {

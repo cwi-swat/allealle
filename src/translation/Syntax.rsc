@@ -102,7 +102,8 @@ syntax TupleAttributeSelection
 syntax Rename = AttributeName orig "as" AttributeName new;
 
 syntax AggregateFunctionDef 
-  = AggregateFunction func "as" AttributeName bindTo
+  = AggregateFunction func
+  | AggregateFunction func "as" AttributeName bindTo
   ;
 
 syntax AggregateFunction

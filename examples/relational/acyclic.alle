@@ -1,11 +1,11 @@
-Node (id:id) = {<n1>..<n4>}
-Root (id:id) = {<n1>}
-edge (from:id,to:id) <= {<n1,n1>..<n4,n4>}
+Node (nId:id) = {<n1>..<n4>}
+Root (nId:id) = {<n1>}
+edge (nId:id,to:id) <= {<n1,n1>..<n4,n4>}
 
-edge ⊆ Node[from/id] ⨯ Node[to/id]
+edge ⊆ Node ⨯ Node[nId as to]
 
 // All nodes are transitive connected to the Root node
-Node ⊆ (Root[from/id] ⨝ *<from,to>edge)[to][id/to] 
+Node ⊆ (Root ⨝ *<nId,to>edge)[to][to as nId] 
 
 // The graph is acyclic
-∀ n ∈ Node | ¬ (n ⊆ (n[from/id] ⨝ ^<from,to>edge)[to][id/to])
+∀ n ∈ Node | ¬ (n ⊆ (n ⨝ ^<nId,to>edge)[to][to as nId])

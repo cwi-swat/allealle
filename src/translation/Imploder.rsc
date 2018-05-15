@@ -170,6 +170,9 @@ translation::AST::TupleAttributeSelection implode ((TupleAttributeSelection)`\<<
 translation::AST::Rename implode((Rename)`<AttributeName orig> as <AttributeName new>`) 
   = rename("<new>","<orig>");
 
+translation::AST::AggregateFunctionDef implode((AggregateFunctionDef)`<AggregateFunction func>`)
+  = aggFuncDef(implode(func), "<replaceAll(replaceAll("<func>","(","_"),")","")>");
+
 translation::AST::AggregateFunctionDef implode((AggregateFunctionDef)`<AggregateFunction func> as <AttributeName bindTo>`)
   = aggFuncDef(implode(func), "<bindTo>");
 
