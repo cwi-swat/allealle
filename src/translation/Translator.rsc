@@ -27,15 +27,19 @@ TranslationResult translateProblem(Problem p, Environment env, bool logIndividua
     form = and({translateFormula(f, env) | AlleFormula f <- p.constraints}); 
   }
   
-  for (Objective obj <- p.objectives) {
-    map[Command,Formula] trans = translateObjective(obj,env);
-    for (Command c <- trans) {
-      if (logIndividualFormula) {
-        println("Translating \'<unparse(obj)>\'");
+  if (p has objectiveSec) {
+    cmds += translateOptimizationPriority(p.objectiveSec.prio);
+  
+    for (Objective obj <- p.objectiveSec.objs) {
+      map[Command,Formula] trans = translateObjective(obj,env);
+      for (Command c <- trans) {
+        if (logIndividualFormula) {
+          println("Translating \'<unparse(obj)>\'");
+        }
+        
+        form = and(form, trans[c]);
+        cmds += c;
       }
-      
-      form = and(form, trans[c]);
-      cmds += c;
     } 
   }    
   
@@ -494,6 +498,12 @@ Term (Tuple) translateCriteriaExpr(ite(Criteria condition, CriteriaExpr thn, Cri
 } 
 
 default Term (Tuple) translateCriteriaExpr(CriteriaExpr criteriaExpr, Environment env) { throw "Not yet implemented \'<criteriaExpr>\'";} 
+
+Command translateOptimizationPriority(ObjectivePriority prio) = setOption(optimizationPriority(translateOptPrioStrategy(prio)));
+
+OptPriority translateOptPrioStrategy(lex()) = lexicographic();
+OptPriority translateOptPrioStrategy(pareto()) = smtlogic::Core::pareto();
+OptPriority translateOptPrioStrategy(independent()) = smtlogic::Core::independent();
 
 map[Command,Formula] translateObjective(Objective obj, Environment env) {
   Relation r = translateExpression(obj.expr,env);

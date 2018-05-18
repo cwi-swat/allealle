@@ -7,12 +7,12 @@ import ParseTree;
 import String;
 
 translation::AST::Problem implodeProblem(translation::Syntax::Problem p) 
-  = problem([implode(r) | r <- p.relations], [implode(c) | c <- p.constraints], [])
-  when /ObjectiveSection _ !:= p; 
+  = problem([implode(r) | r <- p.relations], [implode(c) | c <- p.constraints])
+  when !(p has objSection); 
 
 translation::AST::Problem implodeProblem(translation::Syntax::Problem p) 
-  = problem([implode(r) | r <- p.relations], [implode(c) | c <- p.constraints], [implode(obj) | obj <- objSec.objectives])
-  when /ObjectiveSection objSec := p; 
+  = problem([implode(r) | r <- p.relations], [implode(c) | c <- p.constraints], implode(objSec)) //[implode(obj) | obj <- objSec.objectives])
+  when (p has objSection), /translation::Syntax::ObjectiveSection objSec := p.objSection; 
 
 translation::AST::RelationDef implode((Relation)`<RelVar v> (<{HeaderAttribute ","}+ header>) <RelationalBound bounds>`) 
   = relation("<v>", [implode(h) | h <- header], implode(bounds));
@@ -205,6 +205,16 @@ translation::AST::CriteriaExpr implode((CriteriaExpr)`<Literal l>`)
 
 translation::AST::CriteriaExpr implode((CriteriaExpr)`<Criteria condition> ? <CriteriaExpr thn> : <CriteriaExpr els>`) 
   = ite(implode(condition),implode(thn),implode(els));
+
+translation::AST::ObjectiveSection implode((ObjectiveSection)`objectives: <{Objective ","}+ objs>`) 
+  = objectives(lex(), [implode(obj) | obj <- objs]);  
+
+translation::AST::ObjectiveSection implode((ObjectiveSection)`objectives (<ObjectivePriority prio>): <{Objective ","}+ objs>`) 
+  = objectives(implode(prio),[implode(obj) | obj <- objs]);  
+
+translation::AST::ObjectivePriority implode((ObjectivePriority)`lex`) = lex();
+translation::AST::ObjectivePriority implode((ObjectivePriority)`pareto`) = pareto();
+translation::AST::ObjectivePriority implode((ObjectivePriority)`independent`) = independent();
 
 translation::AST::Objective implode((Objective)`maximize <AlleExpr expr>`)
   = maximize(implode(expr));

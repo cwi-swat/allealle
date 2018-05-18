@@ -181,8 +181,15 @@ str compileCommands(list[Command] commands) {
   return smt;
 }                               
 
+str compileCommand(setOption(Option op)) = "(set-option <compile(op)>)";
 str compileCommand(minimize(Term t)) = "(minimize <compile(t)>)";
 str compileCommand(maximize(Term t)) = "(maximize <compile(t)>)";
+
+str compile(optimizationPriority(OptPriority prio)) = ":opt.priority <compile(prio)>";
+
+str compile(lexicographic()) = "lex";
+str compile(pareto()) = "pareto";
+str compile(independent()) = "box";
 
 default str compileCommand(Command c) { throw "Unable to compile command \'<c>\'. No compile function defined.";}
 

@@ -130,7 +130,16 @@ syntax CriteriaExpr
   ;
   
 syntax ObjectiveSection
-  = "objectives: " {Objective ","}+ objectives;  
+  = "objectives" ":" {Objective ","}+ objectives
+  | "objectives" "(" ObjectivePriority prio ")" ":" {Objective ","}+ objectives 
+  ;
+    
+  
+syntax ObjectivePriority
+  = "lex"
+  | "pareto"
+  | "independent"
+  ;  
   
 syntax Objective  
  = maximize: "maximize" AlleExpr expr

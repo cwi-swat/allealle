@@ -30,12 +30,24 @@ data Literal
   | ffalse()
   | id(str id)
   ;
+
   
 data Command
-  = maximize(Term t)
+  = setOption(Option op)
+  | maximize(Term t)
   | minimize(Term t)
   ;
 
+data Option
+  = optimizationPriority(OptPriority prio)
+  ;
+  
+data OptPriority
+  = lexicographic()
+  | pareto()
+  | independent()
+  ;
+  
 Sort sortOfLit(var(_,Sort s)) = s;
 default Sort sortOfLit(Literal l) { throw "Unable to obtain sort of literal \'<l>\'"; }
 
