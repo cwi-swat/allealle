@@ -8,11 +8,11 @@ import String;
 
 translation::AST::Problem implodeProblem(translation::Syntax::Problem p) 
   = problem([implode(r) | r <- p.relations], [implode(c) | c <- p.constraints])
-  when !(p has objSection); 
+  when /translation::Syntax::ObjectiveSection _ !:= p.objSection; 
 
 translation::AST::Problem implodeProblem(translation::Syntax::Problem p) 
   = problem([implode(r) | r <- p.relations], [implode(c) | c <- p.constraints], implode(objSec)) //[implode(obj) | obj <- objSec.objectives])
-  when (p has objSection), /translation::Syntax::ObjectiveSection objSec := p.objSection; 
+  when /translation::Syntax::ObjectiveSection objSec := p.objSection; 
 
 translation::AST::RelationDef implode((Relation)`<RelVar v> (<{HeaderAttribute ","}+ header>) <RelationalBound bounds>`) 
   = relation("<v>", [implode(h) | h <- header], implode(bounds));
