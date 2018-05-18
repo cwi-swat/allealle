@@ -165,7 +165,7 @@ Formula translateFormula(subset(AlleExpr lhsExpr, AlleExpr rhsExpr), Environment
         }
         
         clauses += partial;
-        attConstraints += getAttributeConstraints(rRow.constraints);
+        //attConstraints += getAttributeConstraints(rRow.constraints);
       }
     } else {
       if (partial == \false()) {
@@ -176,7 +176,7 @@ Formula translateFormula(subset(AlleExpr lhsExpr, AlleExpr rhsExpr), Environment
     }
   }
   
-  return \and(clauses + attConstraints);
+  return \and(clauses); // + attConstraints);
 }
       
 
