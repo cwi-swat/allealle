@@ -144,11 +144,9 @@ Formula translateFormula(subset(AlleExpr lhsExpr, AlleExpr rhsExpr), Environment
   set[str] openAttributes = lhsFull.heading<0> - lhs.partialKey;
   
   set[Formula] clauses = {};
-  set[Formula] attConstraints = {};
   
   for (Tuple key <- lhs.indexedRows<0>, Row lRow <- lhs.indexedRows[key]) {
-    Formula partial = not(lRow.constraints.exists); 
-    attConstraints += getAttributeConstraints(lRow.constraints);
+    Formula partial = not(together(lRow.constraints)); 
         
     if (key in rhs.indexedRows<0>) {
       for (Row rRow <- rhs.indexedRows[key]) {
@@ -165,7 +163,6 @@ Formula translateFormula(subset(AlleExpr lhsExpr, AlleExpr rhsExpr), Environment
         }
         
         clauses += partial;
-        //attConstraints += getAttributeConstraints(rRow.constraints);
       }
     } else {
       if (partial == \false()) {
@@ -176,7 +173,7 @@ Formula translateFormula(subset(AlleExpr lhsExpr, AlleExpr rhsExpr), Environment
     }
   }
   
-  return \and(clauses); // + attConstraints);
+  return \and(clauses);
 }
       
 
