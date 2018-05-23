@@ -1,0 +1,7 @@
+a (id:id, i:int) = {<id1,2>}
+b (id:id, i:int) = {<id1,?>}
+diff (id:id, i:int) = {<id1,2>,<id1,3>}
+
+diff = (a ∖ b) ∪ (b ∖ a)
+
+expect: t-sat

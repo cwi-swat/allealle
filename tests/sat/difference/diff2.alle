@@ -1,0 +1,6 @@
+a (id:id, i:int)    = {<id1,1>,<id1,4>}
+diff (id:id, i:int) = {<id1,1>,<id1,4>}
+
+diff = ((a where (i > 3)) ∖ (a where (i <=3))) ∪ (a where (i < 2))
+
+expect: t-sat
