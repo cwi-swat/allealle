@@ -158,19 +158,16 @@ Formula translateFormula(subset(AlleExpr lhsExpr, AlleExpr rhsExpr), Environment
         
         //partial = \or(partial, \and(rRow.constraints.exists, tmpAttForm));
         partial = \or(partial, \and(together(rRow.constraints), tmpAttForm));
-        if (partial == \false()) {
-          return \false();
-        }
         
-        clauses += partial;
       }
+      clauses += partial;
     } else {
-      if (partial == \false()) {
-        return \false();
-      }
-      
       clauses += partial;
     }
+    
+    //if (partial == \false()) {
+    //  return \false();
+    //}
   }
   
   return \and(clauses);
