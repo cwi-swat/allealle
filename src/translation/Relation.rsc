@@ -25,7 +25,7 @@ alias IndexedRows = tuple[set[str] partialKey, rel[Tuple partialKey, Row row] in
 
 bool isPresent(Constraints c) = c.exists != \false() && c.attConstraints != \false(); 
 
-Formula together(Constraints c) = \and(c.exists,c.attConstraints);
+Formula together(Constraints c) = and(c.exists,c.attConstraints);
 
 Formula getAttributeConstraints(Constraints c) = implies(c.exists, c.attConstraints);
 
@@ -113,6 +113,13 @@ Relation union(Relation lhs, Relation rhs) {
 
   for (Tuple key <- rhsIndexed.indexedRows<0>, Row r <- rhsIndexed.indexedRows[key]) {
     result = addRow(result, r);
+    //if (key in lhsIndexed.indexedRows<0>) {
+    //  for (Row l <- lhsIndexed.indexedRows[key]) {
+    //    result =
+    //  } 
+    //} else {
+    //  
+    //}
   }  
    
   return toRelation(result, lhs.heading); 
@@ -183,7 +190,7 @@ Relation difference(Relation lhs, Relation rhs) {
       }
     } else {
       // The rows are equal but have variables for their attributes. 
-      result.indexedRows = result.indexedRows - <key,l> + <key,<l.values, <l.constraints.exists, implies(r.constraints.exists, not(tmpAttForm))>>>;
+      result.indexedRows = result.indexedRows - <key,l> + <key,<l.values, <l.constraints.exists,\and(l.constraints.attConstraints,implies(r.constraints.exists, \and(not(tmpAttForm),r.constraints.attConstraints)))>>>;
     }
   }
   
