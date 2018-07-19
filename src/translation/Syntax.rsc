@@ -2,7 +2,7 @@ module translation::Syntax
 
 extend translation::Layout;
 
-start syntax Problem = problem: Relation* relations AlleFormula* constraints ObjectiveSection? objSection;
+start syntax Problem = problem: Relation* relations AlleFormula* constraints ObjectiveSection? objSection Expect? expect;
 
 syntax Relation 
   = RelVar v "(" {HeaderAttribute ","}+ header ")" RelationalBound bounds
@@ -146,6 +146,27 @@ syntax Objective
  | minimize: "minimize" AlleExpr expr
  ;
  
+syntax Expect
+  = "expect" ":" ResultType result ("," ModelRestriction models)?
+  ;
+
+syntax ResultType
+  = "sat"
+  | "t-sat"
+  | "unsat"
+  | "t-unsat"
+  ;
+  
+syntax ModelRestriction
+ = "#" "models" ("(" Domain dom ")")? ModelRestrExpr expr
+ ;
+
+syntax ModelRestrExpr
+ = "=" Arity
+ | "\>" Arity
+ | "\<" Arity
+ ;   
+ 
 lexical RangedId = ([a-zA-Z_] !<< [a-zA-Z_][a-zA-Z_\-.]* !>> [a-zA-Z_\-.]) \ Keywords; //([a-z_] !<< [a-z_][a-zA-Z_]* !>> [a-zA-Z_]) \ Keywords;
 lexical RangedNr = [0-9]+;
 
@@ -159,3 +180,4 @@ lexical RelVar = ([a-zA-Z] !<< [a-zA-Z][a-zA-Z0-9_\']* !>> [a-zA-Z0-9_]) \ Keywo
 
 keyword Keywords = "none" | "|x|" | "where" | "objectives" | "as";
 keyword Keywords = "no" | "lone" | "one" | "some" | "not" | "forall" | "exists" | "let";
+keyword Keywords = "expect" | "sat" | "unsat" | "t-sat" | "t-unsat";

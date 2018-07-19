@@ -127,7 +127,7 @@ Relation translateAggregateFunction(avg(str attName), str bindTo, Relation r, En
     return <(bindTo:intDom()), (), {}>;
   }
 
-  Term avgVar = env.newVar(bindTo, \int());
+  Term avgVar = env.newVar(bindTo, Sort::\int());
   
   Formula attConstraints = \true();
   for (Tuple sumTuple <- sum.rows, Tuple countTuple <- count.rows) {
@@ -143,8 +143,8 @@ Relation translateAggregateFunction(count(), str bindTo, Relation r, Environment
   for (Tuple t <- r.rows) {
     terms += ite(together(r.rows[t]), lit(\int(1)), lit(\int(0)));
   }
-  
-  Term countVar = env.newVar(bindTo, \int());
+    
+  Term countVar = env.newVar(bindTo, Sort::\int());
   Term countTerm = terms == [] ? lit(\int(0)) : addition(terms);
   
   return <(bindTo:intDom()), ((bindTo:countVar):<\true(), equal(countVar, countTerm)>), {}>;
@@ -157,7 +157,7 @@ Relation translateAggregateFunction(sum(str att), str bindTo, Relation r, Enviro
     terms += ite(together(r.rows[t]), t[att], lit(\int(0)));
   }
   
-  Term sumVar = env.newVar(bindTo, \int());
+  Term sumVar = env.newVar(bindTo, Sort::\int());
   
   return <(bindTo:intDom()), ((bindTo:sumVar):<\true(), equal(sumVar, addition(terms))>), {}>;
 }
@@ -186,7 +186,7 @@ Relation translateAggregateFunction(min(str att), str bindTo, Relation r, Enviro
     minTerm = ite(\and(together(r.rows[t]), lt(t[att],minTerm)), t[att], minTerm);
   }
   
-  Term minVar = env.newVar(bindTo, \int());
+  Term minVar = env.newVar(bindTo, Sort::\int());
   
   return <(bindTo:intDom()), ((bindTo:minVar):<\true(), equal(minVar, minTerm)>), {}>;
 }
@@ -213,7 +213,7 @@ Relation translateAggregateFunction(max(str att), str bindTo, Relation r, Enviro
     maxTerm = ite(\and(together(r.rows[t]), gt(t[att],maxTerm)), t[att], maxTerm);
   }
   
-  Term maxVar = env.newVar(bindTo, \int());
+  Term maxVar = env.newVar(bindTo, Sort::\int());
   
   return <(bindTo:intDom()), ((bindTo:maxVar):<\true(), equal(maxVar, maxTerm)>), {}>;
 }

@@ -39,6 +39,6 @@ CriteriaExpr addition(addition(list[CriteriaExpr] terms), CriteriaExpr rhs) = ad
 CriteriaExpr addition(CriteriaExpr lhs, addition(list[CriteriaExpr] terms)) = addition([lhs, *terms]);
 CriteriaExpr addition(CriteriaExpr lhs, CriteriaExpr rhs) = addition([lhs,rhs]) when addition(_) !:= lhs && addition(_) !:= rhs;
 
-CriteriaExpr multiplication(list[CriteriaExpr] terms, CriteriaExpr rhs) = multiplication([*terms, rhs]);
+CriteriaExpr multiplication(multiplication(list[CriteriaExpr] terms), CriteriaExpr rhs) = multiplication([*terms, rhs]);
 CriteriaExpr multiplication(CriteriaExpr lhs, multiplication(list[CriteriaExpr] terms)) = multiplication([lhs, *terms]);
 CriteriaExpr multiplication(CriteriaExpr lhs, CriteriaExpr rhs) = multiplication([lhs,rhs]) when multiplication(_) !:= lhs && multiplication(_) !:= rhs;

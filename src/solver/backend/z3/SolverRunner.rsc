@@ -70,14 +70,16 @@ int getSolvingTime(SolverPID pid) {
 
 str runSolverAndExpectResult(SolverPID pid, str commands) { 
   str result = run(pid,commands, debug=false);
-
+  
   while (true) {
     try {
-      if(trim(result) != "") {
+      str oldResult = result;
+      sleep(5);
+      result += read(pid);
+      
+      if(trim(result) != "" && result == oldResult) {
         return result;
       }
-      sleep(5);
-      result = read(pid);
     } catch ex: {
       println("Exception while SMT solver, reason: <er>");
       println("Retrying...");

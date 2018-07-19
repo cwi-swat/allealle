@@ -3,7 +3,7 @@ module translation::theories::integer::Imploder
 import translation::Imploder;
 
 import translation::theories::integer::Syntax;
-import translation::theories::integer::AST;
+import translation::theories::integer::AST; 
 
 import ParseTree;
 import String;

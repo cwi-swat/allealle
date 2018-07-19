@@ -5,6 +5,7 @@ import ide::CombinedSyntax;
 import ide::CombinedAST;
 import ide::CombinedImploder;
 import ide::CombinedModelFinder;
+import ide::CombinedExpectationRunner;
 import ide::vis::ModelVisualizer;
 import ide::UnicodeRewriter;
 import ide::UnionCompatibilityChecker;
@@ -42,9 +43,21 @@ void main(){
 	
 	contribs = {
 		popup(
-			action("Check and visualize", (Tree current, loc file) {
-				if (/ide::CombinedSyntax::Problem p := current) {checkAndVisualize(p);}
-			})
+		  group("AlleAlle", [
+  			action("Check and visualize", (Tree current, loc file) {
+	 		  	if (/ide::CombinedSyntax::Problem p := current) {checkAndVisualize(p);}
+	   		}),
+	   		action("Check expectation", (Tree current, loc file) {
+   		    if (/ide::CombinedSyntax::Problem p := current) {
+   		      ExpectationResult r = checkExpectation(implodeProblem(p));
+   		      if (success() := r) {
+   		        alert("Success!");
+   		      } else if (failed(str reason) := r) {
+   		        alert("Failed! <reason>");
+   		      }
+   		    }
+   		  })]
+	   )
 		),
 		syntaxProperties(#start[Problem]),
 		liveUpdater(unicodeRewrite),

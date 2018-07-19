@@ -33,4 +33,4 @@ let installedAfter = (toBeInstalled ∪ (installed ∖ toBeRemoved)) | ∀ k ∈
   
 toBeChanged = (toBeInstalled ∪ toBeRemoved)
 
-objectives: minimize toBeRemoved[cnt/count()], minimize toBeChanged[cnt/count()], maximize (toBeChanged ⨝ version)[pId,latestVersion/max(nr)]
+objectives: minimize toBeRemoved[count()], minimize toBeChanged[count()], maximize (toBeChanged ⨝ version)[pId,max(nr)]

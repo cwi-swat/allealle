@@ -18,19 +18,30 @@ import util::Benchmark;
 alias TranslationResult = tuple[Formula form, list[Command] cmds];
 
 TranslationResult translateProblem(Problem p, Environment env, bool logIndividualFormula = true) {
-  Formula form;
-  list[Command] cmds = [];
-  
-  if (logIndividualFormula) {
-    form = (\true() | and(it, r) | AlleFormula f <- p.constraints, bprint("\nTranslating \'<unparse(f)>\' ..."), <Formula r, int time> := bm(f, env), bprint("in <time / 1000000> ms.")); 
-  } else {
-    form = and({translateFormula(f, env) | AlleFormula f <- p.constraints}); 
+  void log(str message) {
+    if (logIndividualFormula) print(message);
   }
   
-  if (p has objectiveSec) {
-    cmds += translateOptimizationPriority(p.objectiveSec.prio);
+  Formula form = \true();
+  list[Command] cmds = [];
   
-    for (Objective obj <- p.objectiveSec.objs) {
+  for (AlleFormula f <- p.constraints) {
+    log("\nTranslating \'<unparse(f)>\' ...");
+    tuple[Formula f, int time] transResult = bm(f, env);
+    log("in <transResult.time / 1000000> ms.");
+    
+    form = and(form,transResult.f);
+    
+    if (form == \false()) {
+      log("Result of last translation is false. Shortcircuiting");
+      return <\false(),[]>;
+    }
+  }
+  
+  if (just(ObjectiveSection objSec) := p.objectiveSec) {
+    cmds += translateOptimizationPriority(objSec.prio);
+  
+    for (Objective obj <- objSec.objs) {
       map[Command,Formula] trans = translateObjective(obj,env);
       for (Command c <- trans) {
         if (logIndividualFormula) {
@@ -92,21 +103,18 @@ Formula translateFormula(exactlyOne(AlleExpr expr), Environment env) {
   
   for (Tuple idx <- r.rows) {
     Formula clause = or(\not(together(r.rows[idx])), not(partial));
-//    Formula clause = or(\not(r.rows[idx]).exists), not(partial));
     if (clause == \false()) {
       return \false();
     }
     
     clauses += clause;  
-    attConstraints += getAttributeConstraints(r.rows[idx]);
     
-    //partial = \or(partial, r.rows[idx].exists);
     partial = \or(partial, together(r.rows[idx]));
   }
   
   clauses += partial;
-  
-  return \and(clauses + attConstraints);
+
+  return \and(clauses);
 }
  
 
@@ -278,7 +286,7 @@ private void forall(list[VarDeclaration] decls, int currentDecl, Formula declCon
   int i = 1;
   
   for (Tuple t <- r.rows) {
-    println("forall <i> of <nrOfTuples>"); 
+    //println("forall <i> of <nrOfTuples>"); 
     env.relations[decls[currentDecl].name] = <r.heading,(t:<\true(),r.rows[t].attConstraints>),r.partialKey>;
     forall(decls, currentDecl + 1, \or(not(together(r.rows[t])), declConstraints),  accumulate, isShortCircuited, form, env);
 
@@ -465,7 +473,6 @@ default Formula (Tuple) translateCriteria(Criteria criteria, Environment env) { 
 Term (Tuple) translateCriteriaExpr(att(str name), Environment env) { 
   Term trans(Tuple t) {
     if (name notin t) {
-      println(t);
       throw "Attribute \'<name>\' not in relation";
     }
     

@@ -1,0 +1,31 @@
+num (nId:id)                = {<n1>..<n9>}
+r1 (nId:id)                 = {<n1>..<n3>}
+r2 (nId:id)                 = {<n4>..<n6>}
+r3 (nId:id)                 = {<n7>..<n9>}
+grid (x:id, y:id, val:int) >= {<n1,n1,6>,<n1,n4,2>,<n1,n8,5>,
+                               <n2,n2,1>,<n2,n3,8>,<n2,n5,6>,<n2,n8,2>,
+                               <n3,n3,3>,<n3,n7,4>,
+                               <n4,n4,6>,<n4,n6,7>,<n4,n7,8>,
+                               <n5,n1,4>,<n5,n3,2>,<n5,n5,5>,
+                               <n6,n4,9>,<n6,n6,8>,
+                               <n7,n1,5>,<n7,n3,4>,<n7,n5,9>,<n7,n7,3>,
+                               <n8,n2,2>,<n8,n8,1>,<n8,n9,4>,
+                               <n9,n1,3>,<n9,n6,5>,<n9,n9,7>}
+                           <= {<n1,n1,?>..<n9,n9,?>}
+
+∀ g ∈ grid | some (g where val >= 1 && val <= 9)
+
+∀ x ∈ num[nId as x] | some ((x ⨯ num[nId as y]) ⨝ grid)[val][count() as nrOfVals] where nrOfVals = 9
+∀ y ∈ num[nId as y] | some ((y ⨯ num[nId as x]) ⨝ grid)[val][count() as nrOfVals] where nrOfVals = 9
+
+some ((r1[nId as x] ⨯ r1[nId as y]) ⨝ grid)[val][count() as nrOfVals] where nrOfVals = 9
+some ((r1[nId as x] ⨯ r2[nId as y]) ⨝ grid)[val][count() as nrOfVals] where nrOfVals = 9
+some ((r1[nId as x] ⨯ r3[nId as y]) ⨝ grid)[val][count() as nrOfVals] where nrOfVals = 9
+some ((r2[nId as x] ⨯ r1[nId as y]) ⨝ grid)[val][count() as nrOfVals] where nrOfVals = 9
+some ((r2[nId as x] ⨯ r2[nId as y]) ⨝ grid)[val][count() as nrOfVals] where nrOfVals = 9
+some ((r2[nId as x] ⨯ r3[nId as y]) ⨝ grid)[val][count() as nrOfVals] where nrOfVals = 9
+some ((r3[nId as x] ⨯ r1[nId as y]) ⨝ grid)[val][count() as nrOfVals] where nrOfVals = 9
+some ((r3[nId as x] ⨯ r2[nId as y]) ⨝ grid)[val][count() as nrOfVals] where nrOfVals = 9
+some ((r3[nId as x] ⨯ r3[nId as y]) ⨝ grid)[val][count() as nrOfVals] where nrOfVals = 9
+
+expect: sat, #models = 1

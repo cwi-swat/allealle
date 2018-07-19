@@ -2,17 +2,16 @@ module translation::Unparser
 
 import translation::AST;
 import List;
+import util::Maybe;
 
-
-str unparse(problem(list[RelationDef] relations, list[AlleFormula] constraints, list[Objective] objectives)) = 
+str unparse(problem(list[RelationDef] relations, list[AlleFormula] constraints, Maybe[ObjectiveSection] objectiveSec, Maybe[Expect] expect)) = 
   "<for (RelationDef r <- relations) {><unparse(r)>
   '<}>
   '
   '<for(AlleFormula f <- constraints) {><unparse(f)>
   '<}>
   '
-  '<if(objectives != []) {> 
-  'objectives: <intercalate(", ", [unparse(obj) | obj <- objectives])> <}> 
+  '<unparse(objectiveSec)> 
   '";
 
 str unparse(relation(str name, list[HeaderAttribute] heading, RelationalBound bounds)) =
@@ -49,6 +48,14 @@ default str unparse(AlleLiteral l) { throw "No uparse function for literal \'<l>
   
 str unparse(id()) = "id";
 default str unparse(Domain d) { throw "No unparse function for domain \'<d>\'"; }
+
+str unparse(nothing()) = "";
+str unparse(just(objectives(ObjectivePriority prio, list[Objective] objs))) = 
+ "objectives (<unparse(prio)>): <intercalate(", ", [unparse(obj) | obj <- objs])>";
+ 
+str unparse(lex()) = "lex";
+str unparse(pareto()) = "pareto";
+str unparse(independent()) = "independent"; 
 
 str unparse(empty(AlleExpr expr))                                                   = "(no <unparse(expr)>)";
 str unparse(atMostOne(AlleExpr expr))                                               = "(lone <unparse(expr)>)";

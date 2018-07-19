@@ -5,14 +5,17 @@ import translation::AST;
 
 import ParseTree;
 import String;
+import util::Maybe;
 
-translation::AST::Problem implodeProblem(translation::Syntax::Problem p) 
-  = problem([implode(r) | r <- p.relations], [implode(c) | c <- p.constraints])
-  when /translation::Syntax::ObjectiveSection _ !:= p.objSection; 
-
-translation::AST::Problem implodeProblem(translation::Syntax::Problem p) 
-  = problem([implode(r) | r <- p.relations], [implode(c) | c <- p.constraints], implode(objSec)) //[implode(obj) | obj <- objSec.objectives])
-  when /translation::Syntax::ObjectiveSection objSec := p.objSection; 
+translation::AST::Problem implodeProblem(translation::Syntax::Problem p) {
+  Maybe[translation::AST::ObjectiveSection] s = (/translation::Syntax::ObjectiveSection objSec := p.objSection) ? just(implode(objSec)) : nothing();
+  Maybe[translation::AST::Expect] e = (/translation::Syntax::Expect exp := p.expect) ? just(implode(exp)) : nothing();
+     
+  return problem([implode(r) | r <- p.relations], [implode(c) | c <- p.constraints], s, e);
+}
+//translation::AST::Problem implodeProblem(translation::Syntax::Problem p) 
+//  = problem([implode(r) | r <- p.relations], [implode(c) | c <- p.constraints], implode(objSec)) //[implode(obj) | obj <- objSec.objectives])
+//  when /translation::Syntax::ObjectiveSection objSec := p.objSection; 
 
 translation::AST::RelationDef implode((Relation)`<RelVar v> (<{HeaderAttribute ","}+ header>) <RelationalBound bounds>`) 
   = relation("<v>", [implode(h) | h <- header], implode(bounds));
@@ -221,5 +224,26 @@ translation::AST::Objective implode((Objective)`maximize <AlleExpr expr>`)
 
 translation::AST::Objective implode((Objective)`minimize <AlleExpr expr>`)
   = minimize(implode(expr));
+
+translation::AST::Expect implode((Expect)`expect: <ResultType result>`)
+  = expect(implode(result));
+
+translation::AST::Expect implode((Expect)`expect: <ResultType result>, <ModelRestriction models>`)
+  = expect(implode(result), implode(models));
+  
+translation::AST::ResultType implode((ResultType)`sat`) = sat();
+translation::AST::ResultType implode((ResultType)`t-sat`) = trivSat();
+translation::AST::ResultType implode((ResultType)`unsat`) = unsat();
+translation::AST::ResultType implode((ResultType)`t-unsat`) = sat();
+   
+translation::AST::ModelRestriction implode((ModelRestriction)`#models <ModelRestrExpr expr>`)
+  = restrict(implode(expr), id());   
+
+translation::AST::ModelRestriction implode((ModelRestriction)`#models (<Domain d>) <ModelRestrExpr expr>`)
+  = restrict(implode(expr), implode(d));   
+
+translation::AST::ModelRestrExpr implode((ModelRestrExpr)`= <Arity nr>`) = eqMod(toInt("<nr>"));
+translation::AST::ModelRestrExpr implode((ModelRestrExpr)`\< <Arity nr>`) = ltMod(toInt("<nr>"));
+translation::AST::ModelRestrExpr implode((ModelRestrExpr)`\> <Arity nr>`) = gtMod(toInt("<nr>"));
    
 default &T implode(&R production) { throw "Unable to implode production \'<production>\'. No implode function implemented"; }

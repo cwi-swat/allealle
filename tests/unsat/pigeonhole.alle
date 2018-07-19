@@ -2,7 +2,9 @@ Pigeon (pId:id)            = {<p1>..<p5>}
 Hole   (hId:id)            = {<h1>..<h4>}
 nest   (pId:id, hId:id)   <= {<p1,h1>..<p5,h4>}
 
-nest ⊆ Pigeon ⨯ Hole
-
 ∀ p ∈ Pigeon | one   p ⨝ nest
 ∀ h ∈ Hole | lone  h ⨝ nest
+
+nest ⊆ Pigeon ⨯ Hole
+
+expect: unsat

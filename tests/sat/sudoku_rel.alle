@@ -21,3 +21,5 @@ let X = num[nId as x], Y = num[nId as y], r1X = r1[nId as x], r2X = r2[nId as x]
   (∀ x ∈ r1X, y ∈ r3Y | no   ((x ⨯ y) ⨝ grid)[val] ∩ (((r1X ∖ x) ⨯ (r3Y ∖ y)) ⨝ grid)[val]) ∧ 
   (∀ x ∈ r2X, y ∈ r3Y | no   ((x ⨯ y) ⨝ grid)[val] ∩ (((r2X ∖ x) ⨯ (r3Y ∖ y)) ⨝ grid)[val]) ∧ 
   (∀ x ∈ r3X, y ∈ r3Y | no   ((x ⨯ y) ⨝ grid)[val] ∩ (((r3X ∖ x) ⨯ (r3Y ∖ y)) ⨝ grid)[val])
+
+  expect: sat, #models = 1

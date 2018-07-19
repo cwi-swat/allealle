@@ -7,9 +7,9 @@ import smtlogic::Ints;
 import List;
 import String; 
 
-str preamble(\int()) = "";  
+str preamble(Sort::\int()) = "";  
 
-str compileVariableDeclaration(<str name, \int()>) = "(declare-const <name> Int)";
+str compileVariableDeclaration(<str name, Sort::\int()>) = "(declare-const <name> Int)";
 
 @memo str compile(\int(int i))                          = "<i>"; 
 
@@ -64,8 +64,8 @@ str compileWithoutIden(gt(Term lhs, Term rhs))           = "(\> " + compileWitho
 str compileWithoutIden(gte(Term lhs, Term rhs))          = "(\>= " + compileWithoutIden(lhs) + " " + compileWithoutIden(rhs) + ")";
 @memo
 
-Term getValue((SmtValue)`<Val v>`, <str _, \int()>) = lit(\int(toInt("<v>")));
-Term getValue((SmtValue)`(- <Val v>)`, <str _, \int()>) = neg(lit(\int(toInt("<v>"))));
+Term getValue((SmtValue)`<Val v>`, <str _, Sort::\int()>) = lit(\int(toInt("<v>")));
+Term getValue((SmtValue)`(- <Val v>)`, <str _, Sort::\int()>) = neg(lit(\int(toInt("<v>"))));
  
 str negateVariable(str varName, lit(\int(int i))) = "(not (= <varName> <i>))";
 str negateVariable(str varName, neg(lit(\int(int i)))) = "(not (= <varName> (- <i>)))";

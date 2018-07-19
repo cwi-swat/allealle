@@ -36,9 +36,13 @@ list[Id] extractIdDomain(Problem p) =
 
 @memo                                                                                                                                                    
 Relation createRelation(RelationDef r) {
-  @memo
-  str idToStr(list[AlleValue] vals) = intercalate("_", [i | idd(i) <- vals]);
+  //int i = 0;
 
+  str idToStr(list[AlleValue] vals) {
+    //i += 1;
+    return "<intercalate("_", [i | idd(i) <- vals])>";
+  }
+  
   list[str] orderedHeading = [ha.name | HeaderAttribute ha <- r.heading];
   list[Domain] orderedDomains = [ha.dom | HeaderAttribute ha <- r.heading];
   Heading heading = (orderedHeading[i] : orderedDomains[i] | int i <- [0..size(orderedHeading)]);

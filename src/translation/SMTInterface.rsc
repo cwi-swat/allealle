@@ -12,6 +12,7 @@ import String;
 import IO;
 import List;
 import Map;
+import ParseTree;
 
 alias SMTVar = tuple[str name, Sort sort];
 alias SMTModel = map[SMTVar, Term];
@@ -57,7 +58,7 @@ default str preamble(Sort srt) = "";
 str compileSMTVariableDeclarations(set[SMTVar] vars) = "<for (SMTVar var <- vars) {>
                                                        '<compileVariableDeclaration(var)><}>";
 
-str compileVariableDeclaration(<str name, \bool()>) = "(declare-const <name> Bool)";
+str compileVariableDeclaration(<str name, Sort::\bool()>) = "(declare-const <name> Bool)";
 default str compileVariableDeclaration(SMTVar var) { throw "Unable to compile variable <var> to SMT, no SMT compiler available for sort \'<var.sort>\'"; }
 
 @memo
@@ -194,7 +195,8 @@ str compile(independent()) = "box";
 default str compileCommand(Command c) { throw "Unable to compile command \'<c>\'. No compile function defined.";}
 
 SMTModel getValues(str smtResult, set[SMTVar] vars) {
-  SmtValues foundValues = [SmtValues]"<smtResult>"; 
+  println(smtResult);
+  SmtValues foundValues = parse(#start[SmtValues], trim(smtResult)).top; 
   map[str,SmtValue] rawSmtVals = (() | it + ("<varAndVal.name>":varAndVal.val) | VarAndValue varAndVal <- foundValues.values);
 
   SMTModel m = (var : val | str varName <- rawSmtVals, SMTVar var:<varName, Sort _> <- vars, Term val := getValue(rawSmtVals[varName], var));
@@ -202,8 +204,8 @@ SMTModel getValues(str smtResult, set[SMTVar] vars) {
   return m;
 }    
 
-Term getValue((SmtValue)`true`, <str _, \bool()>) = lit(ttrue());
-Term getValue((SmtValue)`false`, <str _, \bool()>) = lit(ffalse());
+Term getValue((SmtValue)`true`, <str _, Sort::\bool()>) = lit(ttrue());
+Term getValue((SmtValue)`false`, <str _, Sort::\bool()>) = lit(ffalse());
 default Term getValue(SmtValue smtValue, SMTVar var) { throw "Unable to get the value for SMT value \'<smtValue>\', for variable <var>"; }
 
 str negateVariable(str var, lit(ttrue())) = "(not <var>)";

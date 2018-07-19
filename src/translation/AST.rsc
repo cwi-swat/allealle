@@ -1,8 +1,10 @@
 module translation::AST
 
+import util::Maybe;
+
 data Problem 
-  = problem(list[RelationDef] relations, list[AlleFormula] constraints)
-  | problem(list[RelationDef] relations, list[AlleFormula] constraints, ObjectiveSection objectiveSec)
+  //= problem(list[RelationDef] relations, list[AlleFormula] constraints)
+  = problem(list[RelationDef] relations, list[AlleFormula] constraints, Maybe[ObjectiveSection] objectiveSec, Maybe[Expect] expect)
   ;
 
 data RelationDef
@@ -135,3 +137,25 @@ data Objective
   = maximize(AlleExpr expr)
   | minimize(AlleExpr expr)  
   ; 
+  
+data Expect
+  = expect(ResultType result)
+  | expect(ResultType result, ModelRestriction restrict)
+  ;
+  
+data ResultType
+  = sat()
+  | trivSat()
+  | unsat()
+  | trivUnsat()
+  ;
+  
+data ModelRestriction
+  = restrict(ModelRestrExpr expr, Domain d)
+  ;
+  
+data ModelRestrExpr
+  = eqMod(int nr)
+  | ltMod(int nr)
+  | gtMod(int nr)
+  ;
