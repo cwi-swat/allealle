@@ -1,3 +1,0 @@
-rel (id1:id, id2:id) <= {<id1_1,id2_1>,<id1_1,id2_2>}
-
-one rel[id2]

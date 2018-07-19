@@ -1,7 +1,0 @@
-group (gId:id, ggId:id, nr:int) <= {<g1,g11,20>,<g1,g12,10>,<g2,g21,20>,<g2,g22,30>}
-
-//some group[gId, partial/max(nr)] where partial = 20
-some group[gId][cnt/count()] where cnt = 2
-some group[cnt/count()] where cnt = 2
-
-objectives: maximize group[gId,max/max(nr)]

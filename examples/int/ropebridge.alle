@@ -5,7 +5,7 @@
 world (wId:id)                         <= {<w1>..<w6>}
 // the order relation describes the order (total when it is transitively closed) of the different worlds
 // It also contains the time spend. This is needed to solve the puzzle
-order (cur:id, next:id, timeSpend:int) <= {<w1,w2,?>,<w2,w3,?>,<w3,w4,?>,<w4,w5,?>,<w5,w6,?>}//,<w6,w7,?>,<w7,w8,?>,<w8,w9,?>,<w9,w10,?>}
+order (cur:id, next:id, timeSpend:int) <= {<w1,w2,?>,<w2,w3,?>,<w3,w4,?>,<w4,w5,?>,<w5,w6,?>}
 // First models the first world in our transition system
 first (wId:id)                          = {<w1>}
 // Last models the last world in our transition system and could be any world
@@ -76,9 +76,9 @@ Traveller[tId] ⊆ (last ⨝ posOfTrav ⨝ far)[tId]
     // the time it takes to cross the bridge is dependend on the slowest traveller   
     some (o ⨯ (crossingTravellers ⨝ Traveller)[max(timeToCross) as slowest]) where timeSpend = slowest
   )   
-
-// check that all travellers can cross the bridge in 17 minutes  
-some order[sum(timeSpend) as totalTimeSpend] where totalTimeSpend = 17
-
+  
 // check that it is impossible (unsatisfiable) for all the travellers to cross the bridge in less then 17 minutes  
 //some order[sum(timeSpend) as totalTimeSpend] where totalTimeSpend < 17
+
+// minimize the time that it takes the travellers to cross the bridge  
+objectives: minimize order[sum(timeSpend)]

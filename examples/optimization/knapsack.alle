@@ -2,8 +2,8 @@ sack(maxWeight:int, totalWeight:int, totalPrice:int)         = {<15, ?, ?>}
 package(pId:id, price:int, weight:int)                       = {<a,4,12>,<b,2,2>,<c,2,1>,<d,1,1>,<e,10,4>}
 content(pId:id)                                             <= {<a>,<b>,<c>,<d>,<e>}
  
-some (sack ⨯ (content ⨝ package)[price/sum(price), weight/sum(weight)]) 
-  where totalWeight = weight && totalPrice=price && totalWeight <= maxWeight
+some (sack ⨯ (content ⨝ package)[sum(price) as calPrice, sum(weight) as calWeight]) 
+  where totalWeight = calWeight && totalPrice=calPrice && totalWeight <= maxWeight
 
-objectives: maximize sack[totalPrice]    
+objectives: maximize sack[totalPrice], minimize sack[totalWeight]    
  
