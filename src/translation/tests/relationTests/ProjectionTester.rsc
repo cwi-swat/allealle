@@ -13,7 +13,7 @@ import IO;
 import Map;
 
 test bool projectedFieldsMustBeInRelation() {
-  Relation nest = create("nest", ("pId":id(),"hId":id())).t(("pId":key("p1"), "hId":key("h1"))).t(("pId":key("p1"), "hId":key("h2"))).build();
+  Relation nest = create("nest", ("pId":id(),"hId":id())).t(("pId":lit(id("p1")), "hId":lit(id("h1")))).t(("pId":lit(id("p1")), "hId":lit(id("h2")))).build();
   
   try {
     project(nest, {"non-existing"});
@@ -22,33 +22,33 @@ test bool projectedFieldsMustBeInRelation() {
 }
 
 test bool projectOfAllFieldsIsIsomorphic() {
-  Relation nest = create("nest", ("pId":id(),"hId":id())).t(("pId":key("p1"), "hId":key("h1"))).t(("pId":key("p1"), "hId":key("h2"))).build();
+  Relation nest = create("nest", ("pId":id(),"hId":id())).t(("pId":lit(id("p1")), "hId":lit(id("h1")))).t(("pId":lit(id("p1")), "hId":lit(id("h2")))).build();
 
   return nest == project(nest, {"pId","hId"}); 
 }
 
 test bool projectOfSingleFieldsCombinesDuplicateRows() {
-  Relation nest = create("nest", ("pId":id(),"hId":id())).v(("pId":key("p1"), "hId":key("h1"))).v(("pId":key("p1"), "hId":key("h2"))).build();
+  Relation nest = create("nest", ("pId":id(),"hId":id())).v(("pId":lit(id("p1")), "hId":lit(id("h1")))).v(("pId":lit(id("p1")), "hId":lit(id("h2")))).build();
   
   Relation projectResult = project(nest, {"pId"});
   
-  bool part1 = projectResult == create("pigeon", ("pId":id())).f(("pId":key("p1")), \or(pvar("nest_h1_p1"),pvar("nest_h2_p1")), \true()).build();
+  bool part1 = projectResult == create("pigeon", ("pId":id())).f(("pId":lit(id("p1"))), \or(pvar("nest_h1_p1"),pvar("nest_h2_p1")), \true()).build();
   bool part2 = checkAllDistinct(projectResult);
   
   return part1 && part2;
 }
 
 test bool projectWithNonIdAttributeFieldsWithFixedValues() {
-  Relation anchestor = create("anchestor", ("pre":id(),"des":id(), "between":\int()))
-                          .v(("pre":key("p1"),"des":key("d1"),"between":term(lit(\int(20)))))
-                          .v(("pre":key("p1"),"des":key("d2"),"between":term(lit(\int(40)))))
+  Relation anchestor = create("anchestor", ("pre":id(),"des":id(), "between":Domain::\int()))
+                          .v(("pre":lit(id("p1")),"des":lit(id("d1")),"between":lit(\int(20))))
+                          .v(("pre":lit(id("p1")),"des":lit(id("d2")),"between":lit(\int(40))))
                           .build();
 
   Relation projectResult = project(anchestor, {"pre","between"});
    
-  bool part1 = projectResult == create("result", ("pre":id(),"between":\int()))
-                          .f(("pre":key("p1"),"between":term(lit(\int(20)))), pvar("anchestor_d1_p1"), \true())
-                          .f(("pre":key("p1"),"between":term(lit(\int(40)))), pvar("anchestor_d2_p1"), \true())
+  bool part1 = projectResult == create("result", ("pre":id(),"between":Domain::\int()))
+                          .f(("pre":lit(id("p1")),"between":lit(\int(20))), pvar("anchestor_d1_p1"), \true())
+                          .f(("pre":lit(id("p1")),"between":lit(\int(40))), pvar("anchestor_d2_p1"), \true())
                           .build();
   bool part2 = checkAllDistinct(projectResult);
 
@@ -57,12 +57,12 @@ test bool projectWithNonIdAttributeFieldsWithFixedValues() {
 }
 
 test bool projectWithNonIdAttributeFieldsWithOpenValues() {
-  Relation anchestor = create("anchestor", ("pre":id(),"des":id(), "between":\int()))
-                          .v(("pre":key("p1"),"des":key("d1"),"between":term(var("b1",Sort::\int()))))
-                          .v(("pre":key("p1"),"des":key("d2"),"between":term(var("b2",Sort::\int()))))
-                          .v(("pre":key("p1"),"des":key("d3"),"between":term(var("b3",Sort::\int()))))
-                          .v(("pre":key("p1"),"des":key("d4"),"between":term(var("b4",Sort::\int()))))
-                          .v(("pre":key("p1"),"des":key("d5"),"between":term(var("b5",Sort::\int()))))
+  Relation anchestor = create("anchestor", ("pre":id(),"des":id(), "between":Domain::\int()))
+                          .v(("pre":lit(id("p1")),"des":lit(id("d1")),"between":var("b1",Sort::\int())))
+                          .v(("pre":lit(id("p1")),"des":lit(id("d2")),"between":var("b2",Sort::\int())))
+                          .v(("pre":lit(id("p1")),"des":lit(id("d3")),"between":var("b3",Sort::\int())))
+                          .v(("pre":lit(id("p1")),"des":lit(id("d4")),"between":var("b4",Sort::\int())))
+                          .v(("pre":lit(id("p1")),"des":lit(id("d5")),"between":var("b5",Sort::\int())))
                           .build();
   
   Relation projectResult = project(anchestor, {"pre","between"});

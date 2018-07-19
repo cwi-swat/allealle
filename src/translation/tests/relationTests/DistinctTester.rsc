@@ -31,11 +31,7 @@ bool checkAllDistinct(Relation r) {
         Formula attEqual = \true();
 
         for (str att <- row2.values, att in nonIdAtts) {
-          if (term(lhs) := row1.values[att], term(rhs) := row2.values[att]) {
-            attEqual = \and(attEqual, equal(lhs, rhs));
-          } else {
-            throw "Attribute \'<att>\' is not a term? Should not happen";
-          }         
+          attEqual = \and(attEqual, equal(row1.values[att], row2.values[att]));
         }
         
         existsEqualRows = \or(existsEqualRows, attEqual); 
