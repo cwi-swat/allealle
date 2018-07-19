@@ -1,5 +1,5 @@
-![Logo of AlleAlle](https://github.com/cwi-swat/allealle/blob/master/allealle_logo.svg) AlleAlle - A Bounded Relational Model Finder with Data
-==============================================================================================================================================
+![Logo of AlleAlle](https://github.com/cwi-swat/allealle/blob/master/allealle_logo.svg =100) AlleAlle - A Bounded Relational Model Finder with Data
+===================================================================================================================================================
 
 Many interesting problems have relational (graph-like) structures. Relational model finders help you define and solve these problems in a natural way. <sup>1</sup> AlleAlle is such a relational model finder.
 
