@@ -56,9 +56,9 @@ RelationBuilder create(str relName, Heading h) {
   return rb(truth, variable, form, build);
 }
 
-Key getKey(Tuple t) = (f : t[f] | str f <- t, key(_) := t[f]);
+Key getKey(Tuple t) = (f : t[f] | str f <- t, lit(id(_)) := t[f]);
 
-str toStr(key(str k)) = k;
+str toStr(lit(id(str k))) = k;
 str toStr(str relName, Key key) = "<relName>_<intercalate("_", ["<toStr(key[k])>" | str k <- sortedKeys])>" when list[str] sortedKeys := sort(toList(key<0>)); 
 
 test bool createEmptyRelation() {
@@ -68,15 +68,15 @@ test bool createEmptyRelation() {
 }
 
 test bool twoDistinctRows() {
-  Relation r = create("testRel", ("id":id())).t(("id":key("t1"))).t(("id":key("t2"))).build();
+  Relation r = create("testRel", ("id":id())).t(("id":lit(id("t1")))).t(("id":lit(id("t2")))).build();
   
   return size(r.rows) == 2;
 }
 
 test bool noDuplicateRows_IdsOnly() {
-  Relation r = create("testRel", ("id":id())).v(("id":key("t1"))).v(("id":key("t1"))).build();
+  Relation r = create("testRel", ("id":id())).v(("id":lit(id("t1")))).v(("id":lit(id("t1")))).build();
   
-  return size(r.rows) == 1 && r.rows[("id":key("t1"))].exists == \or({pvar("testRel_t1"),pvar("testRel_t1_1")});
+  return size(r.rows) == 1 && r.rows[("id":lit(id("t1")))].exists == \or({pvar("testRel_t1"),pvar("testRel_t1_1")});
 }
 
 data Domain = \int();
@@ -88,13 +88,13 @@ test bool emptyRelationWithExtraAttributes() {
 }
 
 test bool noDuplicateRows_IdsAndOtherAttributes() {
-  Relation r = create("testRel", ("id":id(), "num":\int())).t(("id":key("p1"), "num":term(lit(\int(10))))).v(("id":key("p1"), "num":term(lit(\int(10))))).build();
+  Relation r = create("testRel", ("id":id(), "num":\int())).t(("id":lit(id("p1")), "num":lit(\int(10)))).v(("id":lit(id("p1")), "num":lit(\int(10)))).build();
 
-  return size(r.rows) == 1 && r.rows[("id":key("p1"),"num":term(lit(\int(10))))].exists == \true();
+  return size(r.rows) == 1 && r.rows[("id":lit(id("p1")),"num":lit(\int(10)))].exists == \true();
 }
 
 test bool twoDistinctRows_IdsAndOtherAttributes() {
-  Relation r = create("testRel", ("id":id(), "num":\int())).v(("id":key("p1"), "num":term(\var("n1",Sort::\int())))).v(("id":key("p1"), "num":term(\var("n2",Sort::\int())))).build();
+  Relation r = create("testRel", ("id":id(), "num":\int())).v(("id":lit(id("p1")), "num":\var("n1",Sort::\int()))).v(("id":lit(id("p1")), "num":\var("n2",Sort::\int()))).build();
 
   return size(r.rows) == 2;
 }
