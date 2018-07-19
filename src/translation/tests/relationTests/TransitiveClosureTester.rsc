@@ -11,17 +11,17 @@ import IO;
 
 test bool transitiveClosureOfParentRelation() {
   Relation parent = create("parent", ("pId":id(),"cId":id()))
-                    .t(("pId":key("j"),"cId":key("l")))
-                    .t(("pId":key("j"),"cId":key("b")))
-                    .t(("pId":key("h"),"cId":key("j")))
+                    .t(("pId":lit(id("j")),"cId":lit(id("l"))))
+                    .t(("pId":lit(id("j")),"cId":lit(id("b"))))
+                    .t(("pId":lit(id("h")),"cId":lit(id("j"))))
                     .build();
                     
   return transitiveClosure(parent,"pId","cId") ==
           create("parent", ("pId":id(),"cId":id()))
-                    .t(("pId":key("j"),"cId":key("l")))
-                    .t(("pId":key("j"),"cId":key("b")))
-                    .t(("pId":key("h"),"cId":key("j")))
-                    .t(("pId":key("h"),"cId":key("l")))
-                    .t(("pId":key("h"),"cId":key("b")))
-                    .build();;
+                    .t(("pId":lit(id("j")),"cId":lit(id("l"))))
+                    .t(("pId":lit(id("j")),"cId":lit(id("b"))))
+                    .t(("pId":lit(id("h")),"cId":lit(id("j"))))
+                    .t(("pId":lit(id("h")),"cId":lit(id("l"))))
+                    .t(("pId":lit(id("h")),"cId":lit(id("b"))))
+                    .build();
 }
