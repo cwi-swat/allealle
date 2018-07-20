@@ -48,8 +48,7 @@ State ⊆ (InitialState[sId as cur] ⨝ *<cur,next>ordering)[next][next as sId]
 State ⨯ Vehicle[vId] ⊆ posInState[sId,vId]
 
 // Every vehicle must stay on the board at all times
-∀ v ∈ Horizontal ⨝ Vehicle ⨝ posInState | some v where (pos >= 0 && pos <= (6 - length))
-∀ v ∈ Vertical ⨝ Vehicle ⨝ posInState   | some v where (pos >= 0 && pos <= (6 - length))
+∀ v ∈ Vehicle ⨝ posInState | some v where (pos >= 0 && pos <= (6 - length))
 
 // the goal is to get the red car out
 ∃ s ∈ State | some (posInState ⨝ s ⨝ RedCar) where pos = 4
