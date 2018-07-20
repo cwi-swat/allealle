@@ -1,64 +1,102 @@
 
-Vehicle (1 :: length:int)             = {<orange_car,2>,<red_car,2>,<yellow_car,2>,<purple_car,2>,<pink_truck,3>,<blue_truck,3>,<brown_car,2>,<pink_car,2>,<light_green_car,2>,<blue_car,2>,<dark_green_car,2>,<yellow_truck,3>,<black_car,2>}
-RedCar (1)                            = {<red_car>}
-Horizontal (1)                        = {<red_car>,<yellow_car>,<blue_truck>,<brown_car>,<light_green_car>,<black_car>}
-Vertical (1)                          = {<orange_car>,<purple_car>,<pink_truck>,<pink_car>,<blue_car>,<dark_green_car>,<yellow_truck>}
+// #1: Beginner
+State (sId:id)                >= {<s1>} <= {<s2>..<s10>}
+InitialState (sId:id)          = {<s1>}
+ordering (cur:id,next:id)     <= {<s1,s2>,<s2,s3>,<s3,s4>,<s4,s5>,<s5,s6>,<s6,s7>,<s7,s8>,<s8,s9>,<s9,s10>}
 
-State (1)                             >={<s1>} <= {<s1>,<s2>,<s3>,<s4>,<s5>,<s6>,<s7>,<s8>,<s9>,<s10>,<s11>}
-InitialState (1)                      = {<s1>}
-ordening (2)                         <= {<s1,s2>,<s2,s3>,<s3,s4>,<s4,s5>,<s5,s6>,<s6,s7>,<s7,s8>,<s8,s9>,<s9,s10>,<s10,s11>}
+Vehicle (vId:id, length:int)   = {<orange_car,2>,<purple_truck,3>,<blue_truck,3>,<yellow_truck,3>,<green_car,2>,<red_car,2>,<green_truck,3>,<blue_car,2>}
+RedCar (vId:id)                = {<red_car>}
+Horizontal (vId:id, row:int)   = {<red_car,2>,<green_truck,5>,<blue_car,4>,<green_car,0>}
+Vertical (vId:id, col:int)     = {<orange_car,0>,<purple_truck,0>,<blue_truck,3>,<yellow_truck,5>}
 
-posInState (2 :: row:int, col:int)   >= {<s1,orange_car,0,4>,<s1,red_car,2,3>,<s1,yellow_car,5,3>,<s1,purple_car,3,3>,<s1,pink_truck,1,5>,<s1,blue_truck,3,0>,<s1,brown_car,5,0>,<s1,pink_car,1,2>,<s1,light_green_car,0,1>,<s1,blue_car,1,1>,<s1,dark_green_car,4,2>,<s1,yellow_truck,0,0>,<s1,black_car,4,4>} <= {<s1,orange_car,0,4>,<s2,orange_car,?,4>,<s3,orange_car,?,4>,<s4,orange_car,?,4>,<s5,orange_car,?,4>,<s6,orange_car,?,4>,<s7,orange_car,?,4>,<s8,orange_car,?,4>,<s9,orange_car,?,4>,<s10,orange_car,?,4>,<s11,orange_car,?,4>,<s1,red_car,2,3>,<s2,red_car,2,?>,<s3,red_car,2,?>,<s4,red_car,2,?>,<s5,red_car,2,?>,<s6,red_car,2,?>,<s7,red_car,2,?>,<s8,red_car,2,?>,<s9,red_car,2,?>,<s10,red_car,2,?>,<s11,red_car,2,?>,<s1,yellow_car,5,3>,<s2,yellow_car,5,?>,<s3,yellow_car,5,?>,<s4,yellow_car,5,?>,<s5,yellow_car,5,?>,<s6,yellow_car,5,?>,<s7,yellow_car,5,?>,<s8,yellow_car,5,?>,<s9,yellow_car,5,?>,<s10,yellow_car,5,?>,<s11,yellow_car,5,?>,<s1,purple_car,3,3>,<s2,purple_car,?,3>,<s3,purple_car,?,3>,<s4,purple_car,?,3>,<s5,purple_car,?,3>,<s6,purple_car,?,3>,<s7,purple_car,?,3>,<s8,purple_car,?,3>,<s9,purple_car,?,3>,<s10,purple_car,?,3>,<s11,purple_car,?,3>,<s1,pink_truck,1,5>,<s2,pink_truck,?,5>,<s3,pink_truck,?,5>,<s4,pink_truck,?,5>,<s5,pink_truck,?,5>,<s6,pink_truck,?,5>,<s7,pink_truck,?,5>,<s8,pink_truck,?,5>,<s9,pink_truck,?,5>,<s10,pink_truck,?,5>,<s11,pink_truck,?,5>,<s1,blue_truck,3,0>,<s2,blue_truck,3,?>,<s3,blue_truck,3,?>,<s4,blue_truck,3,?>,<s5,blue_truck,3,?>,<s6,blue_truck,3,?>,<s7,blue_truck,3,?>,<s8,blue_truck,3,?>,<s9,blue_truck,3,?>,<s10,blue_truck,3,?>,<s11,blue_truck,3,?>,<s1,brown_car,5,0>,<s2,brown_car,5,?>,<s3,brown_car,5,?>,<s4,brown_car,5,?>,<s5,brown_car,5,?>,<s6,brown_car,5,?>,<s7,brown_car,5,?>,<s8,brown_car,5,?>,<s9,brown_car,5,?>,<s10,brown_car,5,?>,<s11,brown_car,5,?>,<s1,pink_car,1,2>,<s2,pink_car,?,2>,<s3,pink_car,?,2>,<s4,pink_car,?,2>,<s5,pink_car,?,2>,<s6,pink_car,?,2>,<s7,pink_car,?,2>,<s8,pink_car,?,2>,<s9,pink_car,?,2>,<s10,pink_car,?,2>,<s11,pink_car,?,2>,<s1,light_green_car,0,1>,<s2,light_green_car,0,?>,<s3,light_green_car,0,?>,<s4,light_green_car,0,?>,<s5,light_green_car,0,?>,<s6,light_green_car,0,?>,<s7,light_green_car,0,?>,<s8,light_green_car,0,?>,<s9,light_green_car,0,?>,<s10,light_green_car,0,?>,<s11,light_green_car,0,?>,<s1,blue_car,1,1>,<s2,blue_car,?,1>,<s3,blue_car,?,1>,<s4,blue_car,?,1>,<s5,blue_car,?,1>,<s6,blue_car,?,1>,<s7,blue_car,?,1>,<s8,blue_car,?,1>,<s9,blue_car,?,1>,<s10,blue_car,?,1>,<s11,blue_car,?,1>,<s1,dark_green_car,4,2>,<s2,dark_green_car,?,2>,<s3,dark_green_car,?,2>,<s4,dark_green_car,?,2>,<s5,dark_green_car,?,2>,<s6,dark_green_car,?,2>,<s7,dark_green_car,?,2>,<s8,dark_green_car,?,2>,<s9,dark_green_car,?,2>,<s10,dark_green_car,?,2>,<s11,dark_green_car,?,2>,<s1,yellow_truck,0,0>,<s2,yellow_truck,?,0>,<s3,yellow_truck,?,0>,<s4,yellow_truck,?,0>,<s5,yellow_truck,?,0>,<s6,yellow_truck,?,0>,<s7,yellow_truck,?,0>,<s8,yellow_truck,?,0>,<s9,yellow_truck,?,0>,<s10,yellow_truck,?,0>,<s11,yellow_truck,?,0>,<s1,black_car,4,4>,<s2,black_car,4,?>,<s3,black_car,4,?>,<s4,black_car,4,?>,<s5,black_car,4,?>,<s6,black_car,4,?>,<s7,black_car,4,?>,<s8,black_car,4,?>,<s9,black_car,4,?>,<s10,black_car,4,?>,<s11,black_car,4,?>}
+posInState (sId:id, vId:id, pos:int) >= {<s1,orange_car,4>,<s1,purple_truck,1>,<s1,blue_truck,1>,<s1,yellow_truck,0>,<s1,green_car,0>,<s1,red_car,1>,<s1,green_truck,2>,<s1,blue_car,4>} 
+                                     <= {<s2,orange_car,?>..<s10,orange_car,?>,<s2,purple_truck,?>..<s10,purple_truck,?>,<s2,blue_truck,?>..<s10,blue_truck,?>,<s2,yellow_truck,?>..<s10,yellow_truck,?>,<s2,green_car,?>..<s10,green_car,?>,<s2,red_car,?>..<s10,red_car,?>,<s2,green_truck,?>..<s10,green_truck,?>,<s2,blue_car,?>..<s10,blue_car,?>}
 
-ordening in State->State
-posInState in State->Vehicle
+//// #24: Advanced - 25 moves needed
+//State (sId:id)                >= {<s1>} <= {<s2>..<s30>}
+//InitialState (sId:id)          = {<s1>}
+//ordering (cur:id,next:id)     <= {<s1,s2>,<s2,s3>,<s3,s4>,<s4,s5>,<s5,s6>,<s6,s7>,<s7,s8>,<s8,s9>,<s9,s10>,<s10,s11>,<s11,s12>,<s12,s13>,<s13,s14>,<s14,s15>,<s15,s16>,<s16,s17>,<s17,s18>,<s18,s19>,<s19,s20>,<s20,s21>,<s21,s22>,<s22,s23>,<s23,s24>,<s24,s25>,<s25,s26>,<s26,s27>,<s27,s28>,<s28,s29>,<s29,s30>}
+//
+//Vehicle (vId:id, length:int)   = {<pink_car,2>,<blue_car,2>,<lgreen_car,2>,<purple_car,2>,<black_car,2>,<beige_car,2>,<yellow_truck,3>,<green_car,2>,<red_car,2>,<orange_car,2>}
+//RedCar (vId:id)                = {<red_car>}
+//Horizontal (vId:id, row:int)   = {<beige_car,5>,<yellow_truck,4>,<green_car,3>,<red_car,2>,<orange_car,0>}
+//Vertical (vId:id, col:int)     = {<pink_car,0>,<blue_car,1>,<lgreen_car,2>,<purple_car,4>,<black_car,4>}
+//
+//posInState (sId:id, vId:id, pos:int) >= {<s1,pink_car,2>,<s1,blue_car,1>,<s1,lgreen_car,0>,<s1,purple_car,2>,<s1,black_car,4>,<s1,beige_car,0>,<s1,yellow_truck,0>,<s1,green_car,1>,<s1,red_car,2>,<s1,orange_car,3>} 
+//                                     <= {<s2,pink_car,?>..<s30,pink_car,?>,<s2,blue_car,?>..<s30,blue_car,?>,<s2,lgreen_car,?>..<s30,lgreen_car,?>,<s2,purple_car,?>..<s30,purple_car,?>,<s2,black_car,?>..<s30,black_car,?>,<s2,beige_car,?>..<s30,beige_car,?>,<s2,yellow_truck,?>..<s30,yellow_truck,?>,<s2,green_car,?>..<s30,green_car,?>,<s2,red_car,?>..<s30,red_car,?>,<s2,orange_car,?>..<s30,orange_car,?>}
+
+// #40: Expert - 51 moves needed
+//State (sId:id)                 = {<s1>..<s52>}
+//InitialState (sId:id)          = {<s1>}
+//ordering (cur:id,next:id)      = {<s1,s2>,<s2,s3>,<s3,s4>,<s4,s5>,<s5,s6>,<s6,s7>,<s7,s8>,<s8,s9>,<s9,s10>,<s10,s11>,<s11,s12>,<s12,s13>,<s13,s14>,<s14,s15>,<s15,s16>,<s16,s17>,<s17,s18>,<s18,s19>,<s19,s20>,<s20,s21>,<s21,s22>,<s22,s23>,<s23,s24>,<s24,s25>,<s25,s26>,<s26,s27>,<s27,s28>,<s28,s29>,<s29,s30>,<s30,s31>,<s31,s32>,<s32,s33>,<s33,s34>,<s34,s35>,<s35,s36>,<s36,s37>,<s37,s38>,<s38,s39>,<s39,s40>,<s40,s41>,<s41,s42>,<s42,s43>,<s43,s44>,<s44,s45>,<s45,s46>,<s46,s47>,<s47,s48>,<s48,s49>,<s49,s50>,<s50,s51>,<s51,s52>}
+//
+//Vehicle (vId:id, length:int)   = {<beige_car,2>,<blue_truck,3>,<lgreen_car,2>,<yellow_car,2>,<red_car,2>,<black_car,2>,<yellow_truck,3>,<blue_car,2>,<green_car,2>,<pink_car,2>,<purple_car,2>,<orange_car,2>,<purple_truck,3>}
+//RedCar (vId:id)                = {<red_car>}
+//Horizontal (vId:id, row:int)   = {<beige_car,5>,<blue_truck,3>,<lgreen_car,0>,<yellow_car,5>,<red_car,2>,<black_car,4>}
+//Vertical (vId:id, col:int)     = {<yellow_truck,0>,<blue_car,1>,<green_car,2>,<pink_car,2>,<purple_car,3>,<orange_car,4>,<purple_truck,5>}
+//
+//posInState (sId:id, vId:id, pos:int) >= {<s1,beige_car,0>,<s1,blue_truck,0>,<s1,lgreen_car,1>,<s1,yellow_car,3>,<s1,red_car,3>,<s1,black_car,4>,<s1,yellow_truck,0>,<s1,blue_car,1>,<s1,green_car,4>,<s1,pink_car,1>,<s1,purple_car,3>,<s1,orange_car,0>,<s1,purple_truck,1>} 
+//                                     <= {<s2,beige_car,?>..<s52,beige_car,?>,<s2,blue_truck,?>..<s52,blue_truck,?>,<s2,lgreen_car,?>..<s52,lgreen_car,?>,<s2,yellow_car,?>..<s52,yellow_car,?>,<s2,red_car,?>..<s52,red_car,?>,<s2,black_car,?>..<s52,black_car,?>,<s2,yellow_truck,?>..<s52,yellow_truck,?>,<s2,blue_car,?>..<s52,blue_car,?>,<s2,green_car,?>..<s52,green_car,?>,<s2,pink_car,?>..<s52,pink_car,?>,<s2,purple_car,?>..<s52,purple_car,?>,<s2,orange_car,?>..<s52,orange_car,?>,<s2,purple_truck,?>..<s52,purple_truck,?>}
+
+ordering ⊆ State[sId as cur] ⨯ State[sId as next]
+posInState[sId,vId] ⊆ State ⨯ Vehicle[vId]
 
 // all states should be reachable from the initial state
-forall s:State | s in InitialState.*ordening
+State ⊆ (InitialState[sId as cur] ⨝ *<cur,next>ordering)[next][next as sId]
 
 // All vehicles have a position in every state
-State->Vehicle in posInState
+State ⨯ Vehicle[vId] ⊆ posInState[sId,vId]
 
-forall v:Horizontal | let p:State->v | p::col >= 0 && p::col <= (6 - v::length)
-forall v:Vertical   | let p:State->v | p::row >= 0 && p::row <= (6 - v::length)
+// Every vehicle must stay on the board at all times
+∀ v ∈ Horizontal ⨝ Vehicle ⨝ posInState | some v where (pos >= 0 && pos <= (6 - length))
+∀ v ∈ Vertical ⨝ Vehicle ⨝ posInState   | some v where (pos >= 0 && pos <= (6 - length))
 
-// goal is to get the red car out
-exists s:State |  (s->RedCar)::col = 4
+// the goal is to get the red car out
+∃ s ∈ State | some (posInState ⨝ s ⨝ RedCar) where pos = 4
 
-// two horizontal cars on the same row should never overlap
-forall s:State, v1:Horizontal, v2:Horizontal\v1 | let p1:s->v1, p2:s->v2 | 
-  p1::row = p2::row =>  
-    (p1::col <= p2::col => (p2::col - p1::col >= v1::length)) &&
-    (p1::col >  p2::col => (p1::col - p2::col >= v2::length))
+// only 1 vehicle can move between different states
+∀ o ∈ ordering | let s = o[cur][cur as sId], s' = o[next][next as sId], curPos = (posInState ⨝ s)[vId,pos], nxtPos = (posInState ⨝ s')[vId,pos] | one nxtPos ∖ curPos
   
-// two vertical cars in the same column should never overlap
-forall s:State, v1:Vertical, v2:Vertical\v1 | let p1:s->v1, p2:s->v2 | 
-  p1::col = p2::col =>  
-    (p1::row <= p2::row => (p2::row - p1::row >= v1::length)) &&
-    (p1::row >  p2::row => (p1::row - p2::row >= v2::length))
-    
-// two cars with orthogonal directions should never overlap
-forall s:State, v1:Horizontal, v2:Vertical | let p1:s->v1, p2:s->v2 | 
-  (p1::col <= p2::col && ((p2::col - p1::col) < v1::length) => (p1::row < p2::row || (p1::row - p2::row) >= v2::length)) 
+// two horizontal vehicles in the same row should never overlap
+∀ s ∈ State, h1 ∈ Horizontal ⨝ Vehicle ⨝ posInState ⨝ s, h2 ∈ ((Horizontal ⨝ Vehicle ⨝ posInState ⨝ s) ∖ h1)[vId as vId', sId as sId', length as length', row as row', pos as pos'] | 
+  some (h1 ⨯ h2) where row = row' ⇒ some (h1 ⨯ h2) where length <= |pos - pos'| 
 
-// two horizontal cars on the same row can not bunny hop over eachother
-forall s1:State, s2:State, v1:Horizontal, v2:Horizontal\v1 | s1->s2 in ordening => (let p1Old:s1->v1, p1New:s2->v1, p2Old:s1->v2, p2New:s2->v2 |
-  p1Old::row = p2Old::row => ((p1Old::col < p2Old::col => p1New::col < p2New::col) && 
-                               (p1Old::col > p2Old::col => p1New::col > p2New::col)))
+// two vertical vehicles in the same col should never overlap
+∀ s ∈ State, v1 ∈ Vertical ⨝ Vehicle ⨝ posInState ⨝ s, v2 ∈ ((Vertical ⨝ Vehicle ⨝ posInState ⨝ s) ∖ v1)[vId as vId', sId as sId', length as length', col as col', pos as pos'] | 
+  some (v1 ⨯ v2) where col = col' ⇒ some (v1 ⨯ v2) where length <= |pos - pos'| 
 
-// two vertical cars on the same column can not bunny hop over eachother
-forall s1:State, s2:State, v1:Vertical, v2:Vertical\v1 | s1->s2 in ordening => (let p1Old:s1->v1, p1New:s2->v1, p2Old:s1->v2, p2New:s2->v2 |
-  p1Old::col = p2Old::col => ((p1Old::row < p2Old::row => p1New::row < p2New::row) &&
-                               (p1Old::row > p2Old::row => p1New::row > p2New::row)))
+// two orthogonal vehicles should not overlap
+∀ s ∈ State, h ∈ Horizontal ⨝ Vehicle ⨝ posInState ⨝ s, v ∈ (Vertical ⨝ Vehicle ⨝ posInState ⨝ s)[vId as vId', sId as sId', length as length', pos as pos'] | 
+  some (h ⨯ v) where (pos' > (row - length') && pos' <= row) ⇒ some (h ⨯ v) where (pos + length <= col || pos > col) 
+
+// horizontal vehicles on the same row cannot bunny hop over each other between two states 
+∀ o ∈ ordering | let s = o[cur][cur as sId], s' = o[next][next as sId] |
+  ∀ h1 ∈ Horizontal ⨝ Vehicle, h2 ∈ ((Horizontal ⨝ Vehicle) ∖ h1)[length as length', row as row'] | 
+    let h1Cur = h1 ⨝ posInState ⨝ s, h1Nxt = h1 ⨝ posInState ⨝ s', h2Cur = (h2 ⨝ posInState ⨝ s)[vId as vId', sId as sId', pos as pos'], h2Nxt = (h2 ⨝ posInState ⨝ s')[vId as vId', sId as sId', pos as pos'] |
+      some (h1Cur ⨯ h2Cur) where row = row' ⇒  
+        (some (h1Cur ⨯ h2Cur) where pos < pos' ⇒ some (h1Nxt ⨯ h2Nxt) where pos < pos') ∧ 
+        (some (h1Cur ⨯ h2Cur) where pos > pos' ⇒ some (h1Nxt ⨯ h2Nxt) where pos > pos')
+
+// vertical vehicles on the same row cannot bunny hop over each other between two states
+∀ o ∈ ordering | let s = o[cur][cur as sId], s' = o[next][next as sId] |
+  ∀ v1 ∈ Vertical ⨝ Vehicle, v2 ∈ ((Vertical ⨝ Vehicle) ∖ v1)[length as length', col as col'] | 
+    let v1Cur = v1 ⨝ posInState ⨝ s, v1Nxt = v1 ⨝ posInState ⨝ s', v2Cur = (v2 ⨝ posInState ⨝ s)[vId as vId', sId as sId', pos as pos'], v2Nxt = (v2 ⨝ posInState ⨝ s')[vId as vId', sId as sId', pos as pos'] |
+      some (v1Cur ⨯ v2Cur) where col = col' ⇒  // if two vertical vehicles are in the same column 
+        (some (v1Cur ⨯ v2Cur) where pos < pos' ⇒ some (v1Nxt ⨯ v2Nxt) where pos < pos') ∧ // if v1 was above v2, it stays above
+        (some (v1Cur ⨯ v2Cur) where pos > pos' ⇒ some (v1Nxt ⨯ v2Nxt) where pos > pos')   // if v1 was below v2, it stays below
 
 // two orthogonal vehicles can not bunny hop over eachother
-forall s1:State, s2:State, v1:Horizontal, v2:Vertical | s1->s2 in ordening => (let p1Old:s1->v1, p1New:s2->v1, p2Old:s1->v2, p2New:s2->v2 |
-  // horziontal v1 hops over vertical v2
-  ((p1Old::col < p2Old::col && p1New::col > p2New::col && p1Old::row >= p2Old::row && p1Old::row < (p2Old::row + v2::length)) => (p2New::row > p1New::row || (p2New::row + v2::length) <= p1New::row )) &&
-  ((p1Old::col > p2Old::col && p1New::col < p2New::col && p1Old::row >= p2Old::row && p1Old::row < (p2Old::row + v2::length)) => (p2New::row > p1New::row || (p2New::row + v2::length) <= p1New::row )) &&
-  // vertical v2 hops over horizontal v1
-  ((p2Old::row < p1Old::row && p2New::row > p1New::row && p2Old::col >= p1Old::col && p2Old::col < (p1Old::col + v1::length)) => (p1New::col > p2New::col || (p1New::col + v1::length) <= p2New::col)) &&
-  ((p2Old::row > p1Old::row && p2New::row < p1New::row && p2Old::col >= p1Old::col && p2Old::col < (p1Old::col + v1::length)) => (p1New::col > p2New::col || (p1New::col + v1::length) <= p2New::col)) )
+∀ o ∈ ordering | let s = o[cur][cur as sId], s' = o[next][next as sId] |
+  ∀ h ∈ Horizontal ⨝ Vehicle, v ∈ (Vertical ⨝ Vehicle)[length as length'] | 
+    let hCur = h ⨝ posInState ⨝ s, hNxt = h ⨝ posInState ⨝ s', vCur = (v ⨝ posInState ⨝ s)[vId as vId', sId as sId', pos as pos'], vNxt = (v ⨝ posInState ⨝ s')[vId as vId', sId as sId', pos as pos'] |
+      (some (hCur ⨯ vCur) where (pos' > (row - length') && pos' <= row) ⇒  // if the vertical vehical is blocking the horizontal vehicle
+        (some (hCur ⨯ vCur) where pos < col ⇒ some (hNxt ⨯ vNxt) where pos < col) ∧ // if the horizontal vehicle was on the left of the vertical vehicle, it stays on the left
+        (some (hCur ⨯ vCur) where pos > col ⇒ some (hNxt ⨯ vNxt) where pos > col))  // if the horizontal vehicle was on the right of the vertical vehicle, it stays on the right
+      ∧ 
+      (some (hCur ⨯ vCur) where (pos > (col - length) && pos <= col) ⇒  // if the horizontal vehical is blocking the vertical vehicle
+        (some (hCur ⨯ vCur) where pos' < row ⇒ some (hNxt ⨯ vNxt) where pos' < row) ∧ // if the vertical vehicle was above the horizontal vehicle, it stays above
+        (some (hCur ⨯ vCur) where pos' > row ⇒ some (hNxt ⨯ vNxt) where pos' > row))  // if the vertical vehicle was below the horizontal vehicle, it status below
  
-minimize #State
-         
+ // We want the minimal number of moves       
+objectives: minimize State[count()]
+            
