@@ -7,6 +7,8 @@ import Message;
 import Map;
 import IO;
 import String;
+import Set;
+import List;
 
 data UnionResult 
   = heading(map[str,str] attributes)
@@ -150,7 +152,7 @@ void check(f:(AlleFormula)`<AlleExpr expr>::[<Criteria crit>]`, Environment env,
   if (heading(map[str,str] atts) := cf.lookup(expr@\loc)) {
     check(crit, atts, cf);
     cf.add(f@\loc, heading(atts));
-  }
+  } 
 }
 
 void check(f:(AlleFormula)`∀ <{VarDeclaration ","}+ decls> | <AlleFormula form>`, Environment env, CheckFunctions cf)  {
@@ -196,9 +198,10 @@ void check(e:(AlleExpr)`<AlleExpr expr>[<{Rename ","}+ ren>]`, Environment env, 
   map[str,str] renamings = ("<r.orig>":"<r.new>" | r <- ren);
   
   if (heading(map[str,str] attributes) := cf.lookup(expr@\loc)) {
-    if (renamings<0> - attributes<0> != {}) {
+    set[str] nonExistingAtts = renamings<0> - attributes<0>;
+    if (nonExistingAtts != {}) {
       cf.add(e@\loc, incompatible());
-      cf.addMessage(error("Attributes in the renaming do not exists in the relation",e@\loc));       
+      cf.addMessage(error("Attributes \'<nonExistingAtts>\' in the renaming do not exists in the relation",e@\loc));       
     } else {
       map[str,str] renamed = ((old in renamings ? renamings[old] : old) : attributes[old] | str old <- attributes);
       if (size(renamed) != size(attributes)) {
@@ -354,7 +357,7 @@ void check(e:(AlleExpr)`<AlleExpr lhs> ⨯ <AlleExpr rhs>`, Environment env, Che
   if (heading(map[str,str] attLhs) := cf.lookup(lhs@\loc), heading(map[str,str] attRhs) := cf.lookup(rhs@\loc)) {
     if (attLhs & attRhs != ()) {
       cf.add(e@\loc, incompatible());
-      cf.addMessage(error("Relations must have distinct attributes", e@\loc));
+      cf.addMessage(error("Relations must have distinct attributes, attribute(s) \'<intercalate(",", toList((attLhs & attRhs)<0>))>\' overlaps", e@\loc));
     } else {
       cf.add(e@\loc, heading(attLhs + attRhs));
     }
