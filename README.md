@@ -19,4 +19,4 @@ Be sure the following is installed and configured on your system:
 
 You need to add the following option to the `eclipse.ini` file of your Eclipse installation: `-Dsolver.z3.path=<path to your local Z3 executable>`
 
-<sub>1) A nice overview of problems and problem domains where relational model finders have been used can be found [here](http://alloytools.org/citations/case-studies.html).</sub>
+<sub>1) A nice overview of problems and problem domains where relational model finders have been used can be found at http://alloytools.org/citations/case-studies.html.</sub>
