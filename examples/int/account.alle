@@ -20,8 +20,6 @@ Account[aId] ⊆ ((InitialState[sId as from] ⨝ *<from,to>ordering)[to][to as s
 
 ∀ s ∈ State ∖ (InitialState ⨝ State) |  some (s where amount > 0 && amount < 11)
 
-//∀ s ∈ (State[sId] ∖ InitialState) ⨝ State | some (s where amount > 0 && amount < 11)
-
 // Initial state
 some ((InitialState ⨝ accountInState ⨝ Account) where balance = 0)
 

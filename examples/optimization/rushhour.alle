@@ -54,7 +54,8 @@ State ⨯ Vehicle[vId] ⊆ posInState[sId,vId]
 ∃ s ∈ State | some (posInState ⨝ s ⨝ RedCar) where pos = 4
 
 // only 1 vehicle can move between different states
-∀ o ∈ ordering | let s = o[cur][cur as sId], s' = o[next][next as sId], curPos = (posInState ⨝ s)[vId,pos], nxtPos = (posInState ⨝ s')[vId,pos] | one nxtPos ∖ curPos
+∀ o ∈ ordering | let s = o[cur][cur as sId], s' = o[next][next as sId], curPos = (posInState ⨝ s)[vId,pos], nxtPos = (posInState ⨝ s')[vId,pos] | 
+  one nxtPos ∖ curPos
   
 // two horizontal vehicles in the same row should never overlap
 ∀ s ∈ State, h1 ∈ Horizontal ⨝ Vehicle ⨝ posInState ⨝ s, h2 ∈ ((Horizontal ⨝ Vehicle ⨝ posInState ⨝ s) ∖ h1)[vId as vId', sId as sId', length as length', row as row', pos as pos'] | 

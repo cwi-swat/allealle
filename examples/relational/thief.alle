@@ -27,3 +27,4 @@ one thief
 // The class teacher is telling the truth.
 let students = matthew ∪ peter ∪ jack ∪ arnold ∪ carl | 
   ∃ s1 ∈ students, s2 ∈ students ∖ s1 | (s1 ∪ s2) = liar
+//some liar[count() as nr] where nr = 2 
