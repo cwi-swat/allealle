@@ -19,4 +19,18 @@ Be sure the following is installed and configured on your system:
 
 You need to add the following option to the `eclipse.ini` file of your Eclipse installation: `-Dsolver.z3.path=<path to your local Z3 executable>`
 
+Running *AlleAlle*
+------------------
+
+After cloning this repository start up Eclipse (preferably with a fresh workspace, not mandatory). Once Eclipse is running choose `File` -> `Import` and select `Existing Projects into Workspace`. Select the directory where you cloned the *AlleAlle* repository.
+
+Once Eclipse is done importing the project, restart Eclipse and open the same workspace. On restart Rascal automatically registers any language defined by an opened project. Because *AlleAlle* is defined as a language it will be automatically registered with Eclipse too.
+
+After you have restarted Eclipse *AlleAlle* should be registered and usable. You can check this by opening an `*.alle` file in the IDE. For instance, open `examples/relational/thief.alle`. If all is well this file will show with syntax highlighting. By right-clicking on the specification you can select the option `Check and Visualize`. This starts the translation from AlleAlle to SMT and calls Z3 to solve the generated formula. The result should be a visualization of a found solution in 'table mode' showing who is the thief.
+
+Troubleshooting
+---------------
+
+*Syntax highlighting does not work*: Probably the language definition of *AlleAlle* was not loaded properly. You can check this by opening up the 'Console' view (`Window` -> `Show View` -> `Other...`, select `Console`). If *AlleAlle* got registered correctly you will see the message `Dynamically registering language AlleAlle`. If you don't see this message it means the *AlleAlle* did not get registered. To fix this you can register *AlleAlle* manually. In the `Rascal Navigator` go to `src/ide/Plugin.rsc`. Right-click on the file and select `Run As` -> `Rascal Application`. You will see a new `Terminal` window in the bottom half of the IDE. After the terminal started and the cursor is blinking you can hit the `Reload language` button ![refresh](language_refresh.png). This should register *AlleAlle* with the IDE. Check the console for the previously described message.
+
 <sub>1) A nice overview of problems and problem domains where relational model finders have been used can be found at http://alloytools.org/citations/case-studies.html.</sub>
