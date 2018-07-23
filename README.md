@@ -1,11 +1,11 @@
-AlleAlle - A Bounded Relational Model Finder with Data <img src="https://github.com/cwi-swat/allealle/blob/master/allealle_logo.svg" alt="AlleAlle Logo" width="100px"/>
-========================================================================================================================================================================
+AlleAlle - A Bounded Relational Model Finder with Data <img src="allealle_logo.svg" alt="AlleAlle Logo" width="100px"/>
+=======================================================================================================================
 
-Many problems have relational (graph-like) structures. Relational model finders help you define and solve these problems in a natural way. <sup>1</sup> AlleAlle is such a relational model finder.
+Many problems have relational (graph-like) structures. Relational model finders help you define and solve these problems in a natural way. <sup>1</sup> *AlleAlle* is such a relational model finder.
 
-AlleAlle offers a language which combines first order logic (FOL) and Codd's relational algebra (think databases and SQL) allowing for efficient encodings of many relational problems (take a look at the [examples](https://github.com/cwi-swat/allealle/tree/master/examples)). Next to that, AlleAlle allows for the expression of optimization objectives making it possible to solve optimization problems as well.
+*AlleAlle* offers a language which combines first order logic (FOL) and Codd's relational algebra (think databases and SQL) allowing for efficient encodings of many relational problems (take a look at the [examples](https://github.com/cwi-swat/allealle/tree/master/examples)). Next to that, *AlleAlle* allows for the expression of optimization objectives making it possible to solve optimization problems as well.
 
-AlleAlle is implemented in Rascal and its language is integrated with Eclipse. Next to that it uses Microsofts Z3 SMT solver as a backend.
+*AlleAlle* is implemented in Rascal and its language is integrated with Eclipse. Next to that it uses Microsofts Z3 SMT solver as a backend.
 
 Prerequisits
 ------------
