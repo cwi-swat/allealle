@@ -78,7 +78,7 @@ Traveller[tId] ⊆ (last ⨝ posOfTrav ⨝ far)[tId]
   )   
   
 // check that it is impossible (unsatisfiable) for all the travellers to cross the bridge in less then 17 minutes  
-some order[sum(timeSpend) as totalTimeSpend] where totalTimeSpend = 17
+//some order[sum(timeSpend) as totalTimeSpend] where totalTimeSpend < 17
 
 // minimize the time that it takes the travellers to cross the bridge  
-//objectives: minimize order[sum(timeSpend)]
+objectives: minimize order[sum(timeSpend)]

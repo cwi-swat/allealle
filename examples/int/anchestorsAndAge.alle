@@ -38,6 +38,5 @@ anchestor = (^<parent,child>parent)[child as asc, parent as pred]
 ∀ p1 ∈ Person[pId as p1Id], p2 ∈ Person[pId as p2Id] | (p1[p1Id as pId] ≠ p2[p2Id as pId] ∧ ((p1[p1Id as child] ⨝ parent)[parent] = (p2[p2Id as child] ⨝ parent)[parent] ∧ 
                                   some (p1[age as p1Age] ⨯ p2[age as p2Age]) where p1Age = p2Age)) ⇔ p1[p1Id] ⨯ p2[p2Id] ⊆ twin
                                   
-some (Person[min(age) as minAge] where minAge = 10)
-
+//some (Person[min(age) as minAge] where minAge = 10)
 some twin 

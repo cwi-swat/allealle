@@ -5,5 +5,5 @@ content(pId:id)                                             <= {<a>,<b>,<c>,<d>,
 some (sack ⨯ (content ⨝ package)[sum(price) as calPrice, sum(weight) as calWeight]) 
   where totalWeight = calWeight && totalPrice=calPrice && totalWeight <= maxWeight
 
-objectives: maximize sack[totalPrice], minimize sack[totalWeight]    
+objectives (independent): maximize sack[totalPrice], minimize sack[totalWeight]    
  
