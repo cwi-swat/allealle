@@ -297,11 +297,22 @@ Figure textualizeModel(Model model) {
     }
   }
 
+  set[str] relFilter = {".*"};
+  bool inFilter(ModelRelation r) {
+    for (str f <- relFilter) {
+      if (rexpMatch(r.name, f)) {
+        return true;
+      }
+    }
+    
+    return false;
+  }
+  
   Figure drawTables() {
     list[Figures] cols = [[text("")] | int _ <- [0..nrOfCols]];
     int currentCol = 0;
   
-    for (ModelRelation r <- sort(model.relations)) {
+    for (ModelRelation r <- sort(model.relations), inFilter(r)) {
       Figures table = [text("<r.name>:", fontBold(true), fontItalic(true), myLeft())];
       list[str] sortedHeading = [h | str h <- sort(toList(r.heading), headingSort)<0>];
       
@@ -329,8 +340,9 @@ Figure textualizeModel(Model model) {
       }
     }
     
-    return hcat([vcat(cols[i], vgap(20), endGap(true), resizable(false), top()) | int i <- [0..nrOfCols]], 
-             hgap(50), hshrink(0.98), halign(0.02), top(), resizable(false));
+    return vcat([hcat([text("Relation filter: ", left()), textfield(intercalate(",", toList(relFilter)), void (str filterText) { relFilter = {trim(f) | str f <- split(",", filterText)}; redraw = true; }, left(), height(10), width(200))], left(), resizable(false)),
+            hcat([vcat(cols[i], vgap(20), endGap(true), resizable(false), top()) | int i <- [0..nrOfCols]], 
+              hgap(50), hshrink(0.98), halign(0.02), top(), resizable(false))], left(), top(), resizable(false));
   }
      
   return computeFigure(mustRedraw, drawTables);
