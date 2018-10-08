@@ -12,6 +12,11 @@ import util::Sleeper;
 
 alias SolverPID = int;
 
+data ResultUnkownException
+  = to() // timeout
+  | uk() // unknown
+  ;
+
 SolverPID startSolver() {
 	pid = startZ3();
 	
@@ -23,6 +28,10 @@ SolverPID startSolver() {
 
 void stopSolver(SolverPID pid) {
 	stopZ3(pid);
+}
+
+void setTimeOut(SolverPID pid, int timeOutInMs) {
+  runSolver(pid, "(set-option :timeout <timeOutInMs>)");
 }
 
 bool isSatisfiable(SolverPID pid, str smtFormula) { 
@@ -50,9 +59,22 @@ bool checkSat(SolverPID pid) {
 	switch(result) {
 		case /unsat.*/: return false;
     case /sat.*/ : return true;
-		case /unknown.*/: throw "Could not compute satisfiability";		
-		default: throw "unable to get result from smt solver";
+		case /unknown.*/: {
+		  throw getReason(pid);
+		}		
+		default: throw "unable to get result from smt solver"; 
 	}
+}
+
+private ResultUnkownException getReason(SolverPID pid){
+  str reason = runSolverAndExpectResult(pid, "(get-info :reason-unknown)");
+  println(reason);
+  
+  if (/.*canceled.*/ := reason || /.*timeout.*/ := reason || /.*resource[ ]limits[ ]reached.*/ := reason) {
+    return to();
+  } else {
+    return uk();
+  }  
 }
 
 int getSolvingTime(SolverPID pid) {
@@ -74,14 +96,14 @@ str runSolverAndExpectResult(SolverPID pid, str commands) {
   while (true) {
     try {
       str oldResult = result;
-      sleep(5);
+      sleep(5); 
       result += read(pid);
       
       if(trim(result) != "" && result == oldResult) {
         return result;
       }
     } catch ex: {
-      println("Exception while SMT solver, reason: <er>");
+      println("Exception while SMT solver, reason: <ex>");
       println("Retrying...");
     }
   }

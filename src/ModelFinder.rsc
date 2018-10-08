@@ -33,9 +33,11 @@ data ModelFinderResult(int translationTime = -1, int solvingTime = -1)
 	| unsat(set[Formula] unsatCore)
 	| trivialSat(Model model)
 	| trivialUnsat()	
+	| timeout()
+	| unknown()
 	;
 
-ModelFinderResult checkInitialSolution(Problem problem) {	
+ModelFinderResult checkInitialSolution(Problem problem, int timeOutInMs = 0) {	
 	print("Building initial environment...");
 	tuple[Environment env, int time] ie = bm(createInitialEnvironment, problem); 
 	print("done, took: <(ie.time/1000000)> ms\n");
@@ -54,12 +56,16 @@ ModelFinderResult checkInitialSolution(Problem problem) {
 		return trivialSat(empty(),translationTime=totalTime);
 	} 
  
-	return runInSolver(problem, t.tr, ie.env, totalTime); 
+	return runInSolver(problem, t.tr, ie.env, totalTime, timeOutInMs); 
 }
 
 
-ModelFinderResult runInSolver(Problem problem, TranslationResult tr, Environment env, int translationTime) {
-	PID solverPid = startSolver(); 
+ModelFinderResult runInSolver(Problem problem, TranslationResult tr, Environment env, int translationTime, int timeOutInMs) {
+	PID solverPid = startSolver();
+	if (timeOutInMs != 0) {
+	   setTimeOut(solverPid, timeOutInMs);
+	} 
+	
   void stop() {
 		stopSolver(solverPid);
 	} 
@@ -78,38 +84,45 @@ ModelFinderResult runInSolver(Problem problem, TranslationResult tr, Environment
 	str fullSmtProblem = preambl + "\n" + smtVarDeclResult.smt + "\n" + smtCompileFormResult.smt + "\n" + smtCompileCommands.smt;
 	
 	writeFile(|project://allealle/bin/latestSmt.smt2|, fullSmtProblem + "\n(check-sat)");
+	
+	SMTModel smtModel = ();
+  Model model = empty();
+
+  Model next(Domain dom) {
+    print("Getting next model from SMT solver...");
+    smtModel = nextSmtModel(solverPid, dom, smtModel, model, smtVarCollectResult.vars);
+    print("done, took: <getSolvingTime(solverPid)> ms\n");
+          
+    if (smtModel == ()) {
+      return empty();
+    } else {
+      model = constructRelationalModel(smtModel, env);
+      return model;
+    }
+  }  
 	  
 	print("Solving by Z3...");
-	bool satisfiable = isSatisfiable(solverPid, fullSmtProblem); 
-	int solvingTime = getSolvingTime(solverPid);
-	print("done, took: <solvingTime> ms\n");
-	println("Outcome is \'<satisfiable>\'");
-  
-	SMTModel smtModel = ();
-	Model model = empty();
-	
-	Model next(Domain dom) {
-	  print("Getting next model from SMT solver...");
-		smtModel = nextSmtModel(solverPid, dom, smtModel, model, smtVarCollectResult.vars);
-	  print("done, took: <getSolvingTime(solverPid)> ms\n");
-	        
-		if (smtModel == ()) {
-			return empty();
-		} else {
-		  model = constructRelationalModel(smtModel, env);
-			return model;
-		}
-	}  
+	try {
+	  bool satisfiable = isSatisfiable(solverPid, fullSmtProblem);
+	  int solvingTime = getSolvingTime(solverPid);
+    print("done, took: <solvingTime> ms\n");
+    println("Outcome is \'<satisfiable>\'");
 
-	if(satisfiable) {
-		smtModel = firstSmtModel(solverPid, smtVarCollectResult.vars);
-		model = constructRelationalModel(smtModel, env);
-		
-		return sat(model, next, stop, translationTime = translationTime, solvingTime = solvingTime);
-	} else { 
-	  stopSolver(solverPid);
-		return unsat({}, translationTime = translationTime, solvingTime = solvingTime);
-	}
+    if(satisfiable) {
+      smtModel = firstSmtModel(solverPid, smtVarCollectResult.vars);
+      model = constructRelationalModel(smtModel, env);
+      
+      return sat(model, next, stop, translationTime = translationTime, solvingTime = solvingTime);
+    } else { 
+      stopSolver(solverPid);
+      return unsat({}, translationTime = translationTime, solvingTime = solvingTime);
+    }
+    
+	} catch ResultUnkownException ex: {
+      int solvingTime = getSolvingTime(solverPid);
+      stopSolver(solverPid);
+      return (ex == to()) ? timeout(translationTime = translationTime, solvingTime = solvingTime) : unknown(translationTime = translationTime, solvingTime = solvingTime);
+	}  
 }
 
 void countDeepestNesting(Formula f) {
