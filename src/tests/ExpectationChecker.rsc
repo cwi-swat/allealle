@@ -7,7 +7,7 @@ import ide::CombinedExpectationRunner;
 import IO;
 import util::Maybe;
 
-void checkAll() = checkAll(|project://allealle/tests|);
+void checkAll() = checkAll(|project://allealle/tests|); 
 
 void checkAll(loc root) {
   if (!isDirectory(root)) {

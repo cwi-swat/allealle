@@ -78,7 +78,7 @@ IndexedRows addRow(IndexedRows current, Row new) {
     if (tmpAttForm != \true()) {
       constraintsForm = \and(constraintsForm, implies(r.constraints.exists, not(tmpAttForm)));
     } else {
-      // Attributes are equal or non-existing, so same row. Merge 'present' formula's
+      // Attributes are equal or non-existing, so same row. Disjoin 'exists' formula's
       current.indexedRows = current.indexedRows - <newPartialKeyTuple,r> + <newPartialKeyTuple, <r.values, <\or(r.constraints.exists, new.constraints.exists), \or(r.constraints.attConstraints, new.constraints.attConstraints)>>>;
       mergedRows = true;
       break;

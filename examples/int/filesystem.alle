@@ -1,11 +1,11 @@
-File (oid:id, depth:int, size:int) >= {<f0,2,100>} <= {<f1,?,?>,<f2,?,?>}
+File (oid:id, depth:int, size:int) >= {<f0,2,100>} <= {<f0,2,100>,<f1,?,?>,<f2,?,?>}
 Dir (oid:id, depth:int, size:int)  <= {<d0,?,?>..<d2,?,?>}
 Root (oid:id)                       = {<d0>}
 contents (from:id, to:id)          >= {<d0,d1>} <= {<d0,d0>..<d2,d2>,<d0,f0>..<d2,f2>}
 
 // BASIC RELATIONAL CONSTRAINTS
 // Only dirs can contain other dirs and files
-contents ⊆ (Dir[oid as from][from] ⨯ (Dir ∪ File)[oid as to][to])
+contents ⊆ (Dir[oid->from] ⨯ (Dir ∪ File)[oid->to])
 // A dir cannot contain itself
 ∀ d ∈ Dir[oid] | no d[oid as to] ∩ (d[oid as from] ⨝ ^<from,to>contents)[to]
 // Root is a Dir 
@@ -19,13 +19,15 @@ Root ⊆ Dir[oid]
 // All files have a positive size
 ∀ f ∈ File | some f where size > 0
 
-∀ d ∈ Dir | let containedFiles = (d[oid][oid as from] ⨝ ^<from,to>contents)[to][to as oid] ⨝ File | 
+∀ d ∈ Dir | let containedFiles = (d[oid][oid as from] ⨝ ^<from,to>contents)[to->oid] ⨝ File | 
   some (d ⨯ containedFiles[sum(size) as totalSize]) where size = totalSize   
 
-∀ d ∈ Dir[oid,depth], o ∈ (Dir ∪ File)[oid,depth] | o[oid][oid as to] ⊆ (d[oid][oid as from] ⨝ contents)[to] ⇒ 
+∀ d ∈ Dir[oid,depth], o ∈ (Dir ∪ File)[oid,depth] | o[oid->to] ⊆ (d[oid->from] ⨝ contents)[to] ⇒ 
                                                   some (o[oid as to] ⨯ d[depth as parentDepth]) where (depth = parentDepth + 1)
 
-// The depth of Root is 0
+∀ c ∈ (contents[from as oid] ⨝ Dir)[oid -> parent, depth -> parentDepth, to -> oid] ⨝ (File ∪ Dir) |
+  some c where (depth = parentDepth + 1)
+   
 some (Root ⨝ Dir) where depth = 0 
 
 objectives : minimize (File ∪ Dir)[count()]

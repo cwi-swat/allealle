@@ -196,41 +196,57 @@ void check(e:(AlleExpr)`<AlleExpr expr>[<{Rename ","}+ ren>]`, Environment env, 
   check(expr, env, cf);
   
   map[str,str] renamings = ("<r.orig>":"<r.new>" | r <- ren);
-  
-  if (heading(map[str,str] attributes) := cf.lookup(expr@\loc)) {
+  checkRename(e@\loc, expr@\loc, renamings, cf);
+}
+
+private void checkRename(loc e, loc alleExpr, map[str,str] renamings, CheckFunctions cf) {
+  if (heading(map[str,str] attributes) := cf.lookup(alleExpr)) {
     set[str] nonExistingAtts = renamings<0> - attributes<0>;
     if (nonExistingAtts != {}) {
-      cf.add(e@\loc, incompatible());
-      cf.addMessage(error("Attributes \'<nonExistingAtts>\' in the renaming do not exists in the relation",e@\loc));       
+      cf.add(e, incompatible());
+      cf.addMessage(error("Attributes \'<nonExistingAtts>\' in the renaming do not exists in the relation",e));       
     } else {
       map[str,str] renamed = ((old in renamings ? renamings[old] : old) : attributes[old] | str old <- attributes);
       if (size(renamed) != size(attributes)) {
-        cf.add(e@\loc, incompatible());
+        cf.add(e, incompatible());
         cf.addMessage(error("Renaming collides with existing attributes",e@\loc));       
       } else {
-        cf.add(e@\loc, heading(renamed));
+        cf.add(e, heading(renamed));
       }
     }  
   } else {
-    cf.add(e@\loc, incompatible());
+    cf.add(e, incompatible());
   }
-}
+} 
 
 void check(e:(AlleExpr)`<AlleExpr expr>[<{AttributeName ","}+ atts>]`, Environment env, CheckFunctions cf) {
   check(expr, env, cf);
   
   set[str] projectedAtts = {"<att>" | AttributeName att <- atts};
-  if (heading(map[str,str] attributes) := cf.lookup(expr@\loc)) {
+  checkProjection(e@\loc, expr@\loc, projectedAtts, cf);
+}
+
+private void checkProjection(loc e, loc alleExpr, set[str] projectedAtts, CheckFunctions cf) {
+  if (heading(map[str,str] attributes) := cf.lookup(alleExpr)) {
    if (projectedAtts & attributes<0> != projectedAtts) {
-    cf.add(e@\loc, incompatible());
-    cf.addMessage(error("Not all projected attributes are in the relation", e@\loc));
+    cf.add(e, incompatible());
+    cf.addMessage(error("Not all projected attributes are in the relation", e));
    } else {
-    cf.add(e@\loc, heading((a : attributes[a] | str a <- projectedAtts)));
+    cf.add(e, heading((a : attributes[a] | str a <- projectedAtts)));
    }
   } else {
-    cf.add(e@\loc, incompatible());
+    cf.add(e, incompatible());
   }  
 }
+
+void check(e:(AlleExpr)`<AlleExpr expr>[<{ProjectAndRename ","}+ rp>]`, Environment env, CheckFunctions cf) {
+  check(expr, env, cf);
+  
+  map[str,str] renamings = ("<r.orig>":"<r.new>" | r <- rp);
+  checkProjection(e@\loc, expr@\loc, renamings<0>, cf); 
+  checkRename(e@\loc, e@\loc, renamings, cf);
+}
+
 
 void check(e:(AlleExpr)`<AlleExpr expr>[<{AggregateFunctionDef ","}+ aggFuncs>]`, Environment env, CheckFunctions cf) {
   check(expr, env, cf);

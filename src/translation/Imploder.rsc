@@ -131,6 +131,9 @@ translation::AST::AlleExpr implode((AlleExpr)`<RelVar v>`)
 translation::AST::AlleExpr implode((AlleExpr)`<AlleExpr expr>[<{Rename ","}+ ren>]`)
   = rename(implode(expr), [implode(r) | r <- ren]);
 
+translation::AST::AlleExpr implode((AlleExpr)`<AlleExpr expr>[<{ProjectAndRename ","}+ rp>]`)
+  = rename(project(implode(expr), [implodeProject(r) | r <- rp]), [implode(r) | r <- rp]);
+
 translation::AST::AlleExpr implode((AlleExpr)`<AlleExpr expr>[<{AttributeName ","}+ atts>]`)
   = project(implode(expr), ["<a>" | a <- atts]);
 
@@ -172,6 +175,12 @@ translation::AST::TupleAttributeSelection implode ((TupleAttributeSelection)`\<<
   
 translation::AST::Rename implode((Rename)`<AttributeName orig> as <AttributeName new>`) 
   = rename("<new>","<orig>");
+
+translation::AST::Rename implode((ProjectAndRename)`<AttributeName orig> -\> <AttributeName new>`) 
+  = rename("<new>","<orig>");
+  
+str implodeProject((ProjectAndRename)`<AttributeName orig> -\> <AttributeName new>`)
+  = "<orig>";
 
 translation::AST::AggregateFunctionDef implode((AggregateFunctionDef)`<AggregateFunction func>`)
   = aggFuncDef(implode(func), "<replaceAll(replaceAll("<func>","(","_"),")","")>");
@@ -232,9 +241,9 @@ translation::AST::Expect implode((Expect)`expect: <ResultType result>, <ModelRes
   = expect(implode(result), implode(models));
   
 translation::AST::ResultType implode((ResultType)`sat`) = sat();
-translation::AST::ResultType implode((ResultType)`t-sat`) = trivSat();
+translation::AST::ResultType implode((ResultType)`trivial-sat`) = trivSat();
 translation::AST::ResultType implode((ResultType)`unsat`) = unsat();
-translation::AST::ResultType implode((ResultType)`t-unsat`) = sat();
+translation::AST::ResultType implode((ResultType)`trivial-unsat`) = sat();
    
 translation::AST::ModelRestriction implode((ModelRestriction)`#models <ModelRestrExpr expr>`)
   = restrict(implode(expr), id());   

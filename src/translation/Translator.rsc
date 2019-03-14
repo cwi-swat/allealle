@@ -23,7 +23,7 @@ TranslationResult translateProblem(Problem p, Environment env, bool logIndividua
   }
   
   Formula form = \true();
-  list[Command] cmds = [];
+  list[Command] cmds = []; 
   
   for (AlleFormula f <- p.constraints) {
     log("\nTranslating \'<unparse(f)>\' ...");
@@ -68,24 +68,18 @@ private tuple[Formula, int] bm(AlleFormula f, Environment env) {
   return <result, cpuTime() - startTime>;
 }
 
-private tuple[map[Command,Formula], int] bmObj(Objective obj, Environment env) {
-  int startTime = cpuTime();
-  map[Command,Formula] result = translateObjective(obj, env);
-  return <result, cpuTime() - startTime>;
-}
-
 Formula translateFormula(empty(AlleExpr expr), Environment env) {
    return \not(translateFormula(nonEmpty(expr), env));
 }
 
 
 Formula translateFormula(atMostOne(AlleExpr expr), Environment env) {
-  Formula empty = translateFormula(empty(expr), env);
-  if (empty == \true()) {
+  Formula emp = translateFormula(empty(expr), env);
+  if (emp == \true()) {
     return \true();
   }  
   
-  return or(empty, translateFormula(exactlyOne(expr), env));
+  return or(emp, translateFormula(exactlyOne(expr), env));
 }
 
 
@@ -122,18 +116,15 @@ Formula translateFormula(nonEmpty(AlleExpr expr), Environment env) {
   Relation r = translateExpression(expr, env);
   
   set[Formula] clauses = {};
-  set[Formula] attConstraints = {};
   
   for (Tuple idx <- r.rows) {
     if (together(r.rows[idx]) == \true()) {
       return \true();
     }
     
-    clauses += together(r.rows[idx]); //r.rows[idx].exists;
-    //attConstraints += getAttributeConstraints(r.rows[idx]);
+    clauses += together(r.rows[idx]); 
   } 
   
-  //return \and(\or(clauses), \and(attConstraints));
   return \or(clauses);
 }
 
@@ -282,7 +273,6 @@ private void forall(list[VarDeclaration] decls, int currentDecl, Formula declCon
   
   Relation r = translateExpression(decls[currentDecl].binding, env);
 
-  int nrOfTuples = size(r.rows);
   int i = 1;
   
   for (Tuple t <- r.rows) {
@@ -342,8 +332,7 @@ private void exists(list[VarDeclaration] decls, int currentDecl, Formula declCon
   } 
 }
 
-default Formula translateFormula(AlleFormula f, Environment env) { throw "Translation of formula \'<f>\' not supported"; }
-
+default Formula translateFormula(AlleFormula f, Environment _) { throw "Translation of formula \'<f>\' not supported"; }
 
 Relation translateExpression(relvar(str name), Environment env) = env.relations[name];
 
@@ -382,7 +371,7 @@ Relation translateExpression(groupedAggregate(AlleExpr expr, list[str] gb, list[
   return <newHeading, rows, toSet(gb)>;
 }
 
-Relation translateExpression(select(AlleExpr expr, Criteria criteria), Environment env) = select(translateExpression(expr, env), translateCriteria(criteria, env));
+Relation translateExpression(select(AlleExpr expr, Criteria criteria), Environment env) = select(translateExpression(expr, env), translateCriteria(criteria));
 
 Relation translateExpression(union(AlleExpr lhs, AlleExpr rhs), Environment env) = union(translateExpression(lhs,env),translateExpression(rhs,env));
 
@@ -400,37 +389,36 @@ Relation translateExpression(closure(TupleAttributeSelection tas, AlleExpr expr)
 
 Relation translateExpression(reflexClosure(TupleAttributeSelection tas, AlleExpr expr), Environment env) = reflexiveTransitiveClosure(translateExpression(expr,env), tas.first, tas.second, identity(env, tas.first, tas.second));
 
-default Relation translateExpression(AlleExpr expr, Environment env) { throw "Translation of expression \'<expr>\' not supported"; }
+default Relation translateExpression(AlleExpr expr, Environment _) { throw "Translation of expression \'<expr>\' not supported"; }
 
 alias AggregateFunctionResult = tuple[Domain bindToDomain, Term resultVar, bool hasStaticInitial, Term initialTerm, Term (Row, Term) buildInitialTerm, Term (Row, Term) buildAggregateTerm, Formula (Formula) buildExists];
  
 Relation translateAggregateFunctionDef(AggregateFunctionDef def, Relation r, Environment env) = translateAggregateFunction(def.func, def.bindTo, r, env); 
 
-default Relation translateAggregateFunction(AggregateFunction f, str bindTo, Relation r, Environment env) { throw "Translation of aggregate function \'<f>\' not supported"; }
+default Relation translateAggregateFunction(AggregateFunction f, str _, Relation _, Environment _) { throw "Translation of aggregate function \'<f>\' not supported"; }
 
 @memo
 Relation identity(Environment env, str first, str second) {
   Heading h = (first:id(),second:id());
   Rows r = ((first:lit(id(k)),second:lit(id(k))):<\true(),\true()> | str k <- env.idDomain);
-  
   return <h,r,{first,second}>;
-}
+} 
 
-Formula (Tuple) translateCriteria(equal(CriteriaExpr lhsExpr, CriteriaExpr rhsExpr), Environment env) { 
-  Term (Tuple) lhsCrit = translateCriteriaExpr(lhsExpr, env);
-  Term (Tuple) rhsCrit = translateCriteriaExpr(rhsExpr, env);
+Formula (Tuple) translateCriteria(equal(CriteriaExpr lhsExpr, CriteriaExpr rhsExpr)) { 
+  Term (Tuple) lhsCrit = translateCriteriaExpr(lhsExpr);
+  Term (Tuple) rhsCrit = translateCriteriaExpr(rhsExpr);
 
   Formula translate(Tuple t) = equal(lhsCrit(t),rhsCrit(t));     
   
   return translate; 
 } 
 
-Formula (Tuple) translateCriteria(inequal(CriteriaExpr lhsExpr, CriteriaExpr rhsExpr), Environment env) 
-  = translateCriteria(not(equal(lhsExpr, rhsExpr)), env);
+Formula (Tuple) translateCriteria(inequal(CriteriaExpr lhsExpr, CriteriaExpr rhsExpr)) 
+  = translateCriteria(not(equal(lhsExpr, rhsExpr)));
 
-Formula (Tuple) translateCriteria(and(Criteria lhs, Criteria rhs), Environment env) { 
-  Formula (Tuple) lhsCrit = translateCriteria(lhs, env);
-  Formula (Tuple) rhsCrit = translateCriteria(rhs, env);
+Formula (Tuple) translateCriteria(and(Criteria lhs, Criteria rhs)) { 
+  Formula (Tuple) lhsCrit = translateCriteria(lhs);
+  Formula (Tuple) rhsCrit = translateCriteria(rhs);
 
   Formula translate(Tuple t) {
     Formula lhsForm = lhsCrit(t);
@@ -444,9 +432,9 @@ Formula (Tuple) translateCriteria(and(Criteria lhs, Criteria rhs), Environment e
   return translate; 
 } 
 
-Formula (Tuple) translateCriteria(or(Criteria lhs, Criteria rhs), Environment env) { 
-  Formula (Tuple) lhsCrit = translateCriteria(lhs, env);
-  Formula (Tuple) rhsCrit = translateCriteria(rhs, env);
+Formula (Tuple) translateCriteria(or(Criteria lhs, Criteria rhs)) { 
+  Formula (Tuple) lhsCrit = translateCriteria(lhs);
+  Formula (Tuple) rhsCrit = translateCriteria(rhs);
 
   Formula translate(Tuple t) { 
     Formula lhsForm = lhsCrit(t);
@@ -460,17 +448,17 @@ Formula (Tuple) translateCriteria(or(Criteria lhs, Criteria rhs), Environment en
   return translate; 
 }
 
-Formula (Tuple) translateCriteria(not(Criteria crit), Environment env) { 
-  Formula (Tuple) crt = translateCriteria(crit, env);
+Formula (Tuple) translateCriteria(not(Criteria crit)) { 
+  Formula (Tuple) crt = translateCriteria(crit);
 
   Formula translate(Tuple t) = not(crt(t));     
   
   return translate; 
 } 
 
-default Formula (Tuple) translateCriteria(Criteria criteria, Environment env) { throw "Not yet implemented \'<criteria>\'";} 
+default Formula (Tuple) translateCriteria(Criteria criteria) { throw "Not yet implemented \'<criteria>\'";} 
 
-Term (Tuple) translateCriteriaExpr(att(str name), Environment env) { 
+Term (Tuple) translateCriteriaExpr(att(str name)) { 
   Term trans(Tuple t) {
     if (name notin t) {
       throw "Attribute \'<name>\' not in relation";
@@ -482,23 +470,23 @@ Term (Tuple) translateCriteriaExpr(att(str name), Environment env) {
   return trans; 
 } 
 
-Term (Tuple) translateCriteriaExpr(litt(AlleLiteral l), Environment env) {  
-  Term trans(Tuple t) = lit(translateLiteral(l));
+Term (Tuple) translateCriteriaExpr(litt(AlleLiteral l)) {  
+  Term trans(Tuple _) = lit(translateLiteral(l));
   
   return trans;
 }
 
-Term (Tuple) translateCriteriaExpr(ite(Criteria condition, CriteriaExpr thn, CriteriaExpr els), Environment env) { 
-  Formula (Tuple) condCrit = translateCriteria(condition, env);
-  Term (Tuple) thnCrit     = translateCriteriaExpr(thn, env);
-  Term (Tuple) elsCrit     = translateCriteriaExpr(els, env);
+Term (Tuple) translateCriteriaExpr(ite(Criteria condition, CriteriaExpr thn, CriteriaExpr els)) { 
+  Formula (Tuple) condCrit = translateCriteria(condition);
+  Term (Tuple) thnCrit     = translateCriteriaExpr(thn);
+  Term (Tuple) elsCrit     = translateCriteriaExpr(els);
 
   Term translate(Tuple t) = ite(condCrit(t), thnCrit(t), elsCrit(t));     
   
   return translate; 
 } 
 
-default Term (Tuple) translateCriteriaExpr(CriteriaExpr criteriaExpr, Environment env) { throw "Not yet implemented \'<criteriaExpr>\'";} 
+default Term (Tuple) translateCriteriaExpr(CriteriaExpr criteriaExpr) { throw "Not yet implemented \'<criteriaExpr>\'";} 
 
 Command translateOptimizationPriority(ObjectivePriority prio) = setOption(optimizationPriority(translateOptPrioStrategy(prio)));
 

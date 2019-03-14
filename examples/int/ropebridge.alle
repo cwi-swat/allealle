@@ -82,3 +82,5 @@ Traveller[tId] ⊆ (last ⨝ posOfTrav ⨝ far)[tId]
 
 // minimize the time that it takes the travellers to cross the bridge  
 objectives: minimize order[sum(timeSpend)]
+
+expect: sat, #models = 108

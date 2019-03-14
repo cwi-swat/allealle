@@ -15,8 +15,8 @@ grid (x:id, y:id, val:int) >= {<n1,n1,6>,<n1,n4,2>,<n1,n8,5>,
 
 ∀ g ∈ grid | some (g where val >= 1 && val <= 9)
 
-∀ x ∈ num[nId as x] | some ((x ⨯ num[nId as y]) ⨝ grid)[val][count() as nrOfVals] where nrOfVals = 9
-∀ y ∈ num[nId as y] | some ((y ⨯ num[nId as x]) ⨝ grid)[val][count() as nrOfVals] where nrOfVals = 9
+∀ x ∈ num[nId as x] | let colVals = ((x ⨯ num[nId as y]) ⨝ grid)[val] | some (colVals[count() as nr] where nr = 9)
+∀ y ∈ num[nId as y] | let rowVals = ((y ⨯ num[nId as x]) ⨝ grid)[val] | some (rowVals[count() as nr] where nr = 9)
 
 some ((r1[nId as x] ⨯ r1[nId as y]) ⨝ grid)[val][count() as nrOfVals] where nrOfVals = 9
 some ((r1[nId as x] ⨯ r2[nId as y]) ⨝ grid)[val][count() as nrOfVals] where nrOfVals = 9

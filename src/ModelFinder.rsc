@@ -9,12 +9,6 @@ import translation::Translator;
 import translation::SMTInterface; 
 import translation::Unparser;
 
-//import translation::theories::integer::AST;
-//import translation::theories::integer::Environment;
-//import translation::theories::integer::Translator;
-//import translation::theories::integer::SMTInterface;
-//import translation::theories::integer::Unparser;
-
 import solver::backend::z3::SolverRunner; 
 
 import util::Benchmark;

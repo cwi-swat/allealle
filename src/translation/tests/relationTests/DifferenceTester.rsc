@@ -110,5 +110,5 @@ test bool differenceOfOptionalRowsMustHaveExactSameAttributeValues() {
   Relation r1 = create("rel1", ("id":id(),"num":Domain::\int())).v(("id":lit(id("r1")),"num":lit(\int(10)))).build();
   Relation r2 = create("rel2", ("id":id(),"num":Domain::\int())).v(("id":lit(id("r1")),"num":lit(\int(10)))).build();
   
-  return difference(r1,r2) == create("result", ("id":id(),"num":Domain::\int())).f(("id":lit(id("r1"))\,"num":lit(\int(10))), \and(pvar("rel1_r1"),not(pvar("rel2_r1"))), \true()).build();
+  return difference(r1,r2) == create("result", ("id":id(),"num":Domain::\int())).f(("id":lit(id("r1")),"num":lit(\int(10))), \and(pvar("rel1_r1"),not(pvar("rel2_r1"))), \true()).build();
 }

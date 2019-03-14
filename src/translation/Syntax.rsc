@@ -78,6 +78,7 @@ syntax AlleExpr
   | lit:                Literal l
   > rename:             AlleExpr r "[" {Rename ","}+ "]"
   | project:            AlleExpr r "[" {AttributeName ","}+ "]"
+  | renameAndProject:   AlleExpr r "[" {ProjectAndRename ","}+ "]"
   | select:             AlleExpr r "where" Criteria criteria
   | aggregate:          AlleExpr r "[" {AggregateFunctionDef ","}+ "]"
   | groupedAggregate:   AlleExpr r "[" {AttributeName ","}+ groupBy "," {AggregateFunctionDef ","}+ aggregateFunctions "]"
@@ -98,8 +99,9 @@ syntax TupleAttributeSelection
   = "\<" AttributeName first "," AttributeName second "\>"
   ;
 
-//syntax Rename = AttributeName new "/" AttributeName orig;
 syntax Rename = AttributeName orig "as" AttributeName new;
+
+syntax ProjectAndRename = AttributeName orig "-\>" AttributeName new;
 
 syntax AggregateFunctionDef 
   = AggregateFunction func
@@ -152,9 +154,9 @@ syntax Expect
 
 syntax ResultType
   = "sat"
-  | "t-sat"
+  | "trivial-sat"
   | "unsat"
-  | "t-unsat"
+  | "trivial-unsat"
   ;
   
 syntax ModelRestriction

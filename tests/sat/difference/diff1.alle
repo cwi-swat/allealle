@@ -4,4 +4,4 @@ diff (id:id, i:int) = {<id1,2>,<id1,3>}
 
 diff = (a ∖ b) ∪ (b ∖ a)
 
-expect: t-sat
+expect: trivial-sat

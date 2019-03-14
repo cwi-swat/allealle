@@ -11,9 +11,9 @@ import translation::AST;
 import Map;
 import Set;
 
-Formula (Tuple) translateCriteria(gt(CriteriaExpr lhsExpr, CriteriaExpr rhsExpr), Environment env) {
-  Term (Tuple) lhs = translateCriteriaExpr(lhsExpr, env);
-  Term (Tuple) rhs = translateCriteriaExpr(rhsExpr, env);
+Formula (Tuple) translateCriteria(gt(CriteriaExpr lhsExpr, CriteriaExpr rhsExpr)) {
+  Term (Tuple) lhs = translateCriteriaExpr(lhsExpr);
+  Term (Tuple) rhs = translateCriteriaExpr(rhsExpr);
   
   Formula trans(Tuple t) {
     return gt(lhs(t),rhs(t));
@@ -22,9 +22,9 @@ Formula (Tuple) translateCriteria(gt(CriteriaExpr lhsExpr, CriteriaExpr rhsExpr)
   return trans;
 }
 
-Formula (Tuple) translateCriteria(gte(CriteriaExpr lhsExpr, CriteriaExpr rhsExpr), Environment env) {
-  Term (Tuple) lhs = translateCriteriaExpr(lhsExpr, env);
-  Term (Tuple) rhs = translateCriteriaExpr(rhsExpr, env);
+Formula (Tuple) translateCriteria(gte(CriteriaExpr lhsExpr, CriteriaExpr rhsExpr)) {
+  Term (Tuple) lhs = translateCriteriaExpr(lhsExpr);
+  Term (Tuple) rhs = translateCriteriaExpr(rhsExpr);
   
   Formula trans(Tuple t) {
     return gte(lhs(t),rhs(t));
@@ -33,9 +33,9 @@ Formula (Tuple) translateCriteria(gte(CriteriaExpr lhsExpr, CriteriaExpr rhsExpr
   return trans;
 }
 
-Formula (Tuple) translateCriteria(lt(CriteriaExpr lhsExpr, CriteriaExpr rhsExpr), Environment env) {
-  Term (Tuple) lhs = translateCriteriaExpr(lhsExpr, env);
-  Term (Tuple) rhs = translateCriteriaExpr(rhsExpr, env);
+Formula (Tuple) translateCriteria(lt(CriteriaExpr lhsExpr, CriteriaExpr rhsExpr)) {
+  Term (Tuple) lhs = translateCriteriaExpr(lhsExpr);
+  Term (Tuple) rhs = translateCriteriaExpr(rhsExpr);
   
   Formula trans(Tuple t) {
     return lt(lhs(t),rhs(t));
@@ -44,9 +44,9 @@ Formula (Tuple) translateCriteria(lt(CriteriaExpr lhsExpr, CriteriaExpr rhsExpr)
   return trans;
 }
 
-Formula (Tuple)  translateCriteria(lte(CriteriaExpr lhsExpr, CriteriaExpr rhsExpr), Environment env) {
-  Term (Tuple) lhs = translateCriteriaExpr(lhsExpr, env);
-  Term (Tuple) rhs = translateCriteriaExpr(rhsExpr, env);
+Formula (Tuple)  translateCriteria(lte(CriteriaExpr lhsExpr, CriteriaExpr rhsExpr)) {
+  Term (Tuple) lhs = translateCriteriaExpr(lhsExpr);
+  Term (Tuple) rhs = translateCriteriaExpr(rhsExpr);
   
   Formula trans(Tuple t) {
     return lte(lhs(t),rhs(t));
@@ -57,8 +57,8 @@ Formula (Tuple)  translateCriteria(lte(CriteriaExpr lhsExpr, CriteriaExpr rhsExp
 
 Literal translateLiteral(intLit(int i)) = \int(i);
   
-Term (Tuple) translateCriteriaExpr(neg(CriteriaExpr expr), Environment env) {
-  Term (Tuple) negExpr = translateCriteriaExpr(expr, env);
+Term (Tuple) translateCriteriaExpr(neg(CriteriaExpr expr)) {
+  Term (Tuple) negExpr = translateCriteriaExpr(expr);
   
   Term trans(Tuple t) {
     return neg(negExpr(t));
@@ -67,8 +67,8 @@ Term (Tuple) translateCriteriaExpr(neg(CriteriaExpr expr), Environment env) {
   return trans;
 }
 
-Term (Tuple) translateCriteriaExpr(abs(CriteriaExpr expr), Environment env) {
-  Term (Tuple) absExpr = translateCriteriaExpr(expr, env);
+Term (Tuple) translateCriteriaExpr(abs(CriteriaExpr expr)) {
+  Term (Tuple) absExpr = translateCriteriaExpr(expr);
   
   Term trans(Tuple t) {
     return abs(absExpr(t));
@@ -77,28 +77,28 @@ Term (Tuple) translateCriteriaExpr(abs(CriteriaExpr expr), Environment env) {
   return trans;
 }
 
-Term (Tuple) translateCriteriaExpr(addition(list[CriteriaExpr] termExprs), Environment env) {
+Term (Tuple) translateCriteriaExpr(addition(list[CriteriaExpr] termExprs)) {
   Term trans(Tuple t) {
-    return addition([translateCriteriaExpr(term,env)(t) | CriteriaExpr term <- termExprs]);
+    return addition([translateCriteriaExpr(term)(t) | CriteriaExpr term <- termExprs]);
   } 
   
   return trans;
 }
 
-Term (Tuple) translateCriteriaExpr(multiplication(list[CriteriaExpr] termExprs), Environment env) {
+Term (Tuple) translateCriteriaExpr(multiplication(list[CriteriaExpr] termExprs)) {
   Term trans(Tuple t) {
-    return multiplication([translateCriteriaExpr(term,env)(t) | CriteriaExpr term <- termExprs]);
+    return multiplication([translateCriteriaExpr(term)(t) | CriteriaExpr term <- termExprs]);
   } 
   
   return trans;
 }
 
-Term (Tuple) translateCriteriaExpr(subtraction(CriteriaExpr lhs, CriteriaExpr rhs), Environment env) 
-  = translateCriteriaExpr(addition(lhs, neg(rhs)), env);
+Term (Tuple) translateCriteriaExpr(subtraction(CriteriaExpr lhs, CriteriaExpr rhs)) 
+  = translateCriteriaExpr(addition(lhs, neg(rhs)));
 
-Term (Tuple) translateCriteriaExpr(division(CriteriaExpr lhsExpr, CriteriaExpr rhsExpr), Environment env) {
-  Term (Tuple) lhs = translateCriteriaExpr(lhsExpr, env);
-  Term (Tuple) rhs = translateCriteriaExpr(rhsExpr, env);
+Term (Tuple) translateCriteriaExpr(division(CriteriaExpr lhsExpr, CriteriaExpr rhsExpr)) {
+  Term (Tuple) lhs = translateCriteriaExpr(lhsExpr);
+  Term (Tuple) rhs = translateCriteriaExpr(rhsExpr);
   
   Term trans(Tuple t) {
     return division(lhs(t), rhs(t));
@@ -107,9 +107,9 @@ Term (Tuple) translateCriteriaExpr(division(CriteriaExpr lhsExpr, CriteriaExpr r
   return trans;
 }
 
-Term (Tuple) translateCriteriaExpr(modulo(CriteriaExpr lhsExpr, CriteriaExpr rhsExpr), Environment env) {
-  Term (Tuple) lhs = translateCriteriaExpr(lhsExpr, env);
-  Term (Tuple) rhs = translateCriteriaExpr(rhsExpr, env);
+Term (Tuple) translateCriteriaExpr(modulo(CriteriaExpr lhsExpr, CriteriaExpr rhsExpr)) {
+  Term (Tuple) lhs = translateCriteriaExpr(lhsExpr);
+  Term (Tuple) rhs = translateCriteriaExpr(rhsExpr);
   
   Term trans(Tuple t) {
     return modulo(lhs(t), rhs(t));
@@ -174,7 +174,7 @@ Relation translateAggregateFunction(min(str att), str bindTo, Relation r, Enviro
   
   for (Tuple t <- r.rows) {
     initialTerm = ite(together(r.rows[t]), t[att], initialTerm);
-    rowsExists = \or(rowsExists, together(r.rows[t]));
+    rowsExists = \or(rowsExists, together(r.rows[t])); 
   }
   
   if (rowsExists == \false()) {

@@ -1,0 +1,16 @@
+Person (pId: id, age: int, weight: int) <= {<p1,?,?>,<p2,?,?>,<p3,?,?>}
+
+// every person is older than 17 and weighs between 10 and 150 kilograms
+∀ p ∈ Person | some p where (age > 17 && weight > 10 && weight < 150)
+
+// every person who is 19 weighs 100 kilograms
+∀ p ∈ Person where age = 19 | some p where weight = 100
+// every person who is not 19 weights 50 kilograms
+∀ p ∈ Person where age != 19 | some p where weight = 50 
+
+// there exists a person who is 19 years old
+∃ p ∈ Person | some p where age = 19
+// there exists a person who is not 19 years old
+∃ p ∈ Person | some p where age != 19
+
+expect: sat, #models = 4

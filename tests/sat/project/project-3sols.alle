@@ -1,0 +1,7 @@
+Person (pId: id, age: int) <= {<p1,17>,<p2,?>}
+
+some Person[age] where age = 17
+
+some (Person where age = 17)[count() as nrOfPeople] where nrOfPeople = 2 
+
+expect: sat, #models = 1

@@ -1,0 +1,25 @@
+Time (tId: id)                  <= {<t1>..<t2>}
+tord(cur:id, next:id)           <= {<t1,t1>..<t2,t2>} //,<t2,t3>,<t3,t4>,<t4,t5>}
+tfirst(tId: id)                 <= {<t1>..<t2>}
+tlast(tId: id)                  <= {<t1>..<t2>}
+
+//Process (pId: id)               <= {<p1>..<p2>}
+//pord(cur:id, next:id)           <= {<p1,p1>..<p2,p2>}
+//pfirst(tId:id)                  <= {<p1>..<p2>}
+//plast(tId:id)                   <= {<p1>..<p2>}
+//
+//succ (from:id, to:id)           <= {<p1,p1>..<p2,p2>}
+//toSend (from:id, to:id, tId:id) <= {<p1,p1,t1>..<p2,p2,t2>}
+//elected (pId:id, tId:id)        <= {<p1,t1>..<p2,t2>}
+
+// Time is total ordered
+//tord ⊆ Time[tId as cur] ⨯ Time[tId as next]
+one tfirst
+one tlast
+tlast ⊆ Time
+tfirst ⊆ Time
+Time = (tfirst[tId as cur] ⨝ *<cur,next>tord)[next][next as tId]
+no tfirst[tId as next] ⨝ tord
+no tlast[tId as cur] ⨝ tord
+∀ t ∈ Time ∖ tlast | one t ⨝ tord[cur as tId]
+
