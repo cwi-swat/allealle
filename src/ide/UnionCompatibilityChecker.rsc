@@ -9,6 +9,7 @@ import IO;
 import String;
 import Set;
 import List;
+import util::Maybe;
 
 data UnionResult 
   = heading(map[str,str] attributes)
@@ -17,28 +18,40 @@ data UnionResult
   
 alias UnionCompatibilityResult = tuple[map[loc, UnionResult] headings, set[Message] messages];
 
-alias CheckFunctions = tuple[void (loc,UnionResult) add, UnionResult (loc) lookup, void (Message) addMessage];
+alias CheckFunctions = tuple[void (loc,UnionResult) add, UnionResult (loc) lookup, void (str,AllePredicate) addPred, Maybe[list[UnionResult]] (str) lookupPred, void (Message) addMessage];
 alias Environment = map[str,UnionResult];
   
+str heading2Str(heading(map[str,str] attributes)) = intercalate(",", ["<h>:<attributes[h]>" | h <- attributes]);  
+  
 UnionCompatibilityResult checkUnionCompatibilty(Problem p) {  
-  map[loc,UnionResult] headings = ();
   set[Message] messages = {};
-    
+
+  map[loc,UnionResult] headings = ();
   void add(loc l,UnionResult r) {
     headings[l] = r;
   }
-  
   UnionResult lookup(loc l) = (l in headings) ? headings[l] : incompatible();
+  
+  map[str name, list[UnionResult] params] predicates = ();
+  void addPred(str name, AllePredicate pred) {
+    predicates += (name : [heading(("<ha.name>":"<ha.dom>()" | ha <- param.header)) | param <- pred.params]);
+  }
+  Maybe[list[UnionResult]] lookupPred(str predName) = predName in predicates ? just(predicates[predName]) : nothing();
   
   void addMsg(Message m) { messages += m; }
   
   Environment env = buildEnvironment(p);  
-  for (AlleFormula f <- p.constraints) {
-    check(f,env,<add,lookup,addMsg>);
+  
+  for ((AlleConstraint)`<AllePredicate pr>` <- p.constraints) {
+    check(pr, env, <add,lookup,addPred,lookupPred,addMsg>);
+  }
+  
+  for ((AlleConstraint)`<AlleFormula f>` <- p.constraints) {
+    check(f,env,<add,lookup,addPred,lookupPred,addMsg>);
   }
   
   for (/AlleExpr e := p.objSection) {
-    check(e,env,<add,lookup,addMsg>);
+    check(e,env,<add,lookup,addPred,lookupPred,addMsg>);
   }
   
   return <headings,messages>; 
@@ -71,12 +84,6 @@ map[str,UnionResult] buildEnvironment(Problem p) {
   return env;
 }
 
-//syntax RelationalBound
-//  = exact: "=" "{" {Tuple ","}* tuples "}"
-//  | atMost: "\<=" "{" {Tuple ","}+ upper "}"
-//  | atLeastAtMost: "\>=" "{" {Tuple ","}+ lower "}" "\<=" "{" {Tuple ","}+ upper "}"
-//  ;
-
 void check((RelationalBound)`= {<{Tuple ","}* tuples> }`, map[str,str] attributes, CheckFunctions cf) {
   for (t <- tuples) {
     check(t, attributes, cf);
@@ -96,25 +103,40 @@ void checkTuples(set[Tuple] tuples, map[str,str] attributes, CheckFunctions cf) 
   }
 }
 
+void check(cur:(AllePredicate)`pred <Idd name>[<{PredParam ","}* params>] = <AlleFormula form>`, Environment env, CheckFunctions cf) {
+  for (p <- params) {
+    env += ("<p.name>" : heading(("<ha.name>":"<ha.dom>()" | ha <- p.header))); 
+  }
+  
+  check(form, env, cf);
+  
+  cf.addPred("<name>", cur);       
+}
 
-//syntax Tuple 
-//  = tup: "\<" {Value ","}+ values "\>"
-//  | range: "\<" {RangedValue ","}+ from "\>" ".." "\<" {RangedValue ","}+ to "\>"
-//  ;  
-//
-//syntax Value
-//  = Idd id
-//  | lit: Literal lit
-//  | "?"
-//  ;
-//
-//syntax RangedValue
-//  = id: RangedId prefix RangedNr numm
-//  | idOnly: RangedId id
-//  | templateLit: Literal lit
-//  | "?"
-//  ;
+void check(cur:(AlleFormula)`<Idd predName>[<{AlleExpr ","}* arguments>]`, Environment env, CheckFunctions cf) {
+  Maybe[list[UnionResult]] formals = cf.lookupPred("<predName>");
+  
+  if (nothing() := formals) {
+    cf.addMessage(error("Predicate with name `<predName>` is not declared", cur@\loc));
+    return;
+  } 
 
+  list[AlleExpr] args = [];
+  for (a <- arguments) {
+    check(a, env, cf);
+    args += a;
+  }
+
+  if (size(args) != size(formals.val)) {
+    cf.addMessage(error("Incompatible number of arguments", cur@\loc));  
+  } else {
+    if ([incompatible()] != formals.val) {
+      for (int i <- [0..size(formals.val)], formals.val[i] != cf.lookup(args[i]@\loc)) {
+        cf.addMessage(error("Argument `<args[i]>` (<heading2Str(cf.lookup(args[i]@\loc))>) is not union compatible with `<heading2Str(formals.val[i])>`", args[i]@\loc)); 
+      }  
+    }
+  }   
+}
  
 void check((AlleFormula)`( <AlleFormula form> )`, Environment env, CheckFunctions cf) { check(form, env, cf); } 
 void check((AlleFormula)`¬ <AlleFormula form>`, Environment env, CheckFunctions cf) { check(form, env, cf); }
@@ -131,6 +153,7 @@ void check(f:(AlleFormula)`<AlleFormula lhs> ∧ <AlleFormula rhs>`, Environment
 void check(f:(AlleFormula)`<AlleFormula lhs> ∨ <AlleFormula rhs>`, Environment env, CheckFunctions cf)  { check(lhs, env, cf); check(rhs, env, cf); }
 void check(f:(AlleFormula)`<AlleFormula lhs> ⇒ <AlleFormula rhs>`, Environment env, CheckFunctions cf)  { check(lhs, env, cf); check(rhs, env, cf); }
 void check(f:(AlleFormula)`<AlleFormula lhs> ⇔ <AlleFormula rhs>`, Environment env, CheckFunctions cf)  { check(lhs, env, cf); check(rhs, env, cf); }
+
 void check(f:(AlleFormula)`let <{VarBinding ","}+ bindings> | <AlleFormula form>`, Environment env, CheckFunctions cf)  {
   for (VarBinding vb <- bindings) {
     env += checkBinding(vb, env, cf);
@@ -144,15 +167,6 @@ Environment checkBinding(VarBinding binding, Environment env, CheckFunctions cf)
   
   env["<binding.var>"] = cf.lookup(binding.expr@\loc);
   return env;
-}
-
-void check(f:(AlleFormula)`<AlleExpr expr>::[<Criteria crit>]`, Environment env, CheckFunctions cf) {
-  check(expr, env, cf);
-  
-  if (heading(map[str,str] atts) := cf.lookup(expr@\loc)) {
-    check(crit, atts, cf);
-    cf.add(f@\loc, heading(atts));
-  } 
 }
 
 void check(f:(AlleFormula)`∀ <{VarDeclaration ","}+ decls> | <AlleFormula form>`, Environment env, CheckFunctions cf)  {

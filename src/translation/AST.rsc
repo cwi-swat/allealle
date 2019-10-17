@@ -4,7 +4,7 @@ import util::Maybe;
 
 data Problem 
   //= problem(list[RelationDef] relations, list[AlleFormula] constraints)
-  = problem(list[RelationDef] relations, list[AlleFormula] constraints, Maybe[ObjectiveSection] objectiveSec, Maybe[Expect] expect)
+  = problem(list[RelationDef] relations, list[AlleFormula] constraints, map[str,AllePredicate] predicates, Maybe[ObjectiveSection] objectiveSec, Maybe[Expect] expect)
   ;
 
 data RelationDef
@@ -49,8 +49,13 @@ data AlleLiteral
   = idLit(Id id)
   ; 
 
+data AllePredicate = pred(str name, list[PredParam] params, AlleFormula form);
+
+data PredParam = predParam(str name, list[HeaderAttribute] heading);
+
 data AlleFormula(loc origLoc = |unknown://|)
   = \filter(AlleExpr expr, Criteria criteria)
+  | predCall(str pred, list[AlleExpr] args) 
   | empty(AlleExpr expr)
   | atMostOne(AlleExpr expr)
   | exactlyOne(AlleExpr expr)

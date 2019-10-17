@@ -68,6 +68,14 @@ private tuple[Formula, int] bm(AlleFormula f, Environment env) {
   return <result, cpuTime() - startTime>;
 }
 
+Formula translateFormula(predCall(str predName, list[AlleExpr] args), Environment env) {
+  AllePredicate pred = env.predicates[predName];
+  
+  list[VarBinding] bindings = [varBinding(pred.params[i].name, args[i]) | int i <- [0..size(pred.params)]];
+  
+  return translateFormula(let(bindings, pred.form), env);
+}
+
 Formula translateFormula(empty(AlleExpr expr), Environment env) {
    return \not(translateFormula(nonEmpty(expr), env));
 }

@@ -57,6 +57,7 @@ str unparse(lex()) = "lex";
 str unparse(pareto()) = "pareto";
 str unparse(independent()) = "independent"; 
 
+str unparse(predCall(str name, list[AlleExpr] args))                                = "<name>[<intercalate(",", [<unparse(a)> | a <- args])>]";
 str unparse(empty(AlleExpr expr))                                                   = "(no <unparse(expr)>)";
 str unparse(atMostOne(AlleExpr expr))                                               = "(lone <unparse(expr)>)";
 str unparse(exactlyOne(AlleExpr expr))                                              = "(one <unparse(expr)>)";

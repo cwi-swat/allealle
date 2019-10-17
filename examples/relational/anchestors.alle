@@ -6,19 +6,29 @@ anchestor(asc:id, pred:id)    <= {<p1,p1>..<p4,p4>}
 Adam ⊆ Person
 parent ⊆ Person[pId as parent] ⨯ Person[pId as child]
 anchestor ⊆ Person[pId as asc] ⨯ Person[pId as pred]
+ 
+pred everyoneHasAParent[p: (pId:id)] =
+  p ≠ Adam ⇒  one parent ⨝ p[pId as child] 
+ 
+pred nobodyIsItsOwnParent[p: (pId:id)] =
+  ¬ (p = (parent ⨝ p[pId as child])[parent->pId]) 
+  
+pred nobodyIsItsAnchestorsParent[p:(pId:id)] =
+  ¬(p[pId as parent] ⊆ (^<parent,child>parent ⨝ p[pId as child])[parent])
 
-// Everybody has a parent except Adam
-∀ p ∈ Person ∖ Adam | one parent ⨝ p[pId as child]
-no parent ⨝ Adam[pId as child]
+pred everybodyIsADecendantOfAdam[] =
+  Person[pId as child] ⊆ (Adam[pId as parent] ⨝ *<parent,child>parent)[child]
 
-// Nobody is its own parent
-∀ p ∈ Person | ¬ (p = (parent ⨝ p[pId as child])[parent][parent as pId]) 
+anchestor = (^<parent,child>parent)[child as asc, parent as pred]  
 
-// Nobody is the parent of an anchestor
-∀ p ∈ Person | ¬ (p[pId as parent] ⊆ (^<parent,child>parent ⨝ p[pId as child])[parent])
+pred adamHasNoParent[] = 
+  no parent[child] ∩ Adam[pId as child]
 
-// Everybody is a decendant of Adam
-Person[pId as child] ⊆ (Adam[pId as parent] ⨝ *<parent,child>parent)[child]
+pred combined[p : (pId:id)] =
+  everyoneHasAParent[p] ∧ nobodyIsItsOwnParent[p] ∧ nobodyIsItsAnchestorsParent[p]  
+ 
+///////////////// 
 
-// Anchestor is the transposed transitive closure of the parent relation (if you are somebodies parent, grandparent, etc you are an anchestor
-anchestor = (^<parent,child>parent)[child as asc, parent as pred]
+∀ p ∈ Person | combined[p]  
+adamHasNoParent[]  
+everybodyIsADecendantOfAdam[]

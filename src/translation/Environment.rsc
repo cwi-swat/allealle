@@ -7,7 +7,7 @@ import translation::Relation;
 
 import List;
 
-alias Environment = tuple[map[str, Relation] relations, list[Id] idDomain, Term (str, Sort) newVar, map[str,Sort] () createdVars]; 
+alias Environment = tuple[map[str, Relation] relations, map[str,AllePredicate] predicates, list[Id] idDomain, Term (str, Sort) newVar, map[str,Sort] () createdVars]; 
 
 Environment createInitialEnvironment(Problem p) {
   map[str,Sort] newVars = ();
@@ -28,7 +28,7 @@ Environment createInitialEnvironment(Problem p) {
  
   map[str, Relation] relations = (r.name:createRelation(r) | RelationDef r <- p.relations);
    
-  return <relations, idDomain, newVar, map[str,Sort] () { return newVars; }>;
+  return <relations, p.predicates, idDomain, newVar, map[str,Sort] () { return newVars; }>;
 }   
                       
 list[Id] extractIdDomain(Problem p) =

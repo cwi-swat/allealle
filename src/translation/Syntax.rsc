@@ -2,7 +2,7 @@ module translation::Syntax
 
 extend translation::Layout;
 
-start syntax Problem = problem: Relation* relations AlleFormula* constraints ObjectiveSection? objSection Expect? expect;
+start syntax Problem = problem: Relation* relations AlleConstraint* constraints ObjectiveSection? objSection Expect? expect;
 
 syntax Relation 
   = RelVar v "(" {HeaderAttribute ","}+ header ")" RelationalBound bounds
@@ -47,10 +47,19 @@ syntax Domain
 syntax Literal 
   = idLit: "\'" Idd id "\'" 
   ; 
+ 
+syntax AlleConstraint
+  = AlleFormula form
+  | AllePredicate predDef
+  ; 
+ 
+syntax AllePredicate = "pred" Idd name "[" {PredParam ","}* params "]" "=" AlleFormula form; 
+
+syntax PredParam = RelVar name ":" "(" {HeaderAttribute ","}+ header ")"; 
   
 syntax AlleFormula
   = bracket "(" AlleFormula form ")"
-  > \filter:            AlleExpr expr "::" "[" Criteria criteria "]"
+  > predCall:           Idd predName "[" {AlleExpr ","}* args "]"
   > negation:           ("not"|"¬") AlleFormula form
   > empty:              "no" AlleExpr expr
   | atMostOne:          "lone" AlleExpr expr

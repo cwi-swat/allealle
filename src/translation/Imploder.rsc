@@ -10,8 +10,11 @@ import util::Maybe;
 translation::AST::Problem implodeProblem(translation::Syntax::Problem p) {
   Maybe[translation::AST::ObjectiveSection] s = (/translation::Syntax::ObjectiveSection objSec := p.objSection) ? just(implode(objSec)) : nothing();
   Maybe[translation::AST::Expect] e = (/translation::Syntax::Expect exp := p.expect) ? just(implode(exp)) : nothing();
+
+  map[str, translation::AST::AllePredicate] predicates = ("<p.name>" : implode(p) | (AlleConstraint)`<AllePredicate p>` <- p.constraints);
+  list[translation::AST::AlleFormula] constraints = [implode(f) | (AlleConstraint)`<AlleFormula f>` <- p.constraints]; 
      
-  return problem([implode(r) | r <- p.relations], [implode(c) | c <- p.constraints], s, e);
+  return problem([implode(r) | r <- p.relations], constraints, predicates, s, e);
 }
 //translation::AST::Problem implodeProblem(translation::Syntax::Problem p) 
 //  = problem([implode(r) | r <- p.relations], [implode(c) | c <- p.constraints], implode(objSec)) //[implode(obj) | obj <- objSec.objectives])
@@ -65,8 +68,17 @@ translation::AST::Domain implode((Domain)`id`)
 translation::AST::AlleLiteral implode((Literal)`'<Idd id>'`)
   = idLit(id);
 
+translation::AST::AllePredicate implode((AllePredicate)`pred <Idd name>[<{PredParam ","}* params>] = <AlleFormula form>`)
+  = pred("<name>", [implode(p) | p <- params], implode(form));
+
+translation::AST::PredParam implode((PredParam)`<RelVar name>:(<{HeaderAttribute ","}+ header>)`)
+  = predParam("<name>", [implode(ha) | ha <- header]);
+
 translation::AST::AlleFormula implode((AlleFormula)`( <AlleFormula form> )`) 
   = implode(form);
+
+translation::AST::AlleFormula implode((AlleFormula)`<Idd predName>[<{AlleExpr ","}* arguments>]`)
+  = predCall("<predName>", [implode(a) | a <- arguments]);
 
 translation::AST::AlleFormula implode(f:(AlleFormula)`¬ <AlleFormula form>`) 
   = negation(implode(form), origLoc=f@\loc);
