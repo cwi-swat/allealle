@@ -31,14 +31,14 @@ data ModelFinderResult(int translationTime = -1, int solvingTime = -1)
 	| unknown()
 	;
 
-ModelFinderResult checkInitialSolution(Problem problem, int timeOutInMs = 0) {	
-	print("Building initial environment...");
+ModelFinderResult checkInitialSolution(Problem problem, int timeOutInMs = 0, bool log = true) {	
+	printIfLog("Building initial environment...", log);
 	tuple[Environment env, int time] ie = bm(createInitialEnvironment, problem); 
-	print("done, took: <(ie.time/1000000)> ms\n");
+	printlnIfLog("done, took: <(ie.time/1000000)> ms.", log);
  
-	println("Translating problem to SMT formula...");
+	printIfLog("Translating problem to SMT formula...", log);
 	tuple[TranslationResult tr, int time] t = bm(translateProblem, problem, ie.env);
-	println("\n\nDone translating, took: <(t.time/1000000)> ms");
+	printlnIfLog("\n\nDone translating, took: <(t.time/1000000)> ms.", log);
 	
 	//countDeepestNesting(t.r.relationalFormula);
 	
@@ -53,39 +53,48 @@ ModelFinderResult checkInitialSolution(Problem problem, int timeOutInMs = 0) {
 	return runInSolver(problem, t.tr, ie.env, totalTime, timeOutInMs); 
 }
 
+private void printIfLog(str text, bool log) {
+  if (log) {
+    print(text);
+  }
+}
 
-ModelFinderResult runInSolver(Problem problem, TranslationResult tr, Environment env, int translationTime, int timeOutInMs) {
+private void printlnIfLog(str print, bool log) = printIfLog("<print>\n", log);
+
+ModelFinderResult runInSolver(Problem problem, TranslationResult tr, Environment env, int translationTime, int timeOutInMs, bool log = true) {
 	PID solverPid = startSolver();
 	if (timeOutInMs != 0) {
 	   setTimeOut(solverPid, timeOutInMs);
 	} 
-	
+		
   void stop() {
 		stopSolver(solverPid);
 	} 
 	
-	print("Translating to SMT-LIB...");
+	printIfLog("Translating to SMT-LIB...", log);
   tuple[set[SMTVar] vars, int time] smtVarCollectResult = bm(collectSMTVars, env);
 	tuple[str smt, int time] smtVarDeclResult = bm(compileSMTVariableDeclarations, smtVarCollectResult.vars);
 	tuple[str smt, int time] smtCompileFormResult = bm(compileAssert, tr.form);
 	tuple[str smt, int time] smtCompileCommands = bm(compileCommands, tr.cmds);
 	
-	print("done, took: <(smtVarCollectResult.time + smtVarDeclResult.time + smtCompileFormResult.time + smtCompileCommands.time) /1000000> ms in total (variable collection fase: <smtVarCollectResult.time / 1000000>, variable declaration fase: <smtVarDeclResult.time / 1000000>, formula compilation fase: <smtCompileFormResult.time / 1000000>, commands compilation fase: <smtCompileCommands.time / 1000000>)\n");
+	printlnIfLog("done, took: <(smtVarCollectResult.time + smtVarDeclResult.time + smtCompileFormResult.time + smtCompileCommands.time) /1000000> ms in total (variable collection fase: <smtVarCollectResult.time / 1000000>, variable declaration fase: <smtVarDeclResult.time / 1000000>, formula compilation fase: <smtCompileFormResult.time / 1000000>, commands compilation fase: <smtCompileCommands.time / 1000000>)", log);
   //println("Total nr of clauses in formula: <countClauses(\and(tr.relationalFormula, tr.attributeFormula))>, total nr of variables in formula: <countVars(smtVarCollectResult.vars)>"); 
 	
-	str preambl = intercalate("\n", [pa | Sort s <- collectSorts(smtVarCollectResult.vars), str pa := preamble(s), pa != ""]);
+	//str preambl = intercalate("\n", [pa | Sort s <- collectSorts(smtVarCollectResult.vars), str pa := preamble(s), pa != ""]);
 	
-	str fullSmtProblem = preambl + "\n" + smtVarDeclResult.smt + "\n" + smtCompileFormResult.smt + "\n" + smtCompileCommands.smt;
+	str fullSmtProblem = smtVarDeclResult.smt + "\n" + smtCompileFormResult.smt + "\n" + smtCompileCommands.smt;
 	
-	writeFile(|project://allealle/bin/latestSmt.smt2|, fullSmtProblem + "\n(check-sat)");
+  if (log) {
+	 writeFile(|project://allealle/bin/latestSmt.smt2|, fullSmtProblem + "\n(check-sat)");
+	}
 	
 	SMTModel smtModel = ();
   Model model = empty();
 
   Model next(Domain dom) {
-    print("Getting next model from SMT solver...");
+    printIfLog("Getting next model from SMT solver...", log);
     smtModel = nextSmtModel(solverPid, dom, smtModel, model, smtVarCollectResult.vars);
-    print("done, took: <getSolvingTime(solverPid)> ms\n");
+    printlnIfLog("done, took: <getSolvingTime(solverPid)> ms", log);
           
     if (smtModel == ()) {
       return empty();
@@ -95,12 +104,12 @@ ModelFinderResult runInSolver(Problem problem, TranslationResult tr, Environment
     }
   }  
 	  
-	print("Solving by Z3...");
+	printIfLog("Solving by Z3...", log);
 	try {
 	  bool satisfiable = isSatisfiable(solverPid, fullSmtProblem);
 	  int solvingTime = getSolvingTime(solverPid);
-    print("done, took: <solvingTime> ms\n");
-    println("Outcome is \'<satisfiable>\'");
+    printlnIfLog("done, took: <solvingTime> ms.", log);
+    printlnIfLog("Outcome is \'<satisfiable>\'", log);
 
     if(satisfiable) {
       smtModel = firstSmtModel(solverPid, smtVarCollectResult.vars);

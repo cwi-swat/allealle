@@ -17,7 +17,7 @@ import util::Benchmark;
 
 alias TranslationResult = tuple[Formula form, list[Command] cmds];
 
-TranslationResult translateProblem(Problem p, Environment env, bool logIndividualFormula = true) {
+TranslationResult translateProblem(Problem p, Environment env, bool logIndividualFormula = false) {
   void log(str message) {
     if (logIndividualFormula) print(message);
   }
@@ -144,10 +144,13 @@ Formula translateFormula(subset(AlleExpr lhsExpr, AlleExpr rhsExpr), Environment
   
   set[Formula] clauses = {};
   
-  for (Tuple key <- lhs.indexedRows<0>, Row lRow <- lhs.indexedRows[key]) {
+  set[Tuple] lhsKeys = lhs.indexedRows<0>;
+  set[Tuple] rhsKeys = rhs.indexedRows<0>;
+  
+  for (Tuple key <- lhsKeys, Row lRow <- lhs.indexedRows[key]) {
     Formula partial = not(together(lRow.constraints)); 
         
-    if (key in rhs.indexedRows<0>) {
+    if (key in rhsKeys) {
       for (Row rRow <- rhs.indexedRows[key]) {
         Formula tmpAttForm = \true();
         
@@ -388,6 +391,20 @@ Relation translateExpression(transpose(TupleAttributeSelection tas, AlleExpr exp
 Relation translateExpression(closure(TupleAttributeSelection tas, AlleExpr expr), Environment env) = transitiveClosure(translateExpression(expr,env),tas.first, tas.second);
 
 Relation translateExpression(reflexClosure(TupleAttributeSelection tas, AlleExpr expr), Environment env) = reflexiveTransitiveClosure(translateExpression(expr,env), tas.first, tas.second, identity(env, tas.first, tas.second));
+
+@memo
+Relation translateExpression(comprehension(list[VarDeclaration] decls, AlleFormula form), Environment env) { 
+	Heading merged = ();
+	
+	//IndexedRows rows
+	Heading calcHeader([], Environment e, Heading result) = result;  
+	Heading calcHeader([VarDeclaration hd, *VarDeclaration tl], Environment e, Heading result) {
+		Relation r = translateExpression(hd.expr, e);
+		return calcHeader(tl, e + (hd.name : r), result + r.heading);
+	}
+	  
+	//list[Relation] rels = [translateExpreswsion(d.expr, env 
+}
 
 default Relation translateExpression(AlleExpr expr, Environment _) { throw "Translation of expression \'<expr>\' not supported"; }
 

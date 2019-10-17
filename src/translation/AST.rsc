@@ -83,6 +83,7 @@ data AlleExpr
   | transpose(TupleAttributeSelection tas, AlleExpr expr)
   | closure(TupleAttributeSelection tas, AlleExpr r)
   | reflexClosure(TupleAttributeSelection tas, AlleExpr r)
+  | comprehension(list[VarDeclaration] decls, AlleFormula form)
   ;
 
 data VarDeclaration = varDecl(str name, AlleExpr binding);

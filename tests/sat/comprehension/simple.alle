@@ -1,0 +1,4 @@
+Person (pId:id, age:int) = {<p1,?>,<p2,?>,<p3,?>}
+
+let adults = {p ∈ Person | some p where age >= 18} | 
+	some adults 

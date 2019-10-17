@@ -169,6 +169,9 @@ translation::AST::AlleExpr implode((AlleExpr)`<AlleExpr lhs> ∖ <AlleExpr rhs>`
   
 translation::AST::AlleExpr implode((AlleExpr)`<AlleExpr lhs> ⨯ <AlleExpr rhs>`)
   = product(implode(lhs), implode(rhs));
+  
+translation::AST::AlleExpr implode((AlleExpr)`{<{VarDeclaration ","}+ decls> | <AlleFormula form>}`)
+  = comprehension([implode(d) | d <- decls], implode(form), origLoc=f@\loc);
  
 translation::AST::TupleAttributeSelection implode ((TupleAttributeSelection)`\<<AttributeName first>,<AttributeName second>\>`) 
   = order("<first>","<second>");

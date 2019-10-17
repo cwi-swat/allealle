@@ -21,7 +21,7 @@ SolverPID startSolver() {
 	pid = startZ3();
 	
 	// make sure that the unsatisfiable core are produced
-	runSolver(pid, "(set-option :produce-unsat-cores true)");
+	//runSolver(pid, "(set-option :produce-unsat-cores true)");
 	
 	return pid;
 }
@@ -53,9 +53,7 @@ bool isSatisfiable(SolverPID pid, str smtFormula) {
 
 bool checkSat(SolverPID pid) {
 	str result = runSolverAndExpectResult(pid, "(check-sat)");
-	
-	println(result);
-	
+		
 	switch(result) {
 		case /unsat.*/: return false;
     case /sat.*/ : return true;

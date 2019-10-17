@@ -1,8 +1,8 @@
-Pigeon (pId:id)            = {<p1>..<p10>}
-Hole   (hId:id)            = {<h1>..<h9>}
-nest   (pId:id, hId:id)   <= {<p1,h1>..<p10,h9>}
+Pigeon (pId:id)            = {<p1>..<p2>}
+Hole   (hId:id)            = {<h1>..<h1>}
+nest   (pId:id, hId:id)   <= {<p1,h1>..<p2,h1>}
 
-nest ⊆ Pigeon ⨯ Hole
+//nest ⊆ Pigeon ⨯ Hole
 
-∀ p ∈ Pigeon | one   p ⨝ nest
+//∀ p ∈ Pigeon | one   p ⨝ nest
 ∀ h ∈ Hole | lone  h ⨝ nest

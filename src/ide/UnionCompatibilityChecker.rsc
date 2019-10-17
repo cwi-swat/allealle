@@ -209,7 +209,7 @@ private void checkRename(loc e, loc alleExpr, map[str,str] renamings, CheckFunct
       map[str,str] renamed = ((old in renamings ? renamings[old] : old) : attributes[old] | str old <- attributes);
       if (size(renamed) != size(attributes)) {
         cf.add(e, incompatible());
-        cf.addMessage(error("Renaming collides with existing attributes",e@\loc));       
+        cf.addMessage(error("Renaming collides with existing attributes",e));       
       } else {
         cf.add(e, heading(renamed));
       }
@@ -380,6 +380,31 @@ void check(e:(AlleExpr)`<AlleExpr lhs> ⨯ <AlleExpr rhs>`, Environment env, Che
   } else {
     cf.add(e@\loc, incompatible());
   } 
+}
+
+void check(e:(AlleExpr)`{ <{VarDeclaration ","}+ decls> | <AlleFormula form> }`, Environment env, CheckFunctions cf) {
+  list[UnionResult] headings = [];
+  for (VarDeclaration vd <- decls) {
+    env += checkDeclaration(vd, env, cf);
+    headings += cf.lookup(vd.expr@\loc);
+  }
+  
+  // The headings must be distinct since the comprehension results in a new relation of which the heading is the product of the headings of all the relations in the declarations
+  map[str,str] distinctAtts = ();
+  map[str,str] overlappingAtts = ();
+  for (heading(map[str,str] atts) <- headings) {
+  	overlappingAtts += distinctAtts & atts; 
+    distinctAtts += atts;
+  }
+  
+  if (overlappingAtts != ()) {
+    cf.add(e@\loc, incompatible());
+    cf.addMessage(error("Relations must have distinct attributes, attribute(s) \'<intercalate(",", toList(overlappingAtts<0>))>\' overlap", e@\loc));
+  } else {
+  	cf.add(e@\loc, heading(distinctAtts)); 
+  }
+   
+  check(form, env, cf);
 }
 
 void check(e:(AggregateFunctionDef)`<AggregateFunction func>`, map[str,str] attributes, CheckFunctions cf) {

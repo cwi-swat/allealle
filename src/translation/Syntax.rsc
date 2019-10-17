@@ -91,7 +91,7 @@ syntax AlleExpr
          |difference:   AlleExpr lhs ("-" | "∖")   AlleExpr rhs
          |product:      AlleExpr lhs ("x" | "⨯")   AlleExpr rhs
          )
-  //| comprehension:     "{" {VarDeclaration ","}+ decls "|" AlleFormula form "}"
+  | comprehension:     "{" {VarDeclaration ","}+ decls "|" AlleFormula form "}"
   //| ifThenElse:         AlleFormula form "?" AlleExpr then ":" AlleExpr else
   ;
 
@@ -178,7 +178,7 @@ lexical Idd = ([a-zA-Z_] !<< [a-zA-Z_][a-zA-Z_\-0-9.]* !>> [a-zA-Z_\-0-9.]) \ Ke
 lexical AttributeName = ([a-zA-Z] !<< [a-zA-Z][a-zA-Z0-9_\']* !>> [a-zA-Z0-9_]) \ Keywords;
 lexical Arity = [0-9]+;
 
-lexical RelVar = ([a-zA-Z] !<< [a-zA-Z][a-zA-Z0-9_\']* !>> [a-zA-Z0-9_]) \ Keywords;
+lexical RelVar = ([a-zA-Z_] !<< [a-zA-Z_][a-zA-Z0-9_\']* !>> [a-zA-Z0-9_]) \ Keywords;
 
 keyword Keywords = "none" | "|x|" | "where" | "objectives" | "as";
 keyword Keywords = "no" | "lone" | "one" | "some" | "not" | "forall" | "exists" | "let";

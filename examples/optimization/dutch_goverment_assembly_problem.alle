@@ -1,16 +1,16 @@
 Party (pId:id, seats:int)        =  {<vvd,33>,<pvv,20>,<cda,19>,<d66,19>,<groenlinks,14>,<sp,14>,<pvda,9>,<christenunie,5>,<pvdd,5>,<vijftigplus,4>,<sgp,3>,<denk,3>,<fvd,2>}
-Goverment (pId:id)               <= {<vvd>,<cda>,<pvv>,<d66>,<groenlinks>,<sp>,<pvda>,<christenunie>,<pvdd>,<vijftigplus>,<sgp>,<denk>,<fvd>}
+Government (pId:id)               <= {<vvd>,<cda>,<pvv>,<d66>,<groenlinks>,<sp>,<pvda>,<christenunie>,<pvdd>,<vijftigplus>,<sgp>,<denk>,<fvd>}
 Opposition (pId:id)              <= {<vvd>,<pvv>,<cda>,<d66>,<groenlinks>,<sp>,<pvda>,<christenunie>,<pvdd>,<vijftigplus>,<sgp>,<denk>,<fvd>}
 Total (totalSeats:int)           =  {<?>}
 exclusion (pId:id, excludes:id)  =  {<vvd,pvv>,<cda,pvv>,<d66,pvv>,<groenlinks,pvv>,<sp,pvv>,<pvda,pvv>,<christenunie,pvv>,<pvdd,pvv>,<sp,vvd>}
 inclusion (pId:id, includes:id)  =  {<pvdd,groenlinks>,<pvdd,christenunie>}
 
-Goverment ∪ Opposition = Party[pId]
-no Goverment ∩ Opposition
+Government ∪ Opposition = Party[pId]
+no Government ∩ Opposition
 
-∀ p1 ∈ Party[pId], p2 ∈ Party[pId] ∖ p1 | p1 ⨯ p2[pId as excludes] ⊆ exclusion ⇒ (p1 ⊆ Goverment ⇒ ¬ (p2 ⊆ Goverment))
-∀ p1 ∈ Party[pId], p2 ∈ Party[pId] ∖ p1 | p1 ⨯ p2[pId as includes] ⊆ inclusion ⇒ (p1 ⊆ Goverment ⇒ p2 ⊆ Goverment)
+∀ p1 ∈ Party[pId], p2 ∈ Party[pId] ∖ p1 | (p1 ⨯ p2[pId as excludes] ⊆ exclusion ⇒ (p1 ⊆ Government ⇒ ¬ (p2 ⊆ Government))) ∧ 
+                                          (p1 ⨯ p2[pId as includes] ⊆ inclusion ⇒ (p1 ⊆ Government ⇒ p2 ⊆ Government))
 
-some (Total ⨯ (Goverment ⨝ Party)[sum(seats) as total, count() as nrOfGovermentParties]) where totalSeats = total && totalSeats > 75 && nrOfGovermentParties <= 5
+some (Total ⨯ ((Government ⨝ Party)[sum(seats) as total])) where (totalSeats = total && totalSeats > 75)
 
-objectives: minimize Goverment[count() as cnt], maximize Total[totalSeats]
+objectives: minimize Government[count()], maximize Total[totalSeats]
