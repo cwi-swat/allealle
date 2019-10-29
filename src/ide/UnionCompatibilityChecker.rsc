@@ -18,7 +18,7 @@ data UnionResult
   
 alias UnionCompatibilityResult = tuple[map[loc, UnionResult] headings, set[Message] messages];
 
-alias CheckFunctions = tuple[void (loc,UnionResult) add, UnionResult (loc) lookup, void (str,AllePredicate) addPred, Maybe[list[UnionResult]] (str) lookupPred, void (Message) addMessage];
+alias CheckFunctions = tuple[void (loc,UnionResult) add, UnionResult (loc) lookup, Maybe[list[UnionResult]] (str) lookupPred, void (Message) addMessage];
 alias Environment = map[str,UnionResult];
   
 str heading2Str(heading(map[str,str] attributes)) = intercalate(",", ["<h>:<attributes[h]>" | h <- attributes]);  
@@ -32,10 +32,7 @@ UnionCompatibilityResult checkUnionCompatibilty(Problem p) {
   }
   UnionResult lookup(loc l) = (l in headings) ? headings[l] : incompatible();
   
-  map[str name, list[UnionResult] params] predicates = ();
-  void addPred(str name, AllePredicate pred) {
-    predicates += (name : [heading(("<ha.name>":"<ha.dom>()" | ha <- param.header)) | param <- pred.params]);
-  }
+  map[str name, list[UnionResult] params] predicates = ("<pred.name>" : [heading(("<ha.name>":"<ha.dom>()" | ha <- param.header)) | param <- pred.params] | (AlleConstraint)`<AllePredicate pred>` <- p.constraints);
   Maybe[list[UnionResult]] lookupPred(str predName) = predName in predicates ? just(predicates[predName]) : nothing();
   
   void addMsg(Message m) { messages += m; }
@@ -43,15 +40,15 @@ UnionCompatibilityResult checkUnionCompatibilty(Problem p) {
   Environment env = buildEnvironment(p);  
   
   for ((AlleConstraint)`<AllePredicate pr>` <- p.constraints) {
-    check(pr, env, <add,lookup,addPred,lookupPred,addMsg>);
+    check(pr, env, <add,lookup,lookupPred,addMsg>);
   }
   
   for ((AlleConstraint)`<AlleFormula f>` <- p.constraints) {
-    check(f,env,<add,lookup,addPred,lookupPred,addMsg>);
+    check(f,env,<add,lookup,lookupPred,addMsg>);
   }
   
   for (/AlleExpr e := p.objSection) {
-    check(e,env,<add,lookup,addPred,lookupPred,addMsg>);
+    check(e,env,<add,lookup,lookupPred,addMsg>);
   }
   
   return <headings,messages>; 
@@ -109,8 +106,6 @@ void check(cur:(AllePredicate)`pred <Idd name>[<{PredParam ","}* params>] = <All
   }
   
   check(form, env, cf);
-  
-  cf.addPred("<name>", cur);       
 }
 
 void check(cur:(AlleFormula)`<Idd predName>[<{AlleExpr ","}* arguments>]`, Environment env, CheckFunctions cf) {
@@ -131,8 +126,11 @@ void check(cur:(AlleFormula)`<Idd predName>[<{AlleExpr ","}* arguments>]`, Envir
     cf.addMessage(error("Incompatible number of arguments", cur@\loc));  
   } else {
     if ([incompatible()] != formals.val) {
-      for (int i <- [0..size(formals.val)], formals.val[i] != cf.lookup(args[i]@\loc)) {
-        cf.addMessage(error("Argument `<args[i]>` (<heading2Str(cf.lookup(args[i]@\loc))>) is not union compatible with `<heading2Str(formals.val[i])>`", args[i]@\loc)); 
+      for (int i <- [0..size(formals.val)]) {
+        argHeading = cf.lookup(args[i]@\loc);
+        if (argHeading != incompatible(), formals.val[i] != argHeading) {
+          cf.addMessage(error("Argument `<args[i]>` is not union compatible with `<heading2Str(formals.val[i])>`", args[i]@\loc)); 
+        }
       }  
     }
   }   

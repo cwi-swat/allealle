@@ -13,7 +13,7 @@ pred everyoneHasAParent[p: (pId:id)] =
 pred nobodyIsItsOwnParent[p: (pId:id)] =
   ¬ (p = (parent ⨝ p[pId as child])[parent->pId]) 
   
-pred nobodyIsItsAnchestorsParent[p:(pId:id)] =
+pred nobodyIsItsAnchestorsParent[p: (pId:id)] =
   ¬(p[pId as parent] ⊆ (^<parent,child>parent ⨝ p[pId as child])[parent])
 
 pred everybodyIsADecendantOfAdam[] =

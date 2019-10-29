@@ -13,4 +13,4 @@ no Government ∩ Opposition
 
 some (Total ⨯ ((Government ⨝ Party)[sum(seats) as total])) where (totalSeats = total && totalSeats > 75)
 
-objectives: minimize Government[count()], maximize Total[totalSeats]
+objectives: minimize Government[count()], maximize (Government ⨝ Party)[sum(seats)] //maximize Total[totalSeats]
