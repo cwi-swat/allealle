@@ -1,6 +1,6 @@
 module ide::UnicodeRewriter
 
-import ide::CombinedSyntax;
+import translation::Syntax;
 
 import ParseTree;
 import IO;

@@ -1,0 +1,3 @@
+Person (pId:id, name:str, age:int) >= {<p1,"Sara",37>} <= {<p2,?,?>}
+
+∃ p ∈ Person | some p where (name = "Jouke" && age = 39)

@@ -1,8 +1,9 @@
 module tests::ExpectationChecker
 
-import ide::CombinedImploder;
-import ide::CombinedAST;
-import ide::CombinedExpectationRunner;
+import ide::Imploder;
+
+import translation::AST;
+import ExpectationRunner;
 
 import IO;
 import util::Maybe;

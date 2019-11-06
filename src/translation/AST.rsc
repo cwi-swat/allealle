@@ -2,8 +2,10 @@ module translation::AST
 
 import util::Maybe;
 
+extend theories::integer::AST;
+extend theories::string::AST;
+
 data Problem 
-  //= problem(list[RelationDef] relations, list[AlleFormula] constraints)
   = problem(list[RelationDef] relations, list[AlleFormula] constraints, map[str,AllePredicate] predicates, Maybe[ObjectiveSection] objectiveSec, Maybe[Expect] expect)
   ;
 

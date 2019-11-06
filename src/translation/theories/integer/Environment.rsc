@@ -1,7 +1,5 @@
 module translation::theories::integer::Environment
 
-extend translation::Environment;
-
 import translation::theories::integer::AST;
 import smtlogic::Ints; 
  

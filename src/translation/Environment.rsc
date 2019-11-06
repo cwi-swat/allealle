@@ -1,5 +1,8 @@
 module translation::Environment
 
+extend translation::theories::integer::Environment;
+extend translation::theories::string::Environment;
+
 import smtlogic::Core;
 
 import translation::AST;

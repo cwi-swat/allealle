@@ -1,7 +1,5 @@
 module translation::theories::integer::Syntax
 
-extend translation::Syntax;
-
 syntax Domain = "int";
 
 syntax Criteria

@@ -1,6 +1,6 @@
 module ide::Parser
 
-import ide::CombinedSyntax;
+import translation::Syntax;
 
 import ParseTree;
 

@@ -2,6 +2,9 @@ module translation::Syntax
 
 extend translation::Layout;
 
+extend translation::theories::integer::Syntax;
+extend translation::theories::string::Syntax;
+
 start syntax Problem = problem: Relation* relations AlleConstraint* constraints ObjectiveSection? objSection Expect? expect;
 
 syntax Relation 

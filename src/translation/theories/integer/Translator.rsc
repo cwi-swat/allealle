@@ -1,12 +1,13 @@
 module translation::theories::integer::Translator
 
-extend translation::Translator;
-
 import smtlogic::Ints;
 import smtlogic::Core;
 
+import translation::Relation;
+import translation::Environment;
+
 import translation::theories::integer::AST;
-import translation::AST; 
+import translation::theories::integer::Environment;
 
 import Map;
 import Set;

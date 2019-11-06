@@ -1,7 +1,5 @@
 module translation::theories::integer::Unparser
 
-extend translation::Unparser;
-
 import translation::theories::integer::AST; 
 
 import List;

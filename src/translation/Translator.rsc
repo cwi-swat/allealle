@@ -1,11 +1,14 @@
 module translation::Translator
 
 import smtlogic::Core;
+
 import translation::AST;
 import translation::Environment;
 import translation::Relation; 
-
 import translation::Unparser;
+
+extend translation::theories::integer::Translator;
+extend translation::theories::string::Translator;
 
 import IO; 
 import List;

@@ -1,8 +1,8 @@
 module translation::theories::integer::SMTInterface
 
-extend translation::SMTInterface;
-
 import smtlogic::Ints;
+
+import translation::SMTValueSyntax;
 
 import List;
 import String; 

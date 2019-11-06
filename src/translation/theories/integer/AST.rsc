@@ -1,8 +1,5 @@
 module translation::theories::integer::AST
 
-extend translation::AST;
-import IO;
-
 // Integer theory extensions
 data Domain = intDom();
 

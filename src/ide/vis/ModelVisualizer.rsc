@@ -1,7 +1,6 @@
 module ide::vis::ModelVisualizer
 
-import ide::CombinedAST;
-
+import translation::AST;
 import translation::Relation;
 import translation::SMTInterface;
 
@@ -48,6 +47,7 @@ void renderModel(Model model, Model (Domain) nextModel, void () stop) {
   set[Domain] domainsInModel = {delAnnotations(d) | /Domain d := currentModel}; 
  
   str toStr(\intDom()) = "integer";
+  str toStr(\strDom()) = "string";
   str toStr(id()) = "relational";
  
   Figures createNextDomainModelButtons() {
@@ -226,6 +226,9 @@ Figure displayEdgeNode(VisEdge e, DisplayOptions disOpt)
 
 str term2Str(lit(\int(int i))) = "<i>";
 str term2Str(neg(lit(\int(int i)))) = "-<i>";
+
+default str term2Str(lit(\str(str s))) = "\"<s>\"";
+
 
 default str term2Str(Term val) { throw "Not yet implemented"; }
 

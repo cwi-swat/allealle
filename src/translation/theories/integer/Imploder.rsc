@@ -1,8 +1,7 @@
 module translation::theories::integer::Imploder
 
-import translation::Imploder;
+import translation::Syntax;
 
-import translation::theories::integer::Syntax;
 import translation::theories::integer::AST; 
 
 import ParseTree;

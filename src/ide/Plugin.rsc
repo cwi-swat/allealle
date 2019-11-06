@@ -1,17 +1,20 @@
 module ide::Plugin
 
 import ide::Parser;
-import ide::CombinedSyntax;
-import ide::CombinedAST;
-import ide::CombinedImploder;
-import ide::CombinedModelFinder;
-import ide::CombinedExpectationRunner;
+import ide::Imploder;
+
+import translation::Syntax;
+import translation::AST;
+import translation::Imploder;
+import translation::Translator;
+import translation::SMTInterface;
+
+import ModelFinder;
+import ExpectationRunner;
+
 import ide::vis::ModelVisualizer;
 import ide::UnicodeRewriter;
 import ide::UnionCompatibilityChecker;
-
-import translation::Translator;
-import translation::SMTInterface;
 
 import util::IDE;
 import util::Prompt;
@@ -28,9 +31,9 @@ void main(){
 	registerLanguage(lang,"alle", parseFile); 
 	
 	UnionCompatibilityResult cachedCompResult = <(),{}>;
-	ide::CombinedSyntax::Problem cachedProblem = [ide::CombinedSyntax::Problem]""; 
+	translation::Syntax::Problem cachedProblem = [translation::Syntax::Problem]""; 
 	
-	UnionCompatibilityResult getLatestCompatibilityResult(ide::CombinedSyntax::Problem p) {
+	UnionCompatibilityResult getLatestCompatibilityResult(translation::Syntax::Problem p) {
     if (p == cachedProblem) {
       return cachedCompResult;
     } else {
@@ -45,10 +48,10 @@ void main(){
 		popup(
 		  group("AlleAlle", [
   			action("Check and visualize", (Tree current, loc file) {
-	 		  	if (/ide::CombinedSyntax::Problem p := current) {checkAndVisualize(p);}
+	 		  	if (/translation::Syntax::Problem p := current) {checkAndVisualize(p);}
 	   		}),
 	   		action("Check expectation", (Tree current, loc file) {
-   		    if (/ide::CombinedSyntax::Problem p := current) {
+   		    if (/translation::Syntax::Problem p := current) {
    		      ExpectationResult r = checkExpectation(implodeProblem(p));
    		      if (success() := r) {
    		        alert("Success!");
@@ -62,13 +65,13 @@ void main(){
 		syntaxProperties(#start[Problem]),
 		liveUpdater(unicodeRewrite),
 		builder(set[Message] ((&T<:Tree) current) {
-		  if (/ide::CombinedSyntax::Problem p := current) {
+		  if (/translation::Syntax::Problem p := current) {
 		    UnionCompatibilityResult r = getLatestCompatibilityResult(p);
 		    return r.messages;
 		  } 
 		}),
 		annotator((&T<:Tree) (&T<:Tree current) {
-      if (/ide::CombinedSyntax::Problem p := current) {
+      if (/translation::Syntax::Problem p := current) {
         UnionCompatibilityResult r = getLatestCompatibilityResult(p);
         
         return current[@docs = (l : getHover(r.headings[l]) | l <- r.headings)];
@@ -79,12 +82,12 @@ void main(){
 	registerContributions(lang, contribs);
 } 
  
-void checkAndVisualize(ide::CombinedSyntax::Problem p) {  
+void checkAndVisualize(translation::Syntax::Problem p) {  
 	ModelFinderResult result = checkInitialSolution(implodeProblem(p)); 
-	if (sat(Model currentModel, Model (ide::CombinedAST::Domain) nextModel, void () stop) := result) {
+	if (sat(Model currentModel, Model (translation::AST::Domain) nextModel, void () stop) := result) {
 		renderModel(currentModel, nextModel, stop);
 	} else if (trivialSat(Model model) := result) {
-	  renderModel(model, Model (ide::CombinedAST::Domain) { return empty(); }, void () {;});
+	  renderModel(model, Model (translation::AST::Domain) { return empty(); }, void () {;});
 	} else if (trivialUnsat() := result) {
     alert("Not satisfiable (trivially), nothing to visualize");
 	} else {

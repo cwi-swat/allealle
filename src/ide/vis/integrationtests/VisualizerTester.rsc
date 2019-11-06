@@ -1,17 +1,18 @@
 module ide::vis::integrationtests::VisualizerTester
 
-import translation::Binder; 
+import ModelFinder;
 
-import ide::CombinedAST;
-import ide::CombinedModelFinder;
-import ide::CombinedImploder;
+import translation::AST;
+
+import ide::Imploder;
 import ide::vis::ModelVisualizer; 
-
 import translation::SMTInterface;
 
 import smtlogic::Core;
 
 import IO; 
+
+void translateAndVisMyFrstStr() = translateAndVis(|project://allealle/examples/str/myfirststr.alle|);
 
 void translateAndVis(loc problem) { 
   Problem p = implodeProblem(problem);

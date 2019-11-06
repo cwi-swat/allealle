@@ -3,6 +3,9 @@ module translation::Imploder
 import translation::Syntax;
 import translation::AST;
 
+extend translation::theories::integer::Imploder;
+extend translation::theories::string::Imploder;
+
 import ParseTree;
 import String;
 import util::Maybe;
@@ -16,9 +19,6 @@ translation::AST::Problem implodeProblem(translation::Syntax::Problem p) {
      
   return problem([implode(r) | r <- p.relations], constraints, predicates, s, e);
 }
-//translation::AST::Problem implodeProblem(translation::Syntax::Problem p) 
-//  = problem([implode(r) | r <- p.relations], [implode(c) | c <- p.constraints], implode(objSec)) //[implode(obj) | obj <- objSec.objectives])
-//  when /translation::Syntax::ObjectiveSection objSec := p.objSection; 
 
 translation::AST::RelationDef implode((Relation)`<RelVar v> (<{HeaderAttribute ","}+ header>) <RelationalBound bounds>`) 
   = relation("<v>", [implode(h) | h <- header], implode(bounds));
@@ -182,7 +182,7 @@ translation::AST::AlleExpr implode((AlleExpr)`<AlleExpr lhs> ∖ <AlleExpr rhs>`
 translation::AST::AlleExpr implode((AlleExpr)`<AlleExpr lhs> ⨯ <AlleExpr rhs>`)
   = product(implode(lhs), implode(rhs));
   
-translation::AST::AlleExpr implode((AlleExpr)`{<{VarDeclaration ","}+ decls> | <AlleFormula form>}`)
+translation::AST::AlleExpr implode(f:(AlleExpr)`{<{VarDeclaration ","}+ decls> | <AlleFormula form>}`)
   = comprehension([implode(d) | d <- decls], implode(form), origLoc=f@\loc);
  
 translation::AST::TupleAttributeSelection implode ((TupleAttributeSelection)`\<<AttributeName first>,<AttributeName second>\>`) 

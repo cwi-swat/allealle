@@ -139,7 +139,6 @@ void countDeepestNesting(Formula f) {
 
 SMTModel getValues(SolverPID pid, set[SMTVar] vars) {
   resp = runSolverAndExpectResult(pid, "(get-value (<intercalate(" ", [v.name | v <- vars])>))");
-  
   return getValues(resp, vars);
 }
  

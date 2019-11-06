@@ -5,6 +5,9 @@ import translation::Relation;
 import translation::Environment;
 import translation::SMTValueSyntax;
 
+extend translation::theories::integer::SMTInterface;
+extend translation::theories::string::SMTInterface;
+
 import smtlogic::Core;
 
 import util::Maybe;  
@@ -195,7 +198,7 @@ str compile(independent()) = "box";
 default str compileCommand(Command c) { throw "Unable to compile command \'<c>\'. No compile function defined.";}
 
 SMTModel getValues(str smtResult, set[SMTVar] vars) {
-  //println(smtResult);
+  println(smtResult);
   SmtValues foundValues = parse(#start[SmtValues], trim(smtResult)).top; 
   map[str,SmtValue] rawSmtVals = (() | it + ("<varAndVal.name>":varAndVal.val) | VarAndValue varAndVal <- foundValues.values);
 

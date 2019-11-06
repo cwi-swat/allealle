@@ -1,6 +1,10 @@
 module translation::Unparser
 
 import translation::AST;
+
+extend translation::theories::integer::Unparser;
+extend translation::theories::string::Unparser;
+
 import List;
 import util::Maybe;
 

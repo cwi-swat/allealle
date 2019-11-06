@@ -1,6 +1,6 @@
 module ide::UnionCompatibilityChecker
 
-import ide::CombinedSyntax;
+import translation::Syntax;
 
 import ParseTree;
 import Message;
@@ -482,4 +482,5 @@ void check((CriteriaExpr)`<CriteriaExpr lhs> + <CriteriaExpr rhs>`, map[str,str]
 void check((CriteriaExpr)`<CriteriaExpr lhs> - <CriteriaExpr rhs>`, map[str,str] attributes, CheckFunctions cf) { check(lhs, attributes, cf); check(rhs, attributes, cf); } 
 
 void check((Literal)`<IntLit i>`, map[str,str] attributes, CheckFunctions cf) {}
+void check((Literal)`<StrLit s>`, map[str,str] attributes, CheckFunctions cf) {}
 void check((Literal)`'<Idd i>'`, map[str,str] attributes, CheckFunctions cf) {}
