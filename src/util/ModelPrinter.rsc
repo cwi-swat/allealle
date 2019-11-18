@@ -1,7 +1,9 @@
 module util::ModelPrinter
 
-import ide::CombinedModelFinder;
+import translation::Syntax;
 import translation::Relation;
+import translation::SMTInterface;
+
 import smtlogic::Core;
 import smtlogic::Ints;
 
@@ -38,6 +40,7 @@ str model2Str(lit(Literal l)) = model2Str(l);
 str model2Str(neg(Term t)) = "-<model2Str(t)>";
 
 str model2Str(\int(int i)) = "<i>";
+str model2Str(\str(str s)) = "\"<s>\"";
 
 str model2Str(id()) = "id";
 str model2Str(intDom()) = "int";

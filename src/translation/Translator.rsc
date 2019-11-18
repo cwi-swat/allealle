@@ -405,16 +405,45 @@ Relation translateExpression(reflexClosure(TupleAttributeSelection tas, AlleExpr
 
 @memo
 Relation translateExpression(comprehension(list[VarDeclaration] decls, AlleFormula form), Environment env) { 
-	Heading merged = ();
-	
-	//IndexedRows rows
-	Heading calcHeader([], Environment e, Heading result) = result;  
-	Heading calcHeader([VarDeclaration hd, *VarDeclaration tl], Environment e, Heading result) {
-		Relation r = translateExpression(hd.expr, e);
-		return calcHeader(tl, e + (hd.name : r), result + r.heading);
-	}
+  Heading mergedHeading = ();
+  set[str] mergedPartialKey = {};
+  
+  Rows translateForm([], Row cur, Environment extEnv) =  (cur.values : <\and(cur.constraints.exists, translateFormula(form, extEnv)), cur.constraints.attConstraints>);
+	Rows translateForm([<str var, Relation r>, *tl], Row cur, Environment extEnv) {
+	  Rows newRows = ();
 	  
-	//list[Relation] rels = [translateExpreswsion(d.expr, env 
+	  for (Tuple t <- r.rows) {
+	    Constraints tc = r.rows[t];
+
+	    Row joined = <cur.values + t, <\and(cur.constraints.exists,tc.exists), \and(cur.constraints.attConstraints, tc.attConstraints)>>; 
+	    extEnv.relations += ("<var>" : <r.heading, (t: <tc.exists, tc.attConstraints>), r.partialKey>);
+	    
+	    newRows += translateForm(tl, joined, extEnv);
+	  }  
+	  
+	  return newRows; 
+	}
+
+  Relation transl(AlleExpr expr, Environment extEnv) {
+    Relation r = translateExpression(expr, extEnv);
+    mergedHeading += r.heading;
+    mergedPartialKey += r.partialKey;
+    return r;
+  }
+	 	
+  lrel[str,Relation] translateDecls([VarDeclaration d], Environment extEnv) { 
+    return [<"<d.name>",transl(d.binding, extEnv)>];
+  }  	 	
+  
+  lrel[str,Relation] translateDecls([VarDeclaration hd, *VarDeclaration tl], Environment extEnv) {
+   Relation r = transl(hd.binding, extEnv);
+   extEnv.relations += ("<hd.name>" : r);
+   return [<"<hd.name>",r>] + translateDecls(tl, extEnv); 
+  }     
+	
+	lrel[str,Relation] translDecls = translateDecls(decls, env);
+	
+  return <mergedHeading, translateForm(translDecls, <(),<\true(),\true()>>, env), mergedPartialKey>;
 }
 
 default Relation translateExpression(AlleExpr expr, Environment _) { throw "Translation of expression \'<expr>\' not supported"; }

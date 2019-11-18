@@ -94,6 +94,7 @@ str unparse(naturalJoin(AlleExpr lhs, AlleExpr rhs))                            
 str unparse(transpose(TupleAttributeSelection tas, AlleExpr expr))                  = "(~<unparse(tas)><unparse(expr)>)";
 str unparse(closure(TupleAttributeSelection tas, AlleExpr expr))                    = "(^<unparse(tas)><unparse(expr)>)";
 str unparse(reflexClosure(TupleAttributeSelection tas, AlleExpr expr))              = "(*<unparse(tas)><unparse(expr)>)";
+str unparse(comprehension(list[VarDeclaration] decls, AlleFormula form))            = "{<intercalate(",", [unparse(d) | VarDeclaration d <- decls])> | <unparse(form)>}";
 
 default str unparse(AlleExpr exp) { throw "No unparser implemented for \'<exp>\'"; }
 
