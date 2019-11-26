@@ -73,10 +73,12 @@ private tuple[Formula, int] bm(AlleFormula f, Environment env) {
 
 Formula translateFormula(predCall(str predName, list[AlleExpr] args), Environment env) {
   AllePredicate pred = env.predicates[predName];
-  
   list[VarBinding] bindings = [varBinding(pred.params[i].name, args[i]) | int i <- [0..size(pred.params)]];
   
-  return translateFormula(let(bindings, pred.form), env);
+  // during parameter binding the relations should not be shadowed
+  env.relations += (b.name : translateExpression(b.binding, env) | VarBinding b <- bindings); 
+  
+  return translateFormula(pred.form, env);
 }
 
 Formula translateFormula(empty(AlleExpr expr), Environment env) {
