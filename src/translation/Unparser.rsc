@@ -8,7 +8,7 @@ extend translation::theories::string::Unparser;
 import List;
 import util::Maybe;
 
-str unparse(problem(list[RelationDef] relations, list[AlleFormula] constraints, Maybe[ObjectiveSection] objectiveSec, Maybe[Expect] expect)) = 
+str unparse(problem(list[RelationDef] relations, list[AlleFormula] constraints, map[str,AllePredicate] predicates, Maybe[ObjectiveSection] objectiveSec, Maybe[Expect] expect)) = 
   "<for (RelationDef r <- relations) {><unparse(r)>
   '<}>
   '

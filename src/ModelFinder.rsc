@@ -77,7 +77,7 @@ ModelFinderResult runInSolver(Problem problem, TranslationResult tr, Environment
 	tuple[str smt, int time] smtCompileFormResult = bm(compileAssert, tr.form);
 	tuple[str smt, int time] smtCompileCommands = bm(compileCommands, tr.cmds);
 	
-	printlnIfLog("done, took: <(smtVarCollectResult.time + smtVarDeclResult.time + smtCompileFormResult.time + smtCompileCommands.time) /1000000> ms in total (variable collection fase: <smtVarCollectResult.time / 1000000>, variable declaration fase: <smtVarDeclResult.time / 1000000>, formula compilation fase: <smtCompileFormResult.time / 1000000>, commands compilation fase: <smtCompileCommands.time / 1000000>)", log);
+	printlnIfLog("done, took: <(smtVarCollectResult.time + smtVarDeclResult.time + smtCompileFormResult.time + smtCompileCommands.time) /1000000> ms in total.", log);
   //println("Total nr of clauses in formula: <countClauses(\and(tr.relationalFormula, tr.attributeFormula))>, total nr of variables in formula: <countVars(smtVarCollectResult.vars)>"); 
 	
 	//str preambl = intercalate("\n", [pa | Sort s <- collectSorts(smtVarCollectResult.vars), str pa := preamble(s), pa != ""]);
@@ -93,8 +93,10 @@ ModelFinderResult runInSolver(Problem problem, TranslationResult tr, Environment
 
   Model next(Domain dom) {
     printIfLog("Getting next model from SMT solver...", log);
+    
+    int startTime = cpuTime();
     smtModel = nextSmtModel(solverPid, dom, smtModel, model, smtVarCollectResult.vars);
-    printlnIfLog("done, took: <getSolvingTime(solverPid)> ms", log);
+    printlnIfLog("done, took: <(cpuTime() - startTime) / 1000000> ms", log);
           
     if (smtModel == ()) {
       return empty();
@@ -106,9 +108,12 @@ ModelFinderResult runInSolver(Problem problem, TranslationResult tr, Environment
 	  
 	printIfLog("Solving by Z3...", log);
 	try {
+	  int startTime = cpuTime();
 	  bool satisfiable = isSatisfiable(solverPid, fullSmtProblem);
 	  int solvingTime = getSolvingTime(solverPid);
-    printlnIfLog("done, took: <solvingTime> ms.", log);
+	  int endTime = (cpuTime() - startTime) / 1000000;
+	  
+    printlnIfLog("done, took: <solvingTime> ms solving time (reported by Z3), and <endTime> ms in total.", log);
     printlnIfLog("Outcome is \'<satisfiable>\'", log);
 
     if(satisfiable) {
