@@ -50,7 +50,7 @@ ModelFinderResult checkInitialSolution(Problem problem, int timeOutInMs = 0, boo
 		return trivialSat(empty(),translationTime=totalTime);
 	} 
  
-	return runInSolver(problem, t.tr, ie.env, totalTime, timeOutInMs); 
+	return runInSolver(problem, t.tr, ie.env, totalTime, timeOutInMs, log = log); 
 }
 
 private void printIfLog(str text, bool log) {
@@ -61,7 +61,7 @@ private void printIfLog(str text, bool log) {
 
 private void printlnIfLog(str print, bool log) = printIfLog("<print>\n", log);
 
-ModelFinderResult runInSolver(Problem problem, TranslationResult tr, Environment env, int translationTime, int timeOutInMs, bool log = true) {
+ModelFinderResult runInSolver(Problem problem, TranslationResult tr, Environment env, int translationTime, int timeOutInMs, bool log = false, bool saveSMTToFile = false) {
 	PID solverPid = startSolver();
 	if (timeOutInMs != 0) {
 	   setTimeOut(solverPid, timeOutInMs);
@@ -84,8 +84,12 @@ ModelFinderResult runInSolver(Problem problem, TranslationResult tr, Environment
 	
 	str fullSmtProblem = smtVarDeclResult.smt + "\n" + smtCompileFormResult.smt + "\n" + smtCompileCommands.smt;
 	
-  if (log) {
-	 writeFile(|project://allealle/bin/latestSmt.smt2|, fullSmtProblem + "\n(check-sat)");
+  if (saveSMTToFile) {
+    printIfLog("Writing generated SMT-LIB to disk...");
+    int startTime = cpuTime();
+	  writeFile(|project://allealle/bin/latestSmt.smt2|, fullSmtProblem + "\n(check-sat)");
+    int endTime = cpuTime();
+    printlnIfLog("done, took <(endTime - startTime) / 1000000> ms");
 	}
 	
 	SMTModel smtModel = ();
@@ -94,9 +98,12 @@ ModelFinderResult runInSolver(Problem problem, TranslationResult tr, Environment
   Model next(Domain dom) {
     printIfLog("Getting next model from SMT solver...", log);
     
-    int startTime = cpuTime();
+    int startTime = userTime();
     smtModel = nextSmtModel(solverPid, dom, smtModel, model, smtVarCollectResult.vars);
-    printlnIfLog("done, took: <(cpuTime() - startTime) / 1000000> ms", log);
+    int solvingTime = getSolvingTime(solverPid);
+    int endTime = (userTime() - startTime) / 1000000;
+    
+    printlnIfLog("done, took: <solvingTime + endTime> ms in total (<solvingTime> solving time reported by Z3, <endTime> ms spent streaming problem and interpreting result).", log);
           
     if (smtModel == ()) {
       return empty();
@@ -106,15 +113,16 @@ ModelFinderResult runInSolver(Problem problem, TranslationResult tr, Environment
     }
   }  
 	  
-	printIfLog("Solving by Z3...", log);
+	printIfLog("Solving...", log);
 	try {
-	  int startTime = cpuTime();
+	  int startTime = userTime();
+
 	  bool satisfiable = isSatisfiable(solverPid, fullSmtProblem);
 	  int solvingTime = getSolvingTime(solverPid);
-	  int endTime = (cpuTime() - startTime) / 1000000;
+	  int endTime = (userTime() - startTime) / 1000000;
 	  
-    printlnIfLog("done, took: <solvingTime> ms solving time (reported by Z3), and <endTime> ms in total.", log);
-    printlnIfLog("Outcome is \'<satisfiable>\'", log);
+    println("done, took: <solvingTime + endTime> ms in total (<solvingTime> solving time reported by Z3, <endTime> ms spent streaming problem and interpreting result).");
+    println("Outcome is \'<satisfiable>\'");
 
     if(satisfiable) {
       smtModel = firstSmtModel(solverPid, smtVarCollectResult.vars);
@@ -127,9 +135,17 @@ ModelFinderResult runInSolver(Problem problem, TranslationResult tr, Environment
     }
     
 	} catch ResultUnkownException ex: {
-      int solvingTime = getSolvingTime(solverPid);
-      stopSolver(solverPid);
-      return (ex == to()) ? timeout(translationTime = translationTime, solvingTime = solvingTime) : unknown(translationTime = translationTime, solvingTime = solvingTime);
+    int solvingTime = getSolvingTime(solverPid);
+    stopSolver(solverPid);
+
+
+    if (ex == to()) {
+      printlnIfLog("time out.", log);
+      return timeout(translationTime = translationTime, solvingTime = solvingTime);
+    } else if (uk(str reason) := ex) {
+      printlnIfLog("something unexcepted happend. Solver returned: `<reason>`", log);
+      return unknown(translationTime = translationTime, solvingTime = solvingTime);
+    }
 	}  
 }
 

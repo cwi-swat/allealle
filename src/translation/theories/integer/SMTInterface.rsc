@@ -7,7 +7,14 @@ import translation::SMTValueSyntax;
 import List;
 import String; 
 
-str preamble(Sort::\int()) = "";  
+str preamble(Sort::\int()) 
+  = "; INT PREAMBLE
+    '(define-fun max ((x Int) (y Int)) Int
+    ' (ite (\< x y) y x))
+    '
+    '(define-fun min ((x Int) (y Int)) Int
+    ' (ite (\< x y) x y))
+    '";  
 
 str compileVariableDeclaration(<str name, Sort::\int()>) = "(declare-const <name> Int)";
 
@@ -16,10 +23,12 @@ str compileVariableDeclaration(<str name, Sort::\int()>) = "(declare-const <name
 @memo str compile(neg(Term e))                          = "(- <compile(e)>)"; 
 @memo str compile(abs(Term e))                          = "(abs <compile(e)>)"; 
 
+@memo str compile(exp(Term base, Term expo))            = "(^ <compile(base)> <compile(expo)>)";
 @memo str compile(addition(list[Term] terms))           = "(+ <for (t <- terms) {><compile(t)> <}>)";
 @memo str compile(multiplication(list[Term] terms))     = "(* <for (t <- terms) {><compile(t)> <}>)";
 @memo str compile(division(Term lhs, Term rhs))         = "(div <compile(lhs)> <compile(rhs)>)"; 
 @memo str compile(modulo(Term lhs, Term rhs))           = "(mod <compile(lhs)> <compile(rhs)>)";
+@memo str compile(min(Term lhs, Term rhs))           = "(mod <compile(lhs)> <compile(rhs)>)";
 
 @memo str compile(lt(Term lhs, Term rhs))               = "(\< <compile(lhs)> <compile(rhs)>)";
 @memo str compile(lte(Term lhs, Term rhs))              = "(\<= <compile(lhs)> <compile(rhs)>)";
@@ -32,6 +41,9 @@ str compileWithoutIden(\int(int i))                      = "<i>";
 str compileWithoutIden(neg(Term e))                      = "(- " + compileWithoutIden(e)+ ")"; 
 @memo
 str compileWithoutIden(abs(Term e))                      = "(abs " + compileWithoutIden(e) + ")"; 
+@memo
+str compileWithoutIden(exp(Term base, Term expo))        = "(^ " + compileWithoutIden(base) + " " + compileWithoutIden(expo) + ")"; 
+
 @memo
 str compileWithoutIden(addition(list[Term] terms)) {
    str clauses = "";

@@ -25,11 +25,14 @@ data Criteria
 data CriteriaExpr
 	= abs(CriteriaExpr expr)
 	| neg(CriteriaExpr expr)
+	| exp(CriteriaExpr base, CriteriaExpr exp)
   | multiplication(list[CriteriaExpr] terms)
 	| division(CriteriaExpr lhs, CriteriaExpr rhs)
 	| modulo(CriteriaExpr lhs, CriteriaExpr rhs)
   | addition(list[CriteriaExpr] terms)
 	| subtraction(CriteriaExpr lhs, CriteriaExpr rhs)
+	| min(CriteriaExpr a, CriteriaExpr b)
+	| max(CriteriaExpr a, CriteriaExpr b)
 	;
 	
 CriteriaExpr addition(addition(list[CriteriaExpr] terms), CriteriaExpr rhs) = addition([*terms, rhs]);

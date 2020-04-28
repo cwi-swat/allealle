@@ -10,28 +10,28 @@ toBeChanged (vId:id)               <= {<vcar2>,<vengine1>,<vengine2>,<vturbo1>,<
 installRequest (pId:id, relop:int, version:int) = {<car,0,0>}
 
 // All packages that are requested to be installed or upgraded should be part of the installation afterwards
-let installedAfter = (toBeInstalled ∪ (installed ∖ toBeRemovedVersion)) |
-  (∀ ir ∈ installRequest | some (ir ⨝ version ⨝ installedAfter)
-    where ((relop = 0) || (relop = 1 && version = nr) || (relop = 2 && version != nr) || (relop = 3 && nr >= version)|| (relop = 4 && nr <= version))) ∧ (∀ ur ∈ upgradeRequest | some (ur ⨝ version ⨝ installedAfter)
-    where ((relop = 0) || (relop = 1 && version = nr) || (relop = 2 && version != nr) || (relop = 3 && nr >= version)|| (relop = 4 && nr <= version)))
+//let installedAfter = (toBeInstalled ∪ (installed ∖ toBeRemoved)) |
+//  (∀ ir ∈ installRequest | some (ir ⨝ version ⨝ installedAfter)
+//    where ((relop = 0) || (relop = 1 && version = nr) || (relop = 2 && version != nr) || (relop = 3 && nr >= version)|| (relop = 4 && nr <= version))) ∧ (∀ ur ∈ upgradeRequest | some (ur ⨝ version ⨝ installedAfter)
+//    where ((relop = 0) || (relop = 1 && version = nr) || (relop = 2 && version != nr) || (relop = 3 && nr >= version)|| (relop = 4 && nr <= version)))
 
-∀ rr ∈ removeRequest | some (rr ⨝ version ⨝ toBeRemovedVersion) // all the removal requests should be scheduled for removal
-  where ((relop = 0) || (relop = 1 && version = nr) || (relop = 2 && version != nr) || (relop = 3 && nr >= version) || (relop = 4 && nr <= version))
+//∀ rr ∈ removeRequest | some (rr ⨝ version ⨝ toBeRemoved) // all the removal requests should be scheduled for removal
+//  where ((relop = 0) || (relop = 1 && version = nr) || (relop = 2 && version != nr) || (relop = 3 && nr >= version) || (relop = 4 && nr <= version))
 
-let installedAfter = (toBeInstalled ∪ (installed ∖ toBeRemovedVersion)) | // installing version means installing its dependencies afterwards
-  ∀ d ∈ depends | (d[vId] ⊆ installedAfter) ⇒ let possibleInstalls = ((d ⨝ dependChoice)[pId,version,relop] ⨝ (version ⨝ installedAfter)) |
-      (some (possibleInstalls where ((relop = 0) ||(relop = 1 && nr = version)) || (relop = 2 && nr != version) ||
-                                     (relop = 3 && nr >= version) ||(relop = 4 && nr <= version))[vId] ∩ installedAfter)
+//let installedAfter = (toBeInstalled ∪ (installed ∖ toBeRemoved)) | // installing version means installing its dependencies afterwards
+//  ∀ d ∈ depends | (d[vId] ⊆ installedAfter) ⇒ let possibleInstalls = ((d ⨝ dependChoice)[pId,version,relop] ⨝ (version ⨝ installedAfter)) |
+//      (some (possibleInstalls where ((relop = 0) ||(relop = 1 && nr = version)) || (relop = 2 && nr != version) ||
+//                                     (relop = 3 && nr >= version) ||(relop = 4 && nr <= version))[vId] ∩ installedAfter)
+//
+//let installedAfter = (toBeInstalled ∪ (installed ∖ toBeRemovedVersion)) | // when a version is installed, no conflicting version can be installed
+//  ∀ c ∈ conflicts | (c[vId] ⊆ installedAfter) ⇒ let possibleConflicts = (c[pId,version,relop] ⨝ (version ⨝ installedAfter)) |
+//      no (possibleConflicts where ((relop = 0) || (relop = 1 && nr = version) || (relop = 2 && nr != version) ||
+//                                   (relop = 3 && nr >= version) || (relop = 4 && nr <= version))[vId] ∩ installedAfter)
 
-let installedAfter = (toBeInstalled ∪ (installed ∖ toBeRemovedVersion)) | // when a version is installed, no conflicting version can be installed
-  ∀ c ∈ conflicts | (c[vId] ⊆ installedAfter) ⇒ let possibleConflicts = (c[pId,version,relop] ⨝ (version ⨝ installedAfter)) |
-      no (possibleConflicts where ((relop = 0) || (relop = 1 && nr = version) || (relop = 2 && nr != version) ||
-                                   (relop = 3 && nr >= version) || (relop = 4 && nr <= version))[vId] ∩ installedAfter)
-
-let installedAfter = (toBeInstalled ∪ (installed ∖ toBeRemovedVersion)) | // all versions to be kept need to be installed afterwards as well
-  ∀ k ∈ keep | some k ⨝ installedAfter
-
-toBeRemovedPackage = (toBeRemovedVersion ⨝ version)[pId] ∖ (toBeInstalled ⨝ version)[pId]
-toBeChanged = (toBeInstalled ∪ toBeRemovedVersion)
-
-objectives: minimize toBeRemovedPackage[count()], minimize toBeChanged[count()] // the paranoid criteria\end
+//let installedAfter = (toBeInstalled ∪ (installed ∖ toBeRemovedVersion)) | // all versions to be kept need to be installed afterwards as well
+//  ∀ k ∈ keep | some k ⨝ installedAfter
+//
+//toBeRemovedPackage = (toBeRemovedVersion ⨝ version)[pId] ∖ (toBeInstalled ⨝ version)[pId]
+//toBeChanged = (toBeInstalled ∪ toBeRemovedVersion)
+//
+//objectives: minimize toBeRemovedPackage[count()], minimize toBeChanged[count()] // the paranoid criteria\end

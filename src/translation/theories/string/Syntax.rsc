@@ -6,6 +6,13 @@ syntax Literal
   = strLit: StrLit s
   ; 
 
+syntax CriteriaExpr
+  = length:            "length" "(" CriteriaExpr expr ")"
+  | toInt:             "toInt" "(" CriteriaExpr expr ")"
+  | toStr:             "toStr" "(" CriteriaExpr expr ")"
+  > left concat:       CriteriaExpr lhs "++" CriteriaExpr rhs
+  ;
+
 lexical StrLit = @category="Constant"  "\"" StringCharacter* "\""; 
 
 lexical StringCharacter

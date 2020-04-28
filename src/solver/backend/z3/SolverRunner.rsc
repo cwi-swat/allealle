@@ -14,7 +14,7 @@ alias SolverPID = int;
 
 data ResultUnkownException
   = to() // timeout
-  | uk() // unknown
+  | uk(str reason) // unknown
   ;
 
 SolverPID startSolver() {
@@ -66,12 +66,11 @@ bool checkSat(SolverPID pid) {
 
 private ResultUnkownException getReason(SolverPID pid){
   str reason = runSolverAndExpectResult(pid, "(get-info :reason-unknown)");
-  println(reason);
   
   if (/.*canceled.*/ := reason || /.*timeout.*/ := reason || /.*resource[ ]limits[ ]reached.*/ := reason) {
     return to();
   } else {
-    return uk();
+    return uk(reason);
   }  
 }
 

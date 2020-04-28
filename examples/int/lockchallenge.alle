@@ -1,0 +1,10 @@
+// Taken from https://github.com/williamokano/lock-challenge-solver/
+
+// In this simple puzzle we must find the correct 3-digit code for the lock
+// We get a five hints
+// a) 6 8 2 : One number is correct and well placed
+// b) 6 1 4 : One number is correct but wrong placed
+// c) 2 0 6 : Two numbers are correct but wrong placed
+// d) 7 3 8 : Nothing is correct
+// e) 7 8 0 : One number is correct but wrong placed 
+

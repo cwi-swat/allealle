@@ -143,6 +143,6 @@ ParamsEventPingPongStartPrimitives[cur,nxt] ⊆ order
   )
 
 // Asserts: this is where the checks get added
-exists c: Config, p: SVPingPongOnePrims | some (c |x| p) where times = 5
+∃ c ∈ Config, p ∈ SVPingPongOnePrims | some (c ⨝ p) where times = 5
 
 objectives: minimize Config[count()]

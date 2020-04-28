@@ -13,6 +13,7 @@ syntax Criteria
 syntax CriteriaExpr
   = abs:              "|" CriteriaExpr expr "|"
   | neg:               "-" CriteriaExpr expr
+  //| non-assoc exp:     CriteriaExpr lhs "^" CriteriaExpr rhs 
   > left mult:         CriteriaExpr lhs "*" CriteriaExpr rhs
   | non-assoc ( div:   CriteriaExpr lhs "/" CriteriaExpr rhs
               | \mod:  CriteriaExpr lhs "%" CriteriaExpr rhs
@@ -20,6 +21,9 @@ syntax CriteriaExpr
   > left ( add:        CriteriaExpr "+" CriteriaExpr rhs 
          | sub:        CriteriaExpr "-" CriteriaExpr rhs
          )
+  > non-assoc ( "min" "(" CriteriaExpr a "," CriteriaExpr b ")"
+              | "max" "(" CriteriaExpr a "," CriteriaExpr b ")"
+              )
   ;
  
 syntax Literal 

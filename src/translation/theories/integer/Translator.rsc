@@ -10,7 +10,6 @@ import translation::theories::integer::AST;
 import translation::theories::integer::Environment;
 
 import Map;
-import Set;
 
 Formula (Tuple) translateCriteria(gt(CriteriaExpr lhsExpr, CriteriaExpr rhsExpr)) {
   Term (Tuple) lhs = translateCriteriaExpr(lhsExpr);
@@ -78,6 +77,17 @@ Term (Tuple) translateCriteriaExpr(abs(CriteriaExpr expr)) {
   return trans;
 }
 
+Term (Tuple) translateCriteriaExpr(exp(CriteriaExpr base, CriteriaExpr expo)) {
+  Term (Tuple) baseExpr = translateCriteriaExpr(base);
+  Term (Tuple) expoExpr = translateCriteriaExpr(expo);
+  
+  Term trans(Tuple t) {
+    return exp(baseExpr(t), expoExpr(t));
+  } 
+  
+  return trans;
+}
+
 Term (Tuple) translateCriteriaExpr(addition(list[CriteriaExpr] termExprs)) {
   Term trans(Tuple t) {
     return addition([translateCriteriaExpr(term)(t) | CriteriaExpr term <- termExprs]);
@@ -114,6 +124,34 @@ Term (Tuple) translateCriteriaExpr(modulo(CriteriaExpr lhsExpr, CriteriaExpr rhs
   
   Term trans(Tuple t) {
     return modulo(lhs(t), rhs(t));
+  } 
+  
+  return trans;
+}
+
+Term (Tuple) translateCriteriaExpr(min(CriteriaExpr aExpr, CriteriaExpr bExpr)) {
+  Term (Tuple) aCalc = translateCriteriaExpr(aExpr);
+  Term (Tuple) bCalc = translateCriteriaExpr(bExpr);
+  
+  Term trans(Tuple t) {
+    Term a = aCalc(t);
+    Term b = bCalc(t);
+    
+    return ite(lt(a, b), a, b);
+  } 
+  
+  return trans;
+}
+
+Term (Tuple) translateCriteriaExpr(max(CriteriaExpr aExpr, CriteriaExpr bExpr)) {
+  Term (Tuple) aCalc = translateCriteriaExpr(aExpr);
+  Term (Tuple) bCalc = translateCriteriaExpr(bExpr);
+  
+  Term trans(Tuple t) {
+    Term a = aCalc(t);
+    Term b = bCalc(t);
+    
+    return ite(lt(a, b), b, a);
   } 
   
   return trans;

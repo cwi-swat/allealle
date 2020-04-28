@@ -18,6 +18,7 @@ data Formula
 data Term
   = neg(Term e)
   | abs(Term e)
+  | exp(Term base, Term expo)
   | addition(list[Term] terms)
   | multiplication(list[Term] terms)
   | division(Term lhs, Term rhs)

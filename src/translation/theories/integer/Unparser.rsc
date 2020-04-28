@@ -21,8 +21,11 @@ str unparse(intLit(int i))                                          = "<i>";
 
 str unparse(neg(CriteriaExpr e))                                    = "(-<unparse(e)>)";
 str unparse(abs(CriteriaExpr e))                                    = "(|<unparse(e)>|)";
+str unparse(exp(CriteriaExpr base, CriteriaExpr expo))              = "(<unparse(base)>^<unparse(expo)>)";
 str unparse(multiplication(list[CriteriaExpr] terms))               = "(<intercalate(" * ", [unparse(t) | CriteriaExpr t <- terms])>)";
 str unparse(division(CriteriaExpr lhs, CriteriaExpr rhs))           = "(<unparse(lhs)> / <unparse(rhs)>)";
 str unparse(modulo(CriteriaExpr lhs, CriteriaExpr rhs))             = "(<unparse(lhs)> % <unparse(rhs)>)";
 str unparse(addition(list[CriteriaExpr] terms))                     = "(<intercalate(" + ", [unparse(t) | CriteriaExpr t <- terms])>)";
 str unparse(subtraction(CriteriaExpr lhs, CriteriaExpr rhs))        = "(<unparse(lhs)> - <unparse(rhs)>)";
+str unparse(min(CriteriaExpr a, CriteriaExpr b))                    = "min(<unparse(a)>,<unparse(b)>)";
+str unparse(max(CriteriaExpr a, CriteriaExpr b))                    = "max(<unparse(a)>,<unparse(b)>)";

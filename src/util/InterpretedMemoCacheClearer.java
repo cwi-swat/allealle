@@ -27,7 +27,7 @@ public class InterpretedMemoCacheClearer {
 			ModuleEnvironment module = ec.getHeap().getModule(modName);
 			if (module != null) {
 				if (debug.getValue()) {
-					ec.getStdOut().println("Module " + modName + " found");
+//					ec.getStdOut().println("Module " + modName + " found");
 				}
 				
 				List<Pair<String, List<AbstractFunction>>> functions = module.getFunctions();
@@ -38,7 +38,7 @@ public class InterpretedMemoCacheClearer {
 							if (nf.hasMemoization()) {
 								nf.clearMemoizationCache();
 								if (debug.getValue()) {
-									ec.getStdOut().println("Cleared the interpreted memo cache of the \'" + f.getName() + "\' function");
+//									ec.getStdOut().println("Cleared the interpreted memo cache of the \'" + f.getName() + "\' function");
 							
 								}
 							}
@@ -47,7 +47,7 @@ public class InterpretedMemoCacheClearer {
 				}
 			} else {
 				if (debug.getValue()) {
-					ec.getStdOut().println("Module " + modName + " NOT found, skipping memo cache resetting");
+//					ec.getStdOut().println("Module " + modName + " NOT found, skipping memo cache resetting");
 				}
 			}
 		}

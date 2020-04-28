@@ -1,4 +1,5 @@
 Manifest-Version: 0.0.1
 Main-Function: main
 Main-Module: ide::Plugin
+Project-Name: allealle
 Source: src

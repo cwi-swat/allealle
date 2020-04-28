@@ -5,7 +5,6 @@ import translation::Syntax;
 import ParseTree;
 import Message;
 import Map;
-import IO;
 import String;
 import Set;
 import List;
@@ -75,32 +74,28 @@ map[str,UnionResult] buildEnvironment(Problem p) {
   Environment env = ();
 
   visit(p.relations) {
-    case (Relation)`<RelVar v> (<{HeaderAttribute ","}+ header>) <RelationalBound bounds>`: env["<v>"] = heading(("<ha.name>":"<ha.dom>()" | HeaderAttribute ha <- header));
+    case (Relation)`<RelVar v> (<{HeaderAttribute ","}+ header>) <RelationalBound _>`: env["<v>"] = heading(("<ha.name>":"<ha.dom>()" | HeaderAttribute ha <- header));
   }
   
   return env;
 }
 
-void check((RelationalBound)`= {<{Tuple ","}* tuples> }`, map[str,str] attributes, CheckFunctions cf) {
-  for (t <- tuples) {
-    check(t, attributes, cf);
-  }
-}
-void check((RelationalBound)`\<= {<{Tuple ","}* upper> }`, map[str,str] attributes, CheckFunctions cf) {
-  for (t <- tuples) {
-    check(t, attributes, cf);
-  }
-}
+//void check((RelationalBound)`= {<{Tuple ","}* tuples> }`, map[str,str] attributes, CheckFunctions cf) {
+//  check({t | t <- tuples}, attributes, cf);
+//}
+//void check((RelationalBound)`\<= {<{Tuple ","}* upper> }`, map[str,str] attributes, CheckFunctions cf) {
+//  check({t | t <- upper}, attributes, cf);
+//}
+//
+//void check((RelationalBound)`\>= {<{Tuple ","}* lower>} \<= {<{Tuple ","}* upper> }`, map[str,str] attributes, CheckFunctions cf) { checkTuples({t | t <- lower}, attributes, cf); checkTuples({t | t <- upper}, attributes, cf);}
+//
+//void checkTuples(set[Tuple] tuples, map[str,str] attributes, CheckFunctions cf) {
+//  for (t <- tuples) {
+//    check(t, attributes, cf);
+//  }
+//}
 
-void check((RelationalBound)`\>= {<{Tuple ","}* lower>} \<= {<{Tuple ","}* upper> }`, map[str,str] attributes, CheckFunctions cf) { checkTuples({t | t <- tuples}); }
-
-void checkTuples(set[Tuple] tuples, map[str,str] attributes, CheckFunctions cf) {
-  for (t <- tuples) {
-    check(t, attributes, cf);
-  }
-}
-
-void check(cur:(AllePredicate)`pred <Idd name>[<{PredParam ","}* params>] = <AlleFormula form>`, Environment env, CheckFunctions cf) {
+void check((AllePredicate)`pred <Idd _>[<{PredParam ","}* params>] = <AlleFormula form>`, Environment env, CheckFunctions cf) {
   for (p <- params) {
     env += ("<p.name>" : heading(("<ha.name>":"<ha.dom>()" | ha <- p.header))); 
   }
@@ -476,11 +471,20 @@ void check((CriteriaExpr)`<Criteria cond> ? <CriteriaExpr thn> : <CriteriaExpr e
 
 void check((CriteriaExpr)`| <CriteriaExpr expr> |`, map[str,str] attributes, CheckFunctions cf) { check(expr, attributes, cf); }
 void check((CriteriaExpr)`- <CriteriaExpr expr>`, map[str,str] attributes, CheckFunctions cf) { check(expr, attributes, cf); }
+//void check((CriteriaExpr)`<CriteriaExpr base>^<CriteriaExpr expo>`, map[str,str] attributes, CheckFunctions cf) { check(base, attributes, cf); check(expo, attributes, cf); } 
 void check((CriteriaExpr)`<CriteriaExpr lhs> * <CriteriaExpr rhs>`, map[str,str] attributes, CheckFunctions cf) { check(lhs, attributes, cf); check(rhs, attributes, cf); } 
 void check((CriteriaExpr)`<CriteriaExpr lhs> / <CriteriaExpr rhs>`, map[str,str] attributes, CheckFunctions cf) { check(lhs, attributes, cf); check(rhs, attributes, cf); } 
 void check((CriteriaExpr)`<CriteriaExpr lhs> % <CriteriaExpr rhs>`, map[str,str] attributes, CheckFunctions cf) { check(lhs, attributes, cf); check(rhs, attributes, cf); } 
 void check((CriteriaExpr)`<CriteriaExpr lhs> + <CriteriaExpr rhs>`, map[str,str] attributes, CheckFunctions cf) { check(lhs, attributes, cf); check(rhs, attributes, cf); } 
 void check((CriteriaExpr)`<CriteriaExpr lhs> - <CriteriaExpr rhs>`, map[str,str] attributes, CheckFunctions cf) { check(lhs, attributes, cf); check(rhs, attributes, cf); } 
+
+void check((CriteriaExpr)`max(<CriteriaExpr a>,<CriteriaExpr b>)`, map[str,str] attributes, CheckFunctions cf) { check(a, attributes, cf); check(b, attributes, cf); } 
+void check((CriteriaExpr)`min(<CriteriaExpr a>,<CriteriaExpr b>)`, map[str,str] attributes, CheckFunctions cf) { check(a, attributes, cf); check(b, attributes, cf); } 
+
+void check((CriteriaExpr)`length(<CriteriaExpr expr>)`, map[str,str] attributes, CheckFunctions cf) { check(expr, attributes, cf); } 
+void check((CriteriaExpr)`toInt(<CriteriaExpr expr>)`, map[str,str] attributes, CheckFunctions cf) { check(expr, attributes, cf); } 
+void check((CriteriaExpr)`toStr(<CriteriaExpr expr>)`, map[str,str] attributes, CheckFunctions cf) { check(expr, attributes, cf); } 
+void check((CriteriaExpr)`<CriteriaExpr lhs> ++ <CriteriaExpr rhs>`, map[str,str] attributes, CheckFunctions cf) { check(lhs, attributes, cf); check(rhs, attributes, cf); } 
 
 void check((Literal)`<IntLit i>`, map[str,str] attributes, CheckFunctions cf) {}
 void check((Literal)`<StrLit s>`, map[str,str] attributes, CheckFunctions cf) {}

@@ -1,0 +1,48 @@
+Room (rId: id, x: int, y: int, width: int, height: int) = {<r1,?,?,?,?>..<r10,?,?,?,?>}
+distance (r1Id: id, r2Id: id, dist: int) = {<r1,r1,?>..<r10,r10,?>}
+
+// World constraint
+∀ r ∈ Room | some r where (x > 0 && x + width < 1000 && y > 0 && y + height < 1000)
+
+// Room size constraint
+∀ r ∈ Room | some r where (width > 20 && width < 40 && height > 20 && height < 40)
+
+pred noVerticalOverlap [r1: (r1Id: id, x1: int, y1: int, w1: int, h1: int), r2: (r2Id: id, x2: int, y2: int, w2: int, h2: int)] 
+  = (some (r1 ⨯ r2) where ((y2 < y1 && y2 + h2 > y1) || (y2 < y1 + h1 && y2 + h2 > y1 + h1))) ⇒ 
+      (some (r1 ⨯ r2) where (x2 < x1 || x2 > x1 + w1))  
+
+pred noHorizontalOverlap [r1: (r1Id: id, x1: int, y1: int, w1: int, h1: int), r2: (r2Id: id, x2: int, y2: int, w2: int, h2: int)] 
+  = (some (r1 ⨯ r2) where ((x2 < x1 && x2 + w2 > x1) || (x2 < x1 + w1 && x2 + w2 > x1 + w1))) ⇒ 
+      (some (r1 ⨯ r2) where (y2 < y1 || y2 > y1 + h1))  
+
+pred noContainment [r1: (r1Id: id, x1: int, y1: int, w1: int, h1: int), r2: (r2Id: id, x2: int, y2: int, w2: int, h2: int)]
+  = no ((r1 ⨯ r2) where (x2 >= x1 && x2+w2 <= x1+w1 && y2 >= y1 && y2+h2 <= y1+h1))
+
+pred allDistinctSizes [r1: (r1Id: id, x1: int, y1: int, w1: int, h1: int), r2: (r2Id: id, x2: int, y2: int, w2: int, h2: int)]
+  = some (r1 ⨯ r2) where (w1 != w2 || h1 != h2)
+
+// Shortest overlap constraint but much slower for Z3 to solve 
+// Solution taken from: https://math.stackexchange.com/questions/99565/simplest-way-to-calculate-the-intersect-area-of-two-rectangles
+pred noOverlap [r1: (r1Id: id, x1: int, y1: int, w1: int, h1: int), r2: (r2Id: id, x2: int, y2: int, w2: int, h2: int)]
+  = some (r1 ⨯ r2) where (
+      ((max(0, min(x1 + w1, x2 + w2) - max(x1,x2))) = 0) ||
+      ((max(0, min(y1 + h1, y2 + h2) - max(y1,y2))) = 0)
+    )
+
+pred calcDistance [r1: (r1Id: id, x1: int, y1: int, w1: int, h1: int), r2: (r2Id: id, x2: int, y2: int, w2: int, h2: int)]
+  = some ((r1 ⨯ r2) ⨝ distance) where (dist = |y2-y1| + |x2-x1|) // for some notion of distance
+
+pred minDistance [r1: (r1Id: id, x1: int, y1: int, w1: int, h1: int), r2: (r2Id: id, x2: int, y2: int, w2: int, h2: int)]
+  = some ((r1 ⨯ r2) ⨝ distance) where (dist > 200) // for some notion of setting them apart
+
+∀ r1 ∈ Room, r2 ∈ (Room ∖ r1) | let r1 = r1[rId as r1Id, x as x1, y as y1, width as w1, height as h1], r2 = r2[rId as r2Id, x as x2, y as y2, width as w2, height as h2] |
+    noVerticalOverlap[r1,r2] 
+  ∧ noHorizontalOverlap[r1,r2] 
+  ∧ noContainment[r1,r2] 
+    //noOverlap[r1,r2] 
+  ∧ allDistinctSizes[r1,r2]   
+  ∧ calcDistance[r1,r2] 
+  ∧ minDistance[r1,r2] 
+  
+∀ r ∈ Room | some ((r[rId->r1Id] ⨯ r[rId->r2Id]) ⨝ distance) where (dist = 0) 
+ 

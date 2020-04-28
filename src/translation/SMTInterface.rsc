@@ -208,7 +208,7 @@ SMTModel getValues(str smtResult, set[SMTVar] vars) {
 
 Term getValue((SmtValue)`true`, <str _, Sort::\bool()>) = lit(ttrue());
 Term getValue((SmtValue)`false`, <str _, Sort::\bool()>) = lit(ffalse());
-default Term getValue(SmtValue smtValue, SMTVar var) { throw "Unable to get the value for SMT value \'<smtValue>\', for variable <var>"; }
+default Term getValue(SmtValue smtValue, SMTVar var) { throw "Unable to get the value for SMT value `<smtValue>`, for variable `<var>`"; }
 
 str negateVariable(str var, lit(ttrue())) = "(not <var>)";
 str negateVariable(str var, lit(ffalse())) = var;

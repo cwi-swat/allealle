@@ -12,6 +12,9 @@ str unparse(problem(list[RelationDef] relations, list[AlleFormula] constraints, 
   "<for (RelationDef r <- relations) {><unparse(r)>
   '<}>
   '
+  '<for (str pred <- predicates) {><unparse(predicates[pred])>
+  '<}>
+  '
   '<for(AlleFormula f <- constraints) {><unparse(f)>
   '<}>
   '
@@ -60,6 +63,14 @@ str unparse(just(objectives(ObjectivePriority prio, list[Objective] objs))) =
 str unparse(lex()) = "lex";
 str unparse(pareto()) = "pareto";
 str unparse(independent()) = "independent"; 
+
+str unparse(pred(str name, list[PredParam] params, AlleFormula form))
+  = "pred <name> [<intercalate(", ", [unparse(p) | p <- params])>]
+    ' = <unparse(form)>
+    ";
+
+str unparse(predParam(str name, list[HeaderAttribute] heading))
+  = "<name> : (<intercalate(",", [unparse(ha) | HeaderAttribute ha <- heading])>)";
 
 str unparse(predCall(str name, list[AlleExpr] args))                                = "<name>[<intercalate(",", [<unparse(a)> | a <- args])>]";
 str unparse(empty(AlleExpr expr))                                                   = "(no <unparse(expr)>)";
