@@ -61,7 +61,7 @@ private void printIfLog(str text, bool log) {
 
 private void printlnIfLog(str print, bool log) = printIfLog("<print>\n", log);
 
-ModelFinderResult runInSolver(Problem problem, TranslationResult tr, Environment env, int translationTime, int timeOutInMs, bool log = false, bool saveSMTToFile = false) {
+ModelFinderResult runInSolver(Problem problem, TranslationResult tr, Environment env, int translationTime, int timeOutInMs, bool log = false, bool saveSMTToFile = true) {
 	PID solverPid = startSolver();
 	if (timeOutInMs != 0) {
 	   setTimeOut(solverPid, timeOutInMs);
@@ -84,12 +84,14 @@ ModelFinderResult runInSolver(Problem problem, TranslationResult tr, Environment
 	
 	str fullSmtProblem = smtVarDeclResult.smt + "\n" + smtCompileFormResult.smt + "\n" + smtCompileCommands.smt;
 	
+	str checkCommand = usesNonLinearArithmetic(problem) ? "(check-sat-using qfnra-nlsat)" : "(check-sat)";
+	
   if (saveSMTToFile) {
-    printIfLog("Writing generated SMT-LIB to disk...");
+    printIfLog("Writing generated SMT-LIB to disk...", log);
     int startTime = cpuTime();
-	  writeFile(|project://allealle/bin/latestSmt.smt2|, fullSmtProblem + "\n(check-sat)");
+	  writeFile(|project://allealle/bin/latestSmt.smt2|, fullSmtProblem + "\n<checkCommand>");
     int endTime = cpuTime();
-    printlnIfLog("done, took <(endTime - startTime) / 1000000> ms");
+    printlnIfLog("done, took <(endTime - startTime) / 1000000> ms", log);
 	}
 	
 	SMTModel smtModel = ();
@@ -99,7 +101,7 @@ ModelFinderResult runInSolver(Problem problem, TranslationResult tr, Environment
     printIfLog("Getting next model from SMT solver...", log);
     
     int startTime = userTime();
-    smtModel = nextSmtModel(solverPid, dom, smtModel, model, smtVarCollectResult.vars);
+    smtModel = nextSmtModel(solverPid, dom, smtModel, model, smtVarCollectResult.vars, checkCommand);
     int solvingTime = getSolvingTime(solverPid);
     int endTime = (userTime() - startTime) / 1000000;
     
@@ -117,7 +119,7 @@ ModelFinderResult runInSolver(Problem problem, TranslationResult tr, Environment
 	try {
 	  int startTime = userTime();
 
-	  bool satisfiable = isSatisfiable(solverPid, fullSmtProblem);
+	  bool satisfiable = isSatisfiable(solverPid, fullSmtProblem, checkCommand = checkCommand);
 	  int solvingTime = getSolvingTime(solverPid);
 	  int endTime = (userTime() - startTime) / 1000000;
 	  
@@ -165,7 +167,7 @@ SMTModel getValues(SolverPID pid, set[SMTVar] vars) {
  
 SMTModel firstSmtModel(SolverPID pid, set[SMTVar] vars) = getValues(pid, vars);
 
-SMTModel nextSmtModel(SolverPID pid, Domain dom, SMTModel currentSmtModel, Model currentRelationalModel, set[SMTVar] vars) { //Model currentRelationalModel, Domain dom, set[SMTVar] vars) { 
+SMTModel nextSmtModel(SolverPID pid, Domain dom, SMTModel currentSmtModel, Model currentRelationalModel, set[SMTVar] vars, str checkCommand) { //Model currentRelationalModel, Domain dom, set[SMTVar] vars) { 
   Sort srt = domain2Sort(dom);
   str smt = "";
 
@@ -188,12 +190,18 @@ SMTModel nextSmtModel(SolverPID pid, Domain dom, SMTModel currentSmtModel, Model
     throw "Unable to declare needed variables in SMT";
   }   
   
-  if (isSatisfiable(pid,"")) {
+  if (isSatisfiable(pid,"", checkCommand = checkCommand)) {
     return getValues(pid, vars);
   } else {
     return ();
   }
 }
+
+private bool usesNonLinearArithmetic(Problem p) 
+  =  /multiplication(_) := p 
+  || /division(_,_) := p 
+  || /modulo(_,_) := p
+  ;
 
 private int countClauses(Formula f) {
   int nrOfClauses = 0;

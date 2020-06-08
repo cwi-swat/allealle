@@ -29,7 +29,7 @@ translation::AST::HeaderAttribute implode((HeaderAttribute)`<AttributeName name>
 translation::AST::RelationalBound implode((RelationalBound)`= { <{Tuple ","}* tuples>}`) 
   = exact([implode(t) | t <- tuples]);
 
-translation::AST::RelationalBound implode((RelationalBound)`\<= { <{Tuple ","}+ upper> }`) 
+translation::AST::RelationalBound implode((RelationalBound)`\<= { <{Tuple ","}* upper> }`) 
   = atMost([implode(t) | t <- upper]);
 
 translation::AST::RelationalBound implode((RelationalBound)`\>= { <{Tuple ","}+ lower> } \<= { <{Tuple ","}+ upper> }`) 
@@ -116,8 +116,8 @@ translation::AST::AlleFormula implode(f:(AlleFormula)`<AlleFormula lhsExpr> ⇒ 
 translation::AST::AlleFormula implode(f:(AlleFormula)`<AlleFormula lhsExpr> ⇔ <AlleFormula rhsExpr>`)
   = equality(implode(lhsExpr),implode(rhsExpr), origLoc=f@\loc);
 
-translation::AST::AlleFormula implode(f:(AlleFormula)`<AlleExpr expr>::[<Criteria crit>]`)
-  = \filter(implode(expr), implode(crit));
+//translation::AST::AlleFormula implode(f:(AlleFormula)`<AlleExpr expr>::[<Criteria crit>]`)
+//  = \filter(implode(expr), implode(crit));
 
 translation::AST::AlleFormula implode(f:(AlleFormula)`let <{VarBinding ","}+ bindings> | <AlleFormula form>`)
   = let([implode(b) | b <- bindings], implode(form), origLoc=f@\loc);

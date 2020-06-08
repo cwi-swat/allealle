@@ -1,7 +1,8 @@
 Person (pId:id, name:str, age:int) <= {<p1,?,37>, <p2,?,?>}
 
-∃ p ∈ Person | some p where (name = toStr(34) && age = length("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"))
-∃ p ∈ Person | some p where (name = "Bob" ++ "by" && age = 37)
-
+∃ p ∈ Person | some p where (name = toStr(34) && age = length("aaaaaaaaaa"))
+∃ p ∈ Person | some p where (name = "Bob" ++ "by")
+∃ p ∈ Person | some p where (substr(name, 0,2) = "Bo")
+ 
 objectives: minimize Person[count()]
 

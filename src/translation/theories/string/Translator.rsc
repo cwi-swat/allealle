@@ -5,9 +5,6 @@ import smtlogic::Strings;
 import translation::Relation;
 import translation::theories::string::AST;
 
-import Map;
-import Set;
-
 Literal translateLiteral(strLit(str s)) = \str(s);
   
 Term (Tuple) translateCriteriaExpr(strLength(CriteriaExpr expr)) {
@@ -47,5 +44,19 @@ Term (Tuple) translateCriteriaExpr(strConcat(list[CriteriaExpr] exprs)) {
   
   return trans;
 }    
+
+Term (Tuple) translateCriteriaExpr(substr(CriteriaExpr expr, CriteriaExpr offset, CriteriaExpr length)) {  
+  Term (Tuple) strExpr = translateCriteriaExpr(expr);
+  Term (Tuple) offsetExpr = translateCriteriaExpr(offset);
+  Term (Tuple) lengthExpr = translateCriteriaExpr(length);
+
+  Term trans(Tuple t) {
+    return substr(strExpr(t), offsetExpr(t), lengthExpr(t));
+  } 
+  
+  return trans;
+}  
+
+
   
 Relation emptyRel(Heading h) = <h, (), {}>;

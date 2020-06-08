@@ -21,7 +21,7 @@ syntax AttributeHeader
 
 syntax RelationalBound
   = exact: "=" "{" {Tuple ","}*tuples "}"
-  | atMost: "\<=" "{" {Tuple ","}+ upper "}"
+  | atMost: "\<=" "{" {Tuple ","}* upper "}"
   | atLeastAtMost: "\>=" "{" {Tuple ","}+ lower "}" "\<=" "{" {Tuple ","}+ upper "}"
   ;
 

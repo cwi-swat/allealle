@@ -1,6 +1,6 @@
 State (sId:id)                >= {<s1>} <= {<s1>..<s8>}
 InitialState (sId:id)          = {<s1>}
-ordering (cur:id,next:id) <= {<s1,s2>,<s2,s3>,<s3,s4>,<s4,s5>,<s5,s6>,<s6,s7>,<s7,s8>}
+ordering (cur:id,next:id)     <= {<s1,s2>,<s2,s3>,<s3,s4>,<s4,s5>,<s5,s6>,<s6,s7>,<s7,s8>}
 
 Passenger (pId:id)             = {<goat>,<wolf>,<cabbage>,<farmer>}
 Farmer (pId:id)                = {<farmer>}

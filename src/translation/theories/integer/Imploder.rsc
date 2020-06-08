@@ -44,8 +44,8 @@ translation::AST::CriteriaExpr implode((CriteriaExpr)`- <CriteriaExpr expr>`)
 translation::AST::CriteriaExpr implode((CriteriaExpr)`|<CriteriaExpr expr>|`)
   = abs(implode(expr));
 
-translation::AST::CriteriaExpr implode((CriteriaExpr)`<CriteriaExpr base>^<CriteriaExpr expo>`)
-  = exp(implode(base),implode(expo));
+//translation::AST::CriteriaExpr implode((CriteriaExpr)`<CriteriaExpr base>^<CriteriaExpr expo>`)
+//  = exp(implode(base),implode(expo));
 
 translation::AST::CriteriaExpr implode((CriteriaExpr)`<CriteriaExpr lhs> * <CriteriaExpr rhs>`)
   = multiplication(implode(lhs),implode(rhs));

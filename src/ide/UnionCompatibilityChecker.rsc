@@ -485,6 +485,7 @@ void check((CriteriaExpr)`length(<CriteriaExpr expr>)`, map[str,str] attributes,
 void check((CriteriaExpr)`toInt(<CriteriaExpr expr>)`, map[str,str] attributes, CheckFunctions cf) { check(expr, attributes, cf); } 
 void check((CriteriaExpr)`toStr(<CriteriaExpr expr>)`, map[str,str] attributes, CheckFunctions cf) { check(expr, attributes, cf); } 
 void check((CriteriaExpr)`<CriteriaExpr lhs> ++ <CriteriaExpr rhs>`, map[str,str] attributes, CheckFunctions cf) { check(lhs, attributes, cf); check(rhs, attributes, cf); } 
+void check((CriteriaExpr)`substr(<CriteriaExpr expr>,<CriteriaExpr offset>,<CriteriaExpr length>)`, map[str,str] attributes, CheckFunctions cf) { check(expr, attributes, cf); check(offset, attributes, cf); ; check(length, attributes, cf);} 
 
 void check((Literal)`<IntLit i>`, map[str,str] attributes, CheckFunctions cf) {}
 void check((Literal)`<StrLit s>`, map[str,str] attributes, CheckFunctions cf) {}

@@ -28,7 +28,6 @@ str compileVariableDeclaration(<str name, Sort::\int()>) = "(declare-const <name
 @memo str compile(multiplication(list[Term] terms))     = "(* <for (t <- terms) {><compile(t)> <}>)";
 @memo str compile(division(Term lhs, Term rhs))         = "(div <compile(lhs)> <compile(rhs)>)"; 
 @memo str compile(modulo(Term lhs, Term rhs))           = "(mod <compile(lhs)> <compile(rhs)>)";
-@memo str compile(min(Term lhs, Term rhs))           = "(mod <compile(lhs)> <compile(rhs)>)";
 
 @memo str compile(lt(Term lhs, Term rhs))               = "(\< <compile(lhs)> <compile(rhs)>)";
 @memo str compile(lte(Term lhs, Term rhs))              = "(\<= <compile(lhs)> <compile(rhs)>)";

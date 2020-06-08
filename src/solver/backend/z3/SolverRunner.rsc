@@ -34,7 +34,7 @@ void setTimeOut(SolverPID pid, int timeOutInMs) {
   runSolver(pid, "(set-option :timeout <timeOutInMs>)");
 }
 
-bool isSatisfiable(SolverPID pid, str smtFormula) { 
+bool isSatisfiable(SolverPID pid, str smtFormula, str checkCommand = "(check-sat)") { 
 	if (smtFormula != "") {
     	list[str] smt = split("\n", smtFormula);
     	for (s <- smt) {
@@ -48,11 +48,11 @@ bool isSatisfiable(SolverPID pid, str smtFormula) {
     	runSolver(pid, "\n");
   }
   
-  return checkSat(pid);
+  return checkSat(pid, checkCommand = checkCommand);
 }
 
-bool checkSat(SolverPID pid) {
-	str result = runSolverAndExpectResult(pid, "(check-sat)");
+bool checkSat(SolverPID pid, str checkCommand = "(check-sat)") {
+	str result = runSolverAndExpectResult(pid, checkCommand);
 		
 	switch(result) {
 		case /unsat.*/: return false;

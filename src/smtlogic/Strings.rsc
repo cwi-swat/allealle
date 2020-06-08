@@ -2,8 +2,6 @@ module smtlogic::Strings
 
 import smtlogic::Core;
 
-import IO;
-
 data Sort
   = \str()
   ;
@@ -13,6 +11,7 @@ data Term
   | strToInt(Term e)
   | intToStr(Term e)
   | strConcat(list[Term] terms)
+  | substr(Term e, Term offset, Term length)
   ;
 
 data Literal

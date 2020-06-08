@@ -10,6 +10,7 @@ syntax CriteriaExpr
   = length:            "length" "(" CriteriaExpr expr ")"
   | toInt:             "toInt" "(" CriteriaExpr expr ")"
   | toStr:             "toStr" "(" CriteriaExpr expr ")"
+  | substr:            "substr" "(" CriteriaExpr expr "," CriteriaExpr offset "," CriteriaExpr length ")"
   > left concat:       CriteriaExpr lhs "++" CriteriaExpr rhs
   ;
 

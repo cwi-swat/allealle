@@ -7,6 +7,7 @@ data CriteriaExpr
   = strLength(CriteriaExpr expr)
   | strToInt(CriteriaExpr expr)
   | intToStr(CriteriaExpr expr)
+  | substr(CriteriaExpr expr, CriteriaExpr offset, CriteriaExpr length)
   | strConcat(list[CriteriaExpr] exprs)
   ;
 
