@@ -15,3 +15,4 @@ translation::AST::CriteriaExpr implode((CriteriaExpr)`toStr(<CriteriaExpr expr>)
 
 translation::AST::CriteriaExpr implode((CriteriaExpr)`<CriteriaExpr lhs> ++ <CriteriaExpr rhs>`) = strConcat(implode(lhs), implode(rhs));
 translation::AST::CriteriaExpr implode((CriteriaExpr)`substr(<CriteriaExpr expr>, <CriteriaExpr offset>, <CriteriaExpr length>)`) = substr(implode(expr), implode(offset), implode(length));
+
