@@ -84,7 +84,8 @@ ModelFinderResult runInSolver(Problem problem, TranslationResult tr, Environment
 	
 	str fullSmtProblem = smtVarDeclResult.smt + "\n" + smtCompileFormResult.smt + "\n" + smtCompileCommands.smt;
 	
-	str checkCommand = usesNonLinearArithmetic(problem) ? "(check-sat-using qfnra-nlsat)" : "(check-sat)";
+	//str checkCommand = usesNonLinearArithmetic(problem) ? "(check-sat-using qfnra-nlsat)" : "(check-sat)";
+	str checkCommand = "(check-sat)";
 	
   if (saveSMTToFile) {
     printIfLog("Writing generated SMT-LIB to disk...", log);
@@ -114,41 +115,56 @@ ModelFinderResult runInSolver(Problem problem, TranslationResult tr, Environment
       return model;
     }
   }  
-	  
-	printIfLog("Solving...", log);
-	try {
-	  int startTime = userTime();
 
-	  bool satisfiable = isSatisfiable(solverPid, fullSmtProblem, checkCommand = checkCommand);
-	  int solvingTime = getSolvingTime(solverPid);
-	  int endTime = (userTime() - startTime) / 1000000;
-	  
-    println("done, took: <solvingTime + endTime> ms in total (<solvingTime> solving time reported by Z3, <endTime> ms spent streaming problem and interpreting result).");
-    println("Outcome is \'<satisfiable>\'");
-
-    if(satisfiable) {
-      smtModel = firstSmtModel(solverPid, smtVarCollectResult.vars);
-      model = constructRelationalModel(smtModel, env);
-      
-      return sat(model, next, stop, translationTime = translationTime, solvingTime = solvingTime);
-    } else { 
-      stopSolver(solverPid);
-      return unsat({}, translationTime = translationTime, solvingTime = solvingTime);
-    }
+  ModelFinderResult findFirstModel(str smtProb = fullSmtProblem) {
+    try {
+      printIfLog("Solving...", log);
     
-	} catch ResultUnkownException ex: {
-    int solvingTime = getSolvingTime(solverPid);
-    stopSolver(solverPid);
-
-
-    if (ex == to()) {
-      printlnIfLog("time out.", log);
-      return timeout(translationTime = translationTime, solvingTime = solvingTime);
-    } else if (uk(str reason) := ex) {
-      printlnIfLog("something unexcepted happend. Solver returned: `<reason>`", log);
-      return unknown(translationTime = translationTime, solvingTime = solvingTime);
-    }
-	}  
+      int startTime = userTime();
+  
+      bool satisfiable = isSatisfiable(solverPid, smtProb, checkCommand = checkCommand);
+      int solvingTime = getSolvingTime(solverPid);
+      int endTime = (userTime() - startTime) / 1000000;
+      
+      println("done, took: <solvingTime + endTime> ms in total (<solvingTime> solving time reported by Z3, <endTime> ms spent streaming problem and interpreting result).");
+      println("Outcome is \'<satisfiable>\'");
+  
+      if(satisfiable) {
+        smtModel = firstSmtModel(solverPid, smtVarCollectResult.vars);
+        model = constructRelationalModel(smtModel, env);
+        
+        return sat(model, next, stop, translationTime = translationTime, solvingTime = solvingTime);
+      } else { 
+        stopSolver(solverPid);
+        return unsat({}, translationTime = translationTime, solvingTime = solvingTime);
+      }
+      
+    } catch ResultUnkownException ex: {
+      int solvingTime = getSolvingTime(solverPid);  
+  
+      if (ex == to()) {
+        printlnIfLog("time out.", log);
+        stopSolver(solverPid);
+        
+        return timeout(translationTime = translationTime, solvingTime = solvingTime);
+      } else if (uk(str reason) := ex) {
+        
+        if (contains(reason, "(incomplete (theory arithmetic))")) {
+          printlnIfLog("incomplete because of arithmetic theory, retrying with different arithmetic solver",log);
+          checkCommand = "(check-sat-using qfnra-nlsat)";
+          return findFirstModel(smtProb = "");
+        } else {
+          stopSolver(solverPid);
+          
+          printlnIfLog("something unexcepted happend. Solver returned: `<reason>`", log);
+          return unknown(translationTime = translationTime, solvingTime = solvingTime);
+        }
+      }
+    }  
+ 
+  }
+	  
+	return findFirstModel();
 }
 
 void countDeepestNesting(Formula f) {
