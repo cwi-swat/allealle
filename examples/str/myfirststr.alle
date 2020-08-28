@@ -1,8 +1,12 @@
 Person (pId:id, name:str, age:int) <= {<p1,?,37>, <p2,?,?>}
 
-∃ p ∈ Person | some p where (name = toStr(34) && age = length("aaaaaaaaaaaa"))
+//∃ p ∈ Person | some p where (name = toStr(34) && age = toInt("B"))
 ∃ p ∈ Person | some p where (name = "Bob" ++ "by" && length(name) = toInt("5"))
-∃ p ∈ Person | some p where (substr(name, 0,2) = "Bo")
+∀ p ∈ Person | some p where (substr(name, 4,1) = "y" && age = name ="Bobby" ? 3 : 5)
+
+//fun conv(c: str): str =  
+
+//some (p where name = "Bobby"
  
 objectives: minimize Person[count()]
 
