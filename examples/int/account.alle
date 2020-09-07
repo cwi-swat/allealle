@@ -15,8 +15,8 @@ triggeredEvent ⊆ State[sId] ⨯ (Withdraw ∪ Deposit)
 // Entity constraints
 ∀ s ∈ State | some s ⨝ accountInState
 
-State[sId] ⊆ (InitialState[sId as from] ⨝ *<from,to>ordering)[to][to as sId]
-Account[aId] ⊆ ((InitialState[sId as from] ⨝ *<from,to>ordering)[to][to as sId] ⨝ accountInState)[aId]
+State[sId] ⊆ (InitialState[sId as from] ⨝ *ordering)[to][to as sId]
+Account[aId] ⊆ ((InitialState[sId as from] ⨝ *ordering)[to][to as sId] ⨝ accountInState)[aId]
 
 ∀ s ∈ State ∖ (InitialState ⨝ State) |  some (s where amount > 0 && amount < 11)
 

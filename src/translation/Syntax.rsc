@@ -94,9 +94,9 @@ syntax AlleExpr
   | select:             AlleExpr r "where" Criteria criteria
   | aggregate:          AlleExpr r "[" {AggregateFunctionDef ","}+ "]"
   | groupedAggregate:   AlleExpr r "[" {AttributeName ","}+ groupBy "," {AggregateFunctionDef ","}+ aggregateFunctions "]"
-  > transpose:          "~" TupleAttributeSelection tas AlleExpr r
-  | closure:            "^" TupleAttributeSelection tas AlleExpr r
-  | reflexClosure:      "*" TupleAttributeSelection tas AlleExpr r
+  > transpose:          "~" AlleExpr r
+  | closure:            "^" AlleExpr r
+  | reflexClosure:      "*" AlleExpr r
   > left naturalJoin:   AlleExpr lhs ("|x|" | "⨝") AlleExpr rhs
   > left (union:        AlleExpr lhs ("+" | "∪")   AlleExpr rhs
          |intersection: AlleExpr lhs ("&" | "∩")  AlleExpr rhs

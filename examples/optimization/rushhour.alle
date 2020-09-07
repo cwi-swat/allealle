@@ -42,7 +42,7 @@ ordering ⊆ State[sId as cur] ⨯ State[sId as next]
 posInState[sId,vId] ⊆ State ⨯ Vehicle[vId]
 
 // all states should be reachable from the initial state
-State ⊆ (InitialState[sId as cur] ⨝ *<cur,next>ordering)[next][next as sId]
+State ⊆ (InitialState[sId as cur] ⨝ *ordering)[next][next as sId]
 
 // All vehicles have a position in every state
 State ⨯ Vehicle[vId] ⊆ posInState[sId,vId]

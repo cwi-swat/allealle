@@ -52,6 +52,8 @@ bool unionCompatible(Relation r1, Relation r2) = r1.heading == r2.heading;
 
 bool isEmpty(Relation r) = r.rows == ();
 
+int arity(Relation r) = size(r.heading);
+
 IndexedRows addRow(IndexedRows current, Row new) {
   if (!isPresent(new.constraints)) {
     return current;
@@ -314,10 +316,15 @@ Relation naturalJoin(Relation lhs, Relation rhs) {
 }
 
 @memo
-Relation transpose(Relation r, str first, str second) {
-  if (size(r.heading) != 2 || r.heading[first] != id() || r.heading[second] != id()) {
+Relation transpose(Relation r) {
+  list[str] atts = toList(domain(r.heading));
+
+  if (size(atts) != 2 || r.heading[atts[0]] != id() || r.heading[atts[1]] != id()) {
     throw "TRANSPOSE only works for a binary relation with two id fields";
   }
+ 
+  str first = atts[0];
+  str second = atts[1];
  
   Rows result = ();
   for (Tuple t <- r.rows) {
@@ -329,11 +336,16 @@ Relation transpose(Relation r, str first, str second) {
 }
 
 @memo
-Relation transitiveClosure(Relation r, str from, str to) {
-  if (size(r.heading) != 2 || r.heading[from] != id() || r.heading[to] != id()) {
+Relation transitiveClosure(Relation r) {
+  list[str] atts = toList(domain(r.heading));
+
+  if (size(atts) != 2 || r.heading[atts[0]] != id() || r.heading[atts[1]] != id()) {
     throw "TRANSITIVE CLOSURE only works for a binary relation with two id fields";
   }
-  
+ 
+  str from = atts[0];
+  str to = atts[1];
+
   int nrOfRows = size({tpl[from] | Tuple tpl <- r.rows}); 
 
   Relation result = r;
@@ -379,12 +391,17 @@ Relation transitiveClosure(Relation r, str from, str to) {
 }
 
 @memo
-Relation reflexiveTransitiveClosure(Relation r, str from, str to, Relation iden) {
-  if (size(r.heading) != 2 || r.heading[from] != id() || r.heading[to] != id()) {
+Relation reflexiveTransitiveClosure(Relation r, Relation iden) {
+  list[str] atts = toList(domain(r.heading));
+
+  if (size(atts) != 2 || r.heading[atts[0]] != id() || r.heading[atts[1]] != id()) {
     throw "REFLEXIVE TRANSITIVE CLOSURE only works for a binary relation with two id fields";
   }
+ 
+  str from = atts[0];
+  str to = atts[1];
   
-  Relation result = union(transitiveClosure(r,from,to), iden);
+  Relation result = union(transitiveClosure(r), rename(iden, ("first":from,"second":to)));
   
   return result; 
 } 

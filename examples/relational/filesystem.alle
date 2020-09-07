@@ -6,10 +6,10 @@ contents (from:id,to:id) >= {<d0,d1>,<d1,f2>} <= {<d0,d0>..<d1,d1>,<d0,f0>..<d1,
 // Only dirs can contain other dirs and files
 contents ⊆ Dir[id as from] ⨯ (Dir ∪ File)[id as to]
 // A dir cannot contain itself
-∀ d ∈ Dir | ¬ (d[id as to] ⊆ (d[id as from] ⨝ ^<from,to>contents)[to])
+∀ d ∈ Dir | ¬ (d[id as to] ⊆ (d[id as from] ⨝ ^contents)[to])
 // Root is a Dir 
 Root ⊆ Dir
 // All files and dirs are (reflexive-transitive) 'content' of the Root dir 
-(File ∪ Dir)[id as to] ⊆ (Root[id as from] ⨝ *<from,to>contents)[to]
+(File ∪ Dir)[id as to] ⊆ (Root[id as from] ⨝ *contents)[to]
 // All files and dirs can only be contained by one dir
-∀ f ∈ (File ∪ Dir) | lone contents ⨝ f[id as to]
+∀ f ∈ (File ∪ Dir) | lone contents ⨝ f[id as to] 

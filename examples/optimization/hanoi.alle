@@ -12,7 +12,7 @@ place (sId:id,rId:id,dId:id)   >= {<s1,r1,d1>,<s1,r1,d2>,<s1,r1,d3>,<s1,r1,d4>,<
 place ⊆ State ⨯ Rod ⨯ Disc[dId]
 ordering ⊆ State[sId as cur] ⨯ State[sId as next]
 // All states should be reachable from the initial state 
-State ⊆ (InitialState[sId as cur] ⨝ *<cur,next>ordering)[next][next as sId]
+State ⊆ (InitialState[sId as cur] ⨝ *ordering)[next][next as sId]
 
 // Every disc can only be on one rod per state
 ∀ s ∈ State, d ∈ Disc | one (s ⨝ place ⨝ d) 

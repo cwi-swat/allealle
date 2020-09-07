@@ -17,13 +17,13 @@ no parent ⨝ Adam[pId as child]
 ∀ p ∈ Person | ¬ (p[pId] = (parent ⨝ p[pId as child])[parent][parent as pId]) 
 
 // Nobody is the parent of an anchestor
-∀ p ∈ Person | ¬ (p[pId as parent][parent] ⊆ (^<parent,child>parent ⨝ p[pId as child])[parent])
+∀ p ∈ Person | ¬ (p[pId as parent][parent] ⊆ (^parent ⨝ p[pId as child])[parent])
 
 // Everybody is a decendant of Adam
-Person[pId as child][child] ⊆ (Adam[pId as parent] ⨝ *<parent,child>parent)[child]
+Person[pId as child][child] ⊆ (Adam[pId as parent] ⨝ *parent)[child]
 
 // Anchestor is the transposed transitive closure of the parent relation (if you are somebodies parent, grandparent, etc you are an anchestor
-anchestor = (^<parent,child>parent)[child as asc, parent as pred]
+anchestor = (^parent)[child as asc, parent as pred]
 
 // Nobody, even Adam, is older then 149
 ∀ p ∈ Person | some (p where age > 0 && age < 150)

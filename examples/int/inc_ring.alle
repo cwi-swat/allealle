@@ -11,7 +11,7 @@ Start ⊆ Elem[eId]
 one Start
 
 // The ring is cyclic, all elements should be reachable from the start element (including itself) 
-Elem[eId] ⊆ (Start[eId as from] ⨝ *<from,to>ring)[to][to as eId]
+Elem[eId] ⊆ (Start[eId as from] ⨝ *ring)[to][to as eId]
 
 // Only one element leads to an other element
 ∀ e ∈ Elem | one e[eId as from] ⨝ ring ∧ one e[eId as to] ⨝ ring

@@ -18,7 +18,7 @@ one tfirst
 one tlast
 tlast ⊆ Time
 tfirst ⊆ Time
-Time = (tfirst[tId as cur] ⨝ *<cur,next>tord)[next][next as tId]
+Time = (tfirst[tId as cur] ⨝ *tord)[next][next as tId]
 no tfirst[tId as next] ⨝ tord
 no tlast[tId as cur] ⨝ tord
 ∀ t ∈ Time ∖ tlast | one t ⨝ tord[cur as tId]

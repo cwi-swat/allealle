@@ -5,7 +5,7 @@ edge (nId:id,to:id) <= {<n1,n1>..<n4,n4>}
 edge ⊆ Node ⨯ Node[nId as to]
 
 // All nodes are transitive connected to the Root node
-Node ⊆ (Root ⨝ *<nId,to>edge)[to][to as nId] 
+Node ⊆ (Root ⨝ *edge)[to][to as nId] 
 
 // The graph is acyclic
-∀ n ∈ Node | ¬ (n ⊆ (n ⨝ ^<nId,to>edge)[to][to as nId])
+∀ n ∈ Node | ¬ (n ⊆ (n ⨝ ^edge)[to][to as nId])

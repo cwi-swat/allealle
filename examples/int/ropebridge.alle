@@ -38,7 +38,7 @@ posOfTrav ⊆ world ⨯ Traveller[tId] ⨯ pos
 flashlight ⊆ world ⨯ pos
 
 // reachability; all worlds that are declared must be reachable from the first world following the ordering relation 
-∀ w ∈ world | w ⊆ (first ⨝ (*<cur,next>order[cur,next])[cur as wId])[next][next as wId] 
+∀ w ∈ world | w ⊆ (first ⨝ (*order[cur,next])[cur as wId])[next][next as wId] 
 // there can be no world after the last world
 no (last[wId as cur] ⨝ order)
  

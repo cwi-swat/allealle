@@ -6,4 +6,4 @@ Queen (qId:id, x:int, y:int) = {<q1,1,?>,<q2,2,?>,<q3,3,?>,<q4,4,?>,<q5,5,?>,<q6
 ∀q ∈ Queen, q' ∈ (Queen ∖ q)[qId as qId', x as x', y as y'] | 
   some ((q ⨯ q') where x != x' && y != y' && |x - x'| != |y - y'|)
 
-expect: sat, #models (int) = 92
+expect: sat, #models (int) = 92 // 12 non-symmetrical solutions

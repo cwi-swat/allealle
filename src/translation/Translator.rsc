@@ -399,11 +399,11 @@ Relation translateExpression(product(AlleExpr lhs, AlleExpr rhs), Environment en
 
 Relation translateExpression(naturalJoin(AlleExpr lhs, AlleExpr rhs), Environment env) = naturalJoin(translateExpression(lhs,env),translateExpression(rhs,env));
 
-Relation translateExpression(transpose(TupleAttributeSelection tas, AlleExpr expr), Environment env) = transpose(translateExpression(expr,env),tas.first, tas.second);
+Relation translateExpression(transpose(AlleExpr expr), Environment env) = transpose(translateExpression(expr,env));
 
-Relation translateExpression(closure(TupleAttributeSelection tas, AlleExpr expr), Environment env) = transitiveClosure(translateExpression(expr,env),tas.first, tas.second);
+Relation translateExpression(closure(AlleExpr expr), Environment env) = transitiveClosure(translateExpression(expr,env));
 
-Relation translateExpression(reflexClosure(TupleAttributeSelection tas, AlleExpr expr), Environment env) = reflexiveTransitiveClosure(translateExpression(expr,env), tas.first, tas.second, identity(env, tas.first, tas.second));
+Relation translateExpression(reflexClosure(AlleExpr expr), Environment env) = reflexiveTransitiveClosure(translateExpression(expr,env), identity(env));
 
 @memo
 Relation translateExpression(comprehension(list[VarDeclaration] decls, AlleFormula form), Environment env) { 
@@ -457,7 +457,9 @@ Relation translateAggregateFunctionDef(AggregateFunctionDef def, Relation r, Env
 default Relation translateAggregateFunction(AggregateFunction f, str _, Relation _, Environment _) { throw "Translation of aggregate function \'<f>\' not supported"; }
 
 @memo
-Relation identity(Environment env, str first, str second) {
+Relation identity(Environment env) {
+  str first = "first";
+  str second = "second";
   Heading h = (first:id(),second:id());
   Rows r = ((first:lit(id(k)),second:lit(id(k))):<\true(),\true()> | str k <- env.idDomain);
   return <h,r,{first,second}>;

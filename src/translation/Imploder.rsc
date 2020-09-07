@@ -158,14 +158,14 @@ translation::AST::AlleExpr implode((AlleExpr)`<AlleExpr expr>[<{AttributeName ",
 translation::AST::AlleExpr implode((AlleExpr)`<AlleExpr expr> where <Criteria criteria>`)
   = select(implode(expr), implode(criteria));
   
-translation::AST::AlleExpr implode((AlleExpr)`~<TupleAttributeSelection tas> <AlleExpr expr>`)
-  = transpose(implode(tas), implode(expr));
+translation::AST::AlleExpr implode((AlleExpr)`~<AlleExpr expr>`)
+  = transpose(implode(expr));
     
-translation::AST::AlleExpr implode((AlleExpr)`^<TupleAttributeSelection tas> <AlleExpr expr>`)
-  = closure(implode(tas), implode(expr));
+translation::AST::AlleExpr implode((AlleExpr)`^<AlleExpr expr>`)
+  = closure(implode(expr));
 
-translation::AST::AlleExpr implode((AlleExpr)`*<TupleAttributeSelection tas> <AlleExpr expr>`)
-  = reflexClosure(implode(tas), implode(expr));
+translation::AST::AlleExpr implode((AlleExpr)`*<AlleExpr expr>`)
+  = reflexClosure(implode(expr));
   
 translation::AST::AlleExpr implode((AlleExpr)`<AlleExpr lhs> ⨝ <AlleExpr rhs>`)
   = naturalJoin(implode(lhs), implode(rhs)); 

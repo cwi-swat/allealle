@@ -14,12 +14,12 @@ pred nobodyIsItsOwnParent[p: (pId:id)] =
   ¬ (p = (parent ⨝ p[pId as child])[parent->pId]) 
   
 pred nobodyIsItsAnchestorsParent[p: (pId:id)] =
-  ¬(p[pId as parent] ⊆ (^<parent,child>parent ⨝ p[pId as child])[parent])
+  ¬(p[pId as parent] ⊆ (^parent ⨝ p[pId as child])[parent])
 
 pred everybodyIsADecendantOfAdam[] =
-  Person[pId as child] ⊆ (Adam[pId as parent] ⨝ *<parent,child>parent)[child]
+  Person[pId as child] ⊆ (Adam[pId as parent] ⨝ *parent)[child]
 
-anchestor = (^<parent,child>parent)[child as asc, parent as pred]  
+anchestor = (^parent)[child as asc, parent as pred]  
 
 pred adamHasNoParent[] = 
   no parent[child] ∩ Adam[pId as child]

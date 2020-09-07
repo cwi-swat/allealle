@@ -7,11 +7,11 @@ contents (from:id, to:id)          >= {<d0,d1>} <= {<d0,d0>..<d2,d2>,<d0,f0>..<d
 // Only dirs can contain other dirs and files
 contents ⊆ (Dir[oid->from] ⨯ (Dir ∪ File)[oid->to])
 // A dir cannot contain itself
-∀ d ∈ Dir[oid] | no d[oid as to] ∩ (d[oid as from] ⨝ ^<from,to>contents)[to]
+∀ d ∈ Dir[oid] | no d[oid as to] ∩ (d[oid as from] ⨝ ^contents)[to]
 // Root is a Dir 
 Root ⊆ Dir[oid]
 // All files and dirs are (reflexive-transitive) 'content' of the Root dir 
-(File[oid] ∪ Dir[oid])[oid as to] ⊆ (Root[oid as from] ⨝ *<from,to>contents)[to]
+(File[oid] ∪ Dir[oid])[oid as to] ⊆ (Root[oid as from] ⨝ *contents)[to]
 // All files and dirs can only be contained by one dir
 ∀ f ∈ (File ∪ Dir)[oid] | lone contents ⨝ f[oid as to]
 
@@ -19,7 +19,7 @@ Root ⊆ Dir[oid]
 // All files have a positive size
 ∀ f ∈ File | some f where size > 0
 
-∀ d ∈ Dir | let containedFiles = (d[oid][oid as from] ⨝ ^<from,to>contents)[to->oid] ⨝ File | 
+∀ d ∈ Dir | let containedFiles = (d[oid][oid as from] ⨝ ^contents)[to->oid] ⨝ File | 
   some (d ⨯ containedFiles[sum(size) as totalSize]) where size = totalSize   
 
 ∀ d ∈ Dir[oid,depth], o ∈ (Dir ∪ File)[oid,depth] | o[oid->to] ⊆ (d[oid->from] ⨝ contents)[to] ⇒ 

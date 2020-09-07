@@ -87,9 +87,9 @@ data AlleExpr
   | difference(AlleExpr lhs, AlleExpr rhs)
   | product(AlleExpr lhs, AlleExpr rhs)
   | naturalJoin(AlleExpr lhs, AlleExpr rhs)
-  | transpose(TupleAttributeSelection tas, AlleExpr expr)
-  | closure(TupleAttributeSelection tas, AlleExpr r)
-  | reflexClosure(TupleAttributeSelection tas, AlleExpr r)
+  | transpose(AlleExpr expr)
+  | closure(AlleExpr r)
+  | reflexClosure(AlleExpr r)
   | comprehension(list[VarDeclaration] decls, AlleFormula form)
   ;
 

@@ -18,7 +18,7 @@ chosen ⊆ Node[nId as from] ⨯ Node[nId as to] ⨯ Time
 
 last ⊆ Time
 order ⊆ Time ⨯ Time[tId as next]
-∀ t ∈ Time | t ⊆ (first ⨝ *<tId,next>order)[next][next as tId]
+∀ t ∈ Time | t ⊆ (first ⨝ *order)[next][next as tId]
 
 one last
 
@@ -54,7 +54,7 @@ some ((chosen ⨝ last ⨝ edge)[sum(weight) as total] ⨯ nrs) where totalWeigh
 some nrs where (edges = nodes - 1)
 
 MST ⊆ edge
-∀ n ∈ Node, n' ∈ Node ∖ n | (n[nId as from] ⨯ n'[nId as to]) ⊆ *<from,to>(MST[from,to]) ∨ (n'[nId as from] ⨯ n[nId as to]) ⊆ *<from,to>(MST[from,to])
+∀ n ∈ Node, n' ∈ Node ∖ n | (n[nId as from] ⨯ n'[nId as to]) ⊆ *(MST[from,to]) ∨ (n'[nId as from] ⨯ n[nId as to]) ⊆ *(MST[from,to])
 some (MST[count() as nrOfEdges] ⨯ Node[count() as nrOfNodes]) where (nrOfEdges = nrOfNodes - 1)
 some ((MST ⨝ edge)[sum(weight) as totalMSTWeight] ⨯ nrs) where totalMSTWeight < totalWeight 
 

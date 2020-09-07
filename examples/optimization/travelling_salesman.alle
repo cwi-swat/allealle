@@ -8,7 +8,7 @@ TotalLength (tId:id, length:int)    = {<total,?>}
 ∀ c ∈ City | one (c[cId as from] ⨝ route) ∧ one (c[cId as to] ⨝ route)
 
 // The salesman must visit each city
-City ⊆ (StartingPoint[cId as from] ⨝ *<from,to>(route[from,to]))[to -> cId]
+City ⊆ (StartingPoint[cId as from] ⨝ *(route[from,to]))[to -> cId]
 
 // Convenient condition to capture the shorted route length
 some (TotalLength ⨯ route[sum(length) as totalLength]) where length = totalLength
