@@ -11,11 +11,11 @@ near (sId:id,pId:id)          >= {<s1,goat>,<s1,cabbage>,<s1,farmer>,<s1,wolf>}
                               <= {<s1,goat>..<s8,goat>,<s1,cabbage>..<s8,cabbage>,<s1,farmer>..<s8,farmer>,<s1,wolf>..<s8,wolf>} 
 
 far (sId:id,pId:id)           <= {<s1,goat>..<s8,goat>,<s1,cabbage>..<s8,cabbage>,<s1,farmer>..<s8,farmer>,<s1,wolf>..<s8,wolf>}
-             
-ordering ⊆ State[sId as cur] ⨯ State[sId as next]
+              
+ordering[cur,next] ⊆ State[sId as cur] ⨯ State[sId as next]
 near ⊆ State ⨯ Passenger
-far ⊆ State ⨯ Passenger
-
+far ⊆ State ⨯ Passenger  
+ 
 State ⊆ (InitialState[sId as cur] ⨝ *ordering)[next -> sId]
 
 // a Passenger can only be on one shore in each state

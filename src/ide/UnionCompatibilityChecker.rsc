@@ -338,21 +338,19 @@ void check(e:(AlleExpr)`^<AlleExpr expr>`, Environment env, CheckFunctions cf) {
 
 void check(e:(AlleExpr)`*<AlleExpr expr>`, Environment env, CheckFunctions cf) { 
   check(expr,env,cf);
-  checkBinaryIdRel(e@\loc, cf);
+  checkBinaryIdRel(e@\loc, expr@\loc, cf);
 }
 
-void checkBinaryIdRel(loc expr, CheckFunctions cf) {
+void checkBinaryIdRel(loc base, loc expr, CheckFunctions cf) {
   if (heading(map[str,str] attributes) := cf.lookup(expr)) {
-    list[str] atts = toList(domain(attributes));
-    
-    if (size(atts) != 2 || attributes[atts[0]] != id() || attributes[atts[1]] != id()) {
-      cf.add(expr,incompatible());
+    if (size(attributes) != 2 || attributes<1> != {"id()"}) {
+      cf.add(base,incompatible());
       cf.addMessage(error("Can only operate on a binary relation with two id attributes", expr));      
     } else {
-      cf.add(expr,heading(attributes));
+      cf.add(base,heading(attributes));
     } 
   } else {
-    cf.add(expr, incompatible());
+    cf.add(base, incompatible());
   }
 }
 
