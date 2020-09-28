@@ -16,7 +16,7 @@ syntax SmtValue
   
 lexical VarName = [A-Za-z_.0-9!+\-] !<< [A-Za-z_.0-9!+\-]+ !>> [A-Za-z_.0-9!+\-];
 
-lexical Val = [\-a-z A-Z_.0-9!#\\] !<< [\-a-z A-Z_.0-9!#\\]+ !>> [\-a-z A-Z_.0-9!#\\];
+lexical Val = [\-a-z A-Z_.0-9!#\\@] !<< [\-a-z A-Z_.0-9!#\\@]+ !>> [\-a-z A-Z_.0-9!#\\@];
 
 //lexical StringCharacter
 //  = "\\" [\" \' \< \> \\ b f n r t] 

@@ -87,13 +87,14 @@ int getSolvingTime(SolverPID pid) {
   return time;
 }
 
-str runSolverAndExpectResult(SolverPID pid, str commands) { 
+str runSolverAndExpectResult(SolverPID pid, str commands, int waitTime = 5) { 
+
   str result = run(pid,commands, debug=false);
   
   while (true) {
     try {
       str oldResult = result;
-      sleep(5); 
+      sleep(waitTime); 
       result += read(pid);
       
       if(trim(result) != "" && result == oldResult) {
@@ -104,6 +105,47 @@ str runSolverAndExpectResult(SolverPID pid, str commands) {
       println("Retrying...");
     }
   }
+}
+
+str getValues(SolverPID pid, set[str] vars, int waitTime = 1) {
+  int openBrackets = 0;
+  bool inStringLit = false;
+  
+  void scan(str input) {
+    int lastChar = -1;
+    for (int c <- chars(input)) {
+      switch (<c,inStringLit,lastChar>) {
+        case <40,false,_>: openBrackets += 1; // open bracket
+        case <41,false,_>: openBrackets -= 1; // close bracket
+        case <34,false,_>: inStringLit = true;
+        case <34,true,92>: ; // escaped quote
+        case <34,true,_>: inStringLit = false; 
+      }
+
+      lastChar = c;
+    }
+    
+  }
+  
+  str command = "(get-value (<intercalate(" ", [var | var <- vars])>))";
+  str result = runSolverAndExpectResult(pid, command, waitTime = waitTime);
+  scan(result);
+
+  while (openBrackets != 0) {
+    try {      
+      sleep(waitTime); 
+      
+      str newResult = read(pid);
+      scan(newResult);
+      result += newResult;
+      
+    } catch ex: {
+      println("Exception while SMT solver, reason: <ex>");
+      println("Retrying...");
+    }    
+  }  
+  
+  return result;
 }
 
 str runSolver(SolverPID pid, str commands) {

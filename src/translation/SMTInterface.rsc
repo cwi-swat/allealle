@@ -198,7 +198,14 @@ str compile(independent()) = "box";
 default str compileCommand(Command c) { throw "Unable to compile command \'<c>\'. No compile function defined.";}
 
 SMTModel getValues(str smtResult, set[SMTVar] vars) {
-  SmtValues foundValues = parse(#start[SmtValues], trim(smtResult)).top; 
+  SmtValues foundValues;
+  try {
+    foundValues = parse(#start[SmtValues], trim(smtResult)).top;
+  } catch: {
+    writeFile(|project://allealle/bin/errorResponse.resp|, smtResult);
+    throw "Unable to parse found result by SMT solver. Saved found result to file";
+  }
+   
   map[str,SmtValue] rawSmtVals = (() | it + ("<varAndVal.name>":varAndVal.val) | VarAndValue varAndVal <- foundValues.values);
 
   SMTModel m = (var : val | str varName <- rawSmtVals, SMTVar var:<varName, Sort _> <- vars, Term val := getValue(rawSmtVals[varName], var));

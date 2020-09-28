@@ -31,7 +31,7 @@ data ModelFinderResult(int translationTime = -1, int solvingTime = -1)
 	| unknown()
 	;
 
-ModelFinderResult checkInitialSolution(Problem problem, int timeOutInMs = 0, bool log = true) {	
+ModelFinderResult checkInitialSolution(Problem problem, int timeOutInMs = 0, bool log = true, bool saveSMTToFile = false) {	
 	printIfLog("Building initial environment...", log);
 	tuple[Environment env, int time] ie = bm(createInitialEnvironment, problem); 
 	printlnIfLog("done, took: <(ie.time/1000000)> ms.", log);
@@ -50,7 +50,7 @@ ModelFinderResult checkInitialSolution(Problem problem, int timeOutInMs = 0, boo
 		return trivialSat(empty(),translationTime=totalTime);
 	} 
  
-	return runInSolver(problem, t.tr, ie.env, totalTime, timeOutInMs, log = log); 
+	return runInSolver(problem, t.tr, ie.env, totalTime, timeOutInMs, log = log, saveSMTToFile = saveSMTToFile); 
 }
 
 private void printIfLog(str text, bool log) {
@@ -61,7 +61,7 @@ private void printIfLog(str text, bool log) {
 
 private void printlnIfLog(str print, bool log) = printIfLog("<print>\n", log);
 
-ModelFinderResult runInSolver(Problem problem, TranslationResult tr, Environment env, int translationTime, int timeOutInMs, bool log = false, bool saveSMTToFile = true) {
+ModelFinderResult runInSolver(Problem problem, TranslationResult tr, Environment env, int translationTime, int timeOutInMs, bool log = false, bool saveSMTToFile = false) {
 	PID solverPid = startSolver();
 	if (timeOutInMs != 0) {
 	   setTimeOut(solverPid, timeOutInMs);
@@ -177,8 +177,8 @@ void countDeepestNesting(Formula f) {
 }
 
 SMTModel getValues(SolverPID pid, set[SMTVar] vars) {
-  resp = runSolverAndExpectResult(pid, "(get-value (<intercalate(" ", [v.name | v <- vars])>))");
-  return getValues(resp, vars);
+  resp = getValues(pid, {v.name | v <- vars}); //runSolverAndExpectResult(pid, "(get-value (<intercalate(" ", [v.name | v <- vars])>))", waitTime = 10);
+  return getValues(resp, vars); 
 }
  
 SMTModel firstSmtModel(SolverPID pid, set[SMTVar] vars) = getValues(pid, vars);
