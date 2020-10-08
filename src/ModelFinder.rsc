@@ -22,7 +22,7 @@ import Set;
  
 alias PID = int; 
 
-data ModelFinderResult(int translationTime = -1, int solvingTime = -1) 
+data ModelFinderResult(int translationTime = -1, int solvingTimeSolver = -1, int solvingTimeTotal = -1, int constructModelTime = -1) 
 	= sat(Model currentModel, Model (Domain) nextModel, void () stop)
 	| unsat(set[Formula] unsatCore)
 	| trivialSat(Model model)
@@ -130,13 +130,15 @@ ModelFinderResult runInSolver(Problem problem, TranslationResult tr, Environment
       println("Outcome is \'<satisfiable>\'");
   
       if(satisfiable) {
+        startTime = userTime();
         smtModel = firstSmtModel(solverPid, smtVarCollectResult.vars);
         model = constructRelationalModel(smtModel, env);
+        int durationModelConstruction = (userTime() - startTime) / 1000000;
         
-        return sat(model, next, stop, translationTime = translationTime, solvingTime = solvingTime);
+        return sat(model, next, stop, translationTime = translationTime, solvingTimeSolver = solvingTime, solvingTimeTotal = endTime, constructModelTime = durationModelConstruction);
       } else { 
         stopSolver(solverPid);
-        return unsat({}, translationTime = translationTime, solvingTime = solvingTime);
+        return unsat({}, translationTime = translationTime, solvingTimeSolver = solvingTime);
       }
       
     } catch ResultUnkownException ex: {
@@ -146,7 +148,7 @@ ModelFinderResult runInSolver(Problem problem, TranslationResult tr, Environment
         printlnIfLog("time out.", log);
         stopSolver(solverPid);
         
-        return timeout(translationTime = translationTime, solvingTime = solvingTime);
+        return timeout(translationTime = translationTime, solvingTimeSolver = solvingTime);
       } else if (uk(str reason) := ex) {
         
         if (contains(reason, "(incomplete (theory arithmetic))")) {
@@ -157,7 +159,7 @@ ModelFinderResult runInSolver(Problem problem, TranslationResult tr, Environment
           stopSolver(solverPid);
           
           printlnIfLog("something unexcepted happend. Solver returned: `<reason>`", log);
-          return unknown(translationTime = translationTime, solvingTime = solvingTime);
+          return unknown(translationTime = translationTime, solvingTimeSolver = solvingTime);
         }
       }
     }  

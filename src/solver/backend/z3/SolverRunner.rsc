@@ -60,7 +60,7 @@ bool checkSat(SolverPID pid, str checkCommand = "(check-sat)") {
 		case /unknown.*/: {
 		  throw getReason(pid);
 		}		
-		default: throw "unable to get result from smt solver"; 
+		default: throw "unable to get result from smt solver. Result was: <result>"; 
 	}
 }
 

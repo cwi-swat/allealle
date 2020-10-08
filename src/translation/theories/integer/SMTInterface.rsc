@@ -1,5 +1,6 @@
 module translation::theories::integer::SMTInterface
 
+import smtlogic::Core;
 import smtlogic::Ints;
 
 import translation::SMTValueSyntax;
