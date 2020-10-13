@@ -35,17 +35,24 @@ void setTimeOut(SolverPID pid, int timeOutInMs) {
 }
 
 bool isSatisfiable(SolverPID pid, str smtFormula, str checkCommand = "(check-sat)") { 
-	if (smtFormula != "") {
-    	list[str] smt = split("\n", smtFormula);
-    	for (s <- smt) {
-        str solverResult = trim(runSolver(pid, s)); 
-    	  if (solverResult != "") {
-    		  throw "Unable to assert clauses: <solverResult>"; 
-    	  } 	
-    	}
-    	
-    	// do a 'flush'
-    	runSolver(pid, "\n");
+	//if (smtFormula != "") {
+ //   	list[str] smt = split("\n", smtFormula);
+ //   	for (s <- smt) {
+ //       str solverResult = trim(runSolver(pid, s)); 
+ //   	  if (solverResult != "") {
+ //   		  throw "Unable to assert clauses: <solverResult>"; 
+ //   	  } 	
+ //   	}
+ //   	
+ //   	// do a 'flush'
+ //   	runSolver(pid, "\n");
+ // }
+  str result = runSolver(pid, smtFormula);
+  // do a 'flush'
+  result += runSolver(pid, "\n");
+  if (result != "") {
+    // somethings wrong
+    throw getReason(pid);
   }
   
   return checkSat(pid, checkCommand = checkCommand);
@@ -57,9 +64,8 @@ bool checkSat(SolverPID pid, str checkCommand = "(check-sat)") {
 	switch(result) {
 		case /unsat.*/: return false;
     case /sat.*/ : return true;
-		case /unknown.*/: {
-		  throw getReason(pid);
-		}		
+		case /unknown.*/: { throw getReason(pid);}		
+		case /.*canceled.*/: { throw to(); }
 		default: throw "unable to get result from smt solver. Result was: <result>"; 
 	}
 }

@@ -14,6 +14,7 @@ data ExpectationResult
 
 ExpectationResult checkExpectation(Problem p) {
   if (just(Expect e) := p.expect) {
+  
     ModelFinderResult mfr = checkInitialSolution(p);
     return interpret(mfr,e);    
   } else {

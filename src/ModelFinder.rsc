@@ -117,11 +117,11 @@ ModelFinderResult runInSolver(Problem problem, TranslationResult tr, Environment
   }  
 
   ModelFinderResult findFirstModel(str smtProb = fullSmtProblem) {
+    int startTime = userTime();
+    
     try {
       printIfLog("Solving...", log);
     
-      int startTime = userTime();
-  
       bool satisfiable = isSatisfiable(solverPid, smtProb, checkCommand = checkCommand);
       int solvingTime = getSolvingTime(solverPid);
       int endTime = (userTime() - startTime) / 1000000;
@@ -138,17 +138,20 @@ ModelFinderResult runInSolver(Problem problem, TranslationResult tr, Environment
         return sat(model, next, stop, translationTime = translationTime, solvingTimeSolver = solvingTime, solvingTimeTotal = endTime, constructModelTime = durationModelConstruction);
       } else { 
         stopSolver(solverPid);
-        return unsat({}, translationTime = translationTime, solvingTimeSolver = solvingTime);
+        int endTime = (userTime() - startTime) / 1000000;
+        
+        return unsat({}, translationTime = translationTime, solvingTimeSolver = solvingTime, solvingTimeTotal = endTime);
       }
       
     } catch ResultUnkownException ex: {
       int solvingTime = getSolvingTime(solverPid);  
+      int endTime = (userTime() - startTime) / 1000000;
   
       if (ex == to()) {
         printlnIfLog("time out.", log);
         stopSolver(solverPid);
         
-        return timeout(translationTime = translationTime, solvingTimeSolver = solvingTime);
+        return timeout(translationTime = translationTime, solvingTimeSolver = solvingTime, solvingTimeTotal = endTime);
       } else if (uk(str reason) := ex) {
         
         if (contains(reason, "(incomplete (theory arithmetic))")) {
@@ -159,7 +162,7 @@ ModelFinderResult runInSolver(Problem problem, TranslationResult tr, Environment
           stopSolver(solverPid);
           
           printlnIfLog("something unexcepted happend. Solver returned: `<reason>`", log);
-          return unknown(translationTime = translationTime, solvingTimeSolver = solvingTime);
+          return unknown(translationTime = translationTime, solvingTimeSolver = solvingTime, solvingTimeTotal = endTime);
         }
       }
     }  
