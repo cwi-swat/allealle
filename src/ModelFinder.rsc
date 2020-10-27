@@ -22,7 +22,7 @@ import Set;
  
 alias PID = int; 
 
-data ModelFinderResult(int translationTime = -1, int solvingTimeSolver = -1, int solvingTimeTotal = -1, int constructModelTime = -1) 
+data ModelFinderResult(int translationTime = -1, int solvingTimeSolver = -1, int solvingTimeTotal = -1, int constructModelTime = -1, int nrOfVars = -1, int nrOfClauses = -1) 
 	= sat(Model currentModel, Model (Domain) nextModel, void () stop)
 	| unsat(set[Formula] unsatCore)
 	| trivialSat(Model model)
@@ -31,7 +31,7 @@ data ModelFinderResult(int translationTime = -1, int solvingTimeSolver = -1, int
 	| unknown()
 	;
 
-ModelFinderResult checkInitialSolution(Problem problem, int timeOutInMs = 0, bool log = true, bool saveSMTToFile = false) {	
+ModelFinderResult checkInitialSolution(Problem problem, int timeOutInMs = 0, bool log = true, bool saveSMTToFile = false, bool countNrOfVars = false, bool countNrOfClauses = false) {	
 	printIfLog("Building initial environment...", log);
 	tuple[Environment env, int time] ie = bm(createInitialEnvironment, problem); 
 	printlnIfLog("done, took: <(ie.time/1000000)> ms.", log);
@@ -50,7 +50,7 @@ ModelFinderResult checkInitialSolution(Problem problem, int timeOutInMs = 0, boo
 		return trivialSat(empty(),translationTime=totalTime);
 	} 
  
-	return runInSolver(problem, t.tr, ie.env, totalTime, timeOutInMs, log = log, saveSMTToFile = saveSMTToFile); 
+	return runInSolver(problem, t.tr, ie.env, totalTime, timeOutInMs, log = log, saveSMTToFile = saveSMTToFile, countNrOfVars = countNrOfVars, countNrOfClauses = countNrOfClauses); 
 }
 
 private void printIfLog(str text, bool log) {
@@ -61,7 +61,7 @@ private void printIfLog(str text, bool log) {
 
 private void printlnIfLog(str print, bool log) = printIfLog("<print>\n", log);
 
-ModelFinderResult runInSolver(Problem problem, TranslationResult tr, Environment env, int translationTime, int timeOutInMs, bool log = false, bool saveSMTToFile = false) {
+ModelFinderResult runInSolver(Problem problem, TranslationResult tr, Environment env, int translationTime, int timeOutInMs, bool log = false, bool saveSMTToFile = false, bool countNrOfVars = false, bool countNrOfClauses = false) {
 	PID solverPid = startSolver();
 	if (timeOutInMs != 0) {
 	   setTimeOut(solverPid, timeOutInMs);
@@ -70,7 +70,7 @@ ModelFinderResult runInSolver(Problem problem, TranslationResult tr, Environment
   void stop() {
 		stopSolver(solverPid);
 	} 
-	
+		
 	printIfLog("Translating to SMT-LIB...", log);
   tuple[set[SMTVar] vars, int time] smtVarCollectResult = bm(collectSMTVars, env);
 	tuple[str smt, int time] smtVarDeclResult = bm(compileSMTVariableDeclarations, smtVarCollectResult.vars);
@@ -78,10 +78,10 @@ ModelFinderResult runInSolver(Problem problem, TranslationResult tr, Environment
 	tuple[str smt, int time] smtCompileCommands = bm(compileCommands, tr.cmds);
 	
 	printlnIfLog("done, took: <(smtVarCollectResult.time + smtVarDeclResult.time + smtCompileFormResult.time + smtCompileCommands.time) /1000000> ms in total.", log);
-  //println("Total nr of clauses in formula: <countClauses(\and(tr.relationalFormula, tr.attributeFormula))>, total nr of variables in formula: <countVars(smtVarCollectResult.vars)>"); 
-	
-	//str preambl = intercalate("\n", [pa | Sort s <- collectSorts(smtVarCollectResult.vars), str pa := preamble(s), pa != ""]);
-	
+  
+  int nrOfVars = countNrOfVars ? countVars(smtVarCollectResult.vars) : -1;
+  int nrOfClauses = countNrOfClauses ? countClauses(tr.form) : -1;
+  
 	str fullSmtProblem = smtVarDeclResult.smt + "\n" + smtCompileFormResult.smt + "\n" + smtCompileCommands.smt;
 	
 	//str checkCommand = usesNonLinearArithmetic(problem) ? "(check-sat-using qfnra-nlsat)" : "(check-sat)";
@@ -135,12 +135,12 @@ ModelFinderResult runInSolver(Problem problem, TranslationResult tr, Environment
         model = constructRelationalModel(smtModel, env);
         int durationModelConstruction = (userTime() - startTime) / 1000000;
         
-        return sat(model, next, stop, translationTime = translationTime, solvingTimeSolver = solvingTime, solvingTimeTotal = endTime, constructModelTime = durationModelConstruction);
+        return sat(model, next, stop, translationTime = translationTime, solvingTimeSolver = solvingTime, solvingTimeTotal = endTime, constructModelTime = durationModelConstruction, nrOfVars = nrOfVars, nrOfClauses = nrOfClauses);
       } else { 
         stopSolver(solverPid);
         int endTime = (userTime() - startTime) / 1000000;
         
-        return unsat({}, translationTime = translationTime, solvingTimeSolver = solvingTime, solvingTimeTotal = endTime);
+        return unsat({}, translationTime = translationTime, solvingTimeSolver = solvingTime, solvingTimeTotal = endTime, nrOfVars = nrOfVars, nrOfClauses = nrOfClauses);
       }
       
     } catch ResultUnkownException ex: {
@@ -151,7 +151,7 @@ ModelFinderResult runInSolver(Problem problem, TranslationResult tr, Environment
         printlnIfLog("time out.", log);
         stopSolver(solverPid);
         
-        return timeout(translationTime = translationTime, solvingTimeSolver = solvingTime, solvingTimeTotal = endTime);
+        return timeout(translationTime = translationTime, solvingTimeSolver = solvingTime, solvingTimeTotal = endTime, nrOfVars = nrOfVars, nrOfClauses = nrOfClauses);
       } else if (uk(str reason) := ex) {
         
         if (contains(reason, "(incomplete (theory arithmetic))")) {
@@ -162,7 +162,7 @@ ModelFinderResult runInSolver(Problem problem, TranslationResult tr, Environment
           stopSolver(solverPid);
           
           printlnIfLog("something unexcepted happend. Solver returned: `<reason>`", log);
-          return unknown(translationTime = translationTime, solvingTimeSolver = solvingTime, solvingTimeTotal = endTime);
+          return unknown(translationTime = translationTime, solvingTimeSolver = solvingTime, solvingTimeTotal = endTime, nrOfVars = nrOfVars, nrOfClauses = nrOfClauses);
         }
       }
     }  
