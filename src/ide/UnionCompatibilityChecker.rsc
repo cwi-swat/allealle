@@ -328,12 +328,12 @@ void check(e:(AlleExpr)`<AlleExpr expr> where <Criteria crit>`, Environment env,
   
 void check(e:(AlleExpr)`~<AlleExpr expr>`, Environment env, CheckFunctions cf) { 
   check(expr,env,cf);
-  checkBinaryIdRel(e@\loc, cf);
+  checkBinaryIdRel(e@\loc, expr@\loc, cf);
 }
     
 void check(e:(AlleExpr)`^<AlleExpr expr>`, Environment env, CheckFunctions cf) { 
   check(expr,env,cf);
-  checkBinaryIdRel(e@\loc, cf);
+  checkBinaryIdRel(e@\loc, expr@\loc, cf);
 }
 
 void check(e:(AlleExpr)`*<AlleExpr expr>`, Environment env, CheckFunctions cf) { 

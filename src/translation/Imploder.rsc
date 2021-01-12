@@ -14,7 +14,7 @@ translation::AST::Problem implodeProblem(translation::Syntax::Problem p) {
   Maybe[translation::AST::ObjectiveSection] s = (/translation::Syntax::ObjectiveSection objSec := p.objSection) ? just(implode(objSec)) : nothing();
   Maybe[translation::AST::Expect] e = (/translation::Syntax::Expect exp := p.expect) ? just(implode(exp)) : nothing();
 
-  map[str, translation::AST::AllePredicate] predicates = ("<p.name>" : implode(p) | (AlleConstraint)`<AllePredicate p>` <- p.constraints);
+  map[str, translation::AST::AllePredicate] predicates = ("<pred.name>" : implode(pred) | (AlleConstraint)`<AllePredicate pred>` <- p.constraints);
   list[translation::AST::AlleFormula] constraints = [implode(f) | (AlleConstraint)`<AlleFormula f>` <- p.constraints]; 
      
   return problem([implode(r) | r <- p.relations], constraints, predicates, s, e);
@@ -183,7 +183,7 @@ translation::AST::AlleExpr implode((AlleExpr)`<AlleExpr lhs> ⨯ <AlleExpr rhs>`
   = product(implode(lhs), implode(rhs));
   
 translation::AST::AlleExpr implode(f:(AlleExpr)`{<{VarDeclaration ","}+ decls> | <AlleFormula form>}`)
-  = comprehension([implode(d) | d <- decls], implode(form), origLoc=f@\loc);
+  = comprehension([implode(d) | d <- decls], implode(form));
  
 translation::AST::TupleAttributeSelection implode ((TupleAttributeSelection)`\<<AttributeName first>,<AttributeName second>\>`) 
   = order("<first>","<second>");
