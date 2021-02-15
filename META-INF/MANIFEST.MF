@@ -1,8 +1,7 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: allealle
-Bundle-SymbolicName: allealle
-Bundle-Version: 1.0.0
+Bundle-SymbolicName: allealle; singleton:=true
+Bundle-Version: 0.1.0.qualifier
 Require-Bundle: rascal_eclipse
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
-Import-Package: org.junit.runner
