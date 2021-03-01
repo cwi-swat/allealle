@@ -26,7 +26,7 @@ str compileVariableDeclaration(<str name, Sort::\str()>) = "(declare-const <name
 @memo str compileWithoutIden(strConcat(list[Term] terms))   = "(str.++ <intercalate(" ", [compile(t) | t <- terms])>)"; 
 @memo str compileWithoutIden(substr(Term e, Term offset, Term length)) = "(str.substr <compile(e)> <compile(offset)> <compile(length)>)"; 
 
-Term getValue((SmtValue)`"<Val v>"`, <str _, Sort::\str()>) = lit(\str("<v>"));
-Term getValue((SmtValue)`""`, <str _, Sort::\str()>) = lit(\str(""));
- 
+Term getValue((SmtValue)`"<StringCharacter* chars>"`, <str _, Sort::\str()>) = lit(\str("<chars>"));
+//Term getValue((SmtValue)`""`, <str _, Sort::\str()>) = lit(\str(""));
+// 
 str negateVariable(str varName, lit(\str(str s))) = "(not (= <varName> \"<s>\"))";
