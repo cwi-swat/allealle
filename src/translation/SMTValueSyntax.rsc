@@ -22,7 +22,7 @@ lexical StringCharacter
   | UnicodeEscape 
   | ![\" \' \< \> \\]
   | [\n][\ \t \u00A0 \u1680 \u2000-\u200A \u202F \u205F \u3000]* [\'] // margin 
-  | "\\" [x][0][0-9] // null character 
+  | "\\" [x][0-9a-fA-F]+ !>> [0-9a-fA-F] 
   ;
 
 lexical UnicodeEscape

@@ -73,16 +73,18 @@ ModelFinderResult runInSolver(Problem problem, TranslationResult tr, Environment
 		
 	printIfLog("Translating to SMT-LIB...", log);
   tuple[set[SMTVar] vars, int time] smtVarCollectResult = bm(collectSMTVars, env);
+	
+	tuple[str smt, int time] smtPreamble = bm(preambles, smtVarCollectResult.vars);
 	tuple[str smt, int time] smtVarDeclResult = bm(compileSMTVariableDeclarations, smtVarCollectResult.vars);
 	tuple[str smt, int time] smtCompileFormResult = bm(compileAssert, tr.form);
 	tuple[str smt, int time] smtCompileCommands = bm(compileCommands, tr.cmds);
 	
-	printlnIfLog("done, took: <(smtVarCollectResult.time + smtVarDeclResult.time + smtCompileFormResult.time + smtCompileCommands.time) /1000000> ms in total.", log);
+	printlnIfLog("done, took: <(smtPreamble.time + smtVarCollectResult.time + smtVarDeclResult.time + smtCompileFormResult.time + smtCompileCommands.time) /1000000> ms in total.", log);
   
   int nrOfVars = countNrOfVars ? countVars(smtVarCollectResult.vars) : -1;
   int nrOfClauses = countNrOfClauses ? countClauses(tr.form) : -1;
   
-	str fullSmtProblem = smtVarDeclResult.smt + "\n" + smtCompileFormResult.smt + "\n" + smtCompileCommands.smt;
+	str fullSmtProblem = smtPreamble.smt + "\n" + smtVarDeclResult.smt + "\n" + smtCompileFormResult.smt + "\n" + smtCompileCommands.smt;
 	
 	//str checkCommand = usesNonLinearArithmetic(problem) ? "(check-sat-using qfnra-nlsat)" : "(check-sat)";
 	str checkCommand = "(check-sat)";

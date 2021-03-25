@@ -56,6 +56,9 @@ set[SMTVar] collectSMTVars(Environment env)  {
 
 set[Sort] collectSorts(set[SMTVar] vars) = {v.sort | SMTVar v <- vars}; 
 
+str preambles(set[SMTVar] vars) = "<for (s <- collectSorts(vars)) {><preamble(s)>
+                                  '<}>";
+
 default str preamble(Sort srt) = "";
 
 str compileSMTVariableDeclarations(set[SMTVar] vars) = "<for (SMTVar var <- vars) {>

@@ -2,6 +2,10 @@ module translation::theories::integer::Syntax
 
 syntax Domain = "int";
 
+syntax Value        = neglit: "-" Literal lit;
+syntax RangedValue  = neglit: "-" Literal lit;
+
+
 syntax Criteria
   = non-assoc  (lt:    CriteriaExpr lhsExpr "\<" CriteriaExpr rhsExpr
               | lte:   CriteriaExpr lhsExpr "\<=" CriteriaExpr rhsExpr

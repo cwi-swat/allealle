@@ -9,6 +9,9 @@ import String;
 
 translation::AST::Domain implode((Domain)`int`) = intDom();  
 
+translation::AST::AlleValue implode((Value)`-<IntLit i>`) = alleLit(intLit(toInt("-<i>")));  
+translation::AST::AlleValue implode((RangedValue)`-<IntLit i>`) = alleLit(intLit(toInt("-<i>")));  
+
 translation::AST::AlleLiteral implode((Literal)`<IntLit i>`) = intLit(toInt("<i>"));  
 
 translation::AST::AggregateFunction implode((AggregateFunction)`count()`)

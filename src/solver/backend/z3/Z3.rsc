@@ -28,6 +28,7 @@ PID startZ3(str pathToZ3 = getSystemProperty("solver.z3.path")) {
 
 	// The print-success option is needed so that each entered statement returns a result. This way we have a predictable inputstream that we can read
 	run(pid, "(set-option :print-success true)"); 
+	run(pid, "(set-option :smt.string-solver seq)"); // Z3 specific string solver
 	
 	return pid;
 }
