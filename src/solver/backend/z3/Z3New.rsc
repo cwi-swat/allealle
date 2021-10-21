@@ -1,6 +1,6 @@
 module solver::backend::z3::Z3New
 
-import logic::Integer;
+// import logic::Integer;
 
 //@reflect @javaClass{solver.backend.z3.Z3}
 //public java void init(type[Formula] formType, type[Command] commandType);
