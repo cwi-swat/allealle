@@ -43,7 +43,7 @@ Term addition(addition(list[Term] l), Term r) = addition([*l, r]);
 Term addition(Term l, addition(list[Term] r)) = addition([l, *r]);
 default Term addition(Term lhs, Term rhs) = addition([lhs,rhs]);
 
-Term substraction(lit(\int(0)), Term rhs) = rhs;
+Term substraction(lit(\int(0)), Term rhs) = neg(rhs);
 Term substraction(Term lhs, lit(\int(0))) = lhs;
 Term substraction(lit(\int(a)), lit(\int(b))) = lit(\int(a-b));
 default Term substraction(Term lhs, Term rhs) = addition([lhs, neg(rhs)]);
