@@ -1,29 +1,29 @@
 
 // #1: Beginner
-State (sId:id)                >= {<s1>} <= {<s2>..<s10>}
-InitialState (sId:id)          = {<s1>}
-ordering (cur:id,next:id)     <= {<s1,s2>,<s2,s3>,<s3,s4>,<s4,s5>,<s5,s6>,<s6,s7>,<s7,s8>,<s8,s9>,<s9,s10>}
-
-Vehicle (vId:id, length:int)   = {<orange_car,2>,<purple_truck,3>,<blue_truck,3>,<yellow_truck,3>,<green_car,2>,<red_car,2>,<green_truck,3>,<blue_car,2>}
-RedCar (vId:id)                = {<red_car>}
-Horizontal (vId:id, row:int)   = {<red_car,2>,<green_truck,5>,<blue_car,4>,<green_car,0>}
-Vertical (vId:id, col:int)     = {<orange_car,0>,<purple_truck,0>,<blue_truck,3>,<yellow_truck,5>}
-
-posInState (sId:id, vId:id, pos:int) >= {<s1,orange_car,4>,<s1,purple_truck,1>,<s1,blue_truck,1>,<s1,yellow_truck,0>,<s1,green_car,0>,<s1,red_car,1>,<s1,green_truck,2>,<s1,blue_car,4>} 
-                                     <= {<s2,orange_car,?>..<s10,orange_car,?>,<s2,purple_truck,?>..<s10,purple_truck,?>,<s2,blue_truck,?>..<s10,blue_truck,?>,<s2,yellow_truck,?>..<s10,yellow_truck,?>,<s2,green_car,?>..<s10,green_car,?>,<s2,red_car,?>..<s10,red_car,?>,<s2,green_truck,?>..<s10,green_truck,?>,<s2,blue_car,?>..<s10,blue_car,?>}
+//State (sId:id)                >= {<s1>} <= {<s2>..<s10>}
+//InitialState (sId:id)          = {<s1>}
+//ordering (cur:id,next:id)     <= {<s1,s2>,<s2,s3>,<s3,s4>,<s4,s5>,<s5,s6>,<s6,s7>,<s7,s8>,<s8,s9>,<s9,s10>}
+//
+//Vehicle (vId:id, length:int)   = {<orange_car,2>,<purple_truck,3>,<blue_truck,3>,<yellow_truck,3>,<green_car,2>,<red_car,2>,<green_truck,3>,<blue_car,2>}
+//RedCar (vId:id)                = {<red_car>}
+//Horizontal (vId:id, row:int)   = {<red_car,2>,<green_truck,5>,<blue_car,4>,<green_car,0>}
+//Vertical (vId:id, col:int)     = {<orange_car,0>,<purple_truck,0>,<blue_truck,3>,<yellow_truck,5>}
+//
+//posInState (sId:id, vId:id, pos:int) >= {<s1,orange_car,4>,<s1,purple_truck,1>,<s1,blue_truck,1>,<s1,yellow_truck,0>,<s1,green_car,0>,<s1,red_car,1>,<s1,green_truck,2>,<s1,blue_car,4>} 
+//                                     <= {<s2,orange_car,?>..<s10,orange_car,?>,<s2,purple_truck,?>..<s10,purple_truck,?>,<s2,blue_truck,?>..<s10,blue_truck,?>,<s2,yellow_truck,?>..<s10,yellow_truck,?>,<s2,green_car,?>..<s10,green_car,?>,<s2,red_car,?>..<s10,red_car,?>,<s2,green_truck,?>..<s10,green_truck,?>,<s2,blue_car,?>..<s10,blue_car,?>}
 
 // #24: Advanced - 25 moves needed
-//State (sId:id)                >= {<s1>} <= {<s2>..<s30>}
-//InitialState (sId:id)          = {<s1>}
-//ordering (cur:id,next:id)     <= {<s1,s2>,<s2,s3>,<s3,s4>,<s4,s5>,<s5,s6>,<s6,s7>,<s7,s8>,<s8,s9>,<s9,s10>,<s10,s11>,<s11,s12>,<s12,s13>,<s13,s14>,<s14,s15>,<s15,s16>,<s16,s17>,<s17,s18>,<s18,s19>,<s19,s20>,<s20,s21>,<s21,s22>,<s22,s23>,<s23,s24>,<s24,s25>,<s25,s26>,<s26,s27>,<s27,s28>,<s28,s29>,<s29,s30>}
-//
-//Vehicle (vId:id, length:int)   = {<pink_car,2>,<blue_car,2>,<lgreen_car,2>,<purple_car,2>,<black_car,2>,<beige_car,2>,<yellow_truck,3>,<green_car,2>,<red_car,2>,<orange_car,2>}
-//RedCar (vId:id)                = {<red_car>}
-//Horizontal (vId:id, row:int)   = {<beige_car,5>,<yellow_truck,4>,<green_car,3>,<red_car,2>,<orange_car,0>}
-//Vertical (vId:id, col:int)     = {<pink_car,0>,<blue_car,1>,<lgreen_car,2>,<purple_car,4>,<black_car,4>}
-//
-//posInState (sId:id, vId:id, pos:int) >= {<s1,pink_car,2>,<s1,blue_car,1>,<s1,lgreen_car,0>,<s1,purple_car,2>,<s1,black_car,4>,<s1,beige_car,0>,<s1,yellow_truck,0>,<s1,green_car,1>,<s1,red_car,2>,<s1,orange_car,3>} 
-//                                     <= {<s2,pink_car,?>..<s30,pink_car,?>,<s2,blue_car,?>..<s30,blue_car,?>,<s2,lgreen_car,?>..<s30,lgreen_car,?>,<s2,purple_car,?>..<s30,purple_car,?>,<s2,black_car,?>..<s30,black_car,?>,<s2,beige_car,?>..<s30,beige_car,?>,<s2,yellow_truck,?>..<s30,yellow_truck,?>,<s2,green_car,?>..<s30,green_car,?>,<s2,red_car,?>..<s30,red_car,?>,<s2,orange_car,?>..<s30,orange_car,?>}
+State (sId:id)                >= {<s1>} <= {<s2>..<s30>}
+InitialState (sId:id)          = {<s1>}
+ordering (cur:id,next:id)     <= {<s1,s2>,<s2,s3>,<s3,s4>,<s4,s5>,<s5,s6>,<s6,s7>,<s7,s8>,<s8,s9>,<s9,s10>,<s10,s11>,<s11,s12>,<s12,s13>,<s13,s14>,<s14,s15>,<s15,s16>,<s16,s17>,<s17,s18>,<s18,s19>,<s19,s20>,<s20,s21>,<s21,s22>,<s22,s23>,<s23,s24>,<s24,s25>,<s25,s26>,<s26,s27>,<s27,s28>,<s28,s29>,<s29,s30>}
+
+Vehicle (vId:id, length:int)   = {<pink_car,2>,<blue_car,2>,<lgreen_car,2>,<purple_car,2>,<black_car,2>,<beige_car,2>,<yellow_truck,3>,<green_car,2>,<red_car,2>,<orange_car,2>}
+RedCar (vId:id)                = {<red_car>}
+Horizontal (vId:id, row:int)   = {<beige_car,5>,<yellow_truck,4>,<green_car,3>,<red_car,2>,<orange_car,0>}
+Vertical (vId:id, col:int)     = {<pink_car,0>,<blue_car,1>,<lgreen_car,2>,<purple_car,4>,<black_car,4>}
+
+posInState (sId:id, vId:id, pos:int) >= {<s1,pink_car,2>,<s1,blue_car,1>,<s1,lgreen_car,0>,<s1,purple_car,2>,<s1,black_car,4>,<s1,beige_car,0>,<s1,yellow_truck,0>,<s1,green_car,1>,<s1,red_car,2>,<s1,orange_car,3>} 
+                                     <= {<s2,pink_car,?>..<s30,pink_car,?>,<s2,blue_car,?>..<s30,blue_car,?>,<s2,lgreen_car,?>..<s30,lgreen_car,?>,<s2,purple_car,?>..<s30,purple_car,?>,<s2,black_car,?>..<s30,black_car,?>,<s2,beige_car,?>..<s30,beige_car,?>,<s2,yellow_truck,?>..<s30,yellow_truck,?>,<s2,green_car,?>..<s30,green_car,?>,<s2,red_car,?>..<s30,red_car,?>,<s2,orange_car,?>..<s30,orange_car,?>}
 
 // #40: Expert - 51 moves needed
 //State (sId:id)                 = {<s1>..<s52>}

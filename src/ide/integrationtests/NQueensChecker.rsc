@@ -1,7 +1,7 @@
 module ide::integrationtests::NQueensChecker
 
-import ide::CombinedModelFinder;
-import ide::CombinedImploder;
+import ModelFinder;
+import ide::Imploder;
 
 import translation::AST;
 import translation::SMTInterface;

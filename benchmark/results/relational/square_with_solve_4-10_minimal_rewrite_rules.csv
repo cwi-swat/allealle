@@ -1,0 +1,8 @@
+#Config,TranslationTime,SolvingTime,Sat,#Vars,#Clauses,UsedMemory 
+4,6,10,true,2,13,4264143552
+5,7,10,true,2,13,4430105356
+6,8,10,true,2,13,4509510336
+7,8,10,true,2,13,4622756544
+8,6,10,true,2,13,4771794692
+9,7,10,true,2,13,4851346112
+10,6,10,true,2,13,4964731828

@@ -47,7 +47,7 @@ ParamsEventPingPongStartPrimitives[cur,nxt] ⊆ order
 )
 
 // Generic: All configurations are reachable
-∀ c ∈ Config ∖ InitialConfig | c ⊆ (InitialConfig[config as cur] ⨝ ^<cur,nxt>order)[nxt -> config]
+∀ c ∈ Config ∖ InitialConfig | c ⊆ (InitialConfig[config as cur] ⨝ ^order)[nxt -> config]
 
 // Generic: Every transition can only happen by exactly one event
 ∀ o ∈ order | one o ⨝ raisedEvent

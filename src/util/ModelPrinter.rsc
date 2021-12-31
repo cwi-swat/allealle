@@ -13,7 +13,9 @@ import IO;
 import String;
 
 void printAlleModel(Model m) {
+  println("");
   println(model2Str(m));
+  println("");
 }
 
 str model2Str(Model m) 

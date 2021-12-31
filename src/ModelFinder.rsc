@@ -128,8 +128,8 @@ ModelFinderResult runInSolver(Problem problem, TranslationResult tr, Environment
       int solvingTime = getSolvingTime(solverPid);
       int endTime = (userTime() - startTime) / 1000000;
       
-      println("done, took: <solvingTime + endTime> ms in total (<solvingTime> solving time reported by Z3, <endTime> ms spent streaming problem and interpreting result).");
-      println("Outcome is \'<satisfiable>\'");
+      printlnIfLog("done, took: <solvingTime + endTime> ms in total (<solvingTime> solving time reported by Z3, <endTime> ms spent streaming problem and interpreting result).", log);
+      printlnIfLog("Outcome is \'<satisfiable>\'", log);
   
       if(satisfiable) {
         startTime = userTime();
@@ -159,7 +159,7 @@ ModelFinderResult runInSolver(Problem problem, TranslationResult tr, Environment
         if (contains(reason, "(incomplete (theory arithmetic))")) {
           printlnIfLog("incomplete because of arithmetic theory, retrying with different arithmetic solver",log);
           checkCommand = "(check-sat-using qfnra-nlsat)";
-          return findFirstModel(smtProb = "");
+          return findFirstModel(smtProb = "", log = log);
         } else {
           stopSolver(solverPid);
           

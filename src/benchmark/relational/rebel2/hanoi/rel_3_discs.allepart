@@ -1,0 +1,54 @@
+// Static configuration of state machines
+// Define the specs that can take place in the transition system
+Peg (spec:id) = {<peg>}
+Tower (spec:id) = {<tower>}
+Disc (spec:id) = {<disc>}
+
+// Define all possible states for all machines
+State (state:id) = {<state_peg_playing>,<state_tower_playing>}
+initialized (state:id) = {<state_peg_playing>,<state_tower_playing>}
+finalized (state:id) = {<state_finalized>}
+uninitialized (state:id) = {<state_uninitialized>}
+StatePegPlaying (state:id) = {<state_peg_playing>}
+
+StateTowerPlaying (state:id) = {<state_tower_playing>}
+
+
+
+// Define which transitions are allowed (in the form of `from a state` -> ` via an event` -> `to a state`
+allowedTransitions (from:id, to:id, event:id) = {<state_peg_playing,state_peg_playing,event_peg_remove>,<state_peg_playing,state_peg_playing,event_peg_add>,<state_tower_playing,state_tower_playing,event_tower_move>}
+// Define each event as single relation so that the events can be used as variables in the constraints 
+EventDisc__frame (event:id) = {<event_disc___frame>}
+EventTowerMove (event:id) = {<event_tower_move>}
+EventPegRemove (event:id) = {<event_peg_remove>}
+EventTower__frame (event:id) = {<event_tower___frame>}
+EventPeg__frame (event:id) = {<event_peg___frame>}
+EventPegAdd (event:id) = {<event_peg_add>}
+
+
+
+// Dynamic configuration of state machines
+Config (config:id) >= {<c1>} <= {<c1>,<c2>,<c3>,<c4>,<c5>,<c6>,<c7>,<c8>}
+
+order (cur:id, nxt:id) <= {<c1,c2>,<c2,c3>,<c3,c4>,<c4,c5>,<c5,c6>,<c6,c7>,<c7,c8>}
+first (config:id) = {<c1>}
+last (config:id) <= {<c1>,<c2>,<c3>,<c4>,<c5>,<c6>,<c7>,<c8>}
+back (config:id) = {}
+loop (cur:id, nxt:id) = {}
+
+Instance (spec:id, instance:id) = {<disc,d3>,<disc,d2>,<disc,d1>,<tower,t>,<peg,p2>,<peg,p3>,<peg,p1>}
+instanceInState (config:id, instance:id, state:id) <= {<c1,t,state_tower_playing>,<c1,p1,state_peg_playing>,<c1,p2,state_peg_playing>,<c1,p3,state_peg_playing>,<c2,t,state_tower_playing>,<c2,p1,state_peg_playing>,<c2,p2,state_peg_playing>,<c2,p3,state_peg_playing>,<c3,t,state_tower_playing>,<c3,p1,state_peg_playing>,<c3,p2,state_peg_playing>,<c3,p3,state_peg_playing>,<c4,t,state_tower_playing>,<c4,p1,state_peg_playing>,<c4,p2,state_peg_playing>,<c4,p3,state_peg_playing>,<c5,t,state_tower_playing>,<c5,p1,state_peg_playing>,<c5,p2,state_peg_playing>,<c5,p3,state_peg_playing>,<c6,t,state_tower_playing>,<c6,p1,state_peg_playing>,<c6,p2,state_peg_playing>,<c6,p3,state_peg_playing>,<c7,t,state_tower_playing>,<c7,p1,state_peg_playing>,<c7,p2,state_peg_playing>,<c7,p3,state_peg_playing>,<c8,t,state_tower_playing>,<c8,p1,state_peg_playing>,<c8,p2,state_peg_playing>,<c8,p3,state_peg_playing>}
+raisedEvent (cur:id, nxt:id, event:id, instance:id) <= {<c1,c2,event_tower_move,t>,<c2,c3,event_tower_move,t>,<c3,c4,event_tower_move,t>,<c4,c5,event_tower_move,t>,<c5,c6,event_tower_move,t>,<c6,c7,event_tower_move,t>,<c7,c8,event_tower_move,t>}
+changedInstance (cur:id, nxt:id, instance:id) <= {<c1,c2,p1>,<c1,c2,p2>,<c1,c2,p3>,<c1,c2,t>,<c2,c3,p1>,<c2,c3,p2>,<c2,c3,p3>,<c2,c3,t>,<c3,c4,p1>,<c3,c4,p2>,<c3,c4,p3>,<c3,c4,t>,<c4,c5,p1>,<c4,c5,p2>,<c4,c5,p3>,<c4,c5,t>,<c5,c6,p1>,<c5,c6,p2>,<c5,c6,p3>,<c5,c6,t>,<c6,c7,p1>,<c6,c7,p2>,<c6,c7,p3>,<c6,c7,t>,<c7,c8,p1>,<c7,c8,p2>,<c7,c8,p3>,<c7,c8,t>}
+
+PegDiscs (config:id, instance:id, discs:id) <= {<c1,p1,d1>,<c1,p1,d2>,<c1,p1,d3>,<c2,p1,d1>,<c2,p1,d2>,<c2,p1,d3>,<c3,p1,d1>,<c3,p1,d2>,<c3,p1,d3>,<c4,p1,d1>,<c4,p1,d2>,<c4,p1,d3>,<c5,p1,d1>,<c5,p1,d2>,<c5,p1,d3>,<c6,p1,d1>,<c6,p1,d2>,<c6,p1,d3>,<c7,p1,d1>,<c7,p1,d2>,<c7,p1,d3>,<c8,p1,d1>,<c8,p1,d2>,<c8,p1,d3>,<c1,p2,d1>,<c1,p2,d2>,<c1,p2,d3>,<c2,p2,d1>,<c2,p2,d2>,<c2,p2,d3>,<c3,p2,d1>,<c3,p2,d2>,<c3,p2,d3>,<c4,p2,d1>,<c4,p2,d2>,<c4,p2,d3>,<c5,p2,d1>,<c5,p2,d2>,<c5,p2,d3>,<c6,p2,d1>,<c6,p2,d2>,<c6,p2,d3>,<c7,p2,d1>,<c7,p2,d2>,<c7,p2,d3>,<c8,p2,d1>,<c8,p2,d2>,<c8,p2,d3>,<c1,p3,d1>,<c1,p3,d2>,<c1,p3,d3>,<c2,p3,d1>,<c2,p3,d2>,<c2,p3,d3>,<c3,p3,d1>,<c3,p3,d2>,<c3,p3,d3>,<c4,p3,d1>,<c4,p3,d2>,<c4,p3,d3>,<c5,p3,d1>,<c5,p3,d2>,<c5,p3,d3>,<c6,p3,d1>,<c6,p3,d2>,<c6,p3,d3>,<c7,p3,d1>,<c7,p3,d2>,<c7,p3,d3>,<c8,p3,d1>,<c8,p3,d2>,<c8,p3,d3>}
+TowerInitial (config:id, instance:id, initial:id) >= {<c1,t,p1>} <= {<c1,t,p1>,<c1,t,p2>,<c1,t,p3>,<c2,t,p1>,<c2,t,p2>,<c2,t,p3>,<c3,t,p1>,<c3,t,p2>,<c3,t,p3>,<c4,t,p1>,<c4,t,p2>,<c4,t,p3>,<c5,t,p1>,<c5,t,p2>,<c5,t,p3>,<c6,t,p1>,<c6,t,p2>,<c6,t,p3>,<c7,t,p1>,<c7,t,p2>,<c7,t,p3>,<c8,t,p1>,<c8,t,p2>,<c8,t,p3>}
+TowerGoal (config:id, instance:id, goal:id) >= {<c1,t,p3>} <= {<c1,t,p1>,<c1,t,p2>,<c1,t,p3>,<c2,t,p1>,<c2,t,p2>,<c2,t,p3>,<c3,t,p1>,<c3,t,p2>,<c3,t,p3>,<c4,t,p1>,<c4,t,p2>,<c4,t,p3>,<c5,t,p1>,<c5,t,p2>,<c5,t,p3>,<c6,t,p1>,<c6,t,p2>,<c6,t,p3>,<c7,t,p1>,<c7,t,p2>,<c7,t,p3>,<c8,t,p1>,<c8,t,p2>,<c8,t,p3>}
+DiscSize (config:id, instance:id, size:int) >= {<c1,d2,2>,<c1,d3,3>,<c1,d1,1>} <= {<c1,d1,?>,<c2,d1,?>,<c3,d1,?>,<c4,d1,?>,<c5,d1,?>,<c6,d1,?>,<c7,d1,?>,<c8,d1,?>,<c1,d2,?>,<c2,d2,?>,<c3,d2,?>,<c4,d2,?>,<c5,d2,?>,<c6,d2,?>,<c7,d2,?>,<c8,d2,?>,<c1,d3,?>,<c2,d3,?>,<c3,d3,?>,<c4,d3,?>,<c5,d3,?>,<c6,d3,?>,<c7,d3,?>,<c8,d3,?>}
+
+
+ParamEventPegAddD (cur:id, nxt:id, d:id) <= {<c1,c2,d1>,<c1,c2,d2>,<c1,c2,d3>,<c2,c3,d1>,<c2,c3,d2>,<c2,c3,d3>,<c3,c4,d1>,<c3,c4,d2>,<c3,c4,d3>,<c4,c5,d1>,<c4,c5,d2>,<c4,c5,d3>,<c5,c6,d1>,<c5,c6,d2>,<c5,c6,d3>,<c6,c7,d1>,<c6,c7,d2>,<c6,c7,d3>,<c7,c8,d1>,<c7,c8,d2>,<c7,c8,d3>}
+ParamEventPegRemoveD (cur:id, nxt:id, d:id) <= {<c1,c2,d1>,<c1,c2,d2>,<c1,c2,d3>,<c2,c3,d1>,<c2,c3,d2>,<c2,c3,d3>,<c3,c4,d1>,<c3,c4,d2>,<c3,c4,d3>,<c4,c5,d1>,<c4,c5,d2>,<c4,c5,d3>,<c5,c6,d1>,<c5,c6,d2>,<c5,c6,d3>,<c6,c7,d1>,<c6,c7,d2>,<c6,c7,d3>,<c7,c8,d1>,<c7,c8,d2>,<c7,c8,d3>}
+ParamEventTowerMoveD (cur:id, nxt:id, d:id) <= {<c1,c2,d1>,<c1,c2,d2>,<c1,c2,d3>,<c2,c3,d1>,<c2,c3,d2>,<c2,c3,d3>,<c3,c4,d1>,<c3,c4,d2>,<c3,c4,d3>,<c4,c5,d1>,<c4,c5,d2>,<c4,c5,d3>,<c5,c6,d1>,<c5,c6,d2>,<c5,c6,d3>,<c6,c7,d1>,<c6,c7,d2>,<c6,c7,d3>,<c7,c8,d1>,<c7,c8,d2>,<c7,c8,d3>}
+ParamEventTowerMoveFrom (cur:id, nxt:id, from:id) <= {<c1,c2,p1>,<c1,c2,p2>,<c1,c2,p3>,<c2,c3,p1>,<c2,c3,p2>,<c2,c3,p3>,<c3,c4,p1>,<c3,c4,p2>,<c3,c4,p3>,<c4,c5,p1>,<c4,c5,p2>,<c4,c5,p3>,<c5,c6,p1>,<c5,c6,p2>,<c5,c6,p3>,<c6,c7,p1>,<c6,c7,p2>,<c6,c7,p3>,<c7,c8,p1>,<c7,c8,p2>,<c7,c8,p3>}
+ParamEventTowerMoveTo (cur:id, nxt:id, to:id) <= {<c1,c2,p1>,<c1,c2,p2>,<c1,c2,p3>,<c2,c3,p1>,<c2,c3,p2>,<c2,c3,p3>,<c3,c4,p1>,<c3,c4,p2>,<c3,c4,p3>,<c4,c5,p1>,<c4,c5,p2>,<c4,c5,p3>,<c5,c6,p1>,<c5,c6,p2>,<c5,c6,p3>,<c6,c7,p1>,<c6,c7,p2>,<c6,c7,p3>,<c7,c8,p1>,<c7,c8,p2>,<c7,c8,p3>}

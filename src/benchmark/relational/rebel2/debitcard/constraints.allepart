@@ -1,0 +1,1005 @@
+// Constraints for the configuration and ordering relations
+order ⊆ Config[config as cur] ⨯ Config[config as nxt]
+last = Config ∖ order[cur->config]  // There is only one last configuration
+ 
+
+// Generic 'Type' constraints    
+raisedEvent ⊆ (order) ⨯ allowedTransitions[event] ⨯ Instance[instance]
+instanceInState ⊆ Instance[instance] ⨯ Config ⨯ State
+changedInstance ⊆ (order) ⨯ Instance[instance]
+    
+// Machine specific `type` constraints
+// For `Money`
+MoneyCurrency  ⊆ Config ⨯ (Instance ⨝ Money)[instance] ⨯ (Instance ⨝ Currency)[instance->currency]
+MoneyAmount[config,instance]  ⊆ Config ⨯ (Instance ⨝ Money)[instance]
+// For `IBAN`
+IBANNumber[config,instance]  ⊆ Config ⨯ (Instance ⨝ IBAN)[instance]
+// For `Date`
+DateDay[config,instance]  ⊆ Config ⨯ (Instance ⨝ Date)[instance]
+DateYear[config,instance]  ⊆ Config ⨯ (Instance ⨝ Date)[instance]
+DateMonth[config,instance]  ⊆ Config ⨯ (Instance ⨝ Date)[instance]
+DateNr[config,instance]  ⊆ Config ⨯ (Instance ⨝ Date)[instance]
+// For `DebitCard`
+DebitCardShopLimit  ⊆ Config ⨯ (Instance ⨝ DebitCard)[instance] ⨯ (Instance ⨝ Limit)[instance->shopLimit]
+DebitCardAccountNumber  ⊆ Config ⨯ (Instance ⨝ DebitCard)[instance] ⨯ (Instance ⨝ IBAN)[instance->accountNumber]
+DebitCardSequenceNumber[config,instance]  ⊆ Config ⨯ (Instance ⨝ DebitCard)[instance]
+DebitCardAtmLimit  ⊆ Config ⨯ (Instance ⨝ DebitCard)[instance] ⨯ (Instance ⨝ Limit)[instance->atmLimit]
+DebitCardCreatedOn  ⊆ Config ⨯ (Instance ⨝ DebitCard)[instance] ⨯ (Instance ⨝ Date)[instance->createdOn]
+DebitCardNrOfWrongPinEntries[config,instance]  ⊆ Config ⨯ (Instance ⨝ DebitCard)[instance]
+DebitCardExpiry  ⊆ Config ⨯ (Instance ⨝ DebitCard)[instance] ⨯ (Instance ⨝ Date)[instance->expiry]
+DebitCardPinReset  ⊆ Config ⨯ (Instance ⨝ DebitCard)[instance] ⨯ (Instance ⨝ Boolean)[instance->pinReset]
+DebitCardRequestReason  ⊆ Config ⨯ (Instance ⨝ DebitCard)[instance] ⨯ (Instance ⨝ RequestReason)[instance->requestReason]
+DebitCardClosedOn  ⊆ Config ⨯ (Instance ⨝ DebitCard)[instance] ⨯ (Instance ⨝ Date)[instance->closedOn]
+DebitCardPinHash[config,instance]  ⊆ Config ⨯ (Instance ⨝ DebitCard)[instance]
+
+// Specific per event: parameter type and multiplicity constraints
+// Type constraints for events of Money
+ParamEventMoneySubtractOther ⊆ (order ∪ loop) ⨯ (Instance ⨝ Money)[instance->other]
+ParamEventMoneyAddOther ⊆ (order ∪ loop) ⨯ (Instance ⨝ Money)[instance->other]
+// Type constraints for events of Date
+ParamEventDateAfterOther ⊆ (order ∪ loop) ⨯ (Instance ⨝ Date)[instance->other]
+// Type constraints for events of DebitCard
+ParamEventDebitCardRequest__stolenReason ⊆ (order ∪ loop) ⨯ (Instance ⨝ RequestReason)[instance->reason]
+ParamEventDebitCardRequest__expiredReqDate ⊆ (order ∪ loop) ⨯ (Instance ⨝ Date)[instance->reqDate]
+ParamEventDebitCardRequest__lostReqDate ⊆ (order ∪ loop) ⨯ (Instance ⨝ Date)[instance->reqDate]
+ParamEventDebitCardTransactionOccurred__wrongPinUsage ⊆ (order ∪ loop) ⨯ (Instance ⨝ Usage)[instance->usage]
+ParamEventDebitCardTransactionOccurred__tooManyAttemptsPinHash[cur,nxt] ⊆ order ∪ loop
+ParamEventDebitCardRequest__customerReqDate ⊆ (order ∪ loop) ⨯ (Instance ⨝ Date)[instance->reqDate]
+ParamEventDebitCardRequest__customerAtmLimit ⊆ (order ∪ loop) ⨯ (Instance ⨝ Limit)[instance->atmLimit]
+ParamEventDebitCardTransactionOccurred__tooManyAttemptsUsage ⊆ (order ∪ loop) ⨯ (Instance ⨝ Usage)[instance->usage]
+ParamEventDebitCardTransactionOccurred__wrongPinPinHash[cur,nxt] ⊆ order ∪ loop
+ParamEventDebitCardRequest__lostAtmLimit ⊆ (order ∪ loop) ⨯ (Instance ⨝ Limit)[instance->atmLimit]
+ParamEventDebitCardRequest__expiredAtmLimit ⊆ (order ∪ loop) ⨯ (Instance ⨝ Limit)[instance->atmLimit]
+ParamEventDebitCardRequest__customerReason ⊆ (order ∪ loop) ⨯ (Instance ⨝ RequestReason)[instance->reason]
+ParamEventDebitCardRequest__stolenAtmLimit ⊆ (order ∪ loop) ⨯ (Instance ⨝ Limit)[instance->atmLimit]
+ParamEventDebitCardRequest__newReason ⊆ (order ∪ loop) ⨯ (Instance ⨝ RequestReason)[instance->reason]
+ParamEventDebitCardRequest__stolenExpiry ⊆ (order ∪ loop) ⨯ (Instance ⨝ Date)[instance->expiry]
+ParamEventDebitCardRequest__lostShopLimit ⊆ (order ∪ loop) ⨯ (Instance ⨝ Limit)[instance->shopLimit]
+ParamEventDebitCardRequest__expiredShopLimit ⊆ (order ∪ loop) ⨯ (Instance ⨝ Limit)[instance->shopLimit]
+ParamEventDebitCardRequest__newAccountNumber ⊆ (order ∪ loop) ⨯ (Instance ⨝ IBAN)[instance->accountNumber]
+ParamEventDebitCardRequest__expiredExpiry ⊆ (order ∪ loop) ⨯ (Instance ⨝ Date)[instance->expiry]
+ParamEventDebitCardRequest__stolenReqDate ⊆ (order ∪ loop) ⨯ (Instance ⨝ Date)[instance->reqDate]
+ParamEventDebitCardRequest__lostExpiry ⊆ (order ∪ loop) ⨯ (Instance ⨝ Date)[instance->expiry]
+ParamEventDebitCardRequest__customerAccountNumber ⊆ (order ∪ loop) ⨯ (Instance ⨝ IBAN)[instance->accountNumber]
+ParamEventDebitCardRequest__stolenShopLimit ⊆ (order ∪ loop) ⨯ (Instance ⨝ Limit)[instance->shopLimit]
+ParamEventDebitCardTransactionOccurred__wrongPinAmount ⊆ (order ∪ loop) ⨯ (Instance ⨝ Money)[instance->amount]
+ParamEventDebitCardRequest__newExpiry ⊆ (order ∪ loop) ⨯ (Instance ⨝ Date)[instance->expiry]
+ParamEventDebitCardRequest__newReqDate ⊆ (order ∪ loop) ⨯ (Instance ⨝ Date)[instance->reqDate]
+ParamEventDebitCardRequest__customerExpiry ⊆ (order ∪ loop) ⨯ (Instance ⨝ Date)[instance->expiry]
+ParamEventDebitCardRequest__newAtmLimit ⊆ (order ∪ loop) ⨯ (Instance ⨝ Limit)[instance->atmLimit]
+ParamEventDebitCardTransactionOccurred__tooManyAttemptsAmount ⊆ (order ∪ loop) ⨯ (Instance ⨝ Money)[instance->amount]
+ParamEventDebitCardTransactionOccurred__okUsage ⊆ (order ∪ loop) ⨯ (Instance ⨝ Usage)[instance->usage]
+ParamEventDebitCardRequest__stolenAccountNumber ⊆ (order ∪ loop) ⨯ (Instance ⨝ IBAN)[instance->accountNumber]
+ParamEventDebitCardRequest__customerShopLimit ⊆ (order ∪ loop) ⨯ (Instance ⨝ Limit)[instance->shopLimit]
+ParamEventDebitCardTransactionOccurred__expiredUsage ⊆ (order ∪ loop) ⨯ (Instance ⨝ Usage)[instance->usage]
+ParamEventDebitCardTransactionOccurred__okAmount ⊆ (order ∪ loop) ⨯ (Instance ⨝ Money)[instance->amount]
+ParamEventDebitCardRequest__newShopLimit ⊆ (order ∪ loop) ⨯ (Instance ⨝ Limit)[instance->shopLimit]
+ParamEventDebitCardProducePinHash[cur,nxt] ⊆ order ∪ loop
+ParamEventDebitCardRequest__expiredAccountNumber ⊆ (order ∪ loop) ⨯ (Instance ⨝ IBAN)[instance->accountNumber]
+ParamEventDebitCardTransactionOccurred__expiredPinHash[cur,nxt] ⊆ order ∪ loop
+ParamEventDebitCardRequest__lostReason ⊆ (order ∪ loop) ⨯ (Instance ⨝ RequestReason)[instance->reason]
+ParamEventDebitCardTransactionOccurred__expiredAmount ⊆ (order ∪ loop) ⨯ (Instance ⨝ Money)[instance->amount]
+ParamEventDebitCardRequest__expiredReason ⊆ (order ∪ loop) ⨯ (Instance ⨝ RequestReason)[instance->reason]
+ParamEventDebitCardTransactionOccurred__okPinHash[cur,nxt] ⊆ order ∪ loop
+ParamEventDebitCardRequest__lostAccountNumber ⊆ (order ∪ loop) ⨯ (Instance ⨝ IBAN)[instance->accountNumber]
+
+// Multiplicity constraints for event parameters
+∀ step ∈ (order ∪ loop) ⨝ raisedEvent | (
+  (some (step ⨝ EventDebitCardTransactionOccurred__ok) ⇔ one (step ⨝ ParamEventDebitCardTransactionOccurred__okAmount)) ∧
+  (some (step ⨝ EventDebitCardRequest__expired) ⇔ one (step ⨝ ParamEventDebitCardRequest__expiredReqDate)) ∧
+  (some (step ⨝ EventDebitCardRequest__new) ⇔ one (step ⨝ ParamEventDebitCardRequest__newReqDate)) ∧
+  (some (step ⨝ EventDebitCardRequest__lost) ⇔ one (step ⨝ ParamEventDebitCardRequest__lostReqDate)) ∧
+  (some (step ⨝ EventDebitCardTransactionOccurred__ok) ⇔ one (step ⨝ ParamEventDebitCardTransactionOccurred__okUsage)) ∧
+  (some (step ⨝ EventDebitCardProduce) ⇔ one (step ⨝ ParamEventDebitCardProducePinHash)) ∧
+  (some (step ⨝ EventDebitCardRequest__stolen) ⇔ one (step ⨝ ParamEventDebitCardRequest__stolenReqDate)) ∧
+  (some (step ⨝ EventDebitCardRequest__stolen) ⇔ one (step ⨝ ParamEventDebitCardRequest__stolenReason)) ∧
+  (some (step ⨝ EventDebitCardRequest__expired) ⇔ one (step ⨝ ParamEventDebitCardRequest__expiredShopLimit)) ∧
+  (some (step ⨝ EventDebitCardRequest__new) ⇔ one (step ⨝ ParamEventDebitCardRequest__newShopLimit)) ∧
+  (some (step ⨝ EventDebitCardRequest__lost) ⇔ one (step ⨝ ParamEventDebitCardRequest__lostShopLimit)) ∧
+  (some (step ⨝ EventDebitCardTransactionOccurred__expired) ⇔ one (step ⨝ ParamEventDebitCardTransactionOccurred__expiredPinHash)) ∧
+  (some (step ⨝ EventDebitCardTransactionOccurred__tooManyAttempts) ⇔ one (step ⨝ ParamEventDebitCardTransactionOccurred__tooManyAttemptsPinHash)) ∧
+  (some (step ⨝ EventDebitCardRequest__customer) ⇔ one (step ⨝ ParamEventDebitCardRequest__customerExpiry)) ∧
+  (some (step ⨝ EventDebitCardRequest__stolen) ⇔ one (step ⨝ ParamEventDebitCardRequest__stolenAtmLimit)) ∧
+  (some (step ⨝ EventDebitCardTransactionOccurred__tooManyAttempts) ⇔ one (step ⨝ ParamEventDebitCardTransactionOccurred__tooManyAttemptsUsage)) ∧
+  (some (step ⨝ EventDebitCardTransactionOccurred__expired) ⇔ one (step ⨝ ParamEventDebitCardTransactionOccurred__expiredUsage)) ∧
+  (some (step ⨝ EventDebitCardRequest__lost) ⇔ one (step ⨝ ParamEventDebitCardRequest__lostReason)) ∧
+  (some (step ⨝ EventDebitCardRequest__new) ⇔ one (step ⨝ ParamEventDebitCardRequest__newReason)) ∧
+  (some (step ⨝ EventDebitCardRequest__expired) ⇔ one (step ⨝ ParamEventDebitCardRequest__expiredReason)) ∧
+  (some (step ⨝ EventDebitCardRequest__lost) ⇔ one (step ⨝ ParamEventDebitCardRequest__lostAtmLimit)) ∧
+  (some (step ⨝ EventDebitCardRequest__new) ⇔ one (step ⨝ ParamEventDebitCardRequest__newAtmLimit)) ∧
+  (some (step ⨝ EventDebitCardRequest__expired) ⇔ one (step ⨝ ParamEventDebitCardRequest__expiredAtmLimit)) ∧
+  (some (step ⨝ EventDebitCardRequest__expired) ⇔ one (step ⨝ ParamEventDebitCardRequest__expiredAccountNumber)) ∧
+  (some (step ⨝ EventDebitCardRequest__new) ⇔ one (step ⨝ ParamEventDebitCardRequest__newAccountNumber)) ∧
+  (some (step ⨝ EventDebitCardRequest__lost) ⇔ one (step ⨝ ParamEventDebitCardRequest__lostAccountNumber)) ∧
+  (some (step ⨝ EventDebitCardTransactionOccurred__expired) ⇔ one (step ⨝ ParamEventDebitCardTransactionOccurred__expiredAmount)) ∧
+  (some (step ⨝ EventDebitCardRequest__customer) ⇔ one (step ⨝ ParamEventDebitCardRequest__customerReason)) ∧
+  (some (step ⨝ EventDebitCardTransactionOccurred__tooManyAttempts) ⇔ one (step ⨝ ParamEventDebitCardTransactionOccurred__tooManyAttemptsAmount)) ∧
+  (some (step ⨝ EventDebitCardRequest__customer) ⇔ one (step ⨝ ParamEventDebitCardRequest__customerShopLimit)) ∧
+  (some (step ⨝ EventDebitCardTransactionOccurred__wrongPin) ⇔ one (step ⨝ ParamEventDebitCardTransactionOccurred__wrongPinUsage)) ∧
+  (some (step ⨝ EventDebitCardRequest__customer) ⇔ one (step ⨝ ParamEventDebitCardRequest__customerAtmLimit)) ∧
+  (some (step ⨝ EventMoneySubtract) ⇔ one (step ⨝ ParamEventMoneySubtractOther)) ∧
+  (some (step ⨝ EventDebitCardRequest__stolen) ⇔ one (step ⨝ ParamEventDebitCardRequest__stolenAccountNumber)) ∧
+  (some (step ⨝ EventDateAfter) ⇔ one (step ⨝ ParamEventDateAfterOther)) ∧
+  (some (step ⨝ EventDebitCardRequest__lost) ⇔ one (step ⨝ ParamEventDebitCardRequest__lostExpiry)) ∧
+  (some (step ⨝ EventDebitCardRequest__new) ⇔ one (step ⨝ ParamEventDebitCardRequest__newExpiry)) ∧
+  (some (step ⨝ EventDebitCardRequest__expired) ⇔ one (step ⨝ ParamEventDebitCardRequest__expiredExpiry)) ∧
+  (some (step ⨝ EventDebitCardTransactionOccurred__ok) ⇔ one (step ⨝ ParamEventDebitCardTransactionOccurred__okPinHash)) ∧
+  (some (step ⨝ EventDebitCardTransactionOccurred__wrongPin) ⇔ one (step ⨝ ParamEventDebitCardTransactionOccurred__wrongPinAmount)) ∧
+  (some (step ⨝ EventDebitCardRequest__customer) ⇔ one (step ⨝ ParamEventDebitCardRequest__customerAccountNumber)) ∧
+  (some (step ⨝ EventDebitCardRequest__stolen) ⇔ one (step ⨝ ParamEventDebitCardRequest__stolenShopLimit)) ∧
+  (some (step ⨝ EventMoneyAdd) ⇔ one (step ⨝ ParamEventMoneyAddOther)) ∧
+  (some (step ⨝ EventDebitCardRequest__customer) ⇔ one (step ⨝ ParamEventDebitCardRequest__customerReqDate)) ∧
+  (some (step ⨝ EventDebitCardRequest__stolen) ⇔ one (step ⨝ ParamEventDebitCardRequest__stolenExpiry)) ∧
+  (some (step ⨝ EventDebitCardTransactionOccurred__wrongPin) ⇔ one (step ⨝ ParamEventDebitCardTransactionOccurred__wrongPinPinHash))
+)
+// Generic: All configurations are reachable
+∀ c ∈ Config ∖ first | c ⊆ (first[config as cur] ⨝ ^order)[nxt -> config]
+
+// Generic: Every transition can only happen by exactly one event
+∀ o ∈ order | one o ⨝ raisedEvent
+
+// Specif: In every configuration all machines have a state IFF its a machine which is not empty
+∀ c ∈ Config, inst ∈ (Instance ∖ ((IBAN ∪ Boolean ∪ Usage ∪ Currency ∪ RequestReason) ⨝ Instance)) | one instanceInState ⨝ c ⨝ inst
+
+// Specific per machine: In every configuration iff a machine is in an initialized state then it must have values
+// for Money
+∀ c ∈ Config, inst ∈ (Instance ⨝ Money)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇔ one MoneyAmount ⨝ c ⨝ inst)
+∀ c ∈ Config, inst ∈ (Instance ⨝ Money)[instance] | (no (((c ⨯ inst) ⨝ instanceInState)[state] ∩ initialized) ⇒ no MoneyCurrency ⨝ c ⨝ inst)
+∀ c ∈ Config, inst ∈ (Instance ⨝ Money)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇒ one MoneyCurrency ⨝ c ⨝ inst)
+// for IBAN
+∀ c ∈ Config, inst ∈ (Instance ⨝ IBAN)[instance] | one IBANNumber ⨝ c ⨝ inst
+// for Date
+∀ c ∈ Config, inst ∈ (Instance ⨝ Date)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇔ one DateNr ⨝ c ⨝ inst)
+∀ c ∈ Config, inst ∈ (Instance ⨝ Date)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇔ one DateYear ⨝ c ⨝ inst)
+∀ c ∈ Config, inst ∈ (Instance ⨝ Date)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇔ one DateMonth ⨝ c ⨝ inst)
+∀ c ∈ Config, inst ∈ (Instance ⨝ Date)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇔ one DateDay ⨝ c ⨝ inst)
+// for DebitCard
+∀ c ∈ Config, inst ∈ (Instance ⨝ DebitCard)[instance] | (no (((c ⨯ inst) ⨝ instanceInState)[state] ∩ initialized) ⇒ no DebitCardAccountNumber ⨝ c ⨝ inst)
+∀ c ∈ Config, inst ∈ (Instance ⨝ DebitCard)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇒ one DebitCardAccountNumber ⨝ c ⨝ inst)
+∀ c ∈ Config, inst ∈ (Instance ⨝ DebitCard)[instance] | (no (((c ⨯ inst) ⨝ instanceInState)[state] ∩ initialized) ⇒ no DebitCardShopLimit ⨝ c ⨝ inst)
+∀ c ∈ Config, inst ∈ (Instance ⨝ DebitCard)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇒ one DebitCardShopLimit ⨝ c ⨝ inst)
+∀ c ∈ Config, inst ∈ (Instance ⨝ DebitCard)[instance] | (no (((c ⨯ inst) ⨝ instanceInState)[state] ∩ initialized) ⇒ no DebitCardAtmLimit ⨝ c ⨝ inst)
+∀ c ∈ Config, inst ∈ (Instance ⨝ DebitCard)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇒ one DebitCardAtmLimit ⨝ c ⨝ inst)
+∀ c ∈ Config, inst ∈ (Instance ⨝ DebitCard)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇔ one DebitCardSequenceNumber ⨝ c ⨝ inst)
+∀ c ∈ Config, inst ∈ (Instance ⨝ DebitCard)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇔ one DebitCardPinHash ⨝ c ⨝ inst)
+∀ c ∈ Config, inst ∈ (Instance ⨝ DebitCard)[instance] | (no (((c ⨯ inst) ⨝ instanceInState)[state] ∩ initialized) ⇒ no DebitCardExpiry ⨝ c ⨝ inst)
+∀ c ∈ Config, inst ∈ (Instance ⨝ DebitCard)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇒ one DebitCardExpiry ⨝ c ⨝ inst)
+∀ c ∈ Config, inst ∈ (Instance ⨝ DebitCard)[instance] | (no (((c ⨯ inst) ⨝ instanceInState)[state] ∩ initialized) ⇒ no DebitCardRequestReason ⨝ c ⨝ inst)
+∀ c ∈ Config, inst ∈ (Instance ⨝ DebitCard)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇒ one DebitCardRequestReason ⨝ c ⨝ inst)
+∀ c ∈ Config, inst ∈ (Instance ⨝ DebitCard)[instance] | (no (((c ⨯ inst) ⨝ instanceInState)[state] ∩ initialized) ⇒ no DebitCardCreatedOn ⨝ c ⨝ inst)
+∀ c ∈ Config, inst ∈ (Instance ⨝ DebitCard)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇒ one DebitCardCreatedOn ⨝ c ⨝ inst)
+∀ c ∈ Config, inst ∈ (Instance ⨝ DebitCard)[instance] | (no (((c ⨯ inst) ⨝ instanceInState)[state] ∩ initialized) ⇒ no DebitCardClosedOn ⨝ c ⨝ inst)
+∀ c ∈ Config, inst ∈ (Instance ⨝ DebitCard)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇒ lone DebitCardClosedOn ⨝ c ⨝ inst)
+∀ c ∈ Config, inst ∈ (Instance ⨝ DebitCard)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇔ one DebitCardNrOfWrongPinEntries ⨝ c ⨝ inst)
+∀ c ∈ Config, inst ∈ (Instance ⨝ DebitCard)[instance] | (no (((c ⨯ inst) ⨝ instanceInState)[state] ∩ initialized) ⇒ no DebitCardPinReset ⨝ c ⨝ inst)
+∀ c ∈ Config, inst ∈ (Instance ⨝ DebitCard)[instance] | (((c ⨯ inst) ⨝ instanceInState)[state] ⊆ initialized ⇒ one DebitCardPinReset ⨝ c ⨝ inst)
+// for Limit
+// for Boolean
+// for Usage
+// for Currency
+// for RequestReason
+
+// Generic: Transitions are only allowed between if an event is specified between two states
+∀ o ∈ (order) ⨝ raisedEvent | (o[cur as config] ⨝ instanceInState)[state->from] ⨯ (o[nxt as config] ⨝ instanceInState)[state->to] ⨯ o[event] ⊆ allowedTransitions
+
+// Change set predicates
+pred inChangeSet[step: (cur:id, nxt:id), instances: (instance:id)]
+  = instances ⊆ (changedInstance ⨝ step)[instance]
+ 
+pred notInChangeSet[step: (cur:id, nxt:id), instances: (instance:id)]
+  = no instances ∩ (changedInstance ⨝ step)[instance]
+
+pred changeSetCanContain[step: (cur:id, nxt:id), instances: (instance:id)]
+  = (changedInstance ⨝ step)[instance] ⊆ instances ∪ Date_TODAY
+
+// Generic predicates
+pred forceState[curState: (state:id), nxtState: (state:id), raisedEvent: (event:id)]
+  = nxtState = (curState[state as from] ⨝ (allowedTransitions ⨝ raisedEvent))[to->state]
+
+pred inState[config: (config:id), instance: (instance:id), state: (state:id)]
+  = ((instance ⨯ config) ⨝ instanceInState)[state] ⊆ state
+
+// Event predicates for Money
+pred eventMoneyAdd[step:(cur:id, nxt:id), money: (instance:id), other: (instance:id)]
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ money)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ money)[state] |
+    ( 
+      // Preconditions 
+      money ≠ other ∧
+      (money ⨝ (MoneyCurrency ⨝ cur))[currency] = (other ⨝ (MoneyCurrency ⨝ cur))[currency]  ∧ 
+      // Postconditions
+      (money ⨝ (MoneyCurrency ⨝ nxt))[currency] = (money ⨝ (MoneyCurrency ⨝ cur))[currency] ∧
+      (some ((money ⨝ (MoneyAmount ⨝ cur))[amount][amount as cur_amount] ⨯ (other ⨝ (MoneyAmount ⨝ cur))[amount][amount as param_1_amount] ⨯ (money ⨝ (MoneyAmount ⨝ nxt))[amount][amount as nxt_amount]) where (nxt_amount = cur_amount + param_1_amount))  ∧ 
+      // Generic event conditions
+      forceState[curState, nxtState, EventMoneyAdd] ∧
+      // Make sure this instance is in the change set
+      inChangeSet[step, money]
+    )
+
+pred eventMoneySubtract[step:(cur:id, nxt:id), money: (instance:id), other: (instance:id)]
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ money)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ money)[state] |
+    ( 
+      // Preconditions 
+      money ≠ other ∧
+      (money ⨝ (MoneyCurrency ⨝ cur))[currency] = (other ⨝ (MoneyCurrency ⨝ cur))[currency]  ∧ 
+      // Postconditions
+      (money ⨝ (MoneyCurrency ⨝ nxt))[currency] = (money ⨝ (MoneyCurrency ⨝ cur))[currency] ∧
+      (some ((money ⨝ (MoneyAmount ⨝ cur))[amount][amount as cur_amount] ⨯ (other ⨝ (MoneyAmount ⨝ cur))[amount][amount as param_1_amount] ⨯ (money ⨝ (MoneyAmount ⨝ nxt))[amount][amount as nxt_amount]) where (nxt_amount = cur_amount - param_1_amount))  ∧ 
+      // Generic event conditions
+      forceState[curState, nxtState, EventMoneySubtract] ∧
+      // Make sure this instance is in the change set
+      inChangeSet[step, money]
+    )
+
+pred eventMoneyIsPositive[step:(cur:id, nxt:id), money: (instance:id)]
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ money)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ money)[state] |
+    ( 
+      // Preconditions 
+      (some ((money ⨝ (MoneyAmount ⨝ cur))[amount][amount as cur_amount]) where (cur_amount >= 0))  ∧ 
+      // Postconditions
+      (some ((money ⨝ (MoneyAmount ⨝ cur))[amount][amount as cur_amount] ⨯ (money ⨝ (MoneyAmount ⨝ nxt))[amount][amount as nxt_amount]) where (nxt_amount = cur_amount)) ∧
+      (money ⨝ (MoneyCurrency ⨝ nxt))[currency] = (money ⨝ (MoneyCurrency ⨝ cur))[currency]  ∧ 
+      // Generic event conditions
+      forceState[curState, nxtState, EventMoneyIsPositive] ∧
+      // Make sure this instance is in the change set
+      inChangeSet[step, money]
+    )
+
+pred eventMoneyIsNegative[step:(cur:id, nxt:id), money: (instance:id)]
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ money)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ money)[state] |
+    ( 
+      // Preconditions 
+      (some ((money ⨝ (MoneyAmount ⨝ cur))[amount][amount as cur_amount]) where (cur_amount < 0))  ∧ 
+      // Postconditions
+      (some ((money ⨝ (MoneyAmount ⨝ cur))[amount][amount as cur_amount] ⨯ (money ⨝ (MoneyAmount ⨝ nxt))[amount][amount as nxt_amount]) where (nxt_amount = cur_amount)) ∧
+      (money ⨝ (MoneyCurrency ⨝ nxt))[currency] = (money ⨝ (MoneyCurrency ⨝ cur))[currency]  ∧ 
+      // Generic event conditions
+      forceState[curState, nxtState, EventMoneyIsNegative] ∧
+      // Make sure this instance is in the change set
+      inChangeSet[step, money]
+    )
+
+pred frameMoney[step: (cur:id, nxt:id), money: (instance:id)] 
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ money)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ money)[state] | (
+    nxtState = curState ∧
+    (
+      curState ⊆ uninitialized ∨ 
+      (// Postconditions
+       (some ((money ⨝ (MoneyAmount ⨝ cur))[amount][amount as cur_amount] ⨯ (money ⨝ (MoneyAmount ⨝ nxt))[amount][amount as nxt_amount]) where (nxt_amount = cur_amount)) ∧
+       (money ⨝ (MoneyCurrency ⨝ nxt))[currency] = (money ⨝ (MoneyCurrency ⨝ cur))[currency])
+    )
+  )
+
+// Event predicates for IBAN
+pred frameIBAN[step: (cur:id, nxt:id), iban: (instance:id)] 
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ iban)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ iban)[state] | (
+    nxtState = curState ∧
+    (
+      curState ⊆ uninitialized ∨ 
+      (// Postconditions
+       (some ((iban ⨝ (IBANNumber ⨝ nxt))[number][number as nxt_number] ⨯ (iban ⨝ (IBANNumber ⨝ cur))[number][number as cur_number]) where (nxt_number = cur_number)))
+    )
+  )
+
+// Event predicates for Date
+pred eventDateBeforeOrOnToday[step:(cur:id, nxt:id), date: (instance:id)]
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ date)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ date)[state] |
+    ( 
+      // Preconditions 
+      (some ((Date_TODAY ⨝ (DateNr ⨝ cur))[nr][nr as TODAY_nr_1] ⨯ (date ⨝ (DateNr ⨝ cur))[nr][nr as cur_nr]) where (cur_nr <= TODAY_nr_1))  ∧ 
+      // Postconditions
+      (some ((date ⨝ (DateYear ⨝ cur))[year][year as cur_year] ⨯ (date ⨝ (DateYear ⨝ nxt))[year][year as nxt_year]) where (nxt_year = cur_year)) ∧
+      (some ((date ⨝ (DateDay ⨝ nxt))[day][day as nxt_day] ⨯ (date ⨝ (DateDay ⨝ cur))[day][day as cur_day]) where (nxt_day = cur_day)) ∧
+      (some ((date ⨝ (DateNr ⨝ nxt))[nr][nr as nxt_nr] ⨯ (date ⨝ (DateNr ⨝ cur))[nr][nr as cur_nr]) where (nxt_nr = cur_nr)) ∧
+      (some ((date ⨝ (DateMonth ⨝ cur))[month][month as cur_month] ⨯ (date ⨝ (DateMonth ⨝ nxt))[month][month as nxt_month]) where (nxt_month = cur_month))  ∧ 
+      // Generic event conditions
+      forceState[curState, nxtState, EventDateBeforeOrOnToday] ∧
+      // Make sure this instance is in the change set
+      inChangeSet[step, date]
+    )
+
+pred eventDateBeforeToday[step:(cur:id, nxt:id), date: (instance:id)]
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ date)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ date)[state] |
+    ( 
+      // Preconditions 
+      (some ((Date_TODAY ⨝ (DateNr ⨝ cur))[nr][nr as TODAY_nr_1] ⨯ (date ⨝ (DateNr ⨝ cur))[nr][nr as cur_nr]) where (cur_nr < TODAY_nr_1))  ∧ 
+      // Postconditions
+      (some ((date ⨝ (DateYear ⨝ cur))[year][year as cur_year] ⨯ (date ⨝ (DateYear ⨝ nxt))[year][year as nxt_year]) where (nxt_year = cur_year)) ∧
+      (some ((date ⨝ (DateDay ⨝ nxt))[day][day as nxt_day] ⨯ (date ⨝ (DateDay ⨝ cur))[day][day as cur_day]) where (nxt_day = cur_day)) ∧
+      (some ((date ⨝ (DateNr ⨝ nxt))[nr][nr as nxt_nr] ⨯ (date ⨝ (DateNr ⨝ cur))[nr][nr as cur_nr]) where (nxt_nr = cur_nr)) ∧
+      (some ((date ⨝ (DateMonth ⨝ cur))[month][month as cur_month] ⨯ (date ⨝ (DateMonth ⨝ nxt))[month][month as nxt_month]) where (nxt_month = cur_month))  ∧ 
+      // Generic event conditions
+      forceState[curState, nxtState, EventDateBeforeToday] ∧
+      // Make sure this instance is in the change set
+      inChangeSet[step, date]
+    )
+
+pred eventDateAfterOrOnToday[step:(cur:id, nxt:id), date: (instance:id)]
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ date)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ date)[state] |
+    ( 
+      // Preconditions 
+      (some ((Date_TODAY ⨝ (DateNr ⨝ cur))[nr][nr as TODAY_nr_1] ⨯ (date ⨝ (DateNr ⨝ cur))[nr][nr as cur_nr]) where (cur_nr >= TODAY_nr_1))  ∧ 
+      // Postconditions
+      (some ((date ⨝ (DateYear ⨝ cur))[year][year as cur_year] ⨯ (date ⨝ (DateYear ⨝ nxt))[year][year as nxt_year]) where (nxt_year = cur_year)) ∧
+      (some ((date ⨝ (DateDay ⨝ nxt))[day][day as nxt_day] ⨯ (date ⨝ (DateDay ⨝ cur))[day][day as cur_day]) where (nxt_day = cur_day)) ∧
+      (some ((date ⨝ (DateNr ⨝ nxt))[nr][nr as nxt_nr] ⨯ (date ⨝ (DateNr ⨝ cur))[nr][nr as cur_nr]) where (nxt_nr = cur_nr)) ∧
+      (some ((date ⨝ (DateMonth ⨝ cur))[month][month as cur_month] ⨯ (date ⨝ (DateMonth ⨝ nxt))[month][month as nxt_month]) where (nxt_month = cur_month))  ∧ 
+      // Generic event conditions
+      forceState[curState, nxtState, EventDateAfterOrOnToday] ∧
+      // Make sure this instance is in the change set
+      inChangeSet[step, date]
+    )
+
+pred eventDateAfterToday[step:(cur:id, nxt:id), date: (instance:id)]
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ date)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ date)[state] |
+    ( 
+      // Preconditions 
+      (some ((Date_TODAY ⨝ (DateNr ⨝ cur))[nr][nr as TODAY_nr_1] ⨯ (date ⨝ (DateNr ⨝ cur))[nr][nr as cur_nr]) where (cur_nr > TODAY_nr_1))  ∧ 
+      // Postconditions
+      (some ((date ⨝ (DateYear ⨝ cur))[year][year as cur_year] ⨯ (date ⨝ (DateYear ⨝ nxt))[year][year as nxt_year]) where (nxt_year = cur_year)) ∧
+      (some ((date ⨝ (DateDay ⨝ nxt))[day][day as nxt_day] ⨯ (date ⨝ (DateDay ⨝ cur))[day][day as cur_day]) where (nxt_day = cur_day)) ∧
+      (some ((date ⨝ (DateNr ⨝ nxt))[nr][nr as nxt_nr] ⨯ (date ⨝ (DateNr ⨝ cur))[nr][nr as cur_nr]) where (nxt_nr = cur_nr)) ∧
+      (some ((date ⨝ (DateMonth ⨝ cur))[month][month as cur_month] ⨯ (date ⨝ (DateMonth ⨝ nxt))[month][month as nxt_month]) where (nxt_month = cur_month))  ∧ 
+      // Generic event conditions
+      forceState[curState, nxtState, EventDateAfterToday] ∧
+      // Make sure this instance is in the change set
+      inChangeSet[step, date]
+    )
+
+pred eventDateIsToday[step:(cur:id, nxt:id), date: (instance:id)]
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ date)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ date)[state] |
+    ( 
+      // Preconditions 
+      (some ((Date_TODAY ⨝ (DateNr ⨝ cur))[nr][nr as TODAY_nr_1] ⨯ (date ⨝ (DateNr ⨝ cur))[nr][nr as cur_nr]) where (cur_nr = TODAY_nr_1))  ∧ 
+      // Postconditions
+      (some ((date ⨝ (DateYear ⨝ cur))[year][year as cur_year] ⨯ (date ⨝ (DateYear ⨝ nxt))[year][year as nxt_year]) where (nxt_year = cur_year)) ∧
+      (some ((date ⨝ (DateDay ⨝ nxt))[day][day as nxt_day] ⨯ (date ⨝ (DateDay ⨝ cur))[day][day as cur_day]) where (nxt_day = cur_day)) ∧
+      (some ((date ⨝ (DateNr ⨝ nxt))[nr][nr as nxt_nr] ⨯ (date ⨝ (DateNr ⨝ cur))[nr][nr as cur_nr]) where (nxt_nr = cur_nr)) ∧
+      (some ((date ⨝ (DateMonth ⨝ cur))[month][month as cur_month] ⨯ (date ⨝ (DateMonth ⨝ nxt))[month][month as nxt_month]) where (nxt_month = cur_month))  ∧ 
+      // Generic event conditions
+      forceState[curState, nxtState, EventDateIsToday] ∧
+      // Make sure this instance is in the change set
+      inChangeSet[step, date]
+    )
+
+pred eventDateAfter[step:(cur:id, nxt:id), date: (instance:id), other: (instance:id)]
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ date)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ date)[state] |
+    ( 
+      // Preconditions 
+      (some ((other ⨝ (DateNr ⨝ cur))[nr][nr as param_1_nr] ⨯ (date ⨝ (DateNr ⨝ cur))[nr][nr as cur_nr]) where (cur_nr > param_1_nr))  ∧ 
+      // Postconditions
+      (some ((date ⨝ (DateYear ⨝ cur))[year][year as cur_year] ⨯ (date ⨝ (DateYear ⨝ nxt))[year][year as nxt_year]) where (nxt_year = cur_year)) ∧
+      (some ((date ⨝ (DateDay ⨝ nxt))[day][day as nxt_day] ⨯ (date ⨝ (DateDay ⨝ cur))[day][day as cur_day]) where (nxt_day = cur_day)) ∧
+      (some ((date ⨝ (DateNr ⨝ nxt))[nr][nr as nxt_nr] ⨯ (date ⨝ (DateNr ⨝ cur))[nr][nr as cur_nr]) where (nxt_nr = cur_nr)) ∧
+      (some ((date ⨝ (DateMonth ⨝ cur))[month][month as cur_month] ⨯ (date ⨝ (DateMonth ⨝ nxt))[month][month as nxt_month]) where (nxt_month = cur_month))  ∧ 
+      // Generic event conditions
+      forceState[curState, nxtState, EventDateAfter] ∧
+      // Make sure this instance is in the change set
+      inChangeSet[step, date]
+    )
+
+pred frameDate[step: (cur:id, nxt:id), date: (instance:id)] 
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ date)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ date)[state] | (
+    nxtState = curState ∧
+    (
+      curState ⊆ uninitialized ∨ 
+      (// Postconditions
+       (some ((date ⨝ (DateNr ⨝ nxt))[nr][nr as nxt_nr] ⨯ (date ⨝ (DateNr ⨝ cur))[nr][nr as cur_nr]) where (nxt_nr = cur_nr)) ∧
+       (some ((date ⨝ (DateYear ⨝ cur))[year][year as cur_year] ⨯ (date ⨝ (DateYear ⨝ nxt))[year][year as nxt_year]) where (nxt_year = cur_year)) ∧
+       (some ((date ⨝ (DateMonth ⨝ cur))[month][month as cur_month] ⨯ (date ⨝ (DateMonth ⨝ nxt))[month][month as nxt_month]) where (nxt_month = cur_month)) ∧
+       (some ((date ⨝ (DateDay ⨝ nxt))[day][day as nxt_day] ⨯ (date ⨝ (DateDay ⨝ cur))[day][day as cur_day]) where (nxt_day = cur_day)))
+    )
+  )
+
+// Event predicates for DebitCard
+pred eventDebitCardProduce[step:(cur:id, nxt:id), debitcard: (instance:id), pinHash: (pinHash:str)]
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ debitcard)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ debitcard)[state] |
+    ( 
+      // Preconditions 
+      (some (pinHash[pinHash as param_1_pinHash]) where (param_1_pinHash != ""))  ∧ 
+      // Postconditions
+      (debitcard ⨝ (DebitCardRequestReason ⨝ nxt))[requestReason] = (debitcard ⨝ (DebitCardRequestReason ⨝ cur))[requestReason] ∧
+      (debitcard ⨝ (DebitCardExpiry ⨝ nxt))[expiry] = (debitcard ⨝ (DebitCardExpiry ⨝ cur))[expiry] ∧
+      (debitcard ⨝ (DebitCardPinReset ⨝ nxt))[pinReset] = (debitcard ⨝ (DebitCardPinReset ⨝ cur))[pinReset] ∧
+      (debitcard ⨝ (DebitCardAccountNumber ⨝ nxt))[accountNumber] = (debitcard ⨝ (DebitCardAccountNumber ⨝ cur))[accountNumber] ∧
+      (some ((debitcard ⨝ (DebitCardNrOfWrongPinEntries ⨝ cur))[nrOfWrongPinEntries][nrOfWrongPinEntries as cur_nrOfWrongPinEntries] ⨯ (debitcard ⨝ (DebitCardNrOfWrongPinEntries ⨝ nxt))[nrOfWrongPinEntries][nrOfWrongPinEntries as nxt_nrOfWrongPinEntries]) where (nxt_nrOfWrongPinEntries = cur_nrOfWrongPinEntries)) ∧
+      (debitcard ⨝ (DebitCardClosedOn ⨝ nxt))[closedOn] = (debitcard ⨝ (DebitCardClosedOn ⨝ cur))[closedOn] ∧
+      (some ((debitcard ⨝ (DebitCardSequenceNumber ⨝ cur))[sequenceNumber][sequenceNumber as cur_sequenceNumber] ⨯ (debitcard ⨝ (DebitCardSequenceNumber ⨝ nxt))[sequenceNumber][sequenceNumber as nxt_sequenceNumber]) where (nxt_sequenceNumber = cur_sequenceNumber)) ∧
+      (debitcard ⨝ (DebitCardCreatedOn ⨝ nxt))[createdOn] = (debitcard ⨝ (DebitCardCreatedOn ⨝ cur))[createdOn] ∧
+      (debitcard ⨝ (DebitCardShopLimit ⨝ nxt))[shopLimit] = (debitcard ⨝ (DebitCardShopLimit ⨝ cur))[shopLimit] ∧
+      (debitcard ⨝ (DebitCardAtmLimit ⨝ nxt))[atmLimit] = (debitcard ⨝ (DebitCardAtmLimit ⨝ cur))[atmLimit] ∧
+      (some (pinHash[pinHash as param_2_pinHash] ⨯ (debitcard ⨝ (DebitCardPinHash ⨝ nxt))[pinHash][pinHash as nxt_pinHash]) where (nxt_pinHash = param_2_pinHash))  ∧ 
+      // Generic event conditions
+      forceState[curState, nxtState, EventDebitCardProduce] ∧
+      // Make sure this instance is in the change set
+      inChangeSet[step, debitcard]
+    )
+
+pred eventDebitCardActivated[step:(cur:id, nxt:id), debitcard: (instance:id)]
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ debitcard)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ debitcard)[state] |
+    ( 
+       
+      // Postconditions
+      (debitcard ⨝ (DebitCardRequestReason ⨝ nxt))[requestReason] = (debitcard ⨝ (DebitCardRequestReason ⨝ cur))[requestReason] ∧
+      (debitcard ⨝ (DebitCardExpiry ⨝ nxt))[expiry] = (debitcard ⨝ (DebitCardExpiry ⨝ cur))[expiry] ∧
+      (debitcard ⨝ (DebitCardPinReset ⨝ nxt))[pinReset] = (debitcard ⨝ (DebitCardPinReset ⨝ cur))[pinReset] ∧
+      (debitcard ⨝ (DebitCardAccountNumber ⨝ nxt))[accountNumber] = (debitcard ⨝ (DebitCardAccountNumber ⨝ cur))[accountNumber] ∧
+      (some ((debitcard ⨝ (DebitCardNrOfWrongPinEntries ⨝ cur))[nrOfWrongPinEntries][nrOfWrongPinEntries as cur_nrOfWrongPinEntries] ⨯ (debitcard ⨝ (DebitCardNrOfWrongPinEntries ⨝ nxt))[nrOfWrongPinEntries][nrOfWrongPinEntries as nxt_nrOfWrongPinEntries]) where (nxt_nrOfWrongPinEntries = cur_nrOfWrongPinEntries)) ∧
+      (debitcard ⨝ (DebitCardClosedOn ⨝ nxt))[closedOn] = (debitcard ⨝ (DebitCardClosedOn ⨝ cur))[closedOn] ∧
+      (some ((debitcard ⨝ (DebitCardSequenceNumber ⨝ cur))[sequenceNumber][sequenceNumber as cur_sequenceNumber] ⨯ (debitcard ⨝ (DebitCardSequenceNumber ⨝ nxt))[sequenceNumber][sequenceNumber as nxt_sequenceNumber]) where (nxt_sequenceNumber = cur_sequenceNumber)) ∧
+      (debitcard ⨝ (DebitCardCreatedOn ⨝ nxt))[createdOn] = (debitcard ⨝ (DebitCardCreatedOn ⨝ cur))[createdOn] ∧
+      (debitcard ⨝ (DebitCardShopLimit ⨝ nxt))[shopLimit] = (debitcard ⨝ (DebitCardShopLimit ⨝ cur))[shopLimit] ∧
+      (some ((debitcard ⨝ (DebitCardPinHash ⨝ cur))[pinHash][pinHash as cur_pinHash] ⨯ (debitcard ⨝ (DebitCardPinHash ⨝ nxt))[pinHash][pinHash as nxt_pinHash]) where (nxt_pinHash = cur_pinHash)) ∧
+      (debitcard ⨝ (DebitCardAtmLimit ⨝ nxt))[atmLimit] = (debitcard ⨝ (DebitCardAtmLimit ⨝ cur))[atmLimit]  ∧ 
+      // Generic event conditions
+      forceState[curState, nxtState, EventDebitCardActivated] ∧
+      // Make sure this instance is in the change set
+      inChangeSet[step, debitcard]
+    )
+
+pred eventDebitCardUnblocked[step:(cur:id, nxt:id), debitcard: (instance:id)]
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ debitcard)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ debitcard)[state] |
+    ( 
+      // Preconditions 
+      (debitcard ⨝ (DebitCardPinReset ⨝ cur))[pinReset] = Boolean_FALSE[instance as pinReset]  ∧ 
+      // Postconditions
+      (debitcard ⨝ (DebitCardRequestReason ⨝ nxt))[requestReason] = (debitcard ⨝ (DebitCardRequestReason ⨝ cur))[requestReason] ∧
+      (debitcard ⨝ (DebitCardExpiry ⨝ nxt))[expiry] = (debitcard ⨝ (DebitCardExpiry ⨝ cur))[expiry] ∧
+      (debitcard ⨝ (DebitCardAccountNumber ⨝ nxt))[accountNumber] = (debitcard ⨝ (DebitCardAccountNumber ⨝ cur))[accountNumber] ∧
+      (debitcard ⨝ (DebitCardClosedOn ⨝ nxt))[closedOn] = (debitcard ⨝ (DebitCardClosedOn ⨝ cur))[closedOn] ∧
+      (some ((debitcard ⨝ (DebitCardSequenceNumber ⨝ cur))[sequenceNumber][sequenceNumber as cur_sequenceNumber] ⨯ (debitcard ⨝ (DebitCardSequenceNumber ⨝ nxt))[sequenceNumber][sequenceNumber as nxt_sequenceNumber]) where (nxt_sequenceNumber = cur_sequenceNumber)) ∧
+      (debitcard ⨝ (DebitCardCreatedOn ⨝ nxt))[createdOn] = (debitcard ⨝ (DebitCardCreatedOn ⨝ cur))[createdOn] ∧
+      (debitcard ⨝ (DebitCardShopLimit ⨝ nxt))[shopLimit] = (debitcard ⨝ (DebitCardShopLimit ⨝ cur))[shopLimit] ∧
+      (some ((debitcard ⨝ (DebitCardPinHash ⨝ cur))[pinHash][pinHash as cur_pinHash] ⨯ (debitcard ⨝ (DebitCardPinHash ⨝ nxt))[pinHash][pinHash as nxt_pinHash]) where (nxt_pinHash = cur_pinHash)) ∧
+      (debitcard ⨝ (DebitCardAtmLimit ⨝ nxt))[atmLimit] = (debitcard ⨝ (DebitCardAtmLimit ⨝ cur))[atmLimit] ∧
+      (debitcard ⨝ (DebitCardPinReset ⨝ nxt))[pinReset] = Boolean_TRUE[instance as pinReset] ∧
+      (some ((debitcard ⨝ (DebitCardNrOfWrongPinEntries ⨝ nxt))[nrOfWrongPinEntries][nrOfWrongPinEntries as nxt_nrOfWrongPinEntries]) where (nxt_nrOfWrongPinEntries = 0))  ∧ 
+      // Generic event conditions
+      forceState[curState, nxtState, EventDebitCardUnblocked] ∧
+      // Make sure this instance is in the change set
+      inChangeSet[step, debitcard]
+    )
+
+pred eventDebitCardDeactivate[step:(cur:id, nxt:id), debitcard: (instance:id)]
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ debitcard)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ debitcard)[state] |
+    ( 
+       
+      // Postconditions
+      eventDateIsToday[step, (debitcard ⨝ (DebitCardClosedOn ⨝ cur))[closedOn][closedOn as instance]]  ∧ 
+      // Generic event conditions
+      forceState[curState, nxtState, EventDebitCardDeactivate] ∧
+      // Make sure this instance is in the change set
+      inChangeSet[step, debitcard]
+    )
+
+pred eventDebitCardTooManyResets[step:(cur:id, nxt:id), debitcard: (instance:id)]
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ debitcard)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ debitcard)[state] |
+    ( 
+      // Preconditions 
+      (debitcard ⨝ (DebitCardPinReset ⨝ cur))[pinReset] = Boolean_TRUE[instance as pinReset]  ∧ 
+      // Postconditions
+      eventDateIsToday[step, (debitcard ⨝ (DebitCardClosedOn ⨝ cur))[closedOn][closedOn as instance]]  ∧ 
+      // Generic event conditions
+      forceState[curState, nxtState, EventDebitCardTooManyResets] ∧
+      // Make sure this instance is in the change set
+      inChangeSet[step, debitcard]
+    )
+
+pred eventDebitCardEmpty[step:(cur:id, nxt:id), debitcard: (instance:id)]
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ debitcard)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ debitcard)[state] |
+    ( 
+       
+      // Postconditions
+      (debitcard ⨝ (DebitCardRequestReason ⨝ nxt))[requestReason] = (debitcard ⨝ (DebitCardRequestReason ⨝ cur))[requestReason] ∧
+      (debitcard ⨝ (DebitCardExpiry ⨝ nxt))[expiry] = (debitcard ⨝ (DebitCardExpiry ⨝ cur))[expiry] ∧
+      (debitcard ⨝ (DebitCardPinReset ⨝ nxt))[pinReset] = (debitcard ⨝ (DebitCardPinReset ⨝ cur))[pinReset] ∧
+      (debitcard ⨝ (DebitCardAccountNumber ⨝ nxt))[accountNumber] = (debitcard ⨝ (DebitCardAccountNumber ⨝ cur))[accountNumber] ∧
+      (some ((debitcard ⨝ (DebitCardNrOfWrongPinEntries ⨝ cur))[nrOfWrongPinEntries][nrOfWrongPinEntries as cur_nrOfWrongPinEntries] ⨯ (debitcard ⨝ (DebitCardNrOfWrongPinEntries ⨝ nxt))[nrOfWrongPinEntries][nrOfWrongPinEntries as nxt_nrOfWrongPinEntries]) where (nxt_nrOfWrongPinEntries = cur_nrOfWrongPinEntries)) ∧
+      (debitcard ⨝ (DebitCardClosedOn ⨝ nxt))[closedOn] = (debitcard ⨝ (DebitCardClosedOn ⨝ cur))[closedOn] ∧
+      (some ((debitcard ⨝ (DebitCardSequenceNumber ⨝ cur))[sequenceNumber][sequenceNumber as cur_sequenceNumber] ⨯ (debitcard ⨝ (DebitCardSequenceNumber ⨝ nxt))[sequenceNumber][sequenceNumber as nxt_sequenceNumber]) where (nxt_sequenceNumber = cur_sequenceNumber)) ∧
+      (debitcard ⨝ (DebitCardCreatedOn ⨝ nxt))[createdOn] = (debitcard ⨝ (DebitCardCreatedOn ⨝ cur))[createdOn] ∧
+      (debitcard ⨝ (DebitCardShopLimit ⨝ nxt))[shopLimit] = (debitcard ⨝ (DebitCardShopLimit ⨝ cur))[shopLimit] ∧
+      (some ((debitcard ⨝ (DebitCardPinHash ⨝ cur))[pinHash][pinHash as cur_pinHash] ⨯ (debitcard ⨝ (DebitCardPinHash ⨝ nxt))[pinHash][pinHash as nxt_pinHash]) where (nxt_pinHash = cur_pinHash)) ∧
+      (debitcard ⨝ (DebitCardAtmLimit ⨝ nxt))[atmLimit] = (debitcard ⨝ (DebitCardAtmLimit ⨝ cur))[atmLimit]  ∧ 
+      // Generic event conditions
+      forceState[curState, nxtState, EventDebitCardEmpty] ∧
+      // Make sure this instance is in the change set
+      inChangeSet[step, debitcard]
+    )
+
+pred eventDebitCardRequest__new[step:(cur:id, nxt:id), debitcard: (instance:id), accountNumber: (instance:id), reason: (instance:id), expiry: (instance:id), shopLimit: (instance:id), atmLimit: (instance:id), reqDate: (instance:id)]
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ debitcard)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ debitcard)[state] |
+    ( 
+      // Preconditions 
+      reason = RequestReason_NEW ∧
+      (some ((expiry ⨝ (DateYear ⨝ cur))[year][year as param_1_year] ⨯ (Date_TODAY ⨝ (DateYear ⨝ cur))[year][year as TODAY_year_2]) where (param_1_year = TODAY_year_2 + 5)) ∧
+      (some ((expiry ⨝ (DateMonth ⨝ cur))[month][month as param_3_month] ⨯ (Date_TODAY ⨝ (DateMonth ⨝ cur))[month][month as TODAY_month_4]) where (param_3_month = TODAY_month_4)) ∧
+      (some ((Date_TODAY ⨝ (DateDay ⨝ cur))[day][day as TODAY_day_6] ⨯ (expiry ⨝ (DateDay ⨝ cur))[day][day as param_5_day]) where (param_5_day = TODAY_day_6)) ∧
+      eventDateIsToday[step, reqDate]  ∧ 
+      // Postconditions
+      (debitcard ⨝ (DebitCardAccountNumber ⨝ nxt))[accountNumber] = accountNumber[instance as accountNumber] ∧
+      (debitcard ⨝ (DebitCardShopLimit ⨝ nxt))[shopLimit] = shopLimit[instance as shopLimit] ∧
+      (debitcard ⨝ (DebitCardAtmLimit ⨝ nxt))[atmLimit] = atmLimit[instance as atmLimit] ∧
+      (debitcard ⨝ (DebitCardExpiry ⨝ nxt))[expiry] = expiry[instance as expiry] ∧
+      (debitcard ⨝ (DebitCardRequestReason ⨝ nxt))[requestReason] = reason[instance as requestReason] ∧
+      (debitcard ⨝ (DebitCardCreatedOn ⨝ nxt))[createdOn] = reqDate[instance as createdOn] ∧
+      (some ((debitcard ⨝ (DebitCardPinHash ⨝ nxt))[pinHash][pinHash as nxt_pinHash]) where (nxt_pinHash = "")) ∧
+      no (debitcard ⨝ (DebitCardClosedOn ⨝ nxt))[closedOn] ∧
+      (debitcard ⨝ (DebitCardPinReset ⨝ nxt))[pinReset] = Boolean_FALSE[instance as pinReset] ∧
+      (some ((debitcard ⨝ (DebitCardNrOfWrongPinEntries ⨝ nxt))[nrOfWrongPinEntries][nrOfWrongPinEntries as nxt_nrOfWrongPinEntries]) where (nxt_nrOfWrongPinEntries = 0))  ∧ 
+      // Generic event conditions
+      forceState[curState, nxtState, EventDebitCardRequest__new] ∧
+      // Make sure this instance is in the change set
+      inChangeSet[step, debitcard]
+    )
+
+pred eventDebitCardRequest__stolen[step:(cur:id, nxt:id), debitcard: (instance:id), accountNumber: (instance:id), reason: (instance:id), expiry: (instance:id), shopLimit: (instance:id), atmLimit: (instance:id), reqDate: (instance:id)]
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ debitcard)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ debitcard)[state] |
+    ( 
+      // Preconditions 
+      reason = RequestReason_STOLEN ∧
+      (some ((expiry ⨝ (DateYear ⨝ cur))[year][year as param_1_year] ⨯ (Date_TODAY ⨝ (DateYear ⨝ cur))[year][year as TODAY_year_2]) where (param_1_year = TODAY_year_2 + 5)) ∧
+      (some ((expiry ⨝ (DateMonth ⨝ cur))[month][month as param_3_month] ⨯ (Date_TODAY ⨝ (DateMonth ⨝ cur))[month][month as TODAY_month_4]) where (param_3_month = TODAY_month_4)) ∧
+      (some ((Date_TODAY ⨝ (DateDay ⨝ cur))[day][day as TODAY_day_6] ⨯ (expiry ⨝ (DateDay ⨝ cur))[day][day as param_5_day]) where (param_5_day = TODAY_day_6)) ∧
+      eventDateIsToday[step, reqDate]  ∧ 
+      // Postconditions
+      (debitcard ⨝ (DebitCardAccountNumber ⨝ nxt))[accountNumber] = accountNumber[instance as accountNumber] ∧
+      (debitcard ⨝ (DebitCardShopLimit ⨝ nxt))[shopLimit] = shopLimit[instance as shopLimit] ∧
+      (debitcard ⨝ (DebitCardAtmLimit ⨝ nxt))[atmLimit] = atmLimit[instance as atmLimit] ∧
+      (debitcard ⨝ (DebitCardExpiry ⨝ nxt))[expiry] = expiry[instance as expiry] ∧
+      (debitcard ⨝ (DebitCardRequestReason ⨝ nxt))[requestReason] = reason[instance as requestReason] ∧
+      (debitcard ⨝ (DebitCardCreatedOn ⨝ nxt))[createdOn] = reqDate[instance as createdOn] ∧
+      (some ((debitcard ⨝ (DebitCardPinHash ⨝ nxt))[pinHash][pinHash as nxt_pinHash]) where (nxt_pinHash = "")) ∧
+      no (debitcard ⨝ (DebitCardClosedOn ⨝ nxt))[closedOn] ∧
+      (debitcard ⨝ (DebitCardPinReset ⨝ nxt))[pinReset] = Boolean_FALSE[instance as pinReset] ∧
+      (some ((debitcard ⨝ (DebitCardNrOfWrongPinEntries ⨝ nxt))[nrOfWrongPinEntries][nrOfWrongPinEntries as nxt_nrOfWrongPinEntries]) where (nxt_nrOfWrongPinEntries = 0))  ∧ 
+      // Generic event conditions
+      forceState[curState, nxtState, EventDebitCardRequest__stolen] ∧
+      // Make sure this instance is in the change set
+      inChangeSet[step, debitcard]
+    )
+
+pred eventDebitCardRequest__lost[step:(cur:id, nxt:id), debitcard: (instance:id), accountNumber: (instance:id), reason: (instance:id), expiry: (instance:id), shopLimit: (instance:id), atmLimit: (instance:id), reqDate: (instance:id)]
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ debitcard)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ debitcard)[state] |
+    ( 
+      // Preconditions 
+      reason = RequestReason_LOST ∧
+      (some ((expiry ⨝ (DateYear ⨝ cur))[year][year as param_1_year] ⨯ (Date_TODAY ⨝ (DateYear ⨝ cur))[year][year as TODAY_year_2]) where (param_1_year = TODAY_year_2 + 5)) ∧
+      (some ((expiry ⨝ (DateMonth ⨝ cur))[month][month as param_3_month] ⨯ (Date_TODAY ⨝ (DateMonth ⨝ cur))[month][month as TODAY_month_4]) where (param_3_month = TODAY_month_4)) ∧
+      (some ((Date_TODAY ⨝ (DateDay ⨝ cur))[day][day as TODAY_day_6] ⨯ (expiry ⨝ (DateDay ⨝ cur))[day][day as param_5_day]) where (param_5_day = TODAY_day_6)) ∧
+      eventDateIsToday[step, reqDate]  ∧ 
+      // Postconditions
+      (debitcard ⨝ (DebitCardAccountNumber ⨝ nxt))[accountNumber] = accountNumber[instance as accountNumber] ∧
+      (debitcard ⨝ (DebitCardShopLimit ⨝ nxt))[shopLimit] = shopLimit[instance as shopLimit] ∧
+      (debitcard ⨝ (DebitCardAtmLimit ⨝ nxt))[atmLimit] = atmLimit[instance as atmLimit] ∧
+      (debitcard ⨝ (DebitCardExpiry ⨝ nxt))[expiry] = expiry[instance as expiry] ∧
+      (debitcard ⨝ (DebitCardRequestReason ⨝ nxt))[requestReason] = reason[instance as requestReason] ∧
+      (debitcard ⨝ (DebitCardCreatedOn ⨝ nxt))[createdOn] = reqDate[instance as createdOn] ∧
+      (some ((debitcard ⨝ (DebitCardPinHash ⨝ nxt))[pinHash][pinHash as nxt_pinHash]) where (nxt_pinHash = "")) ∧
+      no (debitcard ⨝ (DebitCardClosedOn ⨝ nxt))[closedOn] ∧
+      (debitcard ⨝ (DebitCardPinReset ⨝ nxt))[pinReset] = Boolean_FALSE[instance as pinReset] ∧
+      (some ((debitcard ⨝ (DebitCardNrOfWrongPinEntries ⨝ nxt))[nrOfWrongPinEntries][nrOfWrongPinEntries as nxt_nrOfWrongPinEntries]) where (nxt_nrOfWrongPinEntries = 0))  ∧ 
+      // Generic event conditions
+      forceState[curState, nxtState, EventDebitCardRequest__lost] ∧
+      // Make sure this instance is in the change set
+      inChangeSet[step, debitcard]
+    )
+
+pred eventDebitCardRequest__expired[step:(cur:id, nxt:id), debitcard: (instance:id), accountNumber: (instance:id), reason: (instance:id), expiry: (instance:id), shopLimit: (instance:id), atmLimit: (instance:id), reqDate: (instance:id)]
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ debitcard)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ debitcard)[state] |
+    ( 
+      // Preconditions 
+      reason = RequestReason_EXPIRED ∧
+      (some ((expiry ⨝ (DateYear ⨝ cur))[year][year as param_1_year] ⨯ (Date_TODAY ⨝ (DateYear ⨝ cur))[year][year as TODAY_year_2]) where (param_1_year = TODAY_year_2 + 5)) ∧
+      (some ((expiry ⨝ (DateMonth ⨝ cur))[month][month as param_3_month] ⨯ (Date_TODAY ⨝ (DateMonth ⨝ cur))[month][month as TODAY_month_4]) where (param_3_month = TODAY_month_4)) ∧
+      (some ((Date_TODAY ⨝ (DateDay ⨝ cur))[day][day as TODAY_day_6] ⨯ (expiry ⨝ (DateDay ⨝ cur))[day][day as param_5_day]) where (param_5_day = TODAY_day_6)) ∧
+      eventDateIsToday[step, reqDate]  ∧ 
+      // Postconditions
+      (debitcard ⨝ (DebitCardAccountNumber ⨝ nxt))[accountNumber] = accountNumber[instance as accountNumber] ∧
+      (debitcard ⨝ (DebitCardShopLimit ⨝ nxt))[shopLimit] = shopLimit[instance as shopLimit] ∧
+      (debitcard ⨝ (DebitCardAtmLimit ⨝ nxt))[atmLimit] = atmLimit[instance as atmLimit] ∧
+      (debitcard ⨝ (DebitCardExpiry ⨝ nxt))[expiry] = expiry[instance as expiry] ∧
+      (debitcard ⨝ (DebitCardRequestReason ⨝ nxt))[requestReason] = reason[instance as requestReason] ∧
+      (debitcard ⨝ (DebitCardCreatedOn ⨝ nxt))[createdOn] = reqDate[instance as createdOn] ∧
+      (some ((debitcard ⨝ (DebitCardPinHash ⨝ nxt))[pinHash][pinHash as nxt_pinHash]) where (nxt_pinHash = "")) ∧
+      no (debitcard ⨝ (DebitCardClosedOn ⨝ nxt))[closedOn] ∧
+      (debitcard ⨝ (DebitCardPinReset ⨝ nxt))[pinReset] = Boolean_FALSE[instance as pinReset] ∧
+      (some ((debitcard ⨝ (DebitCardNrOfWrongPinEntries ⨝ nxt))[nrOfWrongPinEntries][nrOfWrongPinEntries as nxt_nrOfWrongPinEntries]) where (nxt_nrOfWrongPinEntries = 0))  ∧ 
+      // Generic event conditions
+      forceState[curState, nxtState, EventDebitCardRequest__expired] ∧
+      // Make sure this instance is in the change set
+      inChangeSet[step, debitcard]
+    )
+
+pred eventDebitCardRequest__customer[step:(cur:id, nxt:id), debitcard: (instance:id), accountNumber: (instance:id), reason: (instance:id), expiry: (instance:id), shopLimit: (instance:id), atmLimit: (instance:id), reqDate: (instance:id)]
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ debitcard)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ debitcard)[state] |
+    ( 
+      // Preconditions 
+      reason = RequestReason_CUSTOMER ∧
+      (some ((expiry ⨝ (DateYear ⨝ cur))[year][year as param_1_year] ⨯ (Date_TODAY ⨝ (DateYear ⨝ cur))[year][year as TODAY_year_2]) where (param_1_year = TODAY_year_2 + 5)) ∧
+      (some ((expiry ⨝ (DateMonth ⨝ cur))[month][month as param_3_month] ⨯ (Date_TODAY ⨝ (DateMonth ⨝ cur))[month][month as TODAY_month_4]) where (param_3_month = TODAY_month_4)) ∧
+      (some ((Date_TODAY ⨝ (DateDay ⨝ cur))[day][day as TODAY_day_6] ⨯ (expiry ⨝ (DateDay ⨝ cur))[day][day as param_5_day]) where (param_5_day = TODAY_day_6)) ∧
+      eventDateIsToday[step, reqDate]  ∧ 
+      // Postconditions
+      (debitcard ⨝ (DebitCardAccountNumber ⨝ nxt))[accountNumber] = accountNumber[instance as accountNumber] ∧
+      (debitcard ⨝ (DebitCardShopLimit ⨝ nxt))[shopLimit] = shopLimit[instance as shopLimit] ∧
+      (debitcard ⨝ (DebitCardAtmLimit ⨝ nxt))[atmLimit] = atmLimit[instance as atmLimit] ∧
+      (debitcard ⨝ (DebitCardExpiry ⨝ nxt))[expiry] = expiry[instance as expiry] ∧
+      (debitcard ⨝ (DebitCardRequestReason ⨝ nxt))[requestReason] = reason[instance as requestReason] ∧
+      (debitcard ⨝ (DebitCardCreatedOn ⨝ nxt))[createdOn] = reqDate[instance as createdOn] ∧
+      (some ((debitcard ⨝ (DebitCardPinHash ⨝ nxt))[pinHash][pinHash as nxt_pinHash]) where (nxt_pinHash = "")) ∧
+      no (debitcard ⨝ (DebitCardClosedOn ⨝ nxt))[closedOn] ∧
+      (debitcard ⨝ (DebitCardPinReset ⨝ nxt))[pinReset] = Boolean_FALSE[instance as pinReset] ∧
+      (some ((debitcard ⨝ (DebitCardNrOfWrongPinEntries ⨝ nxt))[nrOfWrongPinEntries][nrOfWrongPinEntries as nxt_nrOfWrongPinEntries]) where (nxt_nrOfWrongPinEntries = 0))  ∧ 
+      // Generic event conditions
+      forceState[curState, nxtState, EventDebitCardRequest__customer] ∧
+      // Make sure this instance is in the change set
+      inChangeSet[step, debitcard]
+    )
+
+pred eventDebitCardTransactionOccurred__ok[step:(cur:id, nxt:id), debitcard: (instance:id), pinHash: (pinHash:str), amount: (instance:id), usage: (instance:id)]
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ debitcard)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ debitcard)[state] |
+    ( 
+      // Preconditions 
+      ((((usage = Usage_SHOP) ⇒ eventLimitCheckAndRegister[step, (debitcard ⨝ (DebitCardShopLimit ⨝ cur))[shopLimit][shopLimit as instance]])) ∧ ((¬ (((usage = Usage_SHOP))) ⇒ eventLimitSkip[step, (debitcard ⨝ (DebitCardShopLimit ⨝ cur))[shopLimit][shopLimit as instance]]))) ∧
+      ((((usage = Usage_ATM) ⇒ eventLimitCheckAndRegister[step, (debitcard ⨝ (DebitCardAtmLimit ⨝ cur))[atmLimit][atmLimit as instance]])) ∧ ((¬ (((usage = Usage_ATM))) ⇒ eventLimitSkip[step, (debitcard ⨝ (DebitCardAtmLimit ⨝ cur))[atmLimit][atmLimit as instance]]))) ∧
+      eventDateAfterToday[step, (debitcard ⨝ (DebitCardExpiry ⨝ cur))[expiry][expiry as instance]] ∧
+      (some ((debitcard ⨝ (DebitCardPinHash ⨝ cur))[pinHash][pinHash as cur_pinHash] ⨯ pinHash[pinHash as param_1_pinHash]) where (cur_pinHash = param_1_pinHash))  ∧ 
+      // Postconditions
+      (debitcard ⨝ (DebitCardRequestReason ⨝ nxt))[requestReason] = (debitcard ⨝ (DebitCardRequestReason ⨝ cur))[requestReason] ∧
+      (debitcard ⨝ (DebitCardExpiry ⨝ nxt))[expiry] = (debitcard ⨝ (DebitCardExpiry ⨝ cur))[expiry] ∧
+      (debitcard ⨝ (DebitCardPinReset ⨝ nxt))[pinReset] = (debitcard ⨝ (DebitCardPinReset ⨝ cur))[pinReset] ∧
+      (debitcard ⨝ (DebitCardAccountNumber ⨝ nxt))[accountNumber] = (debitcard ⨝ (DebitCardAccountNumber ⨝ cur))[accountNumber] ∧
+      (debitcard ⨝ (DebitCardClosedOn ⨝ nxt))[closedOn] = (debitcard ⨝ (DebitCardClosedOn ⨝ cur))[closedOn] ∧
+      (some ((debitcard ⨝ (DebitCardSequenceNumber ⨝ cur))[sequenceNumber][sequenceNumber as cur_sequenceNumber] ⨯ (debitcard ⨝ (DebitCardSequenceNumber ⨝ nxt))[sequenceNumber][sequenceNumber as nxt_sequenceNumber]) where (nxt_sequenceNumber = cur_sequenceNumber)) ∧
+      (debitcard ⨝ (DebitCardCreatedOn ⨝ nxt))[createdOn] = (debitcard ⨝ (DebitCardCreatedOn ⨝ cur))[createdOn] ∧
+      (debitcard ⨝ (DebitCardShopLimit ⨝ nxt))[shopLimit] = (debitcard ⨝ (DebitCardShopLimit ⨝ cur))[shopLimit] ∧
+      (some ((debitcard ⨝ (DebitCardPinHash ⨝ cur))[pinHash][pinHash as cur_pinHash] ⨯ (debitcard ⨝ (DebitCardPinHash ⨝ nxt))[pinHash][pinHash as nxt_pinHash]) where (nxt_pinHash = cur_pinHash)) ∧
+      (debitcard ⨝ (DebitCardAtmLimit ⨝ nxt))[atmLimit] = (debitcard ⨝ (DebitCardAtmLimit ⨝ cur))[atmLimit] ∧
+      (some ((debitcard ⨝ (DebitCardNrOfWrongPinEntries ⨝ nxt))[nrOfWrongPinEntries][nrOfWrongPinEntries as nxt_nrOfWrongPinEntries]) where (nxt_nrOfWrongPinEntries = 0))  ∧ 
+      // Generic event conditions
+      forceState[curState, nxtState, EventDebitCardTransactionOccurred__ok] ∧
+      // Make sure this instance is in the change set
+      inChangeSet[step, debitcard]
+    )
+
+pred eventDebitCardTransactionOccurred__wrongPin[step:(cur:id, nxt:id), debitcard: (instance:id), pinHash: (pinHash:str), amount: (instance:id), usage: (instance:id)]
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ debitcard)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ debitcard)[state] |
+    ( 
+      // Preconditions 
+      (eventDateIsToday[step, (debitcard ⨝ (DebitCardExpiry ⨝ cur))[expiry][expiry as instance]] ∨ eventDateAfterToday[step, (debitcard ⨝ (DebitCardExpiry ⨝ cur))[expiry][expiry as instance]]) ∧
+      (some ((debitcard ⨝ (DebitCardNrOfWrongPinEntries ⨝ cur))[nrOfWrongPinEntries][nrOfWrongPinEntries as cur_nrOfWrongPinEntries]) where (cur_nrOfWrongPinEntries < 3)) ∧
+      (some ((debitcard ⨝ (DebitCardPinHash ⨝ cur))[pinHash][pinHash as cur_pinHash] ⨯ pinHash[pinHash as param_1_pinHash]) where (cur_pinHash != param_1_pinHash))  ∧ 
+      // Postconditions
+      (debitcard ⨝ (DebitCardRequestReason ⨝ nxt))[requestReason] = (debitcard ⨝ (DebitCardRequestReason ⨝ cur))[requestReason] ∧
+      (debitcard ⨝ (DebitCardExpiry ⨝ nxt))[expiry] = (debitcard ⨝ (DebitCardExpiry ⨝ cur))[expiry] ∧
+      (debitcard ⨝ (DebitCardPinReset ⨝ nxt))[pinReset] = (debitcard ⨝ (DebitCardPinReset ⨝ cur))[pinReset] ∧
+      (debitcard ⨝ (DebitCardAccountNumber ⨝ nxt))[accountNumber] = (debitcard ⨝ (DebitCardAccountNumber ⨝ cur))[accountNumber] ∧
+      (debitcard ⨝ (DebitCardClosedOn ⨝ nxt))[closedOn] = (debitcard ⨝ (DebitCardClosedOn ⨝ cur))[closedOn] ∧
+      (some ((debitcard ⨝ (DebitCardSequenceNumber ⨝ cur))[sequenceNumber][sequenceNumber as cur_sequenceNumber] ⨯ (debitcard ⨝ (DebitCardSequenceNumber ⨝ nxt))[sequenceNumber][sequenceNumber as nxt_sequenceNumber]) where (nxt_sequenceNumber = cur_sequenceNumber)) ∧
+      (debitcard ⨝ (DebitCardCreatedOn ⨝ nxt))[createdOn] = (debitcard ⨝ (DebitCardCreatedOn ⨝ cur))[createdOn] ∧
+      (debitcard ⨝ (DebitCardShopLimit ⨝ nxt))[shopLimit] = (debitcard ⨝ (DebitCardShopLimit ⨝ cur))[shopLimit] ∧
+      (some ((debitcard ⨝ (DebitCardPinHash ⨝ cur))[pinHash][pinHash as cur_pinHash] ⨯ (debitcard ⨝ (DebitCardPinHash ⨝ nxt))[pinHash][pinHash as nxt_pinHash]) where (nxt_pinHash = cur_pinHash)) ∧
+      (debitcard ⨝ (DebitCardAtmLimit ⨝ nxt))[atmLimit] = (debitcard ⨝ (DebitCardAtmLimit ⨝ cur))[atmLimit] ∧
+      (some ((debitcard ⨝ (DebitCardNrOfWrongPinEntries ⨝ cur))[nrOfWrongPinEntries][nrOfWrongPinEntries as cur_nrOfWrongPinEntries] ⨯ (debitcard ⨝ (DebitCardNrOfWrongPinEntries ⨝ nxt))[nrOfWrongPinEntries][nrOfWrongPinEntries as nxt_nrOfWrongPinEntries]) where (nxt_nrOfWrongPinEntries = cur_nrOfWrongPinEntries + 1))  ∧ 
+      // Generic event conditions
+      forceState[curState, nxtState, EventDebitCardTransactionOccurred__wrongPin] ∧
+      // Make sure this instance is in the change set
+      inChangeSet[step, debitcard]
+    )
+
+pred eventDebitCardTransactionOccurred__tooManyAttempts[step:(cur:id, nxt:id), debitcard: (instance:id), pinHash: (pinHash:str), amount: (instance:id), usage: (instance:id)]
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ debitcard)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ debitcard)[state] |
+    ( 
+      // Preconditions 
+      (eventDateIsToday[step, (debitcard ⨝ (DebitCardExpiry ⨝ cur))[expiry][expiry as instance]] ∨ eventDateAfterToday[step, (debitcard ⨝ (DebitCardExpiry ⨝ cur))[expiry][expiry as instance]]) ∧
+      (some ((debitcard ⨝ (DebitCardNrOfWrongPinEntries ⨝ cur))[nrOfWrongPinEntries][nrOfWrongPinEntries as cur_nrOfWrongPinEntries]) where (cur_nrOfWrongPinEntries >= 3)) ∧
+      (some ((debitcard ⨝ (DebitCardPinHash ⨝ cur))[pinHash][pinHash as cur_pinHash] ⨯ pinHash[pinHash as param_1_pinHash]) where (cur_pinHash != param_1_pinHash))  ∧ 
+      // Postconditions
+      (debitcard ⨝ (DebitCardRequestReason ⨝ nxt))[requestReason] = (debitcard ⨝ (DebitCardRequestReason ⨝ cur))[requestReason] ∧
+      (debitcard ⨝ (DebitCardExpiry ⨝ nxt))[expiry] = (debitcard ⨝ (DebitCardExpiry ⨝ cur))[expiry] ∧
+      (debitcard ⨝ (DebitCardPinReset ⨝ nxt))[pinReset] = (debitcard ⨝ (DebitCardPinReset ⨝ cur))[pinReset] ∧
+      (debitcard ⨝ (DebitCardAccountNumber ⨝ nxt))[accountNumber] = (debitcard ⨝ (DebitCardAccountNumber ⨝ cur))[accountNumber] ∧
+      (some ((debitcard ⨝ (DebitCardNrOfWrongPinEntries ⨝ cur))[nrOfWrongPinEntries][nrOfWrongPinEntries as cur_nrOfWrongPinEntries] ⨯ (debitcard ⨝ (DebitCardNrOfWrongPinEntries ⨝ nxt))[nrOfWrongPinEntries][nrOfWrongPinEntries as nxt_nrOfWrongPinEntries]) where (nxt_nrOfWrongPinEntries = cur_nrOfWrongPinEntries)) ∧
+      (debitcard ⨝ (DebitCardClosedOn ⨝ nxt))[closedOn] = (debitcard ⨝ (DebitCardClosedOn ⨝ cur))[closedOn] ∧
+      (some ((debitcard ⨝ (DebitCardSequenceNumber ⨝ cur))[sequenceNumber][sequenceNumber as cur_sequenceNumber] ⨯ (debitcard ⨝ (DebitCardSequenceNumber ⨝ nxt))[sequenceNumber][sequenceNumber as nxt_sequenceNumber]) where (nxt_sequenceNumber = cur_sequenceNumber)) ∧
+      (debitcard ⨝ (DebitCardCreatedOn ⨝ nxt))[createdOn] = (debitcard ⨝ (DebitCardCreatedOn ⨝ cur))[createdOn] ∧
+      (debitcard ⨝ (DebitCardShopLimit ⨝ nxt))[shopLimit] = (debitcard ⨝ (DebitCardShopLimit ⨝ cur))[shopLimit] ∧
+      (some ((debitcard ⨝ (DebitCardPinHash ⨝ cur))[pinHash][pinHash as cur_pinHash] ⨯ (debitcard ⨝ (DebitCardPinHash ⨝ nxt))[pinHash][pinHash as nxt_pinHash]) where (nxt_pinHash = cur_pinHash)) ∧
+      (debitcard ⨝ (DebitCardAtmLimit ⨝ nxt))[atmLimit] = (debitcard ⨝ (DebitCardAtmLimit ⨝ cur))[atmLimit]  ∧ 
+      // Generic event conditions
+      forceState[curState, nxtState, EventDebitCardTransactionOccurred__tooManyAttempts] ∧
+      // Make sure this instance is in the change set
+      inChangeSet[step, debitcard]
+    )
+
+pred eventDebitCardTransactionOccurred__expired[step:(cur:id, nxt:id), debitcard: (instance:id), pinHash: (pinHash:str), amount: (instance:id), usage: (instance:id)]
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ debitcard)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ debitcard)[state] |
+    ( 
+      // Preconditions 
+      eventDateBeforeToday[step, (debitcard ⨝ (DebitCardExpiry ⨝ cur))[expiry][expiry as instance]]  ∧ 
+      // Postconditions
+      (debitcard ⨝ (DebitCardRequestReason ⨝ nxt))[requestReason] = (debitcard ⨝ (DebitCardRequestReason ⨝ cur))[requestReason] ∧
+      (debitcard ⨝ (DebitCardExpiry ⨝ nxt))[expiry] = (debitcard ⨝ (DebitCardExpiry ⨝ cur))[expiry] ∧
+      (debitcard ⨝ (DebitCardPinReset ⨝ nxt))[pinReset] = (debitcard ⨝ (DebitCardPinReset ⨝ cur))[pinReset] ∧
+      (debitcard ⨝ (DebitCardAccountNumber ⨝ nxt))[accountNumber] = (debitcard ⨝ (DebitCardAccountNumber ⨝ cur))[accountNumber] ∧
+      (some ((debitcard ⨝ (DebitCardNrOfWrongPinEntries ⨝ cur))[nrOfWrongPinEntries][nrOfWrongPinEntries as cur_nrOfWrongPinEntries] ⨯ (debitcard ⨝ (DebitCardNrOfWrongPinEntries ⨝ nxt))[nrOfWrongPinEntries][nrOfWrongPinEntries as nxt_nrOfWrongPinEntries]) where (nxt_nrOfWrongPinEntries = cur_nrOfWrongPinEntries)) ∧
+      (debitcard ⨝ (DebitCardClosedOn ⨝ nxt))[closedOn] = (debitcard ⨝ (DebitCardClosedOn ⨝ cur))[closedOn] ∧
+      (some ((debitcard ⨝ (DebitCardSequenceNumber ⨝ cur))[sequenceNumber][sequenceNumber as cur_sequenceNumber] ⨯ (debitcard ⨝ (DebitCardSequenceNumber ⨝ nxt))[sequenceNumber][sequenceNumber as nxt_sequenceNumber]) where (nxt_sequenceNumber = cur_sequenceNumber)) ∧
+      (debitcard ⨝ (DebitCardCreatedOn ⨝ nxt))[createdOn] = (debitcard ⨝ (DebitCardCreatedOn ⨝ cur))[createdOn] ∧
+      (debitcard ⨝ (DebitCardShopLimit ⨝ nxt))[shopLimit] = (debitcard ⨝ (DebitCardShopLimit ⨝ cur))[shopLimit] ∧
+      (some ((debitcard ⨝ (DebitCardPinHash ⨝ cur))[pinHash][pinHash as cur_pinHash] ⨯ (debitcard ⨝ (DebitCardPinHash ⨝ nxt))[pinHash][pinHash as nxt_pinHash]) where (nxt_pinHash = cur_pinHash)) ∧
+      (debitcard ⨝ (DebitCardAtmLimit ⨝ nxt))[atmLimit] = (debitcard ⨝ (DebitCardAtmLimit ⨝ cur))[atmLimit]  ∧ 
+      // Generic event conditions
+      forceState[curState, nxtState, EventDebitCardTransactionOccurred__expired] ∧
+      // Make sure this instance is in the change set
+      inChangeSet[step, debitcard]
+    )
+
+pred frameDebitCard[step: (cur:id, nxt:id), debitcard: (instance:id)] 
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ debitcard)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ debitcard)[state] | (
+    nxtState = curState ∧
+    (
+      curState ⊆ uninitialized ∨ 
+      (// Postconditions
+       (debitcard ⨝ (DebitCardAccountNumber ⨝ nxt))[accountNumber] = (debitcard ⨝ (DebitCardAccountNumber ⨝ cur))[accountNumber] ∧
+       (debitcard ⨝ (DebitCardShopLimit ⨝ nxt))[shopLimit] = (debitcard ⨝ (DebitCardShopLimit ⨝ cur))[shopLimit] ∧
+       (debitcard ⨝ (DebitCardAtmLimit ⨝ nxt))[atmLimit] = (debitcard ⨝ (DebitCardAtmLimit ⨝ cur))[atmLimit] ∧
+       (some ((debitcard ⨝ (DebitCardSequenceNumber ⨝ cur))[sequenceNumber][sequenceNumber as cur_sequenceNumber] ⨯ (debitcard ⨝ (DebitCardSequenceNumber ⨝ nxt))[sequenceNumber][sequenceNumber as nxt_sequenceNumber]) where (nxt_sequenceNumber = cur_sequenceNumber)) ∧
+       (some ((debitcard ⨝ (DebitCardPinHash ⨝ cur))[pinHash][pinHash as cur_pinHash] ⨯ (debitcard ⨝ (DebitCardPinHash ⨝ nxt))[pinHash][pinHash as nxt_pinHash]) where (nxt_pinHash = cur_pinHash)) ∧
+       (debitcard ⨝ (DebitCardExpiry ⨝ nxt))[expiry] = (debitcard ⨝ (DebitCardExpiry ⨝ cur))[expiry] ∧
+       (debitcard ⨝ (DebitCardRequestReason ⨝ nxt))[requestReason] = (debitcard ⨝ (DebitCardRequestReason ⨝ cur))[requestReason] ∧
+       (debitcard ⨝ (DebitCardCreatedOn ⨝ nxt))[createdOn] = (debitcard ⨝ (DebitCardCreatedOn ⨝ cur))[createdOn] ∧
+       (debitcard ⨝ (DebitCardClosedOn ⨝ nxt))[closedOn] = (debitcard ⨝ (DebitCardClosedOn ⨝ cur))[closedOn] ∧
+       (some ((debitcard ⨝ (DebitCardNrOfWrongPinEntries ⨝ cur))[nrOfWrongPinEntries][nrOfWrongPinEntries as cur_nrOfWrongPinEntries] ⨯ (debitcard ⨝ (DebitCardNrOfWrongPinEntries ⨝ nxt))[nrOfWrongPinEntries][nrOfWrongPinEntries as nxt_nrOfWrongPinEntries]) where (nxt_nrOfWrongPinEntries = cur_nrOfWrongPinEntries)) ∧
+       (debitcard ⨝ (DebitCardPinReset ⨝ nxt))[pinReset] = (debitcard ⨝ (DebitCardPinReset ⨝ cur))[pinReset])
+    )
+  )
+
+// Event predicates for Limit
+pred eventLimitCheckAndRegister[step:(cur:id, nxt:id), limit: (instance:id)]
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ limit)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ limit)[state] |
+    ( 
+       
+       
+      // Generic event conditions
+      forceState[curState, nxtState, EventLimitCheckAndRegister] ∧
+      // Make sure this instance is in the change set
+      inChangeSet[step, limit]
+    )
+
+pred eventLimitSkip[step:(cur:id, nxt:id), limit: (instance:id)]
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ limit)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ limit)[state] |
+    ( 
+       
+       
+      // Generic event conditions
+      forceState[curState, nxtState, EventLimitSkip] ∧
+      // Make sure this instance is in the change set
+      inChangeSet[step, limit]
+    )
+
+pred frameLimit[step: (cur:id, nxt:id), limit: (instance:id)] 
+  = let cur = step[cur->config],
+        nxt = step[nxt->config],
+        curState = (instanceInState ⨝ cur ⨝ limit)[state],
+        nxtState = (instanceInState ⨝ nxt ⨝ limit)[state] | (
+    nxtState = curState 
+  )
+
+// Event predicates for Boolean
+// Event predicates for Usage
+// Event predicates for Currency
+// Event predicates for RequestReason
+
+// Transition function for Money
+pred possibleTransitionsMoney[step: (cur:id, nxt:id)] 
+  = ∀ inst ∈ (Instance ⨝ Money)[instance] |
+    
+    (notInChangeSet[step, inst] ⇒ frameMoney[step, inst])
+// Transition function for Date
+pred possibleTransitionsDate[step: (cur:id, nxt:id)] 
+  = ∀ inst ∈ (Instance ⨝ Date)[instance] |
+    
+    (notInChangeSet[step, inst] ⇒ frameDate[step, inst])
+// Transition function for DebitCard
+pred possibleTransitionsDebitCard[step: (cur:id, nxt:id)] 
+  = ∀ inst ∈ (Instance ⨝ DebitCard)[instance] |
+    (some inst ∩ ((raisedEvent ⨝ step)[instance]) ⇔ (
+      (eventDebitCardTransactionOccurred__tooManyAttempts[step,inst,(step ⨝ ParamEventDebitCardTransactionOccurred__tooManyAttemptsPinHash)[pinHash],(step ⨝ ParamEventDebitCardTransactionOccurred__tooManyAttemptsAmount)[amount->instance],(step ⨝ ParamEventDebitCardTransactionOccurred__tooManyAttemptsUsage)[usage->instance]] ∧
+      (step ⨝ raisedEvent)[event] = EventDebitCardTransactionOccurred__tooManyAttempts ∧
+      let cur = step[cur->config], debitcard = inst, debitcard_this_expiry = (debitcard ⨝ (DebitCardExpiry ⨝ cur))[expiry][expiry as instance] | changeSetCanContain[step, inst ∪ debitcard_this_expiry ∪ debitcard])
+      ∨
+      (eventDebitCardEmpty[step,inst] ∧
+      (step ⨝ raisedEvent)[event] = EventDebitCardEmpty ∧
+      changeSetCanContain[step, inst])
+      ∨
+      (eventDebitCardTransactionOccurred__ok[step,inst,(step ⨝ ParamEventDebitCardTransactionOccurred__okPinHash)[pinHash],(step ⨝ ParamEventDebitCardTransactionOccurred__okAmount)[amount->instance],(step ⨝ ParamEventDebitCardTransactionOccurred__okUsage)[usage->instance]] ∧
+      (step ⨝ raisedEvent)[event] = EventDebitCardTransactionOccurred__ok ∧
+      let cur = step[cur->config], debitcard = inst, debitcard_this_expiry = (debitcard ⨝ (DebitCardExpiry ⨝ cur))[expiry][expiry as instance], debitcard_this_shopLimit = (debitcard ⨝ (DebitCardShopLimit ⨝ cur))[shopLimit][shopLimit as instance], debitcard_this_atmLimit = (debitcard ⨝ (DebitCardAtmLimit ⨝ cur))[atmLimit][atmLimit as instance] | changeSetCanContain[step, inst ∪ debitcard_this_shopLimit ∪ debitcard_this_expiry ∪ debitcard ∪ debitcard_this_atmLimit])
+      ∨
+      (eventDebitCardDeactivate[step,inst] ∧
+      (step ⨝ raisedEvent)[event] = EventDebitCardDeactivate ∧
+      let cur = step[cur->config], debitcard = inst, debitcard_this_closedOn = (debitcard ⨝ (DebitCardClosedOn ⨝ cur))[closedOn][closedOn as instance] | changeSetCanContain[step, inst ∪ debitcard_this_closedOn ∪ debitcard])
+      ∨
+      (eventDebitCardTransactionOccurred__expired[step,inst,(step ⨝ ParamEventDebitCardTransactionOccurred__expiredPinHash)[pinHash],(step ⨝ ParamEventDebitCardTransactionOccurred__expiredAmount)[amount->instance],(step ⨝ ParamEventDebitCardTransactionOccurred__expiredUsage)[usage->instance]] ∧
+      (step ⨝ raisedEvent)[event] = EventDebitCardTransactionOccurred__expired ∧
+      let cur = step[cur->config], debitcard = inst, debitcard_this_expiry = (debitcard ⨝ (DebitCardExpiry ⨝ cur))[expiry][expiry as instance] | changeSetCanContain[step, inst ∪ debitcard_this_expiry ∪ debitcard])
+      ∨
+      (eventDebitCardTransactionOccurred__wrongPin[step,inst,(step ⨝ ParamEventDebitCardTransactionOccurred__wrongPinPinHash)[pinHash],(step ⨝ ParamEventDebitCardTransactionOccurred__wrongPinAmount)[amount->instance],(step ⨝ ParamEventDebitCardTransactionOccurred__wrongPinUsage)[usage->instance]] ∧
+      (step ⨝ raisedEvent)[event] = EventDebitCardTransactionOccurred__wrongPin ∧
+      let cur = step[cur->config], debitcard = inst, debitcard_this_expiry = (debitcard ⨝ (DebitCardExpiry ⨝ cur))[expiry][expiry as instance] | changeSetCanContain[step, inst ∪ debitcard_this_expiry ∪ debitcard])
+      ∨
+      (eventDebitCardTooManyResets[step,inst] ∧
+      (step ⨝ raisedEvent)[event] = EventDebitCardTooManyResets ∧
+      let cur = step[cur->config], debitcard = inst, debitcard_this_closedOn = (debitcard ⨝ (DebitCardClosedOn ⨝ cur))[closedOn][closedOn as instance] | changeSetCanContain[step, inst ∪ debitcard_this_closedOn ∪ debitcard])
+      ∨
+      (eventDebitCardUnblocked[step,inst] ∧
+      (step ⨝ raisedEvent)[event] = EventDebitCardUnblocked ∧
+      changeSetCanContain[step, inst])
+      ∨
+      (eventDebitCardRequest__new[step,inst,(step ⨝ ParamEventDebitCardRequest__newAccountNumber)[accountNumber->instance],(step ⨝ ParamEventDebitCardRequest__newReason)[reason->instance],(step ⨝ ParamEventDebitCardRequest__newExpiry)[expiry->instance],(step ⨝ ParamEventDebitCardRequest__newShopLimit)[shopLimit->instance],(step ⨝ ParamEventDebitCardRequest__newAtmLimit)[atmLimit->instance],(step ⨝ ParamEventDebitCardRequest__newReqDate)[reqDate->instance]] ∧
+      (step ⨝ raisedEvent)[event] = EventDebitCardRequest__new ∧
+      let cur = step[cur->config], reqDate = (ParamEventDebitCardRequest__newReqDate ⨝ step)[reqDate -> instance] | changeSetCanContain[step, inst ∪ reqDate])
+      ∨
+      (eventDebitCardRequest__expired[step,inst,(step ⨝ ParamEventDebitCardRequest__expiredAccountNumber)[accountNumber->instance],(step ⨝ ParamEventDebitCardRequest__expiredReason)[reason->instance],(step ⨝ ParamEventDebitCardRequest__expiredExpiry)[expiry->instance],(step ⨝ ParamEventDebitCardRequest__expiredShopLimit)[shopLimit->instance],(step ⨝ ParamEventDebitCardRequest__expiredAtmLimit)[atmLimit->instance],(step ⨝ ParamEventDebitCardRequest__expiredReqDate)[reqDate->instance]] ∧
+      (step ⨝ raisedEvent)[event] = EventDebitCardRequest__expired ∧
+      let cur = step[cur->config], reqDate = (ParamEventDebitCardRequest__expiredReqDate ⨝ step)[reqDate -> instance] | changeSetCanContain[step, inst ∪ reqDate])
+      ∨
+      (eventDebitCardRequest__lost[step,inst,(step ⨝ ParamEventDebitCardRequest__lostAccountNumber)[accountNumber->instance],(step ⨝ ParamEventDebitCardRequest__lostReason)[reason->instance],(step ⨝ ParamEventDebitCardRequest__lostExpiry)[expiry->instance],(step ⨝ ParamEventDebitCardRequest__lostShopLimit)[shopLimit->instance],(step ⨝ ParamEventDebitCardRequest__lostAtmLimit)[atmLimit->instance],(step ⨝ ParamEventDebitCardRequest__lostReqDate)[reqDate->instance]] ∧
+      (step ⨝ raisedEvent)[event] = EventDebitCardRequest__lost ∧
+      let cur = step[cur->config], reqDate = (ParamEventDebitCardRequest__lostReqDate ⨝ step)[reqDate -> instance] | changeSetCanContain[step, inst ∪ reqDate])
+      ∨
+      (eventDebitCardRequest__stolen[step,inst,(step ⨝ ParamEventDebitCardRequest__stolenAccountNumber)[accountNumber->instance],(step ⨝ ParamEventDebitCardRequest__stolenReason)[reason->instance],(step ⨝ ParamEventDebitCardRequest__stolenExpiry)[expiry->instance],(step ⨝ ParamEventDebitCardRequest__stolenShopLimit)[shopLimit->instance],(step ⨝ ParamEventDebitCardRequest__stolenAtmLimit)[atmLimit->instance],(step ⨝ ParamEventDebitCardRequest__stolenReqDate)[reqDate->instance]] ∧
+      (step ⨝ raisedEvent)[event] = EventDebitCardRequest__stolen ∧
+      let cur = step[cur->config], reqDate = (ParamEventDebitCardRequest__stolenReqDate ⨝ step)[reqDate -> instance] | changeSetCanContain[step, inst ∪ reqDate])
+      ∨
+      (eventDebitCardRequest__customer[step,inst,(step ⨝ ParamEventDebitCardRequest__customerAccountNumber)[accountNumber->instance],(step ⨝ ParamEventDebitCardRequest__customerReason)[reason->instance],(step ⨝ ParamEventDebitCardRequest__customerExpiry)[expiry->instance],(step ⨝ ParamEventDebitCardRequest__customerShopLimit)[shopLimit->instance],(step ⨝ ParamEventDebitCardRequest__customerAtmLimit)[atmLimit->instance],(step ⨝ ParamEventDebitCardRequest__customerReqDate)[reqDate->instance]] ∧
+      (step ⨝ raisedEvent)[event] = EventDebitCardRequest__customer ∧
+      let cur = step[cur->config], reqDate = (ParamEventDebitCardRequest__customerReqDate ⨝ step)[reqDate -> instance] | changeSetCanContain[step, inst ∪ reqDate])
+      ∨
+      (eventDebitCardProduce[step,inst,(step ⨝ ParamEventDebitCardProducePinHash)[pinHash]] ∧
+      (step ⨝ raisedEvent)[event] = EventDebitCardProduce ∧
+      changeSetCanContain[step, inst])
+      ∨
+      (eventDebitCardActivated[step,inst] ∧
+      (step ⨝ raisedEvent)[event] = EventDebitCardActivated ∧
+      changeSetCanContain[step, inst])
+    ))
+    ∧
+    (notInChangeSet[step, inst] ⇒ frameDebitCard[step, inst])
+// Transition function for Limit
+pred possibleTransitionsLimit[step: (cur:id, nxt:id)] 
+  = ∀ inst ∈ (Instance ⨝ Limit)[instance] |
+    (some inst ∩ ((raisedEvent ⨝ step)[instance]) ⇔ (
+      (eventLimitCheckAndRegister[step,inst] ∧
+      (step ⨝ raisedEvent)[event] = EventLimitCheckAndRegister ∧
+      changeSetCanContain[step, inst])
+      ∨
+      (eventLimitSkip[step,inst] ∧
+      (step ⨝ raisedEvent)[event] = EventLimitSkip ∧
+      changeSetCanContain[step, inst])
+    ))
+    ∧
+    (notInChangeSet[step, inst] ⇒ frameLimit[step, inst])
+
+// Transition function
+∀ step ∈ order| possibleTransitionsMoney[step] ∧ possibleTransitionsDate[step] ∧ possibleTransitionsDebitCard[step] ∧ possibleTransitionsLimit[step]
+
+// Facts from spec `IBAN`
+// Fact `IBANsAreUnique` 
+let cur = first | (∀ cur ∈ (cur[config as cur] ⨝ *(order ∪ loop))[nxt->config] | let step = cur[config as cur] ⨝ (order ∪ loop), nxt = step[nxt->config] | (∀ iban1 ∈ (Instance ⨝ IBAN)[instance],iban2 ∈ (Instance ⨝ IBAN)[instance] | (((some ((iban1 ⨝ (IBANNumber ⨝ cur))[number][number as iban1_number_1] ⨯ (iban2 ⨝ (IBANNumber ⨝ cur))[number][number as iban2_number_2]) where (iban1_number_1 = iban2_number_2)) ⇒ iban1 = iban2))))
+// Fact `PositiveIBANs` 
+let cur = first | (∀ cur ∈ (cur[config as cur] ⨝ *(order ∪ loop))[nxt->config] | let step = cur[config as cur] ⨝ (order ∪ loop), nxt = step[nxt->config] | (∀ iban ∈ (Instance ⨝ IBAN)[instance] | (some ((iban ⨝ (IBANNumber ⨝ cur))[number][number as iban_number_3]) where (iban_number_3 > 0))))
+// Fact `IBANsAreImmutable` 
+let cur = first | (∀ cur ∈ (cur[config as cur] ⨝ *(order ∪ loop))[nxt->config] ∖ last | let step = cur[config as cur] ⨝ (order ∪ loop), nxt = step[nxt->config] | (∀ iban ∈ (Instance ⨝ IBAN)[instance] | (some ((iban ⨝ (IBANNumber ⨝ cur))[number][number as iban_number_4] ⨯ (iban ⨝ (IBANNumber ⨝ nxt))[number][number as iban_number_5]) where (iban_number_4 = iban_number_5))))
+// Facts from spec `Money`
+// Fact `AllMoneyIsFinite` 
+let cur = first | (∀ cur ∈ (cur[config as cur] ⨝ *(order ∪ loop))[nxt->config] | let step = cur[config as cur] ⨝ (order ∪ loop), nxt = step[nxt->config] | (∀ m ∈ (Instance ⨝ Money)[instance] | ((some ((m ⨝ (MoneyAmount ⨝ cur))[amount][amount as m_amount_6]) where (m_amount_6 > (- 9999999999999))) ∧ (some ((m ⨝ (MoneyAmount ⨝ cur))[amount][amount as m_amount_7]) where (m_amount_7 < 9999999999999)))))
+// Facts from spec `Limit`
+// Facts from spec `DebitCard`
+// Facts from spec `Date`
+// Fact `TodayMovesForward` 
+let cur = first | (∀ cur ∈ (cur[config as cur] ⨝ *(order ∪ loop))[nxt->config] ∖ last | let step = cur[config as cur] ⨝ (order ∪ loop), nxt = step[nxt->config] | (some ((Date_TODAY ⨝ (DateNr ⨝ nxt))[nr][nr as TODAY_nr_8] ⨯ (Date_TODAY ⨝ (DateNr ⨝ cur))[nr][nr as TODAY_nr_9]) where (TODAY_nr_8 > TODAY_nr_9)))
+// Facts from spec `Currency`
+// Facts from spec `Usage`
+// Facts from spec `Boolean`
+// Facts from spec `RequestReason`
+
+// Assert `RequestedNewDebitCardCanBeProduced`
+let cur = first | ((((some ((Date_TODAY ⨝ (DateYear ⨝ cur))[year][year as TODAY_year_1]) where (TODAY_year_1 = 2020)) ∧ (some ((Date_TODAY ⨝ (DateMonth ⨝ cur))[month][month as TODAY_month_2]) where (TODAY_month_2 = 9)))) ∧ (∃ d ∈ (Instance ⨝ DebitCard)[instance] | let cur = first | (∃ cur ∈ (cur[config as cur] ⨝ *(order ∪ loop))[nxt->config] | let step = cur[config as cur] ⨝ (order ∪ loop), nxt = step[nxt->config] | inState[cur, d, StateDebitCardExisting_produced])))
+
+// Minimize the number of steps by minimizing the number of Configurations
+objectives: minimize Config[count()]

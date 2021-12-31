@@ -1,0 +1,30 @@
+Person (pId:id) = {<p1>..<p10>}
+Jocelyn (pId:id) = {<p1>}
+Hilary (pId:id) = {<p2>}
+spouse (pId:id, sp:id) >= {<p1,p2>,<p2,p1>} <= {<p1,p1>..<p10,p10>}
+shaken (pId:id, other:id) <= {<p1,p1>..<p10,p10>}
+nrOfShakes (pId:id, nr:int) = {<p1,?>..<p10,?>}
+
+spouse ⊆ Person ⨯ Person[pId as sp]
+shaken ⊆ Person ⨯ Person[pId as other]
+
+// Everybody can only have one spouse
+∀ p ∈ Person | one (p ⨝ spouse)
+// Spouse is a bijection
+spouse = spouse[pId as sp, sp as pId]
+// Nobody is its own spouse
+∀ p ∈ Person | no p ⨝ (p ⨝ spouse)[sp->pId]
+//
+// Nobody shakes it own hand
+∀ s ∈ shaken | s[pId] ≠ s[other][other as pId]
+// Nobody shakes the hand of spouse
+∀ s ∈ shaken | no (s ⨝ spouse) where other = sp
+
+// If p shakes q's hand, q shakes p's hand, shaken is a bijection
+shaken = shaken[pId as other, other as pId]
+
+∀ p ∈ Person | some (((p ⨝ shaken)[count() as shakes] ⨯ p) ⨝ nrOfShakes) where nr = shakes
+
+∀ p ∈ Person ∖ Jocelyn, q ∈ Person ∖ (p ∪ Jocelyn) | some ((p ⨝ shaken)[count() as pShaken] ⨯ (q ⨝ shaken)[count() as qShaken]) where (pShaken != qShaken)
+
+expect: sat, #models = 24
