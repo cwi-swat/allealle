@@ -14,15 +14,15 @@ import IO;
 
 void translateAndVisMyFrstStr() = translateAndVis(|project://allealle/examples/str/myfirststr.alle|);
 
-void translateAndVis(loc problem) { 
-  Problem p = implodeProblem(problem);
-  
+void translateAndVis(loc problem) = translateAndVis(implodeProblem(problem));
+
+void translateAndVis(Problem p) {
   ModelFinderResult result = checkInitialSolution(p);
   
   switch(result) {
     case sat(Model currentModel, Model (Domain) nextModel, void () stop): renderModel(currentModel, nextModel, stop);
-    case unsat(set[Formula] unsatCore) : println("Not satisfiable, can not visualize");
-    case trivialSat(Model model) : println("Trivially satisfiable");
+    case unsat(set[Formula] _) : println("Not satisfiable, can not visualize");
+    case trivialSat(Model _) : println("Trivially satisfiable");
     case trivialUnsat() : println("Trivially not satisfiable");  
   }
 }
